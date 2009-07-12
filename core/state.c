@@ -201,13 +201,13 @@ static int load_old_sav_file(TilemCalc* calc, FILE* savfile)
 
 	case '6':
 		pageA = calc->mempagemap[1];
+		pageB = calc->mempagemap[2];
 		if (pageA >= 0x10)
 			pageA += 0x30;
-		calc->hw.z80_out(calc, 0x05, pageA);
-
-		pageB = calc->mempagemap[2];
 		if (pageB >= 0x10)
 			pageB += 0x30;
+
+		calc->hw.z80_out(calc, 0x05, pageA);
 		calc->hw.z80_out(calc, 0x06, pageB);
 		break;
 

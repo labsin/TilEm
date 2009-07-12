@@ -36,7 +36,9 @@ const TilemHardware* hwmodels[] = {
 	&hardware_ti81,
 	&hardware_ti82,
 	&hardware_ti83,
-	&hardware_ti83p };
+	&hardware_ti83p,
+	&hardware_ti85,
+	&hardware_ti86 };
 
 #define NUM_MODELS (sizeof(hwmodels) / sizeof(TilemHardware*))
 

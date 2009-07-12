@@ -137,8 +137,10 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 
 	tilem_z80_run_time(emu->calc, 1000, NULL);
 
+	printf(" >>");
 	while (count > 0) {
 		if (!tilem_linkport_graylink_send_byte(emu->calc, data[0])) {
+			printf(" %02X", data[0]);
 			data++;
 			count--;
 		}
@@ -154,6 +156,7 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 			break;
 		}
 	}
+	printf("\n");
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
 	emu->calc->z80.stop_mask = prevmask;
@@ -180,10 +183,12 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 
 	tilem_z80_run_time(emu->calc, 1000, NULL);
 
+	printf(" <<");
 	while (count > 0) {
 		value = tilem_linkport_graylink_get_byte(emu->calc);
 
 		if (value != -1) {
+			printf(" %02X", value);
 			data[0] = value;
 			data++;
 			count--;
@@ -202,6 +207,7 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 			break;
 		}
 	}
+	printf("\n");
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
 	emu->calc->z80.stop_mask = prevmask;
@@ -263,11 +269,11 @@ static int print_tilibs_error(int errcode)
 
 static void run_with_key(TilemCalc* calc, int key)
 {
-	tilem_z80_run_time(calc, 200000, NULL);
+	tilem_z80_run_time(calc, 500000, NULL);
 	tilem_keypad_press_key(calc, key);
 	tilem_z80_run_time(calc, 1000000, NULL);
 	tilem_keypad_release_key(calc, key);
-	tilem_z80_run_time(calc, 200000, NULL);
+	tilem_z80_run_time(calc, 500000, NULL);
 }
 
 static void prepare_for_link(TilemCalc* calc)
@@ -283,6 +289,14 @@ static void prepare_for_link(TilemCalc* calc)
 		run_with_key(calc, TILEM_KEY_RIGHT);
 		run_with_key(calc, TILEM_KEY_ENTER);
 	}
+	else if (calc->hw.model_id == TILEM_CALC_TI85) {
+		run_with_key(calc, TILEM_KEY_MODE);
+		run_with_key(calc, TILEM_KEY_MODE);
+		run_with_key(calc, TILEM_KEY_MODE);
+		run_with_key(calc, TILEM_KEY_2ND);
+		run_with_key(calc, TILEM_KEY_GRAPHVAR);
+		run_with_key(calc, TILEM_KEY_WINDOW);
+	}
 }
 
 static void tmr_press_key(TilemCalc* calc, void* data)
@@ -295,7 +309,7 @@ static void send_file(TilemCalcEmulator* emu, CalcHandle* ch,
 {
 	CalcScreenCoord sc;
 	uint8_t *bitmap = NULL;
-	int tmr;
+	int tmr, k;
 
 	if (first) {
 		prepare_for_link(emu->calc);
@@ -310,12 +324,21 @@ static void send_file(TilemCalcEmulator* emu, CalcHandle* ch,
 
 	case TIFILE_BACKUP:
 		/* press enter to accept backup */
+		if (emu->calc->hw.model_id == TILEM_CALC_TI85
+		    || emu->calc->hw.model_id == TILEM_CALC_TI86) {
+			k = TILEM_KEY_YEQU;
+		}
+		else {
+			k = TILEM_KEY_ENTER;
+		}
+
 		tmr = tilem_z80_add_timer(emu->calc, 1000000, 0, 1,
 					  tmr_press_key,
-					  TILEM_DWORD_TO_PTR(9));
+					  TILEM_DWORD_TO_PTR(k));
+
 		print_tilibs_error(ticalcs_calc_send_backup2(ch, filename));
 		tilem_z80_remove_timer(emu->calc, tmr);
-		tilem_keypad_release_key(emu->calc, 9);
+		tilem_keypad_release_key(emu->calc, k);
 
 		if (!last) {
 			prepare_for_link(emu->calc);
@@ -599,16 +622,18 @@ static gpointer core_thread(gpointer data)
 		if (!emu->calc->lcd.active || !emu->calc->lcd.poweron) {
 			low = high = 0;
 		}
-		else if (emu->calc->lcd.contrast < 32) {
-			low = 0;
-			high = emu->calc->lcd.contrast * 4;
-		}
 		else {
-			low = (emu->calc->lcd.contrast - 32) * 4;
-			high = 128;
+			(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
+			if (emu->calc->lcd.contrast < 32) {
+				low = 0;
+				high = emu->calc->lcd.contrast * 4;
+			}
+			else {
+				low = (emu->calc->lcd.contrast - 32) * 4;
+				high = 128;
+			}
 		}
 
-		(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
 		g_mutex_unlock(emu->calc_mutex);
 
 		g_mutex_lock(emu->lcd_mutex);
@@ -919,6 +944,8 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	tilem_calc_load_state(emu.calc, romfile, savfile);
+
+	printf(">>> %s\n", emu.calc->hw.desc);
 
 	emu.calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
 	emu.calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;

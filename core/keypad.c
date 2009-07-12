@@ -80,6 +80,8 @@ void tilem_keypad_press_key(TilemCalc* calc, int scancode)
 void tilem_keypad_release_key(TilemCalc* calc, int scancode)
 {
 	if (scancode == TILEM_KEY_ON) {
+		if (calc->keypad.onkeydown && calc->keypad.onkeyint)
+			calc->z80.interrupts |= TILEM_INTERRUPT_ON_KEY;
 		calc->keypad.onkeydown = 0;
 	}
 	else if (scancode > 0 && scancode < 65) {
