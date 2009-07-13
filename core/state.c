@@ -420,6 +420,7 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 			calc->z80.interrupts = value;
 		else if (!strcmp(buf, "clockspeed"))
 			calc->z80.clockspeed = value;
+		else if (!strcmp(buf, "halted")) calc->z80.halted = value;
 
 		/* LCD */
 		else if (!strcmp(buf, "lcd.poweron"))
@@ -586,6 +587,7 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 		fprintf(savfile, "im = %X\n", calc->z80.r.im);
 		fprintf(savfile, "interrupts = %08X\n", calc->z80.interrupts);
 		fprintf(savfile, "clockspeed = %X\n", calc->z80.clockspeed);
+		fprintf(savfile, "halted = %X\n", calc->z80.halted);
 
 		fprintf(savfile, "\n## LCD Driver ##\n");
 		fprintf(savfile, "lcd.poweron = %X\n",

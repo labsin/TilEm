@@ -209,6 +209,7 @@ typedef struct _TilemZ80 {
 	TilemZ80Regs r;
 	unsigned int interrupts; /* Currently active interrupts */
 	int clockspeed;		/* Current CPU speed (kHz) */
+	int halted;
 	dword clock;
 	dword lastwrite;
 

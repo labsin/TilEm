@@ -665,6 +665,7 @@ static void z80_execute(TilemCalc* calc)
 		    && op != 0xddfb && op != 0xfdfb) {
 			IFF1 = IFF2 = 0;
 			Rl++;
+			z80->halted = 0;
 
 			/* Depending on the calculator, this value
 			   varies somewhat randomly from one interrupt
@@ -707,6 +708,7 @@ static void z80_execute(TilemCalc* calc)
 			check_breakpoints(calc, z80->breakpoint_mx, PC);
 		}
 		else {
+			z80->halted = 1;
 			PC--;
 			if (z80->stopping)
 				break;
