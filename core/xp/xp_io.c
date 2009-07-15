@@ -135,7 +135,7 @@ static void setup_mapping(TilemCalc* calc)
 
 void xp_z80_out(TilemCalc* calc, dword port, byte value)
 {
-	static const int tmrvalues[8] = { 1786, 4032, 5882, 8474 };
+	static const int tmrvalues[4] = { 1786, 4032, 5882, 8474 };
 	int t;
 	unsigned int mode;
 
