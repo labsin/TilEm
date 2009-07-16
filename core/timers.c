@@ -149,18 +149,19 @@ void tilem_user_timer_start(TilemCalc* calc, int n, byte value)
 	if (!count)
 		return;
 
-	if (value) {
+	if (!value) {
 		/* input value 0 means loop indefinitely */
+		period = get_overflow_duration(tmr);
+	}
+	else if (tmr->status & TILEM_USER_TIMER_FINISHED) {
+		/* timer has already expired once -> it will overflow
+		   the next time it expires (note that this happens
+		   even if the loop flag isn't set) */
 		period = get_overflow_duration(tmr);
 	}
 	else if (!(tmr->status & TILEM_USER_TIMER_LOOP)) {
 		/* don't loop */
 		period = 0;
-	}
-	else if (tmr->status & TILEM_USER_TIMER_FINISHED) {
-		/* timer has already expired once -> it will overflow
-		   the next time it expires */
-		period = get_overflow_duration(tmr);
 	}
 	else {
 		/* timer hasn't expired yet; second iteration starts

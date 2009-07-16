@@ -135,7 +135,8 @@ static inline void timer_set(TilemZ80* z80, int tmr, dword count,
 		z80->timers[tmr].next = 0;
 	}
 	else if (rt) {
-		kclocks = z80->clockspeed * count;
+		kclocks = z80->clockspeed;
+		kclocks *= count;
 		clocks = (kclocks + 500) / 1000 - extra;
 		z80->timers[tmr].count = z80->clock + clocks;
 		z80->timers[tmr].period = period;

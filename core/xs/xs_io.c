@@ -87,11 +87,11 @@ byte xs_z80_in(TilemCalc* calc, dword port)
 		if (calc->z80.interrupts & TILEM_INTERRUPT_LINK_ACTIVE)
 			v |= 0x10;
 
-		if (calc->usertimers[0].status & TMRSTATUS_FINISHED)
+		if (calc->usertimers[0].status & TILEM_USER_TIMER_FINISHED)
 			v |= 0x20;
-		if (calc->usertimers[1].status & TMRSTATUS_FINISHED)
+		if (calc->usertimers[1].status & TILEM_USER_TIMER_FINISHED)
 			v |= 0x40;
-		if (calc->usertimers[2].status & TMRSTATUS_FINISHED)
+		if (calc->usertimers[2].status & TILEM_USER_TIMER_FINISHED)
 			v |= 0x80;
 
 		return(v);
@@ -568,41 +568,32 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 		break;
 
 	case 0x30:
-		tilem_message(calc, "(30) <- %02x", value);
 		tilem_user_timer_set_frequency(calc, 0, value);
 		break;
 	case 0x31:
-		tilem_message(calc, "(31) <- %02x", value);
 		tilem_user_timer_set_mode(calc, 0, value);
 		break;
 	case 0x32:
-		tilem_message(calc, "(32) <- %02x", value);
 		tilem_user_timer_start(calc, 0, value);
 		break;
 
 	case 0x33:
-		tilem_message(calc, "(33) <- %02x", value);
 		tilem_user_timer_set_frequency(calc, 1, value);
 		break;
 	case 0x34:
-		tilem_message(calc, "(34) <- %02x", value);
 		tilem_user_timer_set_mode(calc, 1, value);
 		break;
 	case 0x35:
-		tilem_message(calc, "(35) <- %02x", value);
 		tilem_user_timer_start(calc, 1, value);
 		break;
 
 	case 0x36:
-		tilem_message(calc, "(36) <- %02x", value);
 		tilem_user_timer_set_frequency(calc, 2, value);
 		break;
 	case 0x37:
-		tilem_message(calc, "(37) <- %02x", value);
 		tilem_user_timer_set_mode(calc, 2, value);
 		break;
 	case 0x38:
-		tilem_message(calc, "(38) <- %02x", value);
 		tilem_user_timer_start(calc, 2, value);
 		break;
 	}

@@ -65,12 +65,6 @@ enum {
 	NUM_HW_REGS
 };
 
-#define TMRSTATUS_LOOP        1
-#define TMRSTATUS_INTERRUPT   2
-#define TMRSTATUS_OVERFLOW    4
-#define TMRSTATUS_RUNNING   256
-#define TMRSTATUS_FINISHED  512
-
 #define HW_REG_NAMES \
 	{ "port3", "port4", "port5", "port6", "port7", "port8", "port9", \
 	  "portA", "portB", "portC", "portD", "portE", "portF", "port20", \

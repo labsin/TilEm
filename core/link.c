@@ -312,7 +312,7 @@ static void dbus_update(TilemCalc* calc)
 	    && (calc->linkport.mode & TILEM_LINK_MODE_INT_ON_IDLE))
 		calc->z80.interrupts |= TILEM_INTERRUPT_LINK_IDLE;
 	else
-		calc->z80.interrupts &= TILEM_INTERRUPT_LINK_IDLE;
+		calc->z80.interrupts &= ~TILEM_INTERRUPT_LINK_IDLE;
 }
 
 void tilem_linkport_reset(TilemCalc* calc)
