@@ -169,16 +169,13 @@ enum {
 	TILEM_INTERRUPT_ON_KEY = 1, /* ON key pressed */
 	TILEM_INTERRUPT_TIMER1 = 2, /* Main interrupt timer */
 	TILEM_INTERRUPT_TIMER2 = 4, /* Alt. interrupt timer (83/83+) */
-	TILEM_INTERRUPT_TIMER3 = 8, /* Additional timers */
-	TILEM_INTERRUPT_TIMER4 = 16,
-	TILEM_INTERRUPT_TIMER5 = 32,
-	TILEM_INTERRUPT_TIMER6 = 64,
-	TILEM_INTERRUPT_TIMER7 = 128,
-	TILEM_INTERRUPT_TIMER8 = 256,
+	TILEM_INTERRUPT_USER_TIMER1 = 8, /* Programmable timers (83+SE) */
+	TILEM_INTERRUPT_USER_TIMER2 = 16,
+	TILEM_INTERRUPT_USER_TIMER3 = 32,
 	TILEM_INTERRUPT_LINK_ACTIVE = 512, /* Link port state changed */
 	TILEM_INTERRUPT_LINK_READ = 1024,  /* Link assist read a byte */
-	TILEM_INTERRUPT_LINK_WRITE = 2048, /* Link assist wrote a byte */
-	TILEM_INTERRUPT_LINK_ERROR = 4096  /* Link assist failed */
+	TILEM_INTERRUPT_LINK_IDLE = 2048,  /* Link assist is idle */
+	TILEM_INTERRUPT_LINK_ERROR = 4096, /* Link assist failed */
 };
 
 /* Constant hardware timer IDs */
@@ -187,6 +184,9 @@ enum {
 	TILEM_TIMER_LCD_DELAY,
 	TILEM_TIMER_FLASH_DELAY,
 	TILEM_TIMER_LINK_ASSIST,
+	TILEM_TIMER_USER1,
+	TILEM_TIMER_USER2,
+	TILEM_TIMER_USER3,
 	TILEM_TIMER_HW
 };
 
@@ -258,7 +258,7 @@ void tilem_z80_set_speed(TilemCalc* calc, int speed);
    nearest CPU clock cycle.
 
    The timer is considered to have "fired" as soon as the specified
-   amount of time has elapsed.  The callback function, however, will
+   amount of time has elapsed.  The callback function, however, may
    not be called until after the instruction finishes.  If multiple
    timers fire during the same instruction, the order in which the
    callback functions will be called is undefined.
@@ -281,6 +281,10 @@ void tilem_z80_set_timer_period(TilemCalc* calc, int id, dword period);
 
 /* Delete a timer. */
 void tilem_z80_remove_timer(TilemCalc* calc, int id);
+
+/* Check whether a timer is currently running. */
+int tilem_z80_timer_running(TilemCalc* calc, int id)
+	TILEM_ATTR_PURE;
 
 /* Get the number of clock ticks from now until the next time the
    given timer fires.  (This may be negative, if the timer has already
@@ -329,7 +333,6 @@ enum {
 
 typedef struct _TilemLCD {
 	/* Common settings */
-	byte poweron;		/* LCD power on */
 	byte active;		/* LCD driver active */
 	byte contrast;		/* Contrast value (0-63) */
 	int rowstride;		/* Number of bytes per row */
@@ -377,12 +380,12 @@ void tilem_lcd_delay_timer(TilemCalc* calc, void* data);
 
 /* Link port / assist mode flags */
 enum {
-	TILEM_LINK_MODE_ASSIST        = 1, /* Enable link assist */
-	TILEM_LINK_MODE_NO_TIMEOUT    = 1, /* Assist doesn't time out (xp) */
-	TILEM_LINK_MODE_INT_ON_ACTIVE = 2, /* Interrupt on state change */
-	TILEM_LINK_MODE_INT_ON_READ   = 4, /* Interrupt on asst. read */
-	TILEM_LINK_MODE_INT_ON_WRITE  = 8, /* Interrupt on asst. write */
-	TILEM_LINK_MODE_INT_ON_ERROR  = 16 /* Interrupt on asst. error */
+	TILEM_LINK_MODE_ASSIST        = 1,  /* Enable link assist */
+	TILEM_LINK_MODE_NO_TIMEOUT    = 2,  /* Assist doesn't time out (xp) */
+	TILEM_LINK_MODE_INT_ON_ACTIVE = 4,  /* Interrupt on state change */
+	TILEM_LINK_MODE_INT_ON_READ   = 8,  /* Interrupt on asst. read */
+	TILEM_LINK_MODE_INT_ON_IDLE   = 16, /* Interrupt when asst. idle */
+	TILEM_LINK_MODE_INT_ON_ERROR  = 32  /* Interrupt on asst. error */
 };
 
 /* Link port state flags */
@@ -458,6 +461,9 @@ byte tilem_linkport_blacklink_get_lines(TilemCalc* calc);
 /* Reset GrayLink */
 void tilem_linkport_graylink_reset(TilemCalc* calc);
 
+/* Check if GrayLink is ready to send data */
+int tilem_linkport_graylink_ready(TilemCalc* calc);
+
 /* Send a byte via virtual GrayLink */
 int tilem_linkport_graylink_send_byte(TilemCalc* calc, byte value);
 
@@ -530,6 +536,82 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v);
 void tilem_flash_delay_timer(TilemCalc* calc, void* data);
 
 
+/* MD5 assist */
+
+enum {
+	TILEM_MD5_REG_A = 0,	/* initial 'a' value */
+	TILEM_MD5_REG_B = 1,	/* 'b' value */
+	TILEM_MD5_REG_C = 2,	/* 'c' value */
+	TILEM_MD5_REG_D = 3,	/* 'd' value */
+	TILEM_MD5_REG_X = 4,	/* 'X' (or 'T') value */
+	TILEM_MD5_REG_T = 5,	/* 'T' (or 'X') value */
+};
+
+enum {
+	TILEM_MD5_FUNC_FF = 0,
+	TILEM_MD5_FUNC_GG = 1,
+	TILEM_MD5_FUNC_HH = 2,
+	TILEM_MD5_FUNC_II = 3,
+};
+
+typedef struct _TilemMD5Assist {
+	dword regs[6];
+	byte shift;
+	byte mode;
+} TilemMD5Assist;
+
+/* Reset MD5 assist */
+void tilem_md5_assist_reset(TilemCalc* calc);
+
+/* Get output value */
+dword tilem_md5_assist_get_value(TilemCalc* calc);
+
+
+/* Programmable timers */
+
+#define TILEM_MAX_USER_TIMERS 3
+
+enum {
+	TILEM_USER_TIMER_LOOP        = 1,   /* loop when counter
+					       reaches 0 */
+	TILEM_USER_TIMER_INTERRUPT   = 2,   /* generate interrupt when
+					       finished */
+	TILEM_USER_TIMER_OVERFLOW    = 4,   /* timer has expired at
+					       least twice since last
+					       mode setting */
+	TILEM_USER_TIMER_FINISHED    = 256, /* timer has expired at
+					       least once since last
+					       mode setting (port 4
+					       status bit) */
+	TILEM_USER_TIMER_NO_HALT_INT = 512  /* suppress interrupt if
+					       CPU is halted */
+};
+
+typedef struct _TilemUserTimer {
+	byte frequency;
+	byte loopvalue;
+	unsigned int status;
+} TilemUserTimer;
+
+/* Reset timers */
+void tilem_user_timers_reset(TilemCalc* calc);
+
+/* Set frequency control register */
+void tilem_user_timer_set_frequency(TilemCalc* calc, int n, byte value);
+
+/* Set status flags */
+void tilem_user_timer_set_mode(TilemCalc* calc, int n, byte mode);
+
+/* Start timer */
+void tilem_user_timer_start(TilemCalc* calc, int n, byte value);
+
+/* Get timer value */
+byte tilem_user_timer_get_value(TilemCalc* calc, int n);
+
+/* Callback function */
+void tilem_user_timer_expired(TilemCalc* calc, void* data);
+
+
 /* Calculators */
 
 /* Model IDs */
@@ -548,11 +630,12 @@ enum {
 
 /* Calculator flags */
 enum {
-	TILEM_CALC_HAS_LINK        = 1, /* Has link port */
-	TILEM_CALC_HAS_LINK_ASSIST = 2, /* Has hardware link assist */
-	TILEM_CALC_HAS_USB         = 4, /* Has USB controller */
-	TILEM_CALC_HAS_FLASH       = 8, /* Has (writable) Flash */
-	TILEM_CALC_HAS_T6A04       = 16 /* Has separate LCD driver */
+	TILEM_CALC_HAS_LINK        = 1,  /* Has link port */
+	TILEM_CALC_HAS_LINK_ASSIST = 2,  /* Has hardware link assist */
+	TILEM_CALC_HAS_USB         = 4,  /* Has USB controller */
+	TILEM_CALC_HAS_FLASH       = 8,  /* Has (writable) Flash */
+	TILEM_CALC_HAS_T6A04       = 16, /* Has separate LCD driver */
+	TILEM_CALC_HAS_MD5_ASSIST  = 32  /* Has hardware MD5 assist */
 };
 
 /* Calculator hardware description */
@@ -570,6 +653,8 @@ struct _TilemHardware {
 
 	int nflashsectors;
 	const TilemFlashSector* flashsectors;
+
+	int nusertimers;
 
 	int nhwregs;		 /* Number of hardware registers */
 	const char** hwregnames; /* Harware register names */
@@ -620,10 +705,15 @@ struct _TilemCalc {
 	byte mempagemap[4];
 
 	TilemLCD lcd;
-
 	TilemLinkport linkport;
 	TilemKeypad keypad;
 	TilemFlash flash;
+	TilemMD5Assist md5assist;
+	TilemUserTimer usertimers[TILEM_MAX_USER_TIMERS];
+
+	byte poweronhalt;	/* System power control.  If this is
+				   zero, turn off LCD, timers,
+				   etc. when CPU halts */
 
 	byte battery;		/* Battery level (units of 0.1 V) */
 
@@ -657,10 +747,16 @@ int tilem_calc_load_state(TilemCalc* calc, FILE* romfile, FILE* savfile);
 /* Save calculator state to ROM and/or save files. */
 int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile);
 
+
+/* Miscellaneous functions */
+
 /* Guess calculator type for a ROM file */
-char tilem_calc_detect_rom(FILE* romfile);
+char tilem_guess_rom_type(FILE* romfile);
 
 /* Search for an ASCII string in a file */
 int tilem_rom_find_string(const char* str, FILE* romfile, dword limit);
+
+/* Check validity of calculator certificate; repair if necessary */
+void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert);
 
 #endif

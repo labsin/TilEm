@@ -26,7 +26,7 @@
 #include <string.h>
 #include "tilem.h"
 
-char tilem_calc_detect_rom(FILE* romfile)
+char tilem_guess_rom_type(FILE* romfile)
 {
 	const TilemHardware** hwmodels;
 	int nmodels;

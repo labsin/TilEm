@@ -37,6 +37,7 @@ const TilemHardware* hwmodels[] = {
 	&hardware_ti82,
 	&hardware_ti83,
 	&hardware_ti83p,
+	&hardware_ti83pse,
 	&hardware_ti85,
 	&hardware_ti86 };
 
@@ -56,6 +57,8 @@ void tilem_calc_reset(TilemCalc* calc)
 	tilem_linkport_reset(calc);
 	tilem_keypad_reset(calc);
 	tilem_flash_reset(calc);
+	tilem_md5_assist_reset(calc);
+	tilem_user_timers_reset(calc);
 	if (calc->hw.reset)
 		(*calc->hw.reset)(calc);
 }
@@ -75,6 +78,7 @@ TilemCalc* tilem_calc_new(char id)
 
 			calc->hw = *hwmodels[i];
 
+			calc->poweronhalt = 1;
 			calc->battery = 60;
 			calc->hwregs = tilem_try_new_atomic(dword, calc->hw.nhwregs);
 			if (!calc->hwregs) {

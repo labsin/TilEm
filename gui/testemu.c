@@ -146,7 +146,8 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 		}
 
 		for (i = 0; i < cbl->timeout; i++)
-			if (tilem_z80_run_time(emu->calc, 100000, NULL))
+			if (tilem_linkport_graylink_ready(emu->calc)
+			    || tilem_z80_run_time(emu->calc, 100000, NULL))
 				break;
 
 		if (i == cbl->timeout
@@ -619,7 +620,8 @@ static gpointer core_thread(gpointer data)
 			debugmode = 1;
 		}
 
-		if (!emu->calc->lcd.active || !emu->calc->lcd.poweron) {
+		if (!emu->calc->lcd.active
+		    || (emu->calc->z80.halted && !emu->calc->poweronhalt)) {
 			low = high = 0;
 		}
 		else {
@@ -926,7 +928,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	calc_id = tilem_calc_detect_rom(romfile);
+	calc_id = tilem_guess_rom_type(romfile);
 	if (!calc_id) {
 		fprintf(stderr, "%s: unknown calculator type\n", romname);
 		fclose(romfile);
@@ -1120,7 +1122,11 @@ int main(int argc, char** argv)
 	g_mutex_unlock(emu.run_mutex);
 	g_thread_join(th);
 
-	romfile = NULL; /*g_fopen(romname, "wb");*/
+	if (emu.calc->hw.flags & TILEM_CALC_HAS_FLASH)
+		romfile = g_fopen(romname, "wb");
+	else
+		romfile = NULL;
+
 	savfile = g_fopen(savname, "wt");
 	tilem_calc_save_state(emu.calc, romfile, savfile);
 	if (romfile)

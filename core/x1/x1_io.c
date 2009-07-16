@@ -87,7 +87,7 @@ void x1_z80_out(TilemCalc* calc, dword port, byte value)
 		}
 
 		calc->hwregs[PORT3] = value;
-		calc->lcd.active = calc->lcd.poweron = ((value & 8) >> 3);
+		calc->lcd.active = calc->poweronhalt = ((value & 8) >> 3);
 		break;
 
 	case 0x04:

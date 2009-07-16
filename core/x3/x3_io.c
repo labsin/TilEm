@@ -166,7 +166,7 @@ void x3_z80_out(TilemCalc* calc, dword port, byte value)
 		if (!(value & 0x04))
 			calc->z80.interrupts &= ~TILEM_INTERRUPT_TIMER2;
 
-		calc->lcd.poweron = ((value & 8) >> 3);
+		calc->poweronhalt = ((value & 8) >> 3);
 		calc->hwregs[PORT3] = value;
 		break;
 

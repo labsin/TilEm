@@ -108,8 +108,6 @@ static void assist_update_write(TilemCalc* calc)
 			/* Finished sending a byte */
 			calc->linkport.assistflags &= ~TILEM_LINK_ASSIST_WRITE_BUSY;
 			assist_clear_timeout(calc);
-			dbus_interrupt(calc, TILEM_INTERRUPT_LINK_WRITE,
-				       TILEM_LINK_MODE_INT_ON_WRITE);
 		}
 		break;
 
@@ -159,8 +157,6 @@ static void assist_update_read(TilemCalc* calc)
 			calc->linkport.assistflags &= ~TILEM_LINK_ASSIST_READ_BUSY;
 			calc->linkport.assistflags |= TILEM_LINK_ASSIST_READ_BYTE;
 			assist_clear_timeout(calc);
-			dbus_interrupt(calc, TILEM_INTERRUPT_LINK_READ,
-				       TILEM_LINK_MODE_INT_ON_READ);
 		}
 		else {
 			assist_set_timeout(calc); /* other device must
@@ -304,6 +300,19 @@ static void dbus_update(TilemCalc* calc)
 			assist_update_read(calc);
 		}
 	} while (oldlines != calc->linkport.lines);
+
+	if ((calc->linkport.assistflags & TILEM_LINK_ASSIST_READ_BYTE)
+	    && (calc->linkport.mode & TILEM_LINK_MODE_INT_ON_READ))
+		calc->z80.interrupts |= TILEM_INTERRUPT_LINK_READ;
+	else
+		calc->z80.interrupts &= ~TILEM_INTERRUPT_LINK_READ;
+
+	if (!(calc->linkport.assistflags & (TILEM_LINK_ASSIST_READ_BUSY
+					    | TILEM_LINK_ASSIST_WRITE_BUSY))
+	    && (calc->linkport.mode & TILEM_LINK_MODE_INT_ON_IDLE))
+		calc->z80.interrupts |= TILEM_INTERRUPT_LINK_IDLE;
+	else
+		calc->z80.interrupts &= TILEM_INTERRUPT_LINK_IDLE;
 }
 
 void tilem_linkport_reset(TilemCalc* calc)
@@ -374,10 +383,6 @@ void tilem_linkport_set_mode(TilemCalc* calc, unsigned int mode)
 
 	if (!(mode & TILEM_LINK_MODE_INT_ON_ACTIVE))
 		calc->z80.interrupts &= ~TILEM_INTERRUPT_LINK_ACTIVE;
-	if (!(mode & TILEM_LINK_MODE_INT_ON_READ))
-		calc->z80.interrupts &= ~TILEM_INTERRUPT_LINK_READ;
-	if (!(mode & TILEM_LINK_MODE_INT_ON_WRITE))
-		calc->z80.interrupts &= ~TILEM_INTERRUPT_LINK_WRITE;
 	if (!(mode & TILEM_LINK_MODE_INT_ON_ERROR))
 		calc->z80.interrupts &= ~TILEM_INTERRUPT_LINK_ERROR;
 
@@ -414,9 +419,18 @@ void tilem_linkport_graylink_reset(TilemCalc* calc)
 	dbus_update(calc);
 }
 
+int tilem_linkport_graylink_ready(TilemCalc* calc)
+{
+	if (calc->linkport.graylinkoutbits
+	    || calc->linkport.graylinkinbits)
+		return 0;
+	else
+		return 1;
+}
+
 int tilem_linkport_graylink_send_byte(TilemCalc* calc, byte value)
 {
-	if (calc->linkport.graylinkoutbits)
+	if (!tilem_linkport_graylink_ready(calc))
 		return -1;
 
 	dbus_set_extlines(calc, 0);

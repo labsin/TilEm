@@ -64,7 +64,6 @@ static inline void set_delay_timer(TilemCalc* calc)
 
 void tilem_lcd_reset(TilemCalc* calc)
 {
-	calc->lcd.poweron = 0;
 	calc->lcd.active = 0;
 	calc->lcd.contrast = 32;
 	calc->lcd.addr = 0;

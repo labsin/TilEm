@@ -8,16 +8,17 @@ srcdir = .
 top_srcdir = ../..
 top_builddir = ../..
 
-core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o
+core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o cert.o md5.o timers.o
 
 x1_objects = x1_init.o x1_io.o x1_memory.o x1_subcore.o
 x2_objects = x2_init.o x2_io.o x2_memory.o x2_subcore.o
 x3_objects = x3_init.o x3_io.o x3_memory.o x3_subcore.o
 xp_objects = xp_init.o xp_io.o xp_memory.o xp_subcore.o
+xs_objects = xs_init.o xs_io.o xs_memory.o xs_subcore.o
 x5_objects = x5_init.o x5_io.o x5_memory.o x5_subcore.o
 x6_objects = x6_init.o x6_io.o x6_memory.o x6_subcore.o
 
-objects = $(core_objects) $(x1_objects) $(x2_objects) $(x3_objects) $(xp_objects) $(x5_objects) $(x6_objects)
+objects = $(core_objects) $(x1_objects) $(x2_objects) $(x3_objects) $(xp_objects) $(xs_objects) $(x5_objects) $(x6_objects)
 
 compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS)
 
@@ -45,6 +46,12 @@ keypad.o: keypad.c tilem.h scancodes.h
 	$(compile) -c $(srcdir)/keypad.c
 lcd.o: lcd.c tilem.h
 	$(compile) -c $(srcdir)/lcd.c
+cert.o: cert.c tilem.h
+	$(compile) -c $(srcdir)/cert.c
+md5.o: md5.c tilem.h
+	$(compile) -c $(srcdir)/md5.c
+timers.o: timers.c tilem.h
+	$(compile) -c $(srcdir)/timers.c
 
 # TI-81
 
@@ -89,6 +96,17 @@ xp_memory.o: xp/xp_memory.c xp/xp.h tilem.h
 	$(compile) -c $(srcdir)/xp/xp_memory.c
 xp_subcore.o: xp/xp_subcore.c xp/xp.h tilem.h
 	$(compile) -c $(srcdir)/xp/xp_subcore.c
+
+# TI-83 Plus SE
+
+xs_init.o: xs/xs_init.c xs/xs.h tilem.h
+	$(compile) -c $(srcdir)/xs/xs_init.c
+xs_io.o: xs/xs_io.c xs/xs.h tilem.h
+	$(compile) -c $(srcdir)/xs/xs_io.c
+xs_memory.o: xs/xs_memory.c xs/xs.h tilem.h
+	$(compile) -c $(srcdir)/xs/xs_memory.c
+xs_subcore.o: xs/xs_subcore.c xs/xs.h tilem.h
+	$(compile) -c $(srcdir)/xs/xs_subcore.c
 
 # TI-85
 

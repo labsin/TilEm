@@ -181,7 +181,7 @@ void xp_z80_out(TilemCalc* calc, dword port, byte value)
 
 		tilem_linkport_set_mode(calc, mode);
 
-		calc->lcd.poweron = ((value & 8) >> 3);
+		calc->poweronhalt = ((value & 8) >> 3);
 		calc->hwregs[PORT3] = value;
 		break;
 

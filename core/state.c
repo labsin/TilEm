@@ -50,6 +50,12 @@ static const char* get_timer_name(TilemCalc* calc, int id)
 		return "flashdelay";
 	else if (id == TILEM_TIMER_LINK_ASSIST)
 		return "linkassist";
+	else if (id == TILEM_TIMER_USER1)
+		return "user1";
+	else if (id == TILEM_TIMER_USER2)
+		return "user2";
+	else if (id == TILEM_TIMER_USER3)
+		return "user3";
 	else if (id <= TILEM_NUM_SYS_TIMERS)
 		abort();
 
@@ -262,7 +268,7 @@ static int load_old_sav_file(TilemCalc* calc, FILE* savfile)
 		break;
 	}
 
-	calc->lcd.poweron = calc->lcd.active = 1;
+	calc->poweronhalt = calc->lcd.active = 1;
 
 	return 0;
 }
@@ -423,8 +429,6 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 		else if (!strcmp(buf, "halted")) calc->z80.halted = value;
 
 		/* LCD */
-		else if (!strcmp(buf, "lcd.poweron"))
-			calc->lcd.poweron = value;
 		else if (!strcmp(buf, "lcd.active"))
 			calc->lcd.active = value;
 		else if (!strcmp(buf, "lcd.addr"))
@@ -471,6 +475,48 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 			calc->keypad.group = value;
 		else if (!strcmp(buf, "keypad.onkeyint"))
 			calc->keypad.onkeyint = value;
+
+		/* MD5 assist */
+		else if (!strcmp(buf, "md5assist.a"))
+			calc->md5assist.regs[0] = value;
+		else if (!strcmp(buf, "md5assist.b"))
+			calc->md5assist.regs[1] = value;
+		else if (!strcmp(buf, "md5assist.c"))
+			calc->md5assist.regs[2] = value;
+		else if (!strcmp(buf, "md5assist.d"))
+			calc->md5assist.regs[3] = value;
+		else if (!strcmp(buf, "md5assist.x"))
+			calc->md5assist.regs[4] = value;
+		else if (!strcmp(buf, "md5assist.t"))
+			calc->md5assist.regs[5] = value;
+		else if (!strcmp(buf, "md5assist.shift"))
+			calc->md5assist.shift = value;
+		else if (!strcmp(buf, "md5assist.mode"))
+			calc->md5assist.mode = value;
+
+		/* Programmable timers */
+		else if (!strcmp(buf, "usertimer0.frequency"))
+			calc->usertimers[0].frequency = value;
+		else if (!strcmp(buf, "usertimer0.loopvalue"))
+			calc->usertimers[0].loopvalue = value;
+		else if (!strcmp(buf, "usertimer0.status"))
+			calc->usertimers[0].status = value;
+		else if (!strcmp(buf, "usertimer1.frequency"))
+			calc->usertimers[1].frequency = value;
+		else if (!strcmp(buf, "usertimer1.loopvalue"))
+			calc->usertimers[1].loopvalue = value;
+		else if (!strcmp(buf, "usertimer1.status"))
+			calc->usertimers[1].status = value;
+		else if (!strcmp(buf, "usertimer2.frequency"))
+			calc->usertimers[2].frequency = value;
+		else if (!strcmp(buf, "usertimer2.loopvalue"))
+			calc->usertimers[2].loopvalue = value;
+		else if (!strcmp(buf, "usertimer2.status"))
+			calc->usertimers[2].status = value;
+
+		/* Main power */
+		else if (!strcmp(buf, "poweronhalt"))
+			calc->poweronhalt = value;
 
 		/* Battery */
 		else if (!strcmp(buf, "battery"))
@@ -590,8 +636,6 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 		fprintf(savfile, "halted = %X\n", calc->z80.halted);
 
 		fprintf(savfile, "\n## LCD Driver ##\n");
-		fprintf(savfile, "lcd.poweron = %X\n",
-			calc->lcd.poweron);
 		fprintf(savfile, "lcd.active = %X\n",
 			calc->lcd.active);
 		fprintf(savfile, "lcd.contrast = %X\n",
@@ -651,7 +695,8 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 		fprintf(savfile, "mempagemap2 = %X\n", calc->mempagemap[2]);
 		fprintf(savfile, "mempagemap3 = %X\n", calc->mempagemap[3]);
 
-		fprintf(savfile, "\n## Battery ##\n");
+		fprintf(savfile, "\n## Power ##\n");
+		fprintf(savfile, "poweronhalt = %X\n", calc->poweronhalt);
 		fprintf(savfile, "battery = %X\n", calc->battery);
 
 		if (calc->hw.flags & TILEM_CALC_HAS_FLASH) {
@@ -668,6 +713,37 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 				calc->flash.progbyte);
 			fprintf(savfile, "flash.toggles = %X\n",
 				calc->flash.toggles);
+		}
+
+		if (calc->hw.flags & TILEM_CALC_HAS_MD5_ASSIST) {
+			fprintf(savfile, "\n## MD5 assist ##\n");
+			fprintf(savfile, "md5assist.a = %X\n",
+				calc->md5assist.regs[0]);
+			fprintf(savfile, "md5assist.b = %X\n",
+				calc->md5assist.regs[1]);
+			fprintf(savfile, "md5assist.c = %X\n",
+				calc->md5assist.regs[2]);
+			fprintf(savfile, "md5assist.d = %X\n",
+				calc->md5assist.regs[3]);
+			fprintf(savfile, "md5assist.x = %X\n",
+				calc->md5assist.regs[4]);
+			fprintf(savfile, "md5assist.t = %X\n",
+				calc->md5assist.regs[5]);
+			fprintf(savfile, "md5assist.shift = %X\n",
+				calc->md5assist.shift);
+			fprintf(savfile, "md5assist.mode = %X\n",
+				calc->md5assist.mode);
+		}
+
+		for (j = 0; j < calc->hw.nusertimers; j++) {
+			fprintf(savfile,
+				"\n## Programmable timer %d ##\n", j);
+			fprintf(savfile, "usertimer%d.frequency = %X\n",
+				j, calc->usertimers[j].frequency);
+			fprintf(savfile, "usertimer%d.loopvalue = %X\n",
+				j, calc->usertimers[j].loopvalue);
+			fprintf(savfile, "usertimer%d.status = %X\n",
+				j, calc->usertimers[j].status);
 		}
 
 		fprintf(savfile, "\n## Model-specific ##\n");

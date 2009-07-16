@@ -45,7 +45,7 @@ static const char* keynames[64] = {
 const TilemHardware hardware_ti81 = {
 	'1', "ti81", "TI-81", 0,
 	96, 64,	0x8000, 0x2000, 0, 0x40,
-	0, NULL,
+	0, NULL, 0,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,
 	keynames,

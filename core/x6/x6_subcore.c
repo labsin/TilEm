@@ -46,7 +46,7 @@ const TilemHardware hardware_ti86 = {
 	'6', "ti86", "TI-86",
 	TILEM_CALC_HAS_LINK,
 	128, 64, 0x10 * 0x4000, 0x08 * 0x4000, 0, 0x40,
-	0, NULL,
+	0, NULL, 0,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,
 	keynames,

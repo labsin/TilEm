@@ -222,6 +222,7 @@ void tilem_z80_reset(TilemCalc* calc)
 	calc->z80.interrupts = 0;
 	calc->z80.clock = 0;
 	calc->z80.lastwrite = 0;
+	calc->z80.halted = 0;
 
 	/* Unset existing timers (they aren't freed, merely
 	   disabled) */
@@ -252,6 +253,13 @@ void tilem_z80_reset(TilemCalc* calc)
 			= tilem_flash_delay_timer;
 		calc->z80.timers[TILEM_TIMER_LINK_ASSIST].callback
 			= tilem_linkport_assist_timer;
+
+		for (i = 0; i < TILEM_MAX_USER_TIMERS; i++) {
+			calc->z80.timers[TILEM_TIMER_USER1 + i].callback
+				= tilem_user_timer_expired;
+			calc->z80.timers[TILEM_TIMER_USER1 + i].callbackdata
+				= TILEM_DWORD_TO_PTR(i);
+		}
 	}
 }
 
@@ -328,6 +336,21 @@ void tilem_z80_remove_timer(TilemCalc* calc, int id)
 	}
 	timer_unset(&calc->z80, id);
 	timer_free(&calc->z80, id);
+}
+
+int tilem_z80_timer_running(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.ntimers
+	    || !calc->z80.timers[id].callback) {
+		tilem_internal(calc, "querying invalid timer %d", id);
+		return 0;
+	}
+
+	if (id == calc->z80.timer_rt || id == calc->z80.timer_cpu)
+		return 1;
+	if (calc->z80.timers[id].prev)
+		return 1;
+	return 0;
 }
 
 int tilem_z80_get_timer_clocks(TilemCalc* calc, int id)
@@ -554,6 +577,7 @@ static inline byte z80_input(TilemCalc* calc, dword addr)
 {
 	byte b;
 	addr &= 0xffff;
+	check_timers(calc);
 	b = (*calc->hw.z80_in)(calc, addr);
 	check_breakpoints(calc, calc->z80.breakpoint_pr, addr);
 	return b;
@@ -582,6 +606,7 @@ static inline void z80_writew(TilemCalc* calc, dword addr, word value)
 static inline void z80_output(TilemCalc* calc, dword addr, byte value)
 {
 	addr &= 0xffff;
+	check_timers(calc);
 	(*calc->hw.z80_out)(calc, addr, value);
 	check_breakpoints(calc, calc->z80.breakpoint_pw, addr);
 }
@@ -703,6 +728,7 @@ static void z80_execute(TilemCalc* calc)
 				delay(19);
 			}
 			check_breakpoints(calc, z80->breakpoint_mx, PC);
+			check_timers(calc);
 		}
 		else if (op != 0x76) {
 			check_breakpoints(calc, z80->breakpoint_mx, PC);
