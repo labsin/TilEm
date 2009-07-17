@@ -179,7 +179,7 @@ byte xs_z80_in(TilemCalc* calc, dword port)
 		return(calc->hwregs[PORT20] & 3);
 
 	case 0x21:
-		return(calc->hwregs[PORT21]);
+		return(calc->hwregs[PORT21] & 0x33);
 
 	case 0x22:
 		return(calc->hwregs[PORT22]);
@@ -509,6 +509,28 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 	case 0x21:
 		if (calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT21] = value;
+
+			switch (value & 0x30) {
+			case 0x00:
+				/* restrict pp. 0, 2, 4, 6, 8, A, C, E */
+				calc->hwregs[NO_EXEC_RAM] = 0x5555;
+				break;
+
+			case 0x10:
+				/* restrict pp. 0, 3, 4, 7, 8, B, C, F */
+				calc->hwregs[NO_EXEC_RAM] = 0x9999;
+				break;
+
+			case 0x20:
+				/* restrict pp. 0, 3-7, 8, B-F */
+				calc->hwregs[NO_EXEC_RAM] = 0xF9F9;
+				break;
+
+			case 0x30:
+				/* restrict pp. 0, 3-F */
+				calc->hwregs[NO_EXEC_RAM] = 0xFFF9;
+				break;
+			}
 		}
 		break;
 

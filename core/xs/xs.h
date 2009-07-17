@@ -59,6 +59,7 @@ enum {
 	FLASH_WRITE_DELAY,
 	FLASH_EXEC_DELAY,
 	LCD_PORT_DELAY,
+	NO_EXEC_RAM,
 
 	LCD_WAIT,		/* LCD wait timer active */
 	PROTECTSTATE,		/* port protection state */
@@ -72,7 +73,8 @@ enum {
 	  "port28", "port29", "port2A", "port2B", "port2C", "port2D", \
 	  "port2E", "port2F", "ram_read_delay", "ram_write_delay", \
 	  "ram_exec_delay", "flash_read_delay", "flash_write_delay", \
-	  "flash_exec_delay", "lcd_port_delay", "lcd_wait", "protectstate" }
+	  "flash_exec_delay", "lcd_port_delay", "no_exec_ram", \
+	  "lcd_wait", "protectstate" }
 
 #define TIMER_INT1 (TILEM_NUM_SYS_TIMERS + 1)
 #define TIMER_INT2A (TILEM_NUM_SYS_TIMERS + 2)

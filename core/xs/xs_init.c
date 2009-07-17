@@ -69,6 +69,7 @@ void xs_reset(TilemCalc* calc)
 	calc->hwregs[RAM_WRITE_DELAY] = 0;
 	calc->hwregs[RAM_EXEC_DELAY] = 0;
 	calc->hwregs[LCD_PORT_DELAY] = 5;
+	calc->hwregs[NO_EXEC_RAM] = 0x5555;
 
 	calc->hwregs[PROTECTSTATE] = 0;
 

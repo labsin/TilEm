@@ -126,7 +126,12 @@ byte xs_z80_rdmem_m1(TilemCalc* calc, dword A)
 			page = 0x81;
 	}
 
-	if (TILEM_UNLIKELY((page & 0x81) == 0x80)) {
+	/* Note: this isn't quite strict enough; when port 21
+	   is set to 30h, the "ghost" RAM pages 89 and 8A are
+	   also restricted, but pages 81 and 82 aren't.  This
+	   detail probably isn't worth emulating. */
+	if (TILEM_UNLIKELY((page & 0x80)
+			   && calc->hwregs[NO_EXEC_RAM] & (1 << (page%8)))) {
 		tilem_warning(calc, "Executing in restricted RAM area");
 		xs_reset(calc);
 		return (0x00);
