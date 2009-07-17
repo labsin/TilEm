@@ -344,6 +344,17 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 		if (!(value & 0x04))
 			calc->z80.interrupts &= ~TILEM_INTERRUPT_TIMER2;
 
+		if (value & 0x06) {
+			calc->usertimers[0].status &= ~TILEM_USER_TIMER_NO_HALT_INT;
+			calc->usertimers[1].status &= ~TILEM_USER_TIMER_NO_HALT_INT;
+			calc->usertimers[2].status &= ~TILEM_USER_TIMER_NO_HALT_INT;
+		}
+		else {
+			calc->usertimers[0].status |= TILEM_USER_TIMER_NO_HALT_INT;
+			calc->usertimers[1].status |= TILEM_USER_TIMER_NO_HALT_INT;
+			calc->usertimers[2].status |= TILEM_USER_TIMER_NO_HALT_INT;
+		}
+
 		mode = calc->linkport.mode;
 		if (value & 0x10)
 			mode |= TILEM_LINK_MODE_INT_ON_ACTIVE;
