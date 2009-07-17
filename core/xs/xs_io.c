@@ -507,7 +507,7 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 		break;
 
 	case 0x21:
-		if (calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT21] = value;
 
 			switch (value & 0x30) {
@@ -535,25 +535,25 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 		break;
 
 	case 0x22:
-		if (calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT22] = value;
 		}
 		break;
 
 	case 0x23:
-		if (calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT23] = value;
 		}
 		break;
 
 	case 0x25:
-		if (calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT25] = value;
 		}
 		break;
 
 	case 0x26:
-		if (calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT26] = value;
 		}
 		break;
