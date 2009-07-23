@@ -63,7 +63,7 @@ void tilem_flash_delay_timer(TilemCalc* calc, void* data TILEM_ATTR_UNUSED)
 	if (calc->flash.busy == FLASH_BUSY_ERASE_WAIT) {
 		calc->flash.busy = FLASH_BUSY_ERASE;
 		tilem_z80_set_timer(calc, TILEM_TIMER_FLASH_DELAY,
-				    1000000, 0, 1);
+				    200000, 0, 1);
 	}
 	else {
 		calc->flash.busy = 0;
