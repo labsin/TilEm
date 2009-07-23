@@ -68,7 +68,7 @@ static inline byte readbyte(TilemCalc* calc, dword pa)
 	else
 		value = *(calc->mem + pa);
 
-	if (pa < 0x1F0000 || pa >= 0x220000)
+	if (pa < 0x1F0000 || pa >= 0x200000)
 		calc->hwregs[PROTECTSTATE] = 0;
 	else if (state == 6)
 		calc->hwregs[PROTECTSTATE] = 7;
@@ -157,6 +157,13 @@ byte xs_z80_rdmem_m1(TilemCalc* calc, dword A)
 		calc->z80.clock += calc->hwregs[RAM_EXEC_DELAY];
 
 	value = readbyte(calc, pa);
+
+	if (TILEM_UNLIKELY(value == 0xff && A == 0x0038)) {
+		tilem_warning(calc, "No OS installed");
+		xs_reset(calc);
+		return (0x00);
+	}
+
 	return (value);
 }
 

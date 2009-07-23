@@ -61,7 +61,9 @@ byte xs_z80_in(TilemCalc* calc, dword port)
 
 	switch(port&0xff) {
 	case 0x00:
-		return(tilem_linkport_get_lines(calc));
+		v = tilem_linkport_get_lines(calc);
+		v |= (calc->linkport.lines << 4);
+		return(v);
 
 	case 0x01:
 		return(tilem_keypad_read_keys(calc));

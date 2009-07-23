@@ -28,8 +28,6 @@
 
 #include "xp.h"
 
-void xp_fix_cert(TilemCalc* calc, byte *cert);
-
 void xp_reset(TilemCalc* calc)
 {
 	calc->hwregs[PORT3] = 0x0B;

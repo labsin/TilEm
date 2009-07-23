@@ -18,8 +18,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TILEM_XP_H
-#define _TILEM_XP_H
+#ifndef _TILEM_XS_H
+#define _TILEM_XS_H
 
 enum {
 	PORT3,			/* mask of enabled interrupts */
