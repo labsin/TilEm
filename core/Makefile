@@ -10,6 +10,7 @@ top_builddir = ../..
 
 core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o cert.o md5.o timers.o
 
+x7_objects = x7_init.o x7_io.o x7_memory.o x7_subcore.o
 x1_objects = x1_init.o x1_io.o x1_memory.o x1_subcore.o
 x2_objects = x2_init.o x2_io.o x2_memory.o x2_subcore.o
 x3_objects = x3_init.o x3_io.o x3_memory.o x3_subcore.o
@@ -18,7 +19,8 @@ xs_objects = xs_init.o xs_io.o xs_memory.o xs_subcore.o
 x5_objects = x5_init.o x5_io.o x5_memory.o x5_subcore.o
 x6_objects = x6_init.o x6_io.o x6_memory.o x6_subcore.o
 
-objects = $(core_objects) $(x1_objects) $(x2_objects) $(x3_objects) $(xp_objects) $(xs_objects) $(x5_objects) $(x6_objects)
+objects = $(core_objects) $(x7_objects) $(x1_objects) $(x2_objects) \
+	$(x3_objects) $(xp_objects) $(xs_objects) $(x5_objects) $(x6_objects)
 
 compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS)
 
@@ -52,6 +54,17 @@ md5.o: md5.c tilem.h
 	$(compile) -c $(srcdir)/md5.c
 timers.o: timers.c tilem.h
 	$(compile) -c $(srcdir)/timers.c
+
+# TI-73
+
+x7_init.o: x7/x7_init.c x7/x7.h tilem.h
+	$(compile) -c $(srcdir)/x7/x7_init.c
+x7_io.o: x7/x7_io.c x7/x7.h tilem.h
+	$(compile) -c $(srcdir)/x7/x7_io.c
+x7_memory.o: x7/x7_memory.c x7/x7.h tilem.h
+	$(compile) -c $(srcdir)/x7/x7_memory.c
+x7_subcore.o: x7/x7_subcore.c x7/x7.h tilem.h
+	$(compile) -c $(srcdir)/x7/x7_subcore.c
 
 # TI-81
 

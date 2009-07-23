@@ -33,6 +33,7 @@ extern const TilemHardware hardware_ti73, hardware_ti81, hardware_ti82,
 	hardware_ti85, hardware_ti86;
 
 const TilemHardware* hwmodels[] = {
+	&hardware_ti73,
 	&hardware_ti81,
 	&hardware_ti82,
 	&hardware_ti83,
