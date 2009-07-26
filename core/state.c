@@ -704,7 +704,7 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 			fprintf(savfile, "flash.unlock = %X\n",
 				calc->flash.unlock);
 			fprintf(savfile, "flash.state = %X\n",
-				calc->flash.unlock);
+				calc->flash.state);
 			fprintf(savfile, "flash.busy = %X\n",
 				calc->flash.busy);
 			fprintf(savfile, "flash.progaddr = %X\n",
