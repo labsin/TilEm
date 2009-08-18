@@ -14,20 +14,27 @@ GTK_LIBS = `pkg-config --libs gtk+-2.0 gthread-2.0 ticalcs2`
 TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
-objects = testemu.o
+
+objects = testemu2.o
+
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
 
 compile = $(CC) -I$(top_builddir) -I$(srcdir) -I$(srcdir)/../core $(CFLAGS) $(CPPFLAGS) $(DEFS) $(GTK_CFLAGS) $(TICONV_CFLAGS)
 
-all: testemu
+all: testemu2
 
-testemu: $(objects) ../core/libtilemcore.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu $(objects) $(libs)
 
-testemu.o: testemu.c ../core/tilem.h
-	$(compile) -c $(srcdir)/testemu.c
+testemu2: $(objects) ../core/libtilemcore.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu2 $(objects) $(libs)
 
+	
+	
+
+testemu2.o: testemu2.c ../core/tilem.h
+	$(compile) -c $(srcdir)/testemu2.c
+
+	
 clean:
 	rm -f *.o
 	rm -f testemu
