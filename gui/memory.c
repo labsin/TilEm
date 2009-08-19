@@ -5,8 +5,6 @@
 
 #include <tilem.h>
 
-/* See the testemu2.c to know what's this file */
-
 
 /* Memory management */
 

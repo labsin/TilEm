@@ -7,8 +7,8 @@
 
 /*  contra-sh : 
 * ---18/08/09---
-* - Draw the TI83 (the other model will be made soon with tilem_guess_rom_type()" I think)
-* - Copy from testemu.c : Create the savname, Open the Romfile, Get the model, Draw the lcdscreen (added in the "pHBox" - no animation for the moment)
+* - Draw the TI83 
+* - Copy from testemu.c : Create the savname, Open the Rom, Get the model, Draw the lcdscreen (no animation for the moment)
 * - Function event OnDestroy 
 * - Modification of the Makefile (I hope it's good !? If you can control this... thx)
 * - LEARNING HOW COMMIT !!   :D 
@@ -22,6 +22,7 @@ typedef struct _TilemCalcEmulator {
 	gboolean forcebreak;
 
 	GMutex* calc_mutex;
+	TilemCalc* calc;
 
 	GMutex* lcd_mutex;
 	guchar* lcdlevel;
@@ -34,92 +35,7 @@ typedef struct _TilemCalcEmulator {
 } TilemCalcEmulator;
 
 
-/* Benjamin : 
-* I want to move this part of code (memory management) in another file but i'm not a "Makefile 's expert" and "linking expert" too :p
-* When I tried, I had a "unreference to function _start" (like normally when you don't have "int main() { }") or an equivalent message... 
-* If you had 5 minutes can you modify the Makefile, correct and move the code for me (for the makefile I don't know if it's necessary to modify...) ?
-* (move in the gui directory)
-* But don't worry, I'll probably find the solution alone soon and it does not matter if you do not have time for this.
-* Thank you for your help.
-*/
-
-/* CUT HERE */
-
-/* Memory management */
-void tilem_free(void* p)
-{
-	g_free(p);
-}
-
-void* tilem_malloc(size_t s)
-{
-	return g_malloc(s);
-}
-
-void* tilem_realloc(void* p, size_t s)
-{
-	return g_realloc(p, s);
-}
-
-void* tilem_try_malloc(size_t s)
-{
-	return g_try_malloc(s);
-}
-
-void* tilem_malloc0(size_t s)
-{
-	return g_malloc0(s);
-}
-
-void* tilem_try_malloc0(size_t s)
-{
-	return g_try_malloc0(s);
-}
-
-void* tilem_malloc_atomic(size_t s)
-{
-	return g_malloc(s);
-}
-
-void* tilem_try_malloc_atomic(size_t s)
-{
-	return g_try_malloc(s);
-}
-
-/* Logging */
-
-void tilem_message(TilemCalc* calc, const char* msg, ...)
-{
-	va_list ap;
-	va_start(ap, msg);
-	fprintf(stderr, "x%c: ", calc->hw.model_id);
-	vfprintf(stderr, msg, ap);
-	fputc('\n', stderr);
-	va_end(ap);
-}
-
-void tilem_warning(TilemCalc* calc, const char* msg, ...)
-{
-	va_list ap;
-	va_start(ap, msg);
-	fprintf(stderr, "x%c: WARNING: ", calc->hw.model_id);
-	vfprintf(stderr, msg, ap);
-	fputc('\n', stderr);
-	va_end(ap);
-}
-
-void tilem_internal(TilemCalc* calc, const char* msg, ...)
-{
-	va_list ap;
-	va_start(ap, msg);
-	fprintf(stderr, "x%c: INTERNAL ERROR: ", calc->hw.model_id);
-	vfprintf(stderr, msg, ap);
-	fputc('\n', stderr);
-	va_end(ap);
-}
-/* end */
-
-/* CUT END */
+/* #########  MAIN  ######### */
 
 int main(int argc, char **argv)
 {
@@ -139,7 +55,7 @@ int main(int argc, char **argv)
 	printf("Running tilem ^^ \n");
 	
 	/* Get the romname */
-	if (argc >= 2) {	// If they are 2 parameters, the romfile is the first of two.
+	if (argc >= 2) {	// If they are 2 parameters or more, the romfile is the first.
 		romname = argv[1];
 	}
 	savname = g_malloc(strlen(romname) + 5);
@@ -161,10 +77,19 @@ int main(int argc, char **argv)
 	}
 	/* end */
 	
-	/* Get the model */
+	/* Get the romtype*/
 	calc_id = tilem_guess_rom_type(romfile);
 	printf("clac_id = %c\n",calc_id);	//debug
 	/* end */
+	
+	/* Create the calc with the romtype so get the modelname */
+	emu.calc = tilem_calc_new(calc_id);
+	printf("emu.calc->hw.model= %c \n",emu.calc->hw.model_id);	// debug :)
+	printf("emu.calc->hw.name= %s \n",emu.calc->hw.name);		// debug :D it works !
+	printf("emu.calc->hw.name= %c \n",emu.calc->hw.name[2]);	// that's what I'll use for the pixmap choice !
+	/* end */
+	
+
 	
 
 	
@@ -177,7 +102,7 @@ int main(int argc, char **argv)
 	
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(OnDestroy),NULL); 
 	//gtk_widget_show(pWindow);
-	/* fin */
+	/* end */
 	
 	
 	/* Draw TI83  */

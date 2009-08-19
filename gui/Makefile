@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o
+objects = testemu2.o memory.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -24,15 +24,19 @@ compile = $(CC) -I$(top_builddir) -I$(srcdir) -I$(srcdir)/../core $(CFLAGS) $(CP
 
 all: testemu2
 
+#Main emulator GUI
 
 testemu2: $(objects) ../core/libtilemcore.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu2 $(objects) $(libs)
-
 	
-	
-
 testemu2.o: testemu2.c ../core/tilem.h
 	$(compile) -c $(srcdir)/testemu2.c
+
+
+# Memory management and messages (maybe move it in the core directory ??)
+
+memory.o: memory.c ../core/tilem.h
+	$(compile) -c $(srcdir)/memory.c
 
 	
 clean:
