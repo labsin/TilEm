@@ -3,7 +3,8 @@
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 
-#include <tilem.h>
+//#include <tilem.h>
+#include <gui.h>
 
 /*  contra-sh : 
 * ---18/08/09---
@@ -12,37 +13,18 @@
 * - Function event OnDestroy 
 * - Modification of the Makefile (I hope it's good !? If you can control this... thx)
 * - LEARNING HOW COMMIT !!   :D
-* ---18/08/09---
+* ---19/08/09---
 * - New structure TilemCalcSkin : define the different filename for the SkinSet.
 * - Draw the other models _automatically_ . ;D
+* ---20/08/09---
+* - Create skin.c
+* - Create gui.h (equivalent tilem.h for the gui directory)
+* - Move the code struct in gui.h and TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) into skin.c (only one call in   *   the main file to define the skin set) ;D
 */
 
 void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
 
-typedef struct _TilemCalcEmulator {
-	GMutex* run_mutex;
-	gboolean exiting;
-	gboolean forcebreak;
 
-	GMutex* calc_mutex;
-	TilemCalc* calc;
-
-	GMutex* lcd_mutex;
-	guchar* lcdlevel;
-	guchar* lcdimage;
-	GdkColor lcdfg, lcdbg;
-	GdkPixbuf* lcdpb;
-	GdkPixbuf* lcdscaledpb;
-
-	GtkWidget* lcdwin;
-} TilemCalcEmulator;
-
-typedef struct _TileCalcSkin {
-	char * top;
-	char * left;
-	char * right;
-	char * bot;
-} TilemCalcSkin;
 	
 
 
@@ -55,7 +37,6 @@ int main(int argc, char **argv)
 	char* savname;
 	char* p;
 	char calc_id;
-	char* pixbasename;
 	FILE *romfile;//*savfile;
 	
 	
@@ -104,7 +85,6 @@ int main(int argc, char **argv)
 	
 
 	
-
 	
 	/* Create the window */
 	GtkWidget *gtk_window_new(GtkWindowType type);
@@ -118,48 +98,33 @@ int main(int argc, char **argv)
 	/* end */
 	
 	
+	
+	/* Choose the filename for the pix top,left,right,bot in function of the model */
+	TilemCalcSkin *Calc_Skin;		// Calc_Skin will contain the different element for the SkinSet
+	Calc_Skin= tilem_try_new0(TilemCalcSkin, 1);
+	
+	Calc_Skin=tilem_guess_skin_set(emu.calc);
+	
+	printf("Return Values :\n");	//debug
+	printf("%s\n",Calc_Skin->top);	//debug
+	printf("%s\n",Calc_Skin->left);	//debug
+	printf("%s\n",Calc_Skin->right);//debug
+	printf("%s\n",Calc_Skin->bot);	//debug
+	
+
 	/* Draw Calc  */
 	GtkWidget *pSkinset,*pVBox,*pHBox; 
 	GtkWidget *pTop,*pLeft,*pAf,*pRight,*pBot;
 	
-	/* Choose the filename for the pix top,left,right,bot in function of the model */
-	TilemCalcSkin Calc_Skin;		// Calc_Skni will contain the different element for the SkinSet
-	Calc_Skin.top=g_malloc(23);
-	Calc_Skin.left=g_malloc(23);
-	Calc_Skin.right=g_malloc(23);
-	Calc_Skin.bot=g_malloc(23);
-	
-	pixbasename=g_malloc(13);	// "./pixmaps/x" + modelname = 11char + 1char + 1 char for "\0"
-	strcpy(pixbasename,"./pixmaps/x");
-	strcat(pixbasename,&emu.calc->hw.name[3]);	// so we have "./pixmaps/x3" (3 is an example ;D)
-	//printf("pixbasename : %s\n",pixbasename);	//debug
-
-	
-	strcpy(Calc_Skin.top,pixbasename);	//pixbasename is the invariant prefix name for the calc that was already being choosed.
-	strcat(Calc_Skin.top,"_top.jpg");
-	//printf("%s\n",Calc_Skin.top);	// debug
-	strcpy(Calc_Skin.left,pixbasename);
-	strcat(Calc_Skin.left,"_left.jpg");
-	//printf("%s\n",Calc_Skin.left);	// debug
-	strcpy(Calc_Skin.right,pixbasename);
-	strcat(Calc_Skin.right,"_right.jpg");
-	//printf("%s\n",Calc_Skin.right);	// debug
-	strcpy(Calc_Skin.bot,pixbasename);
-	strcat(Calc_Skin.bot,"_bot.jpg");
-	//printf("%s\n",Calc_Skin.bot);	// debug
-	/* end */ 
-	
-	
-	
 	/* TOP *********************************************************************/
 	pVBox=gtk_vbox_new(FALSE,0);
-	pTop=gtk_image_new_from_file(Calc_Skin.top);	// top of the screen
-	gtk_box_pack_start(GTK_BOX(pVBox),pTop,FALSE,FALSE,0);
+	pTop=gtk_image_new_from_file(Calc_Skin->top);	// top of the screen
+		gtk_box_pack_start(GTK_BOX(pVBox),pTop,FALSE,FALSE,0);
 	
 	/* CENTER ****************************************************************/
 	pHBox=gtk_hbox_new(FALSE,0);	// this horizontal box is for the 3 elements of the screen
 		gtk_box_pack_start(GTK_BOX(pVBox),pHBox,FALSE,FALSE,0); // pVBox > pHBox
-	pLeft=gtk_image_new_from_file(Calc_Skin.left);	// left of the screen
+	pLeft=gtk_image_new_from_file(Calc_Skin->left);	// left of the screen
 		
 	
 	int screenwidth=94;	// fixed for the test
@@ -178,14 +143,14 @@ int main(int argc, char **argv)
                                                    emu.lcdwin);
                                gtk_widget_show(emu.lcdwin);
                        }
-	pRight=gtk_image_new_from_file(Calc_Skin.right);	 // right of the screen
+	pRight=gtk_image_new_from_file(Calc_Skin->right);	 // right of the screen
 		gtk_box_pack_start(GTK_BOX(pHBox),pLeft,FALSE,FALSE,0);
 		gtk_box_pack_start(GTK_BOX(pHBox),pAf,FALSE,FALSE,0);
 		gtk_box_pack_start(GTK_BOX(pHBox),pRight,FALSE,FALSE,0);
 	
 	/* BOTTOM ****************************************************************/	   
 
-	pBot=gtk_image_new_from_file(Calc_Skin.bot);	// bottom of the screen (keyboard)
+	pBot=gtk_image_new_from_file(Calc_Skin->bot);	// bottom of the screen (keyboard)
 		gtk_box_pack_start(GTK_BOX(pVBox),pBot,FALSE,FALSE,0);
 	pSkinset=gtk_hbox_new(FALSE,0);	// the complete set to fit them
 		gtk_box_pack_start(GTK_BOX(pSkinset),pVBox,FALSE,FALSE,0);
@@ -197,10 +162,10 @@ int main(int argc, char **argv)
 	gtk_widget_show_all(pWindow);	// display the window and all that it contains.
 	gtk_main();
 	
-	free(Calc_Skin.top);
-	free(Calc_Skin.left);
-	free(Calc_Skin.right);
-	free(Calc_Skin.bot);
+	free(Calc_Skin->top);
+	free(Calc_Skin->left);
+	free(Calc_Skin->right);
+	free(Calc_Skin->bot);
 
     return EXIT_SUCCESS;
 }
