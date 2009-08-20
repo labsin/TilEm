@@ -6,6 +6,10 @@
 #include <tilem.h>
 #include <gui.h>
 
+/* With the rom we get the informations on the model (char* tilem_guess_rom_file(FILE* romfile)) returning a char* calc_id , so we create a new structure TilemCalcEmu.
+This structure contains a other structure TilemCalc created by TilemCalc* tilem_calc_new(char * calc_id).
+So we use this structure in TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) for defining the filenames for the pictures... ;D */
+
 TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) {
 
 	char * pixbasename;	// this part will not change ("./pixmaps/x")
@@ -43,5 +47,21 @@ TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) {
 	return Calc_Skin_temp;
 	
 }
+
+/* Just close the window (freeing allocation maybe in the futur?)*/
+void OnDestroy(GtkWidget * pWidget, gpointer pData) 
+{
+	pWidget=0;	// just to delete the "warning" while compilation.Benjamin : If you know what's the utility of pWidget and pData you can correct this...
+	pData=0;		// Thank you. 
+	printf("Thank you for using tilem...\n");
+	gtk_main_quit();
+}
+
+/* This event is executed when key (on keyboard not a click with mouse) is pressed */
+void keyboard_event() 
+{ 
+	printf("You press a key : keyboard_event\n");
+}
+
 
 

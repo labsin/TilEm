@@ -18,6 +18,7 @@ typedef struct _TilemCalcEmulator {
 	GtkWidget* lcdwin;
 } TilemCalcEmulator;
 
+/* this struct is for the Skin's set */
 typedef struct _TilemCalcSkin {
 	char * top;
 	char * left;
@@ -31,4 +32,9 @@ typedef struct _TilemCalcSkin {
 /* Create a CalcSkin with an TilemCalcEmulator */
 TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc);
 
+/* Detect and handle a "destroy" event */
+void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
+
+/* Detect a keyboard press event */
+void keyboard_event();	
 

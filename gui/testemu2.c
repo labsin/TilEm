@@ -20,9 +20,10 @@
 * - Create skin.c
 * - Create gui.h (equivalent tilem.h for the gui directory)
 * - Move the code struct in gui.h and TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) into skin.c (only one call in   *   the main file to define the skin set) ;D
+* - Detect a keyboard event (function keyboard_event() in skin.c actually).No treatment.
 */
 
-void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
+
 
 
 	
@@ -93,6 +94,7 @@ int main(int argc, char **argv)
 		gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); // GTK_WIN_POS_CENTER : define how the window is displayed 
 		gtk_window_set_default_size(GTK_WINDOW(pWindow),60,320);	// define size of the window
 	
+	
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(OnDestroy),NULL); 
 	//gtk_widget_show(pWindow);
 	/* end */
@@ -157,7 +159,12 @@ int main(int argc, char **argv)
 	gtk_container_add(GTK_CONTAINER(pWindow),pSkinset);	// just add the box to the window
 	/* end */
 	
-
+	/* Connection signal click on the Skinset */
+	//g_signal_connect(G_OBJECT(pSkinset), "button_press_event", G_CALLBACK(OnDestroy), NULL);
+	gtk_widget_set_events(pWindow, GDK_KEY_RELEASE_MASK); // Get the event on the window (leftclick, rightclick)
+	//gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
+	gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
+	
 	
 	gtk_widget_show_all(pWindow);	// display the window and all that it contains.
 	gtk_main();
@@ -170,13 +177,9 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-void OnDestroy(GtkWidget * pWidget, gpointer pData) 
-{
-	pWidget=0;	// just to delete the "warning" while compilation.Benjamin : If you know what's the utility of pWidget and pData you can correct this...
-	pData=0;	// Thank you. 
-	printf("Thank you for using tilem...\n");
-	gtk_main_quit();
-}
+
+
+
 
 
 
