@@ -38,3 +38,6 @@ void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
 /* Detect a keyboard press event */
 void keyboard_event();	
 
+/* Detect a mouse event */
+void mouse_event();	
+

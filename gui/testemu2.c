@@ -115,8 +115,8 @@ int main(int argc, char **argv)
 	
 
 	/* Draw Calc  */
-	GtkWidget *pSkinset,*pVBox,*pHBox; 
-	GtkWidget *pTop,*pLeft,*pAf,*pRight,*pBot;
+	GtkWidget *pSkinset,*pVBox,*pHBox; 	//global box
+	GtkWidget *pTop,*pLeft,*pAf,*pRight,*pBot;	// gtk_image
 	
 	/* TOP *********************************************************************/
 	pVBox=gtk_vbox_new(FALSE,0);
@@ -159,12 +159,17 @@ int main(int argc, char **argv)
 	gtk_container_add(GTK_CONTAINER(pWindow),pSkinset);	// just add the box to the window
 	/* end */
 	
-	/* Connection signal click on the Skinset */
-	//g_signal_connect(G_OBJECT(pSkinset), "button_press_event", G_CALLBACK(OnDestroy), NULL);
+	/* Connection signal keyboard key press */
 	gtk_widget_set_events(pWindow, GDK_KEY_RELEASE_MASK); // Get the event on the window (leftclick, rightclick)
-	//gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
+	//gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", GTK_SIGNAL_FUNC(keyboard_event), NULL); // it works, equivalent?
 	gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
-	
+	/* end */
+		       
+	/* Connection signal click with the mouse on the Skinset */
+	gtk_widget_set_events(pWindow, GDK_BUTTON_PRESS_MASK);	// the mask for the click with mouse event
+	//gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", GTK_SIGNAL_FUNC(mouse_event),NULL);  //equivalent ?
+	gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", G_CALLBACK(mouse_event),NULL); 
+	/* end */
 	
 	gtk_widget_show_all(pWindow);	// display the window and all that it contains.
 	gtk_main();

@@ -60,8 +60,12 @@ void OnDestroy(GtkWidget * pWidget, gpointer pData)
 /* This event is executed when key (on keyboard not a click with mouse) is pressed */
 void keyboard_event() 
 { 
-	printf("You press a key : keyboard_event\n");
+	printf("You press a key : keyboard_event\n");	//debug
 }
 
-
+/* This event is executed when click with mouse  */
+void mouse_event() 
+{ 
+	printf("You click with mouse : mouse_event\n");	//debug
+}
 
