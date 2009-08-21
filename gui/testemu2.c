@@ -21,12 +21,12 @@
 * - Create gui.h (equivalent tilem.h for the gui directory)
 * - Move the code struct in gui.h and TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) into skin.c (only one call in   *   the main file to define the skin set) ;D
 * - Detect a keyboard event (function keyboard_event() in skin.c actually).No treatment.
+* - Detect an event click on mouse
+* ---21/08/09---
+* - Get the x and y values when click on mouse (now it will be easy to know how key is click on the pixmap, todo in priority : detect right click)
 */
 
 
-
-
-	
 
 
 /* #########  MAIN  ######### */
@@ -39,7 +39,6 @@ int main(int argc, char **argv)
 	char* p;
 	char calc_id;
 	FILE *romfile;//*savfile;
-	
 	
 	
 	TilemCalcEmulator emu;
@@ -96,15 +95,14 @@ int main(int argc, char **argv)
 	
 	
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(OnDestroy),NULL); 
-	//gtk_widget_show(pWindow);
 	/* end */
 	
+
 	
 	
 	/* Choose the filename for the pix top,left,right,bot in function of the model */
 	TilemCalcSkin *Calc_Skin;		// Calc_Skin will contain the different element for the SkinSet
 	Calc_Skin= tilem_try_new0(TilemCalcSkin, 1);
-	
 	Calc_Skin=tilem_guess_skin_set(emu.calc);
 	
 	printf("Return Values :\n");	//debug
@@ -112,6 +110,7 @@ int main(int argc, char **argv)
 	printf("%s\n",Calc_Skin->left);	//debug
 	printf("%s\n",Calc_Skin->right);//debug
 	printf("%s\n",Calc_Skin->bot);	//debug
+	/* end */
 	
 
 	/* Draw Calc  */
@@ -160,21 +159,22 @@ int main(int argc, char **argv)
 	/* end */
 	
 	/* Connection signal keyboard key press */
-	gtk_widget_set_events(pWindow, GDK_KEY_RELEASE_MASK); // Get the event on the window (leftclick, rightclick)
+	gtk_widget_add_events(pWindow, GDK_KEY_RELEASE_MASK); // Get the event on the window (leftclick, rightclick)
 	//gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", GTK_SIGNAL_FUNC(keyboard_event), NULL); // it works, equivalent?
 	gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
 	/* end */
-		       
+	
 	/* Connection signal click with the mouse on the Skinset */
-	gtk_widget_set_events(pWindow, GDK_BUTTON_PRESS_MASK);	// the mask for the click with mouse event
+	gtk_widget_add_events(pWindow, GDK_BUTTON_PRESS_MASK);	// the mask for the click with mouse event
 	//gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", GTK_SIGNAL_FUNC(mouse_event),NULL);  //equivalent ?
 	gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", G_CALLBACK(mouse_event),NULL); 
 	/* end */
 	
+	
 	gtk_widget_show_all(pWindow);	// display the window and all that it contains.
 	gtk_main();
 	
-	free(Calc_Skin->top);
+	free(Calc_Skin->top);		// maybe use g_free or I don't know really if it's useful.
 	free(Calc_Skin->left);
 	free(Calc_Skin->right);
 	free(Calc_Skin->bot);

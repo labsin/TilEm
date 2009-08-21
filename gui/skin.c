@@ -64,8 +64,31 @@ void keyboard_event()
 }
 
 /* This event is executed when click with mouse  */
-void mouse_event() 
+void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
 { 
-	printf("You click with mouse : mouse_event\n");	//debug
+	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
+	
+	/* An alternative solution (used by "tilem old generation" */
+	//GdkEventButton *bevent = (GdkEventButton *) event;
+	//printf("%G %G",bevent->x,bevent->y);
+	//if((event->button.x>40)&&(event->button.y>100)) 
+	/* end */
+	
+	// Debug ;D
+	if((event->button.x>100)&&(event->button.y>100)) 	
+		printf("toto\n");		// like 'foo','bar', etc...  in EN ;D
+	if((event->button.x>4)&&(event->button.y>4)) 
+		printf("tata\n");
+	if((event->button.x>20)&&(event->button.y>20)) 
+		printf("titi\n");
+	if((event->button.x>200)&&(event->button.y>200)) 
+		printf("tutu\n");
+	if((event->button.x>300)&&(event->button.y>300)) 
+		printf("bibi\n");
+	if((event->button.x>310)&&(event->button.y>310)) 
+		printf("bubu\n");
+	
+	printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);
+
 }
 
