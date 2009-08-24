@@ -24,6 +24,10 @@
 * - Detect an event click on mouse
 * ---21/08/09---
 * - Get the x and y values when click on mouse (now it will be easy to know how key is click on the pixmap, todo in priority : detect right click)
+* ---24/08/09---
+* - Detect right click.
+* - Modification of the TI86 and TI85 pixmaps. (Was a reason they were bigger than the others??)
+* - Begin the keymap handling .So get a code when click on a button (only "window menu" works actually)
 */
 
 
@@ -82,9 +86,6 @@ int main(int argc, char **argv)
 	printf("emu.calc->hw.name= %s \n",emu.calc->hw.name);		// debug :D it works !
 	printf("emu.calc->hw.name= %c \n",emu.calc->hw.name[3]);	// that's what I'll use for the pixmap choice !
 	/* end */
-	
-
-	
 	
 	/* Create the window */
 	GtkWidget *gtk_window_new(GtkWindowType type);

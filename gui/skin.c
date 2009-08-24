@@ -65,7 +65,8 @@ void keyboard_event()
 
 /* This event is executed when click with mouse  */
 void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
-{ 
+{  	
+	int i,keycounter=0;
 	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
 	
 	/* An alternative solution (used by "tilem old generation" */
@@ -74,21 +75,25 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEve
 	//if((event->button.x>40)&&(event->button.y>100)) 
 	/* end */
 	
-	// Debug ;D
-	if((event->button.x>100)&&(event->button.y>100)) 	
-		printf("toto\n");		// like 'foo','bar', etc...  in EN ;D
-	if((event->button.x>4)&&(event->button.y>4)) 
-		printf("tata\n");
-	if((event->button.x>20)&&(event->button.y>20)) 
-		printf("titi\n");
-	if((event->button.x>200)&&(event->button.y>200)) 
-		printf("tutu\n");
-	if((event->button.x>300)&&(event->button.y>300)) 
-		printf("bibi\n");
-	if((event->button.x>310)&&(event->button.y>310)) 
-		printf("bubu\n");
-	
-	printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);
+	if(event->button.button==3)  {	//detect a right click to build menu
+		printf("right click !\n");
+	}else {						
+		for(i=0;i<5;i++) {		//detect a key press in "window menu" zone
+			//printf("%d      :     %d     :      %d     :     %d\n\n",i*x3_keymap.x_begin_btn_w,x3_keymap.y_begin_btn_w,i*x3_keymap.x_begin_btn_w+x3_keymap.x_size_btn_w,x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w);
+			if((event->button.x>x3_keymap.x_begin_btn_w+i*x3_keymap.x_jump_btn_w) && (event->button.x<(x3_keymap.x_begin_btn_w+i*x3_keymap.x_jump_btn_w+x3_keymap.x_size_btn_w)) 
+				&& (event->button.y>x3_keymap.y_begin_btn_w) && (event->button.y<(x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w))) {
+				printf("Window : %s \n\n", x3_keylist[i].label);
+			// if x>leftbutton + i*jump && x< leftbutton+i*jump+sizebutton && y>topbutton && y<topbutton+sizebutton 
+			// Simple is beautiful ...? Oh that's probably a bad example...
+					break;
+			}
+			printf("%d\n",keycounter++);
+			
+	       }
+	       printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
+	       
+	       
+	}
 
 }
 
