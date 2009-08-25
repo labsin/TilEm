@@ -66,7 +66,7 @@ void keyboard_event()
 /* This event is executed when click with mouse  */
 void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
 {  	
-	int i,keycounter=0;
+	int i,keycounter=0,keycount=0,j;
 	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
 	
 	/* An alternative solution (used by "tilem old generation" */
@@ -82,18 +82,63 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEve
 			//printf("%d      :     %d     :      %d     :     %d\n\n",i*x3_keymap.x_begin_btn_w,x3_keymap.y_begin_btn_w,i*x3_keymap.x_begin_btn_w+x3_keymap.x_size_btn_w,x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w);
 			if((event->button.x>x3_keymap.x_begin_btn_w+i*x3_keymap.x_jump_btn_w) && (event->button.x<(x3_keymap.x_begin_btn_w+i*x3_keymap.x_jump_btn_w+x3_keymap.x_size_btn_w)) 
 				&& (event->button.y>x3_keymap.y_begin_btn_w) && (event->button.y<(x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w))) {
-				printf("Window : %s \n\n", x3_keylist[i].label);
-			// if x>leftbutton + i*jump && x< leftbutton+i*jump+sizebutton && y>topbutton && y<topbutton+sizebutton 
-			// Simple is beautiful ...? Oh that's probably a bad example...
-					break;
+				// if x>leftbutton + i*jump && x< leftbutton+i*jump+sizebutton && y>topbutton && y<topbutton+sizebutton 
+				// Simple is beautiful ...? Oh that's probably a bad example...
+				keycount=keycounter;
+				printf("Window : %s \n\n", x3_keylist[keycount].label);
+			} else {
+				keycounter++;
+				//printf("%d\n",keycount);
 			}
-			printf("%d\n",keycounter++);
+			}
+
 			
 	       }
-	       printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
 	       
-	       
+	/* the 2 first lines of real key  (only 3 buttons by line)*/
+	if(keycount==0) // if we had not found what key is pressed
+	{
+		for(j=0;j<2;j++) {
+			
+			for(i=0;i<3;i++) {		//detect a key press in "window menu" zone
+				//printf("%d      :     %d     :      %d     :     %d\n\n",i*x3_keymap.x_begin_btn_w,x3_keymap.y_begin_btn_w,i*x3_keymap.x_begin_btn_w+x3_keymap.x_size_btn_w,x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w);
+				if((event->button.x   >   x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk)   &&  
+					(event->button.x   <   (x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk   +   x3_keymap.x_size_btn_rk))   &&   
+					(event->button.y   >   x3_keymap.y_begin_btn_rk   +  j  *  x3_keymap.y_jump_btn_rk)   &&   
+					(event->button.y   <   (x3_keymap.y_begin_btn_rk  +    j  *  x3_keymap.y_jump_btn_rk  +  x3_keymap.y_size_btn_rk))) {
+					keycount=keycounter;
+					printf("Window : %s \n\n", x3_keylist[keycount].label);
+				} else {
+				keycounter++;
+				//printf("%d\n",keycount);
+				}
+				
+		       }
+	       }
+       }
+	/* the other lines of real key  (5 buttons by line)*/
+	if(keycount==0) // if we had not found what key is pressed
+	{
+		for(j=2;j<9;j++) {
+			
+			for(i=0;i<5;i++) {		//detect a key press in "window menu" zone
+				//printf("%d      :     %d     :      %d     :     %d\n\n",i*x3_keymap.x_begin_btn_w,x3_keymap.y_begin_btn_w,i*x3_keymap.x_begin_btn_w+x3_keymap.x_size_btn_w,x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w);
+				if((event->button.x   >   x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk)   &&  
+					(event->button.x   <   (x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk   +   x3_keymap.x_size_btn_rk))   &&   
+					(event->button.y   >   x3_keymap.y_begin_btn_rk   +  j  *  x3_keymap.y_jump_btn_rk)   &&   
+					(event->button.y   <   (x3_keymap.y_begin_btn_rk  +    j  *  x3_keymap.y_jump_btn_rk  +  x3_keymap.y_size_btn_rk))) {
+					keycount=keycounter;
+					printf("Window : %s \n\n", x3_keylist[keycount].label);
+				} else {
+				keycounter++;
+				//printf("%d\n",keycount);
+				}
+				
+		       }
+	       }
+       
 	}
+	printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
 
 }
 

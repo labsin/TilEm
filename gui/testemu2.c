@@ -27,7 +27,6 @@
 * ---24/08/09---
 * - Detect right click.
 * - Modification of the TI86 and TI85 pixmaps. (Was a reason they were bigger than the others??)
-* - Begin the keymap handling .So get a code when click on a button (only "window menu" works actually)
 */
 
 
