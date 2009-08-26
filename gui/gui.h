@@ -23,7 +23,9 @@ typedef struct _TilemCalcSkin {
 	char * top;
 	char * left;
 	char * right;
-	char * bot;	
+	char * bot;
+	//struct keymapstock *current_keymapstock;
+		
 } TilemCalcSkin;
 
 
@@ -94,19 +96,19 @@ struct keylist {
 
 /* For the TI83 by example */
 static const struct keylist x3_keylist[] = {
-	/* Window */
+	/* Window  (5keys at the top of the keyboard)*/
 	{ 0x35, "Y=" },
 	{ 0x34, "WINDOW" },
 	{ 0x33, "ZOOM" },
 	{ 0x32, "TRACE" },
 	{ 0x31, "GRAPH" },
 	
-	/* 1rst row */
+	/* 1rst row (only 3 keys by line)*/
 	{ 0x36, "2nd" },
 	{ 0x37, "MODE" },
 	{ 0x38, "DEL" },
 	
-	/* 2nd row */
+	/* 2nd row  (only 3 keys by line)*/
 	{ 0x30, "ALPHA" },
 	{ 0x28, "X,T,\342\200\212\316\270,\342\200\212<i>n</i>" },
 	{ 0x20, "STAT" },
@@ -166,7 +168,8 @@ static const struct keylist x3_keylist[] = {
 	{ 0x03, "RIGHT" },
 	{ 0x04, "DOWN" }};
 
-struct keymapstock {
+/* This struct is used to know how key is clicked */
+typedef struct TilemKeyMap {
 	/* window */
 	int x_begin_btn_w;
 	int y_begin_btn_w;
@@ -186,15 +189,28 @@ struct keymapstock {
 	int x_size_btn_ar;
 	int y_size_btn_ar;
 	int x_jump_btn_ar;
-};
+}TilemKeyMap;
 
-static const struct keymapstock x3_keymap= {
+/* Actually this values are not really good even for the 83... used for testing tilem_guess_key_map */
+static const struct TilemKeyMap x2_keymap= {	
+	19,186,48,10,29,12,222,48,16,39,28,320,320,320,320,6};
+
+static const struct TilemKeyMap x3_keymap= {
 	22,189,52,11,39,22,231,52,16,39,28,320,320,320,320,6};
 	
+static const struct TilemKeyMap x4_keymap= {
+	19,186,48,10,29,12,222,48,16,39,28,320,320,320,320,6};
+	
+/* etc.... */
+
+
 
 /* Create a CalcSkin with an TilemCalcEmulator */
 TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc);
 
+/* Create a KeyMap with an id */
+TilemKeyMap* tilem_guess_key_map(int id);	
+	
 /* Detect and handle a "destroy" event */
 void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
 

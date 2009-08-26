@@ -27,6 +27,8 @@
 * ---24/08/09---
 * - Detect right click.
 * - Modification of the TI86 and TI85 pixmaps. (Was a reason they were bigger than the others??)
+* ---26/08/09---
+* - New function : TilemKeyMap* tilem_guess_key_map(int id).Choose a TilemKeyMap with an id given in parameter. 
 */
 
 
@@ -42,6 +44,7 @@ int main(int argc, char **argv)
 	char* p;
 	char calc_id;
 	FILE *romfile;//*savfile;
+
 	
 	
 	TilemCalcEmulator emu;
@@ -112,6 +115,17 @@ int main(int argc, char **argv)
 	printf("%s\n",Calc_Skin->bot);	//debug
 	/* end */
 	
+	/* Choose the keymap */
+	/*TilemKeyMap *Calc_Key_Map;
+	Calc_Key_Map=tilem_guess_key_map(3);
+	printf("Return Values :\n");	//debug
+	printf("%d\n",Calc_Key_Map->x_begin_btn_w);	//debug
+	printf("%d\n",Calc_Key_Map->y_begin_btn_w);	//debug
+	printf("%d\n",Calc_Key_Map->x_size_btn_w);//debug
+	printf("%d\n",Calc_Key_Map->y_size_btn_w);	*///debug
+	/* end */
+	
+
 
 	/* Draw Calc  */
 	GtkWidget *pSkinset,*pVBox,*pHBox; 	//global box

@@ -68,8 +68,13 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEve
 {  	
 	int i,keycounter=0,keycount=0,j;
 	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
-	
-	/* An alternative solution (used by "tilem old generation" */
+		
+	/* Choose the keymap */
+	TilemKeyMap *Calc_Key_Map;
+	Calc_Key_Map=tilem_guess_key_map(3);
+	/* end */
+
+	/* An alternative solution (used by "tilem old generation") */
 	//GdkEventButton *bevent = (GdkEventButton *) event;
 	//printf("%G %G",bevent->x,bevent->y);
 	//if((event->button.x>40)&&(event->button.y>100)) 
@@ -77,68 +82,76 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEve
 	
 	if(event->button.button==3)  {	//detect a right click to build menu
 		printf("right click !\n");
-	}else {						
-		for(i=0;i<5;i++) {		//detect a key press in "window menu" zone
-			//printf("%d      :     %d     :      %d     :     %d\n\n",i*x3_keymap.x_begin_btn_w,x3_keymap.y_begin_btn_w,i*x3_keymap.x_begin_btn_w+x3_keymap.x_size_btn_w,x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w);
-			if((event->button.x>x3_keymap.x_begin_btn_w+i*x3_keymap.x_jump_btn_w) && (event->button.x<(x3_keymap.x_begin_btn_w+i*x3_keymap.x_jump_btn_w+x3_keymap.x_size_btn_w)) 
-				&& (event->button.y>x3_keymap.y_begin_btn_w) && (event->button.y<(x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w))) {
-				// if x>leftbutton + i*jump && x< leftbutton+i*jump+sizebutton && y>topbutton && y<topbutton+sizebutton 
-				// Simple is beautiful ...? Oh that's probably a bad example...
-				keycount=keycounter;
-				printf("Window : %s \n\n", x3_keylist[keycount].label);
-			} else {
-				keycounter++;
-				//printf("%d\n",keycount);
-			}
-			}
-
-			
-	       }
-	       
-	/* the 2 first lines of real key  (only 3 buttons by line)*/
-	if(keycount==0) // if we had not found what key is pressed
-	{
-		for(j=0;j<2;j++) {
-			
-			for(i=0;i<3;i++) {		//detect a key press in "window menu" zone
-				//printf("%d      :     %d     :      %d     :     %d\n\n",i*x3_keymap.x_begin_btn_w,x3_keymap.y_begin_btn_w,i*x3_keymap.x_begin_btn_w+x3_keymap.x_size_btn_w,x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w);
-				if((event->button.x   >   x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk)   &&  
-					(event->button.x   <   (x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk   +   x3_keymap.x_size_btn_rk))   &&   
-					(event->button.y   >   x3_keymap.y_begin_btn_rk   +  j  *  x3_keymap.y_jump_btn_rk)   &&   
-					(event->button.y   <   (x3_keymap.y_begin_btn_rk  +    j  *  x3_keymap.y_jump_btn_rk  +  x3_keymap.y_size_btn_rk))) {
-					keycount=keycounter;
-					printf("Window : %s \n\n", x3_keylist[keycount].label);
-				} else {
-				keycounter++;
-				//printf("%d\n",keycount);
-				}
-				
-		       }
-	       }
-       }
-	/* the other lines of real key  (5 buttons by line)*/
-	if(keycount==0) // if we had not found what key is pressed
-	{
-		for(j=2;j<9;j++) {
-			
+		}else {						
 			for(i=0;i<5;i++) {		//detect a key press in "window menu" zone
-				//printf("%d      :     %d     :      %d     :     %d\n\n",i*x3_keymap.x_begin_btn_w,x3_keymap.y_begin_btn_w,i*x3_keymap.x_begin_btn_w+x3_keymap.x_size_btn_w,x3_keymap.y_begin_btn_w+x3_keymap.y_size_btn_w);
-				if((event->button.x   >   x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk)   &&  
-					(event->button.x   <   (x3_keymap.x_begin_btn_rk   +   i  *  x3_keymap.x_jump_btn_rk   +   x3_keymap.x_size_btn_rk))   &&   
-					(event->button.y   >   x3_keymap.y_begin_btn_rk   +  j  *  x3_keymap.y_jump_btn_rk)   &&   
-					(event->button.y   <   (x3_keymap.y_begin_btn_rk  +    j  *  x3_keymap.y_jump_btn_rk  +  x3_keymap.y_size_btn_rk))) {
+				if((event->button.x>Calc_Key_Map->x_begin_btn_w+i*Calc_Key_Map->x_jump_btn_w) && (event->button.x<(Calc_Key_Map->x_begin_btn_w+i*Calc_Key_Map->x_jump_btn_w+Calc_Key_Map->x_size_btn_w)) 
+					&& (event->button.y>Calc_Key_Map->y_begin_btn_w) && (event->button.y<(Calc_Key_Map->y_begin_btn_w+Calc_Key_Map->y_size_btn_w))) {
+					// if x>leftbutton + i*jump && x< leftbutton+i*jump+sizebutton && y>topbutton && y<topbutton+sizebutton 
+					// Simple is beautiful ...? Oh that's probably a bad example...
 					keycount=keycounter;
 					printf("Window : %s \n\n", x3_keylist[keycount].label);
 				} else {
-				keycounter++;
-				//printf("%d\n",keycount);
+					keycounter++;
+					//printf("%d\n",keycount);
 				}
+			}
+		}
+		       
+		/* the 2 first lines of real key  (only 3 buttons by line)*/
+		if(keycount==0) // if we had not found what key is pressed
+		{
+			for(j=0;j<2;j++) {
 				
+				for(i=0;i<3;i++) {		//detect a key press in "window menu" zone
+					if((event->button.x   >   Calc_Key_Map->x_begin_btn_rk   +   i  *  Calc_Key_Map->x_jump_btn_rk)   &&  
+						(event->button.x   <   (Calc_Key_Map->x_begin_btn_rk   +   i  *  Calc_Key_Map->x_jump_btn_rk   +   Calc_Key_Map->x_size_btn_rk))   &&   
+						(event->button.y   >   Calc_Key_Map->y_begin_btn_rk   +  j  *  Calc_Key_Map->y_jump_btn_rk)   &&   
+						(event->button.y   <   (Calc_Key_Map->y_begin_btn_rk  +    j  *  Calc_Key_Map->y_jump_btn_rk  +  Calc_Key_Map->y_size_btn_rk))) {
+						keycount=keycounter;
+						printf("Key : %s \n\n", x3_keylist[keycount].label);
+					} else {
+						keycounter++;
+						//printf("%d\n",keycount);
+					}
+					
+			       }
 		       }
 	       }
-       
-	}
-	printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
+		/* the other lines of real key  (5 buttons by line). "real key" is a name given for the keys exept "window menu" and "arrows" */
+		if(keycount==0) // if we had not found what key is pressed
+		{
+			for(j=2;j<9;j++) {
+				
+				for(i=0;i<5;i++) {		//detect a key press in "window menu" zone
+					if((event->button.x   >   Calc_Key_Map->x_begin_btn_rk   +   i  *  Calc_Key_Map->x_jump_btn_rk)   &&  
+						(event->button.x   <   (Calc_Key_Map->x_begin_btn_rk   +   i  *  Calc_Key_Map->x_jump_btn_rk   +   Calc_Key_Map->x_size_btn_rk))   &&   
+						(event->button.y   >   Calc_Key_Map->y_begin_btn_rk   +  j  *  Calc_Key_Map->y_jump_btn_rk)   &&   
+						(event->button.y   <   (Calc_Key_Map->y_begin_btn_rk  +    j  *  Calc_Key_Map->y_jump_btn_rk  +  Calc_Key_Map->y_size_btn_rk))) {
+						keycount=keycounter;
+						printf("Key : %s \n\n", x3_keylist[keycount].label);
+					} else {
+						keycounter++;
+					}
+					
+			       }
+		       }
+	       
+		}
+		printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
 
+}
+
+/* Guess the keymap with an id (in the futur I 'll will probably use a skin name getting from TilemCalcSkin struct) */
+TilemKeyMap* tilem_guess_key_map(int id) {
+	
+	struct TilemKeyMap *k;
+	k= tilem_try_new0(TilemKeyMap, 1);
+	if(id==2) {
+	*k=x2_keymap;	// it's 82 series skinset
+	} else {
+	*k=x3_keymap;	// 83 series skinset.
+	}		
+	
+	return  k;
 }
 
