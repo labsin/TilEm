@@ -14,7 +14,7 @@
 * - Modification of the Makefile (I hope it's good !? If you can control this... thx)
 * - LEARNING HOW COMMIT !!   :D
 * ---19/08/09---
-* - New structure TilemCalcSkin : define the different filename for the SkinSet.
+* - New structure TilemCalcSkin : define the different filenames for the SkinSet.
 * - Draw the other models _automatically_ . ;D
 * ---20/08/09---
 * - Create skin.c
@@ -29,6 +29,8 @@
 * - Modification of the TI86 and TI85 pixmaps. (Was a reason they were bigger than the others??)
 * ---26/08/09---
 * - New function : TilemKeyMap* tilem_guess_key_map(int id).Choose a TilemKeyMap with an id given in parameter. 
+* ---27/08/09---
+* - Extract the choice of the key_map from the mouse_event function.Execute only one time and it's more properly (and it will be easier to add the possibility to manage many skins and many keymaps).
 */
 
 
@@ -44,6 +46,7 @@ int main(int argc, char **argv)
 	char* p;
 	char calc_id;
 	FILE *romfile;//*savfile;
+	
 
 	
 	
@@ -55,7 +58,7 @@ int main(int argc, char **argv)
 	printf("Running tilem ^^ \n");
 	
 	/* Get the romname */
-	if (argc >= 2) {	// If they are 2 parameters or more, the romfile is the first.
+	if (argc >= 2) {			// If they are 2 parameters or more, the romfile is the first.
 		romname = argv[1];
 	}
 	savname = g_malloc(strlen(romname) + 5);
@@ -63,8 +66,7 @@ int main(int argc, char **argv)
 	if ((p = strrchr(savname, '.'))) {
 		strcpy(p, ".sav");
 		printf("romname=%s savname=%s \n",romname,savname);	//debug
-	}
-	else {
+	}else {
 		strcat(savname, ".sav");
 	}
 	/* end */
@@ -91,10 +93,10 @@ int main(int argc, char **argv)
 	
 	/* Create the window */
 	GtkWidget *gtk_window_new(GtkWindowType type);
-	pWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);	// GTK_WINDOW_LEVEL : define how is the window 
-		gtk_window_set_title(GTK_WINDOW(pWindow),"tilem");	// define title of the window 
-		gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); // GTK_WIN_POS_CENTER : define how the window is displayed 
-		gtk_window_set_default_size(GTK_WINDOW(pWindow),60,320);	// define size of the window
+	pWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);						// GTK_WINDOW_LEVEL : define how is the window 
+		gtk_window_set_title(GTK_WINDOW(pWindow),"tilem");					// define title of the window 
+		gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); 	// GTK_WIN_POS_CENTER : define how the window is displayed 
+		gtk_window_set_default_size(GTK_WINDOW(pWindow),60,320);			// define size of the window
 	
 	
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(OnDestroy),NULL); 
@@ -108,38 +110,38 @@ int main(int argc, char **argv)
 	Calc_Skin= tilem_try_new0(TilemCalcSkin, 1);
 	Calc_Skin=tilem_guess_skin_set(emu.calc);
 	
-	printf("Return Values :\n");	//debug
-	printf("%s\n",Calc_Skin->top);	//debug
-	printf("%s\n",Calc_Skin->left);	//debug
-	printf("%s\n",Calc_Skin->right);//debug
-	printf("%s\n",Calc_Skin->bot);	//debug
+	printf("Calc_Skin Return Values :\n");		//debug
+	printf("%s\n",Calc_Skin->top);		//debug
+	printf("%s\n",Calc_Skin->left);		//debug
+	printf("%s\n",Calc_Skin->right);	//debug
+	printf("%s\n",Calc_Skin->bot);		//debug
 	/* end */
 	
 	/* Choose the keymap */
-	/*TilemKeyMap *Calc_Key_Map;
-	Calc_Key_Map=tilem_guess_key_map(3);
-	printf("Return Values :\n");	//debug
-	printf("%d\n",Calc_Key_Map->x_begin_btn_w);	//debug
-	printf("%d\n",Calc_Key_Map->y_begin_btn_w);	//debug
-	printf("%d\n",Calc_Key_Map->x_size_btn_w);//debug
-	printf("%d\n",Calc_Key_Map->y_size_btn_w);	*///debug
-	/* end */
-	
+	TilemKeyMap *Calc_Key_Map;
+	Calc_Key_Map= tilem_try_new0(TilemKeyMap, 1);
+	Calc_Key_Map=tilem_guess_key_map(emu.calc);
+	printf("Calc_Key_Map Return Values :\n");					//debug
+	printf("%d\n",Calc_Key_Map->x_begin_btn_w);		//debug
+	printf("%d\n",Calc_Key_Map->y_begin_btn_w);		//debug
+	printf("%d\n",Calc_Key_Map->x_size_btn_w);		//debug
+	printf("%d\n",Calc_Key_Map->y_size_btn_w);		//debug
+	/* end */	
 
 
 	/* Draw Calc  */
-	GtkWidget *pSkinset,*pVBox,*pHBox; 	//global box
+	GtkWidget *pSkinset,*pVBox,*pHBox; 		//global box
 	GtkWidget *pTop,*pLeft,*pAf,*pRight,*pBot;	// gtk_image
 	
 	/* TOP *********************************************************************/
 	pVBox=gtk_vbox_new(FALSE,0);
-	pTop=gtk_image_new_from_file(Calc_Skin->top);	// top of the screen
+	pTop=gtk_image_new_from_file(Calc_Skin->top);				// top of the screen
 		gtk_box_pack_start(GTK_BOX(pVBox),pTop,FALSE,FALSE,0);
 	
 	/* CENTER ****************************************************************/
-	pHBox=gtk_hbox_new(FALSE,0);	// this horizontal box is for the 3 elements of the screen
-		gtk_box_pack_start(GTK_BOX(pVBox),pHBox,FALSE,FALSE,0); // pVBox > pHBox
-	pLeft=gtk_image_new_from_file(Calc_Skin->left);	// left of the screen
+	pHBox=gtk_hbox_new(FALSE,0);							// this horizontal box is for the 3 elements of the screen
+		gtk_box_pack_start(GTK_BOX(pVBox),pHBox,FALSE,FALSE,0); 	// pVBox > pHBox
+	pLeft=gtk_image_new_from_file(Calc_Skin->left);				// left of the screen
 		
 	
 	int screenwidth=94;	// fixed for the test
@@ -158,18 +160,18 @@ int main(int argc, char **argv)
                                                    emu.lcdwin);
                                gtk_widget_show(emu.lcdwin);
                        }
-	pRight=gtk_image_new_from_file(Calc_Skin->right);	 // right of the screen
+	pRight=gtk_image_new_from_file(Calc_Skin->right);			 // right of the screen
 		gtk_box_pack_start(GTK_BOX(pHBox),pLeft,FALSE,FALSE,0);
 		gtk_box_pack_start(GTK_BOX(pHBox),pAf,FALSE,FALSE,0);
 		gtk_box_pack_start(GTK_BOX(pHBox),pRight,FALSE,FALSE,0);
 	
 	/* BOTTOM ****************************************************************/	   
 
-	pBot=gtk_image_new_from_file(Calc_Skin->bot);	// bottom of the screen (keyboard)
+	pBot=gtk_image_new_from_file(Calc_Skin->bot);				// bottom of the screen (keyboard)
 		gtk_box_pack_start(GTK_BOX(pVBox),pBot,FALSE,FALSE,0);
-	pSkinset=gtk_hbox_new(FALSE,0);	// the complete set to fit them
+	pSkinset=gtk_hbox_new(FALSE,0);							// the complete set to fit them
 		gtk_box_pack_start(GTK_BOX(pSkinset),pVBox,FALSE,FALSE,0);
-	gtk_container_add(GTK_CONTAINER(pWindow),pSkinset);	// just add the box to the window
+	gtk_container_add(GTK_CONTAINER(pWindow),pSkinset);		// just add the box to the window
 	/* end */
 	
 	/* Connection signal keyboard key press */
@@ -181,18 +183,18 @@ int main(int argc, char **argv)
 	/* Connection signal click with the mouse on the Skinset */
 	gtk_widget_add_events(pWindow, GDK_BUTTON_PRESS_MASK);	// the mask for the click with mouse event
 	//gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", GTK_SIGNAL_FUNC(mouse_event),NULL);  //equivalent ?
-	gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", G_CALLBACK(mouse_event),NULL); 
+	gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", G_CALLBACK(mouse_event),Calc_Key_Map);
+
 	/* end */
 	
 	
 	gtk_widget_show_all(pWindow);	// display the window and all that it contains.
 	gtk_main();
 	
-	free(Calc_Skin->top);		// maybe use g_free or I don't know really if it's useful.
-	free(Calc_Skin->left);
-	free(Calc_Skin->right);
-	free(Calc_Skin->bot);
-
+	/* Freeing allocated memory */
+	g_free(Calc_Skin);				// use g_free but I don't know really if it's useful.
+	g_free(Calc_Key_Map);
+	/* end */
     return EXIT_SUCCESS;
 }
 

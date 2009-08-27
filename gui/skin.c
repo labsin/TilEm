@@ -63,16 +63,12 @@ void keyboard_event()
 	printf("You press a key : keyboard_event\n");	//debug
 }
 
-/* This event is executed when click with mouse  */
-void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
+/* This event is executed when click with mouse (the Calc_Key_Map is given as parameter) */
+int mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
 {  	
 	int i,keycounter=0,keycount=0,j;
 	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
-		
-	/* Choose the keymap */
-	TilemKeyMap *Calc_Key_Map;
-	Calc_Key_Map=tilem_guess_key_map(3);
-	/* end */
+
 
 	/* An alternative solution (used by "tilem old generation") */
 	//GdkEventButton *bevent = (GdkEventButton *) event;
@@ -82,7 +78,8 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEve
 	
 	if(event->button.button==3)  {	//detect a right click to build menu
 		printf("right click !\n");
-		}else {						
+
+	}else {						
 			for(i=0;i<5;i++) {		//detect a key press in "window menu" zone
 				if((event->button.x>Calc_Key_Map->x_begin_btn_w+i*Calc_Key_Map->x_jump_btn_w) && (event->button.x<(Calc_Key_Map->x_begin_btn_w+i*Calc_Key_Map->x_jump_btn_w+Calc_Key_Map->x_size_btn_w)) 
 					&& (event->button.y>Calc_Key_Map->y_begin_btn_w) && (event->button.y<(Calc_Key_Map->y_begin_btn_w+Calc_Key_Map->y_size_btn_w))) {
@@ -138,20 +135,25 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event) 	// void mouse_event(GdkEve
 	       
 		}
 		printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
+		return 0;
 
 }
 
 /* Guess the keymap with an id (in the futur I 'll will probably use a skin name getting from TilemCalcSkin struct) */
-TilemKeyMap* tilem_guess_key_map(int id) {
+TilemKeyMap* tilem_guess_key_map(TilemCalc* calc) {
 	
 	struct TilemKeyMap *k;
 	k= tilem_try_new0(TilemKeyMap, 1);
-	if(id==2) {
-	*k=x2_keymap;	// it's 82 series skinset
-	} else {
-	*k=x3_keymap;	// 83 series skinset.
-	}		
+	//printf("%c",calc->hw.model_id);		// debug
 	
+	if(calc->hw.model_id=='2') {
+		*k=x2_keymap;			// it's 82 series skinset
+	} else {
+		*k=x3_keymap;			// 83 series skinset.
+	}		
 	return  k;
 }
+
+
+
 

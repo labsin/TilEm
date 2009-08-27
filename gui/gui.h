@@ -1,5 +1,6 @@
 #include <tilem.h>
 
+
 typedef struct _TilemCalcEmulator {
 	GMutex* run_mutex;
 	gboolean exiting;
@@ -89,13 +90,15 @@ typedef struct _TilemCalcSkin {
  */
 
 /* List of the keys (a code and a label) */
-struct keylist {
+struct TilemKeyList {
 	int code;
 	const char* label;
 };
 
+
+
 /* For the TI83 by example */
-static const struct keylist x3_keylist[] = {
+static const struct TilemKeyList x3_keylist[] = {
 	/* Window  (5keys at the top of the keyboard)*/
 	{ 0x35, "Y=" },
 	{ 0x34, "WINDOW" },
@@ -191,7 +194,9 @@ typedef struct TilemKeyMap {
 	int x_jump_btn_ar;
 }TilemKeyMap;
 
+
 /* Actually this values are not really good even for the 83... used for testing tilem_guess_key_map */
+/* Warning : this will be probably modified because it exist model with numpad isn't aligned with the rest of real key */
 static const struct TilemKeyMap x2_keymap= {	
 	19,186,48,10,29,12,222,48,16,39,28,320,320,320,320,6};
 
@@ -200,16 +205,14 @@ static const struct TilemKeyMap x3_keymap= {
 	
 static const struct TilemKeyMap x4_keymap= {
 	19,186,48,10,29,12,222,48,16,39,28,320,320,320,320,6};
-	
 /* etc.... */
-
-
+	
 
 /* Create a CalcSkin with an TilemCalcEmulator */
 TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc);
 
-/* Create a KeyMap with an id */
-TilemKeyMap* tilem_guess_key_map(int id);	
+/* Create a KeyMap with an TilemCalcEmulator */
+TilemKeyMap* tilem_guess_key_map(TilemCalc* calc);	
 	
 /* Detect and handle a "destroy" event */
 void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
@@ -217,6 +220,9 @@ void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
 /* Detect a keyboard press event */
 void keyboard_event();	
 
-/* Detect a mouse event and Get the 'x' and 'y' values */
-void mouse_event(GtkWidget* pWindow,GdkEvent *event);	
+/* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
+int mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map);	
+
+
+
 
