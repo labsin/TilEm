@@ -31,12 +31,17 @@
 void x1_reset(TilemCalc* calc)
 {
 	calc->hwregs[PORT3] = 0x08;
+	calc->hwregs[PORT2] = 0x00;
 	calc->hwregs[PORT5] = 0x00;
+	calc->hwregs[PORT6] = 0x00;
 
 	calc->mempagemap[0] = 0x00;
 	calc->mempagemap[1] = 0x01;
 	calc->mempagemap[2] = 0x00; 
 	calc->mempagemap[3] = 0x02;
+
+	if (calc->hwregs[HW_VERSION] != 2)
+		calc->lcd.rowstride = 12;
 
 	tilem_z80_set_speed(calc, 2000);
 

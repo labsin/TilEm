@@ -658,9 +658,7 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 			fprintf(savfile, "lcd.busy = %X\n",
 				calc->lcd.busy);
 		}
-		else {
-			fprintf(savfile, "lcd.addr = %X\n", calc->lcd.addr);
-		}
+		fprintf(savfile, "lcd.addr = %X\n", calc->lcd.addr);
 
 		if (calc->hw.flags & TILEM_CALC_HAS_LINK) {
 			fprintf(savfile, "\n## Link Port ##\n");

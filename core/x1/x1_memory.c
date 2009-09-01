@@ -30,24 +30,30 @@
 
 void x1_z80_wrmem(TilemCalc* calc, dword A, byte v)
 {
-	if (A > 0xc000)
-		*(calc->mem + 0x8000 + (A & 0x1fff)) = v;
+	dword pa = 0x4000 * calc->mempagemap[(A)>>14] + (A & 0x3FFF);
+
+	if (pa >= 0x8000)
+		*(calc->mem + 0x8000 + (pa & 0x1fff)) = v;
 }
 
 byte x1_z80_rdmem(TilemCalc* calc, dword A)
 {
-	if (A > 0xc000)
-		return (*(calc->mem + 0x8000 + (A & 0x1fff)));
+	dword pa = 0x4000 * calc->mempagemap[(A)>>14] + (A & 0x3FFF);
+
+	if (pa >= 0x8000)
+		return (*(calc->mem + 0x8000 + (pa & 0x1fff)));
 	else
-		return (*(calc->mem + (A & 0x7fff)));
+		return (*(calc->mem + (pa & 0x7fff)));
 }
 
-dword x1_mem_ltop(TilemCalc* calc TILEM_ATTR_UNUSED, dword A)
+dword x1_mem_ltop(TilemCalc* calc, dword A)
 {
-	if (A & 0xc000)
-		return (0x8000 + (A & 0x1fff));
+	dword pa = 0x4000 * calc->mempagemap[(A)>>14] + (A & 0x3FFF);
+
+	if (pa >= 0x8000)
+		return (0x8000 + (pa & 0x1fff));
 	else
-		return (A & 0x7fff);
+		return (pa);
 }
 
 dword x1_mem_ptol(TilemCalc* calc TILEM_ATTR_UNUSED, dword A)
