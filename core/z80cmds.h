@@ -67,6 +67,7 @@
 #define FLAG_SXY (FLAG_S | FLAG_X | FLAG_Y)
 #define FLAG_SXYC (FLAG_S | FLAG_X | FLAG_Y | FLAG_C)
 #define FLAG_ZP (FLAG_Z | FLAG_P)
+#define FLAG_SZPC (FLAG_S | FLAG_Z | FLAG_P | FLAG_C)
 
 #define lsb(xxx) ((xxx) & 0xff)
 
@@ -244,7 +245,8 @@
 		byte arg = (reg);				\
 		byte res = ~arg;				\
 		F = ((res & FLAG_XY)		/* X/Y */	\
-		     | FLAG_H | FLAG_N);	/* H/N */	\
+		     | FLAG_H | FLAG_N		/* H/N */	\
+		     | (F & FLAG_SZPC));			\
 		(reg) = res;					\
 	} while (0)
 
