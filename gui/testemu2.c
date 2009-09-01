@@ -31,6 +31,9 @@
 * - New function : TilemKeyMap* tilem_guess_key_map(int id).Choose a TilemKeyMap with an id given in parameter. 
 * ---27/08/09---
 * - Extract the choice of the key_map from the mouse_event function.Execute only one time and it's more properly (and it will be easier to add the possibility to manage many skins and many keymaps).
+* ---01/09/09---
+* - Choose automatically the key_list. The TilemKeyList is already included in the TilemKeyMap structure...
+* - New structure TilemKeyCoord (old TilemKeyMap).TilemKeyMap already contains TilemKeyCoord and TilemKeyList... 
 */
 
 
@@ -122,12 +125,12 @@ int main(int argc, char **argv)
 	Calc_Key_Map= tilem_try_new0(TilemKeyMap, 1);
 	Calc_Key_Map=tilem_guess_key_map(emu.calc);
 	printf("Calc_Key_Map Return Values :\n");					//debug
-	printf("%d\n",Calc_Key_Map->x_begin_btn_w);		//debug
-	printf("%d\n",Calc_Key_Map->y_begin_btn_w);		//debug
-	printf("%d\n",Calc_Key_Map->x_size_btn_w);		//debug
-	printf("%d\n",Calc_Key_Map->y_size_btn_w);		//debug
+	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.x_begin_btn_w);		//debug
+	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.y_begin_btn_w);		//debug
+	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.x_size_btn_w);		//debug
+	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.y_size_btn_w);		//debug
 	/* end */	
-
+	
 
 	/* Draw Calc  */
 	GtkWidget *pSkinset,*pVBox,*pHBox; 		//global box
