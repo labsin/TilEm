@@ -39,6 +39,8 @@ const TilemHardware* hwmodels[] = {
 	&hardware_ti83,
 	&hardware_ti83p,
 	&hardware_ti83pse,
+	&hardware_ti84p,
+	&hardware_ti84pse,	
 	&hardware_ti85,
 	&hardware_ti86 };
 
