@@ -4,7 +4,9 @@
 #include <glib/gstdio.h>
 
 //#include <tilem.h>
+
 #include <gui.h>
+
 
 /*  contra-sh : 
 * ---18/08/09---
@@ -34,6 +36,10 @@
 * ---01/09/09---
 * - Choose automatically the key_list. The TilemKeyList is already included in the TilemKeyMap structure...
 * - New structure TilemKeyCoord (old TilemKeyMap).TilemKeyMap already contains TilemKeyCoord and TilemKeyList... 
+* ---08/09/09---
+* - New function tilem_set_coord to change the keypad coord.
+* - New file event.c to group the GDKevent handling.
+* - New function tilem_set_skin to change the skin.
 */
 
 
@@ -120,6 +126,21 @@ int main(int argc, char **argv)
 	printf("%s\n",Calc_Skin->bot);		//debug
 	/* end */
 	
+	/* Set another TilemCalcSkin */
+	/*TilemCalcSkin *skin_perso;		// Calc_Skin will contain the different element for the SkinSet
+	skin_perso= tilem_try_new0(TilemCalcSkin, 1);
+	skin_perso->top=g_malloc(23);
+	skin_perso->left=g_malloc(23);
+	skin_perso->right=g_malloc(23);
+	skin_perso->bot=g_malloc(23);
+	strcpy(skin_perso->top,"./pixmaps/x7_top.jpg");
+	strcpy(skin_perso->left,"./pixmaps/x7_left.jpg");
+	strcpy(skin_perso->right,"./pixmaps/x7_right.jpg");
+	strcpy(skin_perso->bot,"./pixmaps/x7_bot.jpg");
+	tilem_set_skin(Calc_Skin,skin_perso); */
+	/* end */
+	
+	
 	/* Choose the keymap */
 	TilemKeyMap *Calc_Key_Map;
 	Calc_Key_Map= tilem_try_new0(TilemKeyMap, 1);
@@ -130,6 +151,10 @@ int main(int argc, char **argv)
 	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.x_size_btn_w);		//debug
 	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.y_size_btn_w);		//debug
 	/* end */	
+	
+	/* Set another TilemKeyCoord */
+	//tilem_set_coord(Calc_Key_Map,test_coord);	// set the Calc_Key_Map.Calc_Key_Coord=test_coord
+	/* end */
 	
 
 	/* Draw Calc  */

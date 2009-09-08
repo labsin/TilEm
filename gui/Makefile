@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o skin.o
+objects = testemu2.o memory.o skin.o event.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -26,10 +26,10 @@ all: testemu2
 
 #Main emulator GUI
 
-testemu2: $(objects) ../core/libtilemcore.a gui.h
+testemu2: $(objects) ../core/libtilemcore.a gui.h 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu2 $(objects) $(libs)
 	
-testemu2.o: testemu2.c ../core/tilem.h gui.h
+testemu2.o: testemu2.c ../core/tilem.h gui.h 
 	$(compile) -c $(srcdir)/testemu2.c
 
 
@@ -37,9 +37,14 @@ testemu2.o: testemu2.c ../core/tilem.h gui.h
 
 memory.o: memory.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/memory.c
-	
-skin.o: skin.c ../core/tilem.h gui.h
+
+# Build the Skin set and define the key coord and the key list
+skin.o: skin.c ../core/tilem.h gui.h 
 	$(compile) -c $(srcdir)/skin.c
+
+# Handle an GDKevent
+event.o: event.c ../core/tilem.h gui.h 
+	$(compile) -c $(srcdir)/event.c
 
 	
 clean:
