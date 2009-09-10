@@ -40,6 +40,8 @@
 * - New function tilem_set_coord to change the keypad coord.
 * - New file event.c to group the GDKevent handling.
 * - New function tilem_set_skin to change the skin.
+* ---10/09/09---
+* - Add the right click menu :D (0 signal connected without OnDestroy).Largely inspired from Tilem 0.973 and http://www.linux-france.org/article/devl/gtk/gtk_tut-11.html was a great inspiration too. 
 */
 
 
@@ -55,9 +57,6 @@ int main(int argc, char **argv)
 	char* p;
 	char calc_id;
 	FILE *romfile;//*savfile;
-	
-
-	
 	
 	TilemCalcEmulator emu;
 	
@@ -87,7 +86,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	/* end */
-	
+		
 	/* Get the romtype*/
 	calc_id = tilem_guess_rom_type(romfile);
 	printf("clac_id = %c\n",calc_id);	//debug
@@ -107,9 +106,33 @@ int main(int argc, char **argv)
 		gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); 	// GTK_WIN_POS_CENTER : define how the window is displayed 
 		gtk_window_set_default_size(GTK_WINDOW(pWindow),60,320);			// define size of the window
 	
-	
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(OnDestroy),NULL); 
 	/* end */
+	
+	/* Define items from the right click menu */
+static GtkItemFactoryEntry right_click_menu[] = {
+			{"/Load file...", "F12", NULL, 0, NULL, NULL},
+			{"/Debugger...", "F11", NULL, 0, NULL, NULL},
+			{"/Hardware...", NULL, NULL, 0, NULL, NULL},
+#ifdef extlink
+			{"/Linking...", NULL, NULL, 0, NULL, NULL},
+#endif
+			{"/---", NULL, NULL, 0, "<Separator>", NULL},
+			{"/Toggle autosave", NULL, NULL, 0, NULL, NULL},
+			{"/Toggle window", NULL, NULL, 0, NULL, NULL},
+			{"/Toggle speed", NULL, NULL, 0, NULL, NULL},
+			{"/Toggle key place", NULL, NULL, 0, NULL, NULL},
+			{"/Reset", NULL, NULL, 0, NULL, NULL},
+			{"/Reload state", NULL, NULL, 0, NULL, NULL},
+			{"/---", NULL, NULL, 0, "<Separator>", NULL},
+			{"/Quit without saving", "<control>Q", OnDestroy, 0, NULL, NULL},
+			{"/Exit and save state", "<alt>X", NULL, 1, NULL, NULL}
+};
+/* end */
+
+/* Add the menu to the pWindow */
+	create_menus(pWindow, right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>");
+/* end */
 	
 
 	
@@ -127,7 +150,7 @@ int main(int argc, char **argv)
 	/* end */
 	
 	/* Set another TilemCalcSkin */
-	/*TilemCalcSkin *skin_perso;		// Calc_Skin will contain the different element for the SkinSet
+	/* TilemCalcSkin *skin_perso;		// Calc_Skin will contain the different element for the SkinSet
 	skin_perso= tilem_try_new0(TilemCalcSkin, 1);
 	skin_perso->top=g_malloc(23);
 	skin_perso->left=g_malloc(23);
@@ -206,14 +229,12 @@ int main(int argc, char **argv)
 	gtk_widget_add_events(pWindow, GDK_KEY_RELEASE_MASK); // Get the event on the window (leftclick, rightclick)
 	//gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", GTK_SIGNAL_FUNC(keyboard_event), NULL); // it works, equivalent?
 	gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
-	/* end */
-	
-	/* Connection signal click with the mouse on the Skinset */
-	gtk_widget_add_events(pWindow, GDK_BUTTON_PRESS_MASK);	// the mask for the click with mouse event
-	//gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", GTK_SIGNAL_FUNC(mouse_event),NULL);  //equivalent ?
-	gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", G_CALLBACK(mouse_event),Calc_Key_Map);
 
 	/* end */
+		       
+	
+	
+
 	
 	
 	gtk_widget_show_all(pWindow);	// display the window and all that it contains.

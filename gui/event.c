@@ -22,6 +22,12 @@ void keyboard_event()
 { 
 	printf("You press a key : keyboard_event\n");	//debug
 }
+void toto(GtkWidget* pWindow,GdkEvent *event,GtkWidget * widget) {
+	pWindow=pWindow;
+	event=event;
+gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL,event->button.button, event->button.time);
+}
+
 
 /* This event is executed when click with mouse (the Calc_Key_Map is given as parameter) */
 /* Guess what key was clicked... ;D */
@@ -96,6 +102,36 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map) 
 	       
 		}
 		printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
+}
+
+
+gint button_press (GtkWidget *widget, GdkEvent *event)
+{
+
+    if (event->type == GDK_BUTTON_PRESS) {
+        GdkEventButton *bevent = (GdkEventButton *) event; 
+        gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
+
+        /* On indique à l'appelant que l'on a géré cet événement. */
+
+        return TRUE;
+    }
+
+    /* On indique à l'appelant que l'on n'a pas géré cet événement. */
+
+    return FALSE;
+};
+
+gint show_menu(GtkWidget *widget, GdkEvent *event)
+{
+	GdkEventButton *bevent = (GdkEventButton *) event;
+
+	if ((event->type == GDK_BUTTON_PRESS) && (bevent->button != 1)) {
+		gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
+		return(TRUE);
+	}
+
+	return(FALSE);
 }
 
 

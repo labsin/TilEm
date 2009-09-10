@@ -89,6 +89,27 @@ TilemKeyMap* tilem_guess_key_map(TilemCalc* calc) {
 }
 
 
+void create_menus(GtkWidget *window, GtkItemFactoryEntry * menu_items, int thisitems, const char *menuname)
+{
+	GtkAccelGroup *accel_group;
+	GtkItemFactory *factory;
+	GtkWidget *menu;
+
+	/*gtk_image_factory_parse_rc()*/
+
+	accel_group = gtk_accel_group_new();
+	factory = gtk_item_factory_new(GTK_TYPE_MENU, menuname, accel_group);
+	/* translatefunc */
+	gtk_item_factory_create_items(factory, thisitems, menu_items, window);
+	menu = factory->widget;
+
+	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+
+	gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+	gtk_signal_connect_object(GTK_OBJECT(window), "event", GTK_SIGNAL_FUNC(show_menu), GTK_OBJECT(menu));
+}
+
+
 
 
 

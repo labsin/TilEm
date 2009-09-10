@@ -364,7 +364,6 @@ static const struct TilemKeyMap x3_keymap= {
 
 
 /* etc.... */
-
 	
 
 
@@ -377,6 +376,9 @@ void keyboard_event();
 
 /* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
 void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map);	
+	
+	/* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
+void toto(GtkWidget* pWindow,GdkEvent *event,GtkWidget * tata);
 
 /* Create a CalcSkin with an TilemCalcEmulator */
 TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc);
@@ -390,6 +392,16 @@ void tilem_set_coord(TilemKeyMap *Calc_Key_Map,TilemKeyCoord test_coord);
 /* Set a TilemCalcSkin.To adapt easily personal skins in the future */
 void tilem_set_skin(TilemCalcSkin * Calc_Skin,TilemCalcSkin * skin_perso);
 
-	
+
+
+//static int nmenu_items = sizeof(menu_items) / sizeof(menu_items[0]);
+gint button_press (GtkWidget *widget, GdkEvent *event);
+void create_menus(GtkWidget *window, GtkItemFactoryEntry *items, int this_items, const char *menuname);
+
+
+gint show_menu(GtkWidget *widget, GdkEvent *event);
+
+
+
 
 
