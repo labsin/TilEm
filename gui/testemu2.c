@@ -42,6 +42,10 @@
 * - New function tilem_set_skin to change the skin.
 * ---10/09/09---
 * - Add the right click menu :D (0 signal connected without OnDestroy).Largely inspired from Tilem 0.973 and http://www.linux-france.org/article/devl/gtk/gtk_tut-11.html was a great inspiration too. 
+* ---21/09/09---
+* - Aouch I had seen that the left click doesn't work now! Problem : two callback for the only one button_press_event. (sorry for this version...)
+* ---22/09/09---
+* - Correction : only one callback now. mouse_event contains the create_menu and the gtk_menu_popup. (lot of time was spent on this problem)
 */
 
 
@@ -110,35 +114,18 @@ int main(int argc, char **argv)
 	/* end */
 	
 	/* Define items from the right click menu */
-static GtkItemFactoryEntry right_click_menu[] = {
-			{"/Load file...", "F12", NULL, 0, NULL, NULL},
-			{"/Debugger...", "F11", NULL, 0, NULL, NULL},
-			{"/Hardware...", NULL, NULL, 0, NULL, NULL},
-#ifdef extlink
-			{"/Linking...", NULL, NULL, 0, NULL, NULL},
-#endif
-			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/Toggle autosave", NULL, NULL, 0, NULL, NULL},
-			{"/Toggle window", NULL, NULL, 0, NULL, NULL},
-			{"/Toggle speed", NULL, NULL, 0, NULL, NULL},
-			{"/Toggle key place", NULL, NULL, 0, NULL, NULL},
-			{"/Reset", NULL, NULL, 0, NULL, NULL},
-			{"/Reload state", NULL, NULL, 0, NULL, NULL},
-			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/Quit without saving", "<control>Q", OnDestroy, 0, NULL, NULL},
-			{"/Exit and save state", "<alt>X", NULL, 1, NULL, NULL}
-};
+
 /* end */
 
 /* Add the menu to the pWindow */
-	create_menus(pWindow, right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>");
+	
 /* end */
 	
 
 	
 	
 	/* Choose the filename for the pix top,left,right,bot in function of the model */
-	TilemCalcSkin *Calc_Skin;		// Calc_Skin will contain the different element for the SkinSet
+	TilemCalcSkin *Calc_Skin;	// Calc_Skin will contain the different element for the SkinSet
 	Calc_Skin= tilem_try_new0(TilemCalcSkin, 1);
 	Calc_Skin=tilem_guess_skin_set(emu.calc);
 	
@@ -229,6 +216,8 @@ static GtkItemFactoryEntry right_click_menu[] = {
 	gtk_widget_add_events(pWindow, GDK_KEY_RELEASE_MASK); // Get the event on the window (leftclick, rightclick)
 	//gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", GTK_SIGNAL_FUNC(keyboard_event), NULL); // it works, equivalent?
 	gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
+	gtk_widget_add_events(pWindow, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+	gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", G_CALLBACK(mouse_event),Calc_Key_Map);
 
 	/* end */
 		       

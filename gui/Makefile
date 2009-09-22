@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -O2 -W -Wall -Wwrite-strings -Werror
+CFLAGS = -g -O2 -W -Wall -Werror
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 

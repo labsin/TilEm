@@ -31,7 +31,7 @@ gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL,event->button.button, ev
 
 /* This event is executed when click with mouse (the Calc_Key_Map is given as parameter) */
 /* Guess what key was clicked... ;D */
-void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
+void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap *Calc_Key_Map) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
 {  	
 	int i,keycounter=0,keycount=0,j;
 	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
@@ -43,10 +43,34 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map) 
 	//if((event->button.x>40)&&(event->button.y>100)) 
 	/* end */
 	
+	
+//#################### Right Click Menu	####################
 	if(event->button.button==3)  {	//detect a right click to build menu
 		printf("right click !\n");
+		static GtkItemFactoryEntry right_click_menu[] = {
+			{"/Load file...", "F12", NULL, 0, NULL, NULL},
+			{"/Debugger...", "F11", NULL, 0, NULL, NULL},
+			{"/Hardware...", NULL, NULL, 0, NULL, NULL},
+#ifdef extlink
+			{"/Linking...", NULL, NULL, 0, NULL, NULL},
+#endif
+			{"/---", NULL, NULL, 0, "<Separator>", NULL},
+			{"/Toggle autosave", NULL, NULL, 0, NULL, NULL},
+			{"/Toggle window", NULL, NULL, 0, NULL, NULL},
+			{"/Toggle speed", NULL, NULL, 0, NULL, NULL},
+			{"/Toggle key place", NULL, NULL, 0, NULL, NULL},
+			{"/Reset", NULL, NULL, 0, NULL, NULL},
+			{"/Reload state", NULL, NULL, 0, NULL, NULL},
+			{"/---", NULL, NULL, 0, "<Separator>", NULL},
+			{"/Quit without saving", "<control>Q", OnDestroy, 0, NULL, NULL},
+			{"/Exit and save state", "<alt>X", NULL, 1, NULL, NULL}
+};
+create_menus(pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>");
+//#################### END ####################
 
-	}else {						
+	}else {	
+		
+		//printf ("%d %d",Calc_Key_Map->Calc_Key_Coord.x_begin_btn_w,Calc_Key_Map->Calc_Key_Coord.x_jump_btn_w);
 			for(i=0;i<5;i++) {		//detect if a key was pressed in "window menu" zone
 				if((event->button.x>Calc_Key_Map->Calc_Key_Coord.x_begin_btn_w+i*Calc_Key_Map->Calc_Key_Coord.x_jump_btn_w) && (event->button.x<(Calc_Key_Map->Calc_Key_Coord.x_begin_btn_w+i*Calc_Key_Map->Calc_Key_Coord.x_jump_btn_w+Calc_Key_Map->Calc_Key_Coord.x_size_btn_w)) 
 					&& (event->button.y>Calc_Key_Map->Calc_Key_Coord.y_begin_btn_w) && (event->button.y<(Calc_Key_Map->Calc_Key_Coord.y_begin_btn_w+Calc_Key_Map->Calc_Key_Coord.y_size_btn_w))) {
@@ -61,7 +85,7 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map) 
 			}
 		}
 		       
-		/* the 2 first lines of real key  (only 3 buttons by line)*/
+		// the 2 first lines of real key  (only 3 buttons by line)
 		if(keycount==0) // if we had not found what key is pressed
 		{
 			for(j=0;j<2;j++) {
@@ -81,7 +105,7 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map) 
 			       }
 		       }
 	       }
-		/* the other lines of real key  (5 buttons by line). "real key" is a name given for the keys exept "window menu" and "arrows" */
+		// the other lines of real key  (5 buttons by line). "real key" is a name given for the keys exept "window menu" and "arrows" 
 		if(keycount==0) // if we had not found what key is pressed
 		{
 			for(j=2;j<9;j++) {
@@ -105,19 +129,19 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map) 
 }
 
 
-gint button_press (GtkWidget *widget, GdkEvent *event)
+/* gint button_press (GtkWidget *widget, GdkEvent *event)
 {
 
     if (event->type == GDK_BUTTON_PRESS) {
         GdkEventButton *bevent = (GdkEventButton *) event; 
         gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
 
-        /* On indique à l'appelant que l'on a géré cet événement. */
+        // Say to caller that we handle the event
 
         return TRUE;
     }
 
-    /* On indique à l'appelant que l'on n'a pas géré cet événement. */
+    // Say to caller that we don't handle the event
 
     return FALSE;
 };
@@ -125,13 +149,12 @@ gint button_press (GtkWidget *widget, GdkEvent *event)
 gint show_menu(GtkWidget *widget, GdkEvent *event)
 {
 	GdkEventButton *bevent = (GdkEventButton *) event;
-
 	if ((event->type == GDK_BUTTON_PRESS) && (bevent->button != 1)) {
 		gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
 		return(TRUE);
 	}
 
 	return(FALSE);
-}
+} */
 
 

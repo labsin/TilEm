@@ -366,7 +366,7 @@ static const struct TilemKeyMap x3_keymap= {
 /* etc.... */
 	
 
-
+	
 	
 /* Detect and handle a "destroy" event */
 void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
@@ -392,14 +392,12 @@ void tilem_set_coord(TilemKeyMap *Calc_Key_Map,TilemKeyCoord test_coord);
 /* Set a TilemCalcSkin.To adapt easily personal skins in the future */
 void tilem_set_skin(TilemCalcSkin * Calc_Skin,TilemCalcSkin * skin_perso);
 
-
-
 //static int nmenu_items = sizeof(menu_items) / sizeof(menu_items[0]);
 gint button_press (GtkWidget *widget, GdkEvent *event);
-void create_menus(GtkWidget *window, GtkItemFactoryEntry *items, int this_items, const char *menuname);
+void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname);
 
 
-gint show_menu(GtkWidget *widget, GdkEvent *event);
+//gint show_menu(GtkWidget *widget, GdkEvent *event);
 
 
 

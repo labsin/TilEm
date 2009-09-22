@@ -89,11 +89,12 @@ TilemKeyMap* tilem_guess_key_map(TilemCalc* calc) {
 }
 
 
-void create_menus(GtkWidget *window, GtkItemFactoryEntry * menu_items, int thisitems, const char *menuname)
+void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_items, int thisitems, const char *menuname)
 {
 	GtkAccelGroup *accel_group;
 	GtkItemFactory *factory;
 	GtkWidget *menu;
+	GdkEventButton *bevent = (GdkEventButton *) event;
 
 	/*gtk_image_factory_parse_rc()*/
 
@@ -104,9 +105,9 @@ void create_menus(GtkWidget *window, GtkItemFactoryEntry * menu_items, int thisi
 	menu = factory->widget;
 
 	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
-
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
 	gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
-	gtk_signal_connect_object(GTK_OBJECT(window), "event", GTK_SIGNAL_FUNC(show_menu), GTK_OBJECT(menu));
+
 }
 
 
