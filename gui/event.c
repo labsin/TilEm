@@ -108,13 +108,51 @@ create_menus(pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(G
 		// the other lines of real key  (5 buttons by line). "real key" is a name given for the keys exept "window menu" and "arrows" 
 		if(keycount==0) // if we had not found what key is pressed
 		{
-			for(j=2;j<9;j++) {
+			for(j=2;j<5;j++) {
 				
 				for(i=0;i<5;i++) {		//detect a key press in "arrow" zone
 					if((event->button.x   >  Calc_Key_Map->Calc_Key_Coord.x_begin_btn_rk   +   i  * Calc_Key_Map->Calc_Key_Coord.x_jump_btn_rk)   &&  
 						(event->button.x   <   (Calc_Key_Map->Calc_Key_Coord.x_begin_btn_rk   +   i  * Calc_Key_Map->Calc_Key_Coord.x_jump_btn_rk   +  Calc_Key_Map->Calc_Key_Coord.x_size_btn_rk))   &&   
 						(event->button.y   >  Calc_Key_Map->Calc_Key_Coord.y_begin_btn_rk   +  j  * Calc_Key_Map->Calc_Key_Coord.y_jump_btn_rk)   &&   
 						(event->button.y   <   (Calc_Key_Map->Calc_Key_Coord.y_begin_btn_rk  +    j  * Calc_Key_Map->Calc_Key_Coord.y_jump_btn_rk  + Calc_Key_Map->Calc_Key_Coord.y_size_btn_rk))) {
+						keycount=keycounter;
+						printf("Key : %s \n\n",Calc_Key_Map->Calc_Key_List[keycount].label);
+					} else {
+						keycounter++;
+					}
+					
+			       }
+		       }
+	       
+		}
+		
+		if(keycount==0) // if we had not found what key is pressed
+		{
+			for(j=0;j<4;j++) {
+				for(i=0;i<2;i++) {		//detect a key press in "arrow" zone
+					if((event->button.x   >  Calc_Key_Map->Calc_Key_Coord.x_begin_btn_rk2   +   i  * Calc_Key_Map->Calc_Key_Coord.x_jump_btn_rk2)   &&  
+						(event->button.x   <   (Calc_Key_Map->Calc_Key_Coord.x_begin_btn_rk2   +   i  * Calc_Key_Map->Calc_Key_Coord.x_jump_btn_rk2   +  Calc_Key_Map->Calc_Key_Coord.x_size_btn_rk2))   &&   
+						(event->button.y   >  Calc_Key_Map->Calc_Key_Coord.y_begin_btn_rk2   +  j  * Calc_Key_Map->Calc_Key_Coord.y_jump_btn_rk2)   &&   
+						(event->button.y   <   (Calc_Key_Map->Calc_Key_Coord.y_begin_btn_rk2  +    j  * Calc_Key_Map->Calc_Key_Coord.y_jump_btn_rk2  + Calc_Key_Map->Calc_Key_Coord.y_size_btn_rk2))) {
+						keycount=keycounter;
+						printf("Key : %s \n\n",Calc_Key_Map->Calc_Key_List[keycount].label);
+					} else {
+						keycounter++;
+					}
+					
+			       }
+		       }
+	       
+		}
+		
+		if(keycount==0) // if we had not found what key is pressed
+		{
+			for(j=0;j<4;j++) {
+				for(i=0;i<3;i++) {		//detect a key press in "arrow" zone
+					if((event->button.x   >  Calc_Key_Map->Calc_Key_Coord.x_begin_btn_pavnum   +   i  * Calc_Key_Map->Calc_Key_Coord.x_jump_btn_pavnum)   &&  
+						(event->button.x   <   (Calc_Key_Map->Calc_Key_Coord.x_begin_btn_pavnum   +   i  * Calc_Key_Map->Calc_Key_Coord.x_jump_btn_pavnum   +  Calc_Key_Map->Calc_Key_Coord.x_size_btn_pavnum))   &&   
+						(event->button.y   >  Calc_Key_Map->Calc_Key_Coord.y_begin_btn_pavnum   +  j  * Calc_Key_Map->Calc_Key_Coord.y_jump_btn_pavnum)   &&   
+						(event->button.y   <   (Calc_Key_Map->Calc_Key_Coord.y_begin_btn_pavnum  +    j  * Calc_Key_Map->Calc_Key_Coord.y_jump_btn_pavnum  + Calc_Key_Map->Calc_Key_Coord.y_size_btn_pavnum))) {
 						keycount=keycounter;
 						printf("Key : %s \n\n",Calc_Key_Map->Calc_Key_List[keycount].label);
 					} else {

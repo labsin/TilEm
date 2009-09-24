@@ -45,7 +45,9 @@
 * ---21/09/09---
 * - Aouch I had seen that the left click doesn't work now! Problem : two callback for the only one button_press_event. (sorry for this version...)
 * ---22/09/09---
-* - Correction : only one callback now. mouse_event contains the create_menu and the gtk_menu_popup. (lot of time was spent on this problem)
+* - Correction : only one callback now. mouse_event contains the create_menu and the gtk_menu_popup. (lot of time was spent on this problem)*
+* ---23/09/09---
+* - Change TilemKeyCoord to the 82 stats skin.Change Event.c too.
 */
 
 

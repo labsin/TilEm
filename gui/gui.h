@@ -96,13 +96,27 @@ typedef struct TilemKeyCoord {
 	int x_size_btn_w;
 	int y_size_btn_w;
 	int x_jump_btn_w;
-	/* "real" keyb */
+	/* "real" keyb (top)*/
 	int x_begin_btn_rk;
 	int y_begin_btn_rk;
 	int x_size_btn_rk;
 	int y_size_btn_rk;
 	int x_jump_btn_rk;
 	int y_jump_btn_rk;
+	/* "real" keyb2 (bottom) */
+	int x_begin_btn_rk2;
+	int y_begin_btn_rk2;
+	int x_size_btn_rk2;
+	int y_size_btn_rk2;
+	int x_jump_btn_rk2;
+	int y_jump_btn_rk2;
+	/* pavnum */
+	int x_begin_btn_pavnum;
+	int y_begin_btn_pavnum;
+	int x_size_btn_pavnum;
+	int y_size_btn_pavnum;
+	int x_jump_btn_pavnum;
+	int y_jump_btn_pavnum;
 	/* arrows */
 	int x_begin_btn_ar;
 	int y_begin_btn_ar;
@@ -126,10 +140,10 @@ typedef struct TilemKeyMap {
 }TilemKeyMap;
 
 static const struct TilemKeyCoord x3_coord= {
-	22,189,52,11,39,22,231,52,16,39,28,320,320,320,320,6};
+	20,188,41,11,41,20,231,33,17,41,28,20,372,33,17,159,28,59,372,33,17,41,28,320,320,320,320,6};
 	
 static const struct TilemKeyCoord test_coord= {
-	0,0,52,11,39,22,231,52,16,39,28,320,320,320,320,6};
+	0,0,52,11,39,22,231,52,16,39,28,22,310,52,16,156,28,61,310,52,16,39,28,320,320,320,320,6};
 
 
 /* For the TI83 by example */
@@ -210,7 +224,7 @@ static const struct TilemKeyList x3_keylist[] = {
 /* Actually this values are not really good even for the 83... used for testing tilem_guess_key_map */
 /* Warning : this will be probably modified because it exist model with numpad isn't aligned with the rest of real key */
 static const struct TilemKeyMap x2_keymap= {
-	{19,186,48,10,29,12,222,48,16,39,28,320,320,320,320,6},
+	{6,294,52,11,39,20,231,33,17,41,28,20,372,33,17,159,28,59,372,33,17,41,28,320,320,320,320,6},
 
 	{
 	/* Window  (5keys at the top of the keyboard)*/
@@ -287,7 +301,7 @@ static const struct TilemKeyMap x2_keymap= {
 	
 
 static const struct TilemKeyMap x3_keymap= {
-	{22,189,52,11,39,22,231,52,16,39,28,320,320,320,320,6},
+	{0,0,52,11,39,22,231,52,16,39,28,22,231,52,16,156,28,61,310,52,16,39,28,320,320,320,320,6},
 	
 	{
 	//Window  (5keys at the top of the keyboard)
@@ -330,31 +344,41 @@ static const struct TilemKeyMap x3_keymap= {
 	
 	// 6th row 
 	{ 0x2C, "LOG" },
+	{ 0x0C, "*" },
+	// 7th row 
+	{ 0x2B, "LN" },
+	{ 0x0B, "-" },
+	// 8th row 
+	{ 0x2A, "STO\342\200\211\342\226\266" },
+	{ 0x0A, "+" },
+	// the last one 
+	{ 0x29, "ON" },
+	{ 0x09, "ENTER" },
+	
+	// 6th row
 	{ 0x24, "7" },
 	{ 0x1C, "8" },
 	{ 0x14, "9" },
-	{ 0x0C, "*" },
+	
 	
 	// 7th row 
-	{ 0x2B, "LN" },
 	{ 0x23, "4" },
 	{ 0x1B, "5" },
 	{ 0x13, "6" },
-	{ 0x0B, "-" },
+	
 	
 	// 8th row 
-	{ 0x2A, "STO\342\200\211\342\226\266" },
 	{ 0x22, "1" },
 	{ 0x1A, "2" },
 	{ 0x12, "3" },
-	{ 0x0A, "+" },
+	
 	
 	// the last one 
-	{ 0x29, "ON" },
+	
 	{ 0x21, "0" },
 	{ 0x19, "." },
 	{ 0x11, "(\342\210\222)" },
-	{ 0x09, "ENTER" },
+	
 	
 	// Arrows
 	{ 0x01, "UP" },
@@ -377,13 +401,13 @@ void keyboard_event();
 /* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
 void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap * Calc_Key_Map);	
 	
-	/* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
+/* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
 void toto(GtkWidget* pWindow,GdkEvent *event,GtkWidget * tata);
 
-/* Create a CalcSkin with an TilemCalcEmulator */
+/* Create a CalcSkin with a TilemCalcEmulator */
 TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc);
 
-/* Create a KeyMap with an TilemCalcEmulator */
+/* Create a KeyMap with a TilemCalcEmulator */
 TilemKeyMap* tilem_guess_key_map(TilemCalc* calc);	
 
 /* Set a TilemKeyCoord.To adapt easily personal skins in the future */
@@ -393,7 +417,9 @@ void tilem_set_coord(TilemKeyMap *Calc_Key_Map,TilemKeyCoord test_coord);
 void tilem_set_skin(TilemCalcSkin * Calc_Skin,TilemCalcSkin * skin_perso);
 
 //static int nmenu_items = sizeof(menu_items) / sizeof(menu_items[0]);
-gint button_press (GtkWidget *widget, GdkEvent *event);
+//gint button_press (GtkWidget *widget, GdkEvent *event);
+
+/* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname);
 
 
