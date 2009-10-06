@@ -90,39 +90,10 @@ typedef struct _TilemCalcSkin {
 
 
 typedef struct TilemKeyCoord {
-	/* window */
-	int x_begin_btn_w;
-	int y_begin_btn_w;
-	int x_size_btn_w;
-	int y_size_btn_w;
-	int x_jump_btn_w;
-	/* "real" keyb (top)*/
-	int x_begin_btn_rk;
-	int y_begin_btn_rk;
-	int x_size_btn_rk;
-	int y_size_btn_rk;
-	int x_jump_btn_rk;
-	int y_jump_btn_rk;
-	/* "real" keyb2 (bottom) */
-	int x_begin_btn_rk2;
-	int y_begin_btn_rk2;
-	int x_size_btn_rk2;
-	int y_size_btn_rk2;
-	int x_jump_btn_rk2;
-	int y_jump_btn_rk2;
-	/* pavnum */
-	int x_begin_btn_pavnum;
-	int y_begin_btn_pavnum;
-	int x_size_btn_pavnum;
-	int y_size_btn_pavnum;
-	int x_jump_btn_pavnum;
-	int y_jump_btn_pavnum;
-	/* arrows */
-	int x_begin_btn_ar;
-	int y_begin_btn_ar;
-	int x_size_btn_ar;
-	int y_size_btn_ar;
-	int x_jump_btn_ar;
+	int x;
+	int y;
+	int w;
+	int h;
 }TilemKeyCoord;
 
 
@@ -135,96 +106,201 @@ typedef struct TilemKeyList {
 
 /* This struct is used to know which key is clicked */
 typedef struct TilemKeyMap {
-	TilemKeyCoord Calc_Key_Coord;
-	TilemKeyList Calc_Key_List[60];	//put 60 for the warning...
+	TilemKeyCoord Calc_Key_Coord[60];
+	TilemKeyList Calc_Key_List[50];	//put 60 for the warning...
 }TilemKeyMap;
 
-static const struct TilemKeyCoord x3_coord= {
-	20,188,41,11,41,20,231,33,17,41,28,20,372,33,17,159,28,59,372,33,17,41,28,320,320,320,320,6};
+static const struct TilemKeyCoord x3_coord[]= {
+	{0,0,120,120},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11}};
 	
-static const struct TilemKeyCoord test_coord= {
-	0,0,52,11,39,22,231,52,16,39,28,22,310,52,16,156,28,61,310,52,16,39,28,320,320,320,320,6};
 
 
 /* For the TI83 by example */
 static const struct TilemKeyList x3_keylist[] = {
-	// Window  (5keys at the top of the keyboard)
+	/* Window  (5keys at the top of the keyboard)  */
 	{ 0x35, "Y=" },
 	{ 0x34, "WINDOW" },
 	{ 0x33, "ZOOM" },
 	{ 0x32, "TRACE" },
 	{ 0x31, "GRAPH" },
 	
-	// 1rst row (only 3 keys by line)
-	{ 0x36, "2nd" },
+	/* 1rst row (only 3 keys by line)  */
+	{ 0x36, "2nd3" },
 	{ 0x37, "MODE" },
 	{ 0x38, "DEL" },
 	
-	//2nd row  (only 3 keys by line)
+	/* 2nd row  (only 3 keys by line)  */
 	{ 0x30, "ALPHA" },
 	{ 0x28, "X,T,\342\200\212\316\270,\342\200\212<i>n</i>" },
 	{ 0x20, "STAT" },
 	
-	//3rd row 
+	/* 3rd row  */
 	{ 0x2F, "MATH" },
 	{ 0x27, "APPS" },
 	{ 0x1F, "PRGM" },
 	{ 0x17, "VARS" },
 	{ 0x0F, "CLEAR" },
 	
-	// 4rth row 
+	/* 4rth row   */
 	{ 0x2E, "X<sup>-1</sup>" },
 	{ 0x26, "SIN" },
 	{ 0x1E, "COS" },
 	{ 0x16, "TAN" },
 	{ 0x0E, "^" },
 	
-	//5th row
+	/* 5th row   */
 	{ 0x2D, "X<sup>2</sup>" },
 	{ 0x25, "," },
 	{ 0x1D, "(" },
 	{ 0x15, ")" },
 	{ 0x0D, "/" },
 	
-	// 6th row 
+	/* 6th row   */
 	{ 0x2C, "LOG" },
+	{ 0x0C, "*" },
+	/* 7th row   */
+	{ 0x2B, "LN" },
+	{ 0x0B, "-" },
+	/* 8th row   */
+	{ 0x2A, "STO\342\200\211\342\226\266" },
+	{ 0x0A, "+" },
+	/* the last one   */
+	{ 0x29, "ON" },
+	{ 0x09, "ENTER" },
+	
+	/*6th row  */
 	{ 0x24, "7" },
 	{ 0x1C, "8" },
 	{ 0x14, "9" },
-	{ 0x0C, "*" },
 	
-	// 7th row 
-	{ 0x2B, "LN" },
+	
+	/* 7th row   */
 	{ 0x23, "4" },
 	{ 0x1B, "5" },
 	{ 0x13, "6" },
-	{ 0x0B, "-" },
 	
-	// 8th row 
-	{ 0x2A, "STO\342\200\211\342\226\266" },
+	
+	/* 8th row   */
 	{ 0x22, "1" },
 	{ 0x1A, "2" },
 	{ 0x12, "3" },
-	{ 0x0A, "+" },
 	
-	// the last one 
-	{ 0x29, "ON" },
+	
+	/* the last one  */
+	
 	{ 0x21, "0" },
 	{ 0x19, "." },
 	{ 0x11, "(\342\210\222)" },
-	{ 0x09, "ENTER" },
 	
-	// Arrows 
+	
+	/* Arrows */
 	{ 0x01, "UP" },
 	{ 0x02, "LEFT" },
 	{ 0x03, "RIGHT" },
-	{ 0x04, "DOWN" }}; 
-
+	{ 0x04, "DOWN" }};
 	
 /* Actually this values are not really good even for the 83... used for testing tilem_guess_key_map */
 /* Warning : this will be probably modified because it exist model with numpad isn't aligned with the rest of real key */
 static const struct TilemKeyMap x2_keymap= {
-	{6,294,52,11,39,20,231,33,17,41,28,20,372,33,17,159,28,59,372,33,17,41,28,320,320,320,320,6},
+	{
+	{0,0,120,120},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{120,1120,100,100},
+	{20,188,41,11},
+	{20,188,41,11},
+	{100,300,50,50},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	},
 
 	{
 	/* Window  (5keys at the top of the keyboard)*/
@@ -301,86 +377,136 @@ static const struct TilemKeyMap x2_keymap= {
 	
 
 static const struct TilemKeyMap x3_keymap= {
-	{0,0,52,11,39,22,231,52,16,39,28,22,231,52,16,156,28,61,310,52,16,39,28,320,320,320,320,6},
+	{
+	{0,0,120,120},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{120,1120,100,100},
+	{20,188,41,11},
+	{20,188,41,11},
+	{100,300,50,50},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	{20,188,41,11},
+	},
 	
 	{
-	//Window  (5keys at the top of the keyboard)
+	/* Window  (5keys at the top of the keyboard)  */
 	{ 0x35, "Y=" },
 	{ 0x34, "WINDOW" },
 	{ 0x33, "ZOOM" },
 	{ 0x32, "TRACE" },
 	{ 0x31, "GRAPH" },
 	
-	// 1rst row (only 3 keys by line)
+	/* 1rst row (only 3 keys by line)  */
 	{ 0x36, "2nd3" },
 	{ 0x37, "MODE" },
 	{ 0x38, "DEL" },
 	
-	// 2nd row  (only 3 keys by line)
+	/* 2nd row  (only 3 keys by line)  */
 	{ 0x30, "ALPHA" },
 	{ 0x28, "X,T,\342\200\212\316\270,\342\200\212<i>n</i>" },
 	{ 0x20, "STAT" },
 	
-	// 3rd row 
+	/* 3rd row  */
 	{ 0x2F, "MATH" },
 	{ 0x27, "APPS" },
 	{ 0x1F, "PRGM" },
 	{ 0x17, "VARS" },
 	{ 0x0F, "CLEAR" },
 	
-	//4rth row 
+	/* 4rth row   */
 	{ 0x2E, "X<sup>-1</sup>" },
 	{ 0x26, "SIN" },
 	{ 0x1E, "COS" },
 	{ 0x16, "TAN" },
 	{ 0x0E, "^" },
 	
-	// 5th row 
+	/* 5th row   */
 	{ 0x2D, "X<sup>2</sup>" },
 	{ 0x25, "," },
 	{ 0x1D, "(" },
 	{ 0x15, ")" },
 	{ 0x0D, "/" },
 	
-	// 6th row 
+	/* 6th row   */
 	{ 0x2C, "LOG" },
 	{ 0x0C, "*" },
-	// 7th row 
+	/* 7th row   */
 	{ 0x2B, "LN" },
 	{ 0x0B, "-" },
-	// 8th row 
+	/* 8th row   */
 	{ 0x2A, "STO\342\200\211\342\226\266" },
 	{ 0x0A, "+" },
-	// the last one 
+	/* the last one   */
 	{ 0x29, "ON" },
 	{ 0x09, "ENTER" },
 	
-	// 6th row
+	/*6th row  */
 	{ 0x24, "7" },
 	{ 0x1C, "8" },
 	{ 0x14, "9" },
 	
 	
-	// 7th row 
+	/* 7th row   */
 	{ 0x23, "4" },
 	{ 0x1B, "5" },
 	{ 0x13, "6" },
 	
 	
-	// 8th row 
+	/* 8th row   */
 	{ 0x22, "1" },
 	{ 0x1A, "2" },
 	{ 0x12, "3" },
 	
 	
-	// the last one 
+	/* the last one  */
 	
 	{ 0x21, "0" },
 	{ 0x19, "." },
 	{ 0x11, "(\342\210\222)" },
 	
 	
-	// Arrows
+	/* Arrows */
 	{ 0x01, "UP" },
 	{ 0x02, "LEFT" },
 	{ 0x03, "RIGHT" },
@@ -393,7 +519,7 @@ static const struct TilemKeyMap x3_keymap= {
 	
 	
 /* Detect and handle a "destroy" event */
-void OnDestroy(GtkWidget *pWidget, gpointer pData);	// close the pWindow
+void OnDestroy(); /* close the pWindow */
 
 /* Detect a keyboard press event */
 void keyboard_event();	
@@ -410,21 +536,18 @@ TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc);
 /* Create a KeyMap with a TilemCalcEmulator */
 TilemKeyMap* tilem_guess_key_map(TilemCalc* calc);	
 
-/* Set a TilemKeyCoord.To adapt easily personal skins in the future */
-void tilem_set_coord(TilemKeyMap *Calc_Key_Map,TilemKeyCoord test_coord);
-
 /* Set a TilemCalcSkin.To adapt easily personal skins in the future */
 void tilem_set_skin(TilemCalcSkin * Calc_Skin,TilemCalcSkin * skin_perso);
 
-//static int nmenu_items = sizeof(menu_items) / sizeof(menu_items[0]);
-//gint button_press (GtkWidget *widget, GdkEvent *event);
+/* static int nmenu_items = sizeof(menu_items) / sizeof(menu_items[0]); */
+/* gint button_press (GtkWidget *widget, GdkEvent *event); */
 
 /* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname);
 
 
-//gint show_menu(GtkWidget *widget, GdkEvent *event);
-
+/* gint show_menu(GtkWidget *widget, GdkEvent *event); */
+void OnAbout(GtkWidget *pBtn, gpointer data);
 
 
 

@@ -48,6 +48,8 @@
 * - Correction : only one callback now. mouse_event contains the create_menu and the gtk_menu_popup. (lot of time was spent on this problem)*
 * ---23/09/09---
 * - Change TilemKeyCoord to the 82 stats skin.Change Event.c too.
+* ---06/10/09---
+* - Beginning the correction : change the method for testing coordinates clicks (one line now) . The coordinates will be imported from a file soon.
 */
 
 
@@ -158,10 +160,6 @@ int main(int argc, char **argv)
 	Calc_Key_Map= tilem_try_new0(TilemKeyMap, 1);
 	Calc_Key_Map=tilem_guess_key_map(emu.calc);
 	printf("Calc_Key_Map Return Values :\n");					//debug
-	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.x_begin_btn_w);		//debug
-	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.y_begin_btn_w);		//debug
-	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.x_size_btn_w);		//debug
-	printf("%d\n",Calc_Key_Map->Calc_Key_Coord.y_size_btn_w);		//debug
 	/* end */	
 	
 	/* Set another TilemKeyCoord */
