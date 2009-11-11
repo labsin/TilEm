@@ -93,7 +93,7 @@ byte xz_z80_rdmem(TilemCalc* calc, dword A)
 			page = 0x81;
 	}
 
-	if (TILEM_UNLIKELY(page == 0x3E && !calc->flash.unlock)) {
+	if (TILEM_UNLIKELY(page == 0x7E && !calc->flash.unlock)) {
 		tilem_warning(calc, "Reading from read-protected sector");
 		return (0xff);
 	}
@@ -138,7 +138,7 @@ byte xz_z80_rdmem_m1(TilemCalc* calc, dword A)
 		return (0x00);
 	}
 
-	if (TILEM_UNLIKELY(page == 0x3E && !calc->flash.unlock)) {
+	if (TILEM_UNLIKELY(page == 0x7E && !calc->flash.unlock)) {
 		tilem_warning(calc, "Reading from read-protected sector");
 		return (0xff);
 	}

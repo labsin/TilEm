@@ -617,9 +617,10 @@ void tilem_user_timer_expired(TilemCalc* calc, void* data);
 /* Model IDs */
 enum {
 	TILEM_CALC_TI73 = '7',	       /* TI-73 / TI-73 Explorer */
-	TILEM_CALC_TI81 = '1',	       /* TI-81 (original HW only) */
+	TILEM_CALC_TI76 = 'f',	       /* TI-76.fr */
+	TILEM_CALC_TI81 = '1',	       /* TI-81 */
 	TILEM_CALC_TI82 = '2',	       /* TI-82 */
-	TILEM_CALC_TI83 = '3',	       /* TI-83 / TI-82 STATS */
+	TILEM_CALC_TI83 = '3',	       /* TI-83 / TI-82 STATS [.fr] */
 	TILEM_CALC_TI83P = 'p',	       /* TI-83 Plus */
 	TILEM_CALC_TI83P_SE = 's',     /* TI-83 Plus Silver Edition */
 	TILEM_CALC_TI84P = '4',	       /* TI-84 Plus */
@@ -689,9 +690,6 @@ struct _TilemHardware {
 	/* Convert physical <-> logical addresses */
 	dword	(*mem_ltop)	(TilemCalc*, dword);
 	dword	(*mem_ptol)	(TilemCalc*, dword);
-
-	/* Check if a ROM file is plausible */
-	int	(*checkrom)	(FILE*);
 };
 
 /* Current state of the calculator */
@@ -752,9 +750,6 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile);
 
 /* Guess calculator type for a ROM file */
 char tilem_guess_rom_type(FILE* romfile);
-
-/* Search for an ASCII string in a file */
-int tilem_rom_find_string(const char* str, FILE* romfile, dword limit);
 
 /* Check validity of calculator certificate; repair if necessary */
 void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert);

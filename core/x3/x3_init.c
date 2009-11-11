@@ -46,8 +46,3 @@ void x3_reset(TilemCalc* calc)
 	tilem_z80_set_timer(calc, TIMER_INT2A, 1300, 9259, 1);
 	tilem_z80_set_timer(calc, TIMER_INT2B, 1000, 9259, 1);
 }
-
-int x3_checkrom(FILE* romfile)
-{
-	return tilem_rom_find_string("TI82", romfile, 0x10 * 0x4000);
-}

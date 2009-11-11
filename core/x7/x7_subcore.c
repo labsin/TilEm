@@ -69,5 +69,4 @@ TilemHardware hardware_ti73 = {
 	x7_z80_in, x7_z80_out,
 	x7_z80_wrmem, x7_z80_rdmem, x7_z80_rdmem_m1, NULL,
 	x7_z80_ptimer, tilem_lcd_t6a04_get_data,
-	x7_mem_ltop, x7_mem_ptol,
-	x7_checkrom };
+	x7_mem_ltop, x7_mem_ptol };

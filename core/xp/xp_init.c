@@ -65,9 +65,3 @@ void xp_stateloaded(TilemCalc* calc, int savtype)
 	tilem_calc_fix_certificate(calc, calc->mem + (0x1E * 0x4000L));
 	(void) savtype;
 }
-
-int xp_checkrom(FILE *romfile)
-{
-	return tilem_rom_find_string("TI-83 Plus", romfile, 8 * 0x4000);
-}
-

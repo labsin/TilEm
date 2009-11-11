@@ -70,5 +70,4 @@ TilemHardware hardware_ti84pse = {
 	xz_z80_in, xz_z80_out,
 	xz_z80_wrmem, xz_z80_rdmem, xz_z80_rdmem_m1, NULL,
 	xz_z80_ptimer, tilem_lcd_t6a04_get_data,
-	xz_mem_ltop, xz_mem_ptol,
-	xz_checkrom };
+	xz_mem_ltop, xz_mem_ptol };

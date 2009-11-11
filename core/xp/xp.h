@@ -58,6 +58,5 @@ byte xp_z80_rdmem(TilemCalc* calc, dword addr);
 byte xp_z80_rdmem_m1(TilemCalc* calc, dword addr);
 dword xp_mem_ltop(TilemCalc* calc, dword addr);
 dword xp_mem_ptol(TilemCalc* calc, dword addr);
-int xp_checkrom(FILE* romfile);
 
 #endif

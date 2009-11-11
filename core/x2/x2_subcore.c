@@ -54,5 +54,4 @@ const TilemHardware hardware_ti82 = {
 	x2_z80_in, x2_z80_out,
 	x2_z80_wrmem, x2_z80_rdmem, x2_z80_rdmem, NULL,
 	x2_z80_ptimer, tilem_lcd_t6a04_get_data,
-	x2_mem_ltop, x2_mem_ptol,
-	x2_checkrom };
+	x2_mem_ltop, x2_mem_ptol };

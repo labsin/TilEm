@@ -44,8 +44,3 @@ void x2_reset(TilemCalc* calc)
 	/* FIXME: measure actual frequency */
 	tilem_z80_set_timer(calc, TIMER_INT, 1000, 9259, 1);
 }
-
-int x2_checkrom(FILE* romfile)
-{
-	return !tilem_rom_find_string("CATALOG", romfile, 8 * 0x4000);
-}

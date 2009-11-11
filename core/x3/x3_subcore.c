@@ -43,7 +43,7 @@ static const char* keynames[64] = {
 	0, 0, 0, 0, 0, 0, 0, 0};
 
 const TilemHardware hardware_ti83 = {
-	'3', "ti83", "TI-83",
+	'3', "ti83", "TI-83 / TI-82 STATS",
 	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_T6A04),
 	96, 64, 16 * 0x4000, 0x8000, 15 * 64, 0x40,
 	0, NULL, 0,
@@ -54,6 +54,18 @@ const TilemHardware hardware_ti83 = {
 	x3_z80_in, x3_z80_out,
 	x3_z80_wrmem, x3_z80_rdmem, x3_z80_rdmem, NULL,
 	x3_z80_ptimer, tilem_lcd_t6a04_get_data,
-	x3_mem_ltop, x3_mem_ptol,
-	x3_checkrom };
+	x3_mem_ltop, x3_mem_ptol };
 
+const TilemHardware hardware_ti76 = {
+	'f', "ti76", "TI-76.fr",
+	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_T6A04),
+	96, 64, 16 * 0x4000, 0x8000, 15 * 64, 0x40,
+	0, NULL, 0,
+	NUM_HW_REGS, hwregnames,
+	NUM_HW_TIMERS, hwtimernames,
+	keynames,
+	x3_reset, NULL,
+	x3_z80_in, x3_z80_out,
+	x3_z80_wrmem, x3_z80_rdmem, x3_z80_rdmem, NULL,
+	x3_z80_ptimer, tilem_lcd_t6a04_get_data,
+	x3_mem_ltop, x3_mem_ptol };

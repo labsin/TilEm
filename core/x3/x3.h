@@ -46,6 +46,5 @@ void x3_z80_wrmem(TilemCalc* calc, dword addr, byte value);
 byte x3_z80_rdmem(TilemCalc* calc, dword addr);
 dword x3_mem_ltop(TilemCalc* calc, dword addr);
 dword x3_mem_ptol(TilemCalc* calc, dword addr);
-int x3_checkrom(FILE* romfile);
 
 #endif

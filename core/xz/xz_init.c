@@ -83,10 +83,3 @@ void xz_stateloaded(TilemCalc* calc, int savtype)
 	tilem_calc_fix_certificate(calc, calc->mem + (0x7E * 0x4000L));
 	(void) savtype;
 }
-
-int xz_checkrom(FILE* romfile)
-{
-	fseek(romfile, 0x1FC000L, SEEK_CUR);
-	return tilem_rom_find_string("Operating", romfile, 0x4000);
-}
-

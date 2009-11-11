@@ -47,8 +47,3 @@ void x6_reset(TilemCalc* calc)
 	/* FIXME: measure actual frequency */
 	tilem_z80_set_timer(calc, TIMER_INT, 1000, 5000, 1);
 }
-
-int x6_checkrom(FILE* romfile)
-{
-	return !tilem_rom_find_string("TI82", romfile, 0x10 * 0x4000);
-}
