@@ -60,8 +60,7 @@ void xp_reset(TilemCalc* calc)
 	tilem_z80_set_timer(calc, TIMER_INT2B, 1000, 8474, 1);
 }
 
-void xp_stateloaded(TilemCalc* calc, int savtype)
+void xp_stateloaded(TilemCalc* calc, int savtype TILEM_ATTR_UNUSED)
 {
 	tilem_calc_fix_certificate(calc, calc->mem + (0x1E * 0x4000L));
-	(void) savtype;
 }
