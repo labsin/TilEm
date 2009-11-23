@@ -12,34 +12,44 @@
 **
 ****************************************************************************/
 
+#ifndef _CALC_GRID_H_
+#define _CALC_GRID_H_
+
 /*!
-	\file main.cpp
-	\brief Implementation of main()
+	\file calcgrid.h
+	\brief Definition of the CalcGrid class
 */
 
-#include <QMainWindow>
-#include <QApplication>
+#include <QScrollArea>
 
-#include "calcgrid.h"
+class QLayout;
 
-int main(int argc, char **argv)
+class CalcView;
+
+class CalcGrid : public QScrollArea
 {
-	QApplication app(argc, argv);
-	QStringList args = QCoreApplication::arguments();
-	
-	//CalcView view(args.count() > 1 ? args.at(1) : QString());
-	//view.show();
-	
-	QMainWindow win;
-	
-	CalcGrid *g = new CalcGrid(&win);
-	
-	for ( int i = 1; i < args.count(); ++i )
-		g->addCalc(args.at(i));
-	
-	win.setCentralWidget(g);
-	
-	win.show();
-	
-	return app.exec();
-}
+	public:
+		CalcGrid(QWidget *p = 0);
+		~CalcGrid();
+		
+	public slots:
+		int addCalc(CalcView *c);
+		int addCalc(const QString& romfile);
+		
+		void removeCalc(int idx, bool del = true);
+		void removeCalc(CalcView *c, bool del = true);
+		
+	protected:
+		virtual void keyPressEvent(QKeyEvent *e);
+		
+		virtual bool focusNextPrevChild(bool next);
+		
+		int focusedCalc() const;
+		
+	private:
+		QList<CalcView*> m_calcs;
+		
+		QLayout *m_grid;
+};
+
+#endif

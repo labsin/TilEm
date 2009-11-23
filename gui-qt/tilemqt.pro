@@ -16,8 +16,8 @@ enable_link {
 }
 
 # Input
-HEADERS += calc.h calclink.h settings.h calcview.h
-SOURCES += main.cpp calc.cpp calclink.cpp settings.cpp calcview.cpp
+HEADERS += calc.h calclink.h settings.h calcview.h calcgrid.h
+SOURCES += main.cpp calc.cpp calclink.cpp settings.cpp calcview.cpp calcgrid.cpp
 
 INCLUDEPATH += ../core
 LIBS += -L../core -ltilemcore

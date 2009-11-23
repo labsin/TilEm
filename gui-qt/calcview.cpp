@@ -25,6 +25,7 @@
 #include <QDebug>
 #include <QImage>
 #include <QThread>
+#include <QBitmap>
 #include <QPainter>
 #include <QFileInfo>
 #include <QKeyEvent>
@@ -114,8 +115,10 @@ class CalcThread : public QThread
 */
 
 CalcView::CalcView(const QString& file, QWidget *p)
-: QWidget(p), m_link(0), m_thread(0), m_screen(0), m_skin(0), m_keymask(0)
+: QFrame(p), m_link(0), m_thread(0), m_screen(0), m_skin(0), m_keymask(0)
 {
+	setFrameShape(QFrame::StyledPanel);
+	
 	// accept drops for easy file download
 	setAcceptDrops(true);
 	
@@ -258,6 +261,7 @@ void CalcView::setupSkin()
 	m_screen = new QImage(m_lcdW, m_lcdH, QImage::Format_RGB32);
 	
 	setFixedSize(m_skin->size());
+	//setMask(QBitmap::fromImage(m_skin->createHeuristicMask()));
 	
 	//qDebug() << s.value("skin") << m_skin->size();
 	
@@ -425,7 +429,7 @@ void CalcView::keyPressEvent(QKeyEvent *e)
 	if ( k )
 		m_calc->keyPress(k);
 	else
-		QWidget::keyPressEvent(e);
+		QFrame::keyPressEvent(e);
 }
 
 void CalcView::keyReleaseEvent(QKeyEvent *e)
@@ -435,7 +439,7 @@ void CalcView::keyReleaseEvent(QKeyEvent *e)
 	if ( k )
 		m_calc->keyRelease(k);
 	else
-		QWidget::keyReleaseEvent(e);
+		QFrame::keyReleaseEvent(e);
 }
 
 void CalcView::mousePressEvent(QMouseEvent *e)
@@ -445,7 +449,7 @@ void CalcView::mousePressEvent(QMouseEvent *e)
 	if ( k )
 		m_calc->keyPress(k);
 	else
-		QWidget::mousePressEvent(e);
+		QFrame::mousePressEvent(e);
 }
 
 void CalcView::mouseReleaseEvent(QMouseEvent *e)
@@ -455,7 +459,7 @@ void CalcView::mouseReleaseEvent(QMouseEvent *e)
 	if ( k )
 		m_calc->keyRelease(k);
 	else
-		QWidget::mouseReleaseEvent(e);
+		QFrame::mouseReleaseEvent(e);
 }
 
 void CalcView::contextMenuEvent(QContextMenuEvent *e)
@@ -468,18 +472,50 @@ void CalcView::timerEvent(QTimerEvent *e)
 	if ( e->timerId() == m_lcdTimerId )
 		updateLCD();
 	else
-		QWidget::timerEvent(e);
+		QFrame::timerEvent(e);
 }
 
 void CalcView::paintEvent(QPaintEvent *e)
 {
+	QFrame::paintEvent(e);
+	
 	QPainter p(this);
 	
 	// smart update to reduce repaint overhead
 	if ( e->rect() != QRect(m_lcdX, m_lcdY, m_lcdW, m_lcdH) )
+	{
+		if ( hasFocus() )
+		{
+			// TODO : draw focus marker
+			
+		}
+		
 		p.drawImage(0, 0, *m_skin);
+	}
 	
 	p.drawImage(m_lcdX, m_lcdY, *m_screen);
+}
+
+void CalcView::focusInEvent(QFocusEvent *e)
+{
+	setFrameShadow(QFrame::Raised);
+	
+	setBackgroundRole(QPalette::AlternateBase);
+	
+	QFrame::focusInEvent(e);
+	
+	update();
+}
+
+void CalcView::focusOutEvent(QFocusEvent *e)
+{
+	setFrameShadow(QFrame::Plain);
+	
+	setBackgroundRole(QPalette::Base);
+	
+	QFrame::focusOutEvent(e);
+	
+	update();
 }
 
 static bool isSupported(const QMimeData *md, CalcLink *m_link)
@@ -508,7 +544,7 @@ void CalcView::dropEvent(QDropEvent *e)
 			m_link->send(file);
 	}
 	
-	QWidget::dropEvent(e);
+	QFrame::dropEvent(e);
 }
 
 void CalcView::dragEnterEvent(QDragEnterEvent *e)
@@ -516,15 +552,15 @@ void CalcView::dragEnterEvent(QDragEnterEvent *e)
 	if ( isSupported(e->mimeData(), m_link) )
 		e->acceptProposedAction();
 	else
-		QWidget::dragEnterEvent(e);
+		QFrame::dragEnterEvent(e);
 }
 
 void CalcView::dragMoveEvent(QDragMoveEvent *e)
 {
-	QWidget::dragMoveEvent(e);
+	QFrame::dragMoveEvent(e);
 }
 
 void CalcView::dragLeaveEvent(QDragLeaveEvent *e)
 {
-	QWidget::dragLeaveEvent(e);
+	QFrame::dragLeaveEvent(e);
 }

@@ -22,7 +22,7 @@
 
 #include <QHash>
 #include <QString>
-#include <QWidget>
+#include <QFrame>
 
 class QMenu;
 class QImage;
@@ -31,7 +31,7 @@ class Calc;
 class CalcLink;
 class CalcThread;
 
-class CalcView : public QWidget
+class CalcView : public QFrame
 {
 	Q_OBJECT
 	
@@ -68,6 +68,8 @@ class CalcView : public QWidget
 		virtual void dragMoveEvent(QDragMoveEvent *e);
 		virtual void dragLeaveEvent(QDragLeaveEvent *e);
 		
+		virtual void focusInEvent(QFocusEvent *e);
+		virtual void focusOutEvent(QFocusEvent *e);
 		
 		void setupSkin();
 		void setupKeyboardLayout();
