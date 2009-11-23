@@ -1,0 +1,50 @@
+
+TilEmQt : a GUI frontend to TilEm core library
+
+It is written in C++ using the Qt4 toolkit and released under GNU GPL3.
+
+1) Building
+
+	* get all dependencies, namely Qt4 and tilem (and obviously their dependencies as well)
+	optionnally you may want to get libticalcs2/libticables/libtifiles (all of which are TILP
+	dependencies) to enable link emulation.
+	
+	* run the following command in a shell (in the appropriate directory) :
+	
+		qmake && make
+		
+	or, to build with link emulation :
+	
+		qmake -config enable_link && make
+		
+2) Using
+	
+	To use the emulator you will need a ROM file. Note that the ROM file need not contain a
+	valid OS : TilEm supports OS-less ROMs and (if build with linking emulation) is able to
+	load the OS of your choice into such a "blank" ROM.
+	
+	The emulator window will show up as a calculator image. All buttons are clickable and most
+	keypresses can also be triggered through the keyboard.
+	
+	At anytime you have the possibility to save the emulator state (ROM/RAM/regs/...) into a file
+	(note that it may alter the source ROM) and to switch to a different ROM.
+	
+	tilem supports z80-based TI calculators from the 73 to the 86 but some skins are lacking
+	at the moment so it is not recommended to try to load 76/81/82/85/86 ROMS at the moment.
+	
+3) Extending
+
+	There are two main ways to extend TilEmQt and both are useful and welcome :
+	
+	* creating new skins (for not yet supported clacs or with better resolution for instance)
+	-> no programming knowledge required
+	
+	* hacking the source code to add new features and/or fix bugs
+	-> requires C/C++ knowledge and some familiarity with either Qt or tilem/ticalcs/ticables
+	libs.
+	
+4) Whodunnit
+
+libtilemcore : Benjamin Moody aka FloppusMaximus <floppusmaximus@users.sf.net>
+
+Qt-based GUI : Hugues Luc Bruant aka fullmetalcoder <non.deterministic.finite.organism@gmail.com>
