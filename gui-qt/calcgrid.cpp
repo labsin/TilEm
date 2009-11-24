@@ -84,10 +84,6 @@ void CalcGrid::removeCalc(CalcView *c, bool del)
 
 void CalcGrid::keyPressEvent(QKeyEvent *e)
 {
-// 	if ( e->key() == Qt::Key_Tab )
-// 	{
-// 		
-// 	}
 	return QScrollArea::keyPressEvent(e);
 }
 

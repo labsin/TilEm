@@ -20,6 +20,8 @@
 	\brief Definition of the Calc class
 */
 
+#include "linkbuffer.h"
+
 extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +31,7 @@ extern "C" {
 
 #include <QObject>
 #include <QMutex>
+#include <QByteArray>
 
 class Calc : public QObject
 {
@@ -50,6 +53,17 @@ class Calc : public QObject
 		int lcdHeight() const;
 		const unsigned int* lcdData() const;
 		
+		void resetLink();
+		
+		bool isSending() const;
+		bool isReceiving() const;
+		
+		char getByte();
+		void sendByte(char c);
+		
+		QByteArray getBytes(int n);
+		void sendBytes(const QByteArray& d);
+		
 	public slots:
 		void load(const QString& file);
 		void save(const QString& file);
@@ -62,15 +76,22 @@ class Calc : public QObject
 		void keyPress(int sk);
 		void keyRelease(int sk);
 		
-	private:
-		QMutex m_run;
+	signals:
+		void bytesAvailable(int n);
 		
+	private:
 		QString m_romFile;
 		
+		QMutex m_run;
 		TilemCalc *m_calc;
 		
 		unsigned char *m_lcd;
 		unsigned int *m_lcd_comp;
+		
+		bool m_link_lock;
+		
+		LinkBuffer m_input, m_output;
+		mutable QMutex m_read, m_write;
 };
 
 #endif

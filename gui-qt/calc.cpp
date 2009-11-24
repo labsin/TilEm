@@ -92,6 +92,83 @@ QString Calc::modelString() const
 	return "83pBE";
 }
 
+void Calc::resetLink()
+{
+	tilem_linkport_graylink_reset(m_calc);
+}
+
+/*!
+	\return whether the *calc* is writing data through the linkport
+*/
+bool Calc::isSending() const
+{
+	//QMutexLocker lock(&m_write);
+	
+	return m_output.count();
+}
+
+/*!
+	\return whether the *calc* has data to read from the linkport
+*/
+bool Calc::isReceiving() const
+{
+	//QMutexLocker lock(&m_read);
+	
+	return m_input.count();
+}
+
+/*!
+	\brief get a byte from the buffer in which calc linkport writes are stored
+*/
+char Calc::getByte()
+{
+	QMutexLocker lock(&m_write);
+	
+	if ( m_output.isEmpty() )
+		return 0;
+	
+	char c = m_output.at(0);
+	
+	m_output.remove(1);
+	
+	return c;
+}
+
+/*!
+	\brief send a byte to the calc
+*/
+void Calc::sendByte(char c)
+{
+	QMutexLocker lock(&m_read);
+	
+	m_input.append(c);
+}
+
+/*!
+	\brief get up to n bytes from the buffer in which calc linkport writes are stored
+*/
+QByteArray Calc::getBytes(int n)
+{
+	QMutexLocker lock(&m_write);
+	
+	if ( n < 0 || m_output.isEmpty() )
+		return QByteArray();
+	
+	n = qMin(n, (int)m_output.count());
+	
+	return m_output.take(n);
+}
+
+/*!
+	\brief send bytes to the calc
+*/
+void Calc::sendBytes(const QByteArray& d)
+{
+	QMutexLocker lock(&m_read);
+	
+	m_input += d;
+}
+
 void Calc::load(const QString& file)
 {
 	QMutexLocker lock(&m_run);
@@ -126,6 +203,12 @@ void Calc::load(const QString& file)
 	m_calc = tilem_calc_new(tilem_guess_rom_type(romfile));
 	tilem_calc_load_state(m_calc, romfile, savefile);
 	
+	// some link emulation magic...
+	m_calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
+	m_calc->z80.stop_mask &= ~(TILEM_STOP_LINK_READ_BYTE | TILEM_STOP_LINK_WRITE_BYTE | TILEM_STOP_LINK_ERROR);
+	
+	m_link_lock = false;
+	
 	// instant LCD state and "composite" LCD state (grayscale is a bitch...)
 	m_lcd = new unsigned char[m_calc->hw.lcdwidth * m_calc->hw.lcdheight / 8];
 	m_lcd_comp = new unsigned int[m_calc->hw.lcdwidth * m_calc->hw.lcdheight];
@@ -142,6 +225,8 @@ void Calc::load(const QString& file)
 
 void Calc::save(const QString& file)
 {
+	QMutexLocker lock(&m_run);
+	
 	QFileInfo info(file);
 	
 	FILE *romfile, *savefile;
@@ -165,6 +250,8 @@ void Calc::save(const QString& file)
 	
 }
 
+#include <QTime>
+
 int Calc::run_us(int usec)
 {
 	QMutexLocker lock(&m_run);
@@ -172,10 +259,115 @@ int Calc::run_us(int usec)
 	if ( !m_calc )
 		return -1;
 	
-	int remaining = 0;
+	int remaining = usec;
 	
-	tilem_z80_run_time(m_calc, usec, &remaining);
+	//QTime t;
+	//t.start();
+	
+	while ( remaining > 0 )
+	{
+		// try to forward data written into input buffer to link port
+		
+		if ( !m_link_lock )
+		{
+			if ( m_input.count() )
+			{
+				m_read.lock();
+				m_calc->z80.stop_reason = 0;
 				
+				if ( !tilem_linkport_graylink_send_byte(m_calc, m_input.at(0)) )
+				{
+					//qDebug("@send : 0x%02x", m_input.at(0));
+					m_input.remove(1);
+					
+					if ( !(m_calc->z80.stop_reason & TILEM_STOP_LINK_WRITE_BYTE) )
+					{
+						m_link_lock = true;
+					} else {
+						// here's the trick to speed things up : batch processing whenever possible
+						while ( m_input.count() && (m_calc->z80.stop_reason & TILEM_STOP_LINK_WRITE_BYTE) )
+						{
+							m_calc->z80.stop_reason = 0;
+							
+							if ( !tilem_linkport_graylink_send_byte(m_calc, m_input.at(0)) )
+							{
+								m_input.remove(1);
+							}
+						}
+					}
+					//else
+					//	qDebug("@byte successfully written");
+				}
+				m_read.unlock();
+			} else {
+				
+				int b = tilem_linkport_graylink_get_byte(m_calc);
+				
+				if ( b != -1 )
+				{
+					m_write.lock();
+					// one byte successfully read yay!
+					//qDebug("@get : 0x%02x", b);
+					m_output.append(b);
+					//emit bytesAvailable(m_output.count());
+					m_write.unlock();
+				}
+			}
+		}
+		
+		int res = tilem_z80_run_time(m_calc, remaining, &remaining);
+		
+		//if ( res )
+		//	qDebug("@%i", res);
+		
+// 		if ( !m_link_timeout && tilem_linkport_graylink_ready(m_calc) )
+// 			m_link_lock = false;
+		
+		/*
+			some link emulation magic : seamlessly transfer
+			data from buffers to the calc using a virtual
+			graylink to allow asynchronous transfers
+		*/
+		if ( res & TILEM_STOP_LINK_READ_BYTE )
+		{
+			//qDebug("@byte successfully read");
+			m_link_lock = false;
+		}
+		
+		if ( res & TILEM_STOP_LINK_WRITE_BYTE )
+		{
+			//qDebug("@byte successfully written");
+			m_link_lock = false;
+		}
+		
+// 		if ( res & TILEM_STOP_LINK_ERROR )
+// 		{
+// 			qWarning("@link error.");
+// 			tilem_linkport_graylink_reset(m_calc);
+// 			break;
+// 		}
+// 		
+// 		if ( res & TILEM_STOP_INVALID_INST )
+// 		{
+// 			break;
+// 		}
+// 		
+// 		if ( res & TILEM_STOP_UNDOCUMENTED_INST )
+// 		{
+// 			break;
+// 		}
+// 		
+// 		if ( res & TILEM_STOP_BREAKPOINT )
+// 		{
+// 			break;
+// 		}
+	}
+	
+	//qDebug("[%i, %i]", usec, t.elapsed());
+	
+	if ( m_calc->z80.stop_reason )
+		qDebug(">%i", m_calc->z80.stop_reason);
+	
 	return m_calc->z80.stop_reason;
 }
 

@@ -374,6 +374,9 @@ void CalcView::updateLCD()
 		const int w = m_calc->lcdWidth();
 		const int h = m_calc->lcdHeight();
 		
+		QRgb *d = reinterpret_cast<QRgb*>(m_screen->bits());
+		const unsigned int *cd = m_calc->lcdData();
+		
 		// write LCD into skin image
 		for ( int i = 0; i < m_lcdH; ++i )
 		{
@@ -383,7 +386,8 @@ void CalcView::updateLCD()
 				int x = (w * j) / m_lcdW;
 				
 				//qDebug("(%i, %i) maps (%i, %i)", j, i, x, y);
-				m_screen->setPixel(j, i, m_calc->lcdData()[y * w + x]);
+				//m_screen->setPixel(j, i, m_calc->lcdData()[y * w + x]);
+				d[i * m_lcdW + j] = cd[y * w + x];
 			}
 		}
 		

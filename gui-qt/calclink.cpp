@@ -21,12 +21,14 @@
 
 #include "calc.h"
 
+#include <QThread>
 #include <QStringList>
+#include <QApplication>
 
 #ifdef _TILEM_QT_HAS_LINK_
 static int get_calc_model(TilemCalc* calc);
-static CableHandle* internal_link_handle_new(TilemCalc *calc);
-static void send_file(TilemCalc *calc, CalcHandle* ch, int first, int last, const char* filename);
+static CableHandle* internal_link_handle_new(Calc *calc);
+static void send_file(CalcHandle* ch, int first, int last, const char* filename);
 #endif
 
 /*!
@@ -73,7 +75,7 @@ void CalcLink::setCalc(Calc *c)
 	
 	if ( m_calc )
 	{
-		m_cbl = internal_link_handle_new(c->m_calc);
+		m_cbl = internal_link_handle_new(c);
 		
 		if ( !m_cbl )
 		{
@@ -122,10 +124,10 @@ bool CalcLink::isSupportedFile(const QString& file) const
 void CalcLink::send(const QString& f)
 {
 	#ifdef _TILEM_QT_HAS_LINK_
-	// mutex lock to avoid simulation to kick back in during linking...
-	QMutexLocker lock(&m_calc->m_run);
-	
-	send_file(m_calc->m_calc, m_ch, 1, 0, f.toLocal8Bit().constData());
+// 	// mutex lock to avoid simulation to kick back in during linking...
+// 	QMutexLocker lock(&m_calc->m_run);
+// 	
+	send_file(m_ch, 1, 0, f.toLocal8Bit().constData());
 	#endif
 }
 
@@ -166,141 +168,94 @@ int get_calc_model(TilemCalc* calc)
 
 static int ilp_reset(CableHandle* cbl)
 {
-	TilemCalc *calc = static_cast<TilemCalc*>(cbl->priv);
+	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
-	tilem_linkport_graylink_reset(calc);
+	//tilem_linkport_graylink_reset(calc);
+	
+	calc->resetLink();
 	
 	return 0;
 }
 
 static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
-	TilemCalc *calc = static_cast<TilemCalc*>(cbl->priv);
+	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
-	int status = 0;
-	unsigned int i;
-	dword prevmask;
+// 	printf("<");
+// 	
+// 	for ( uint32_t i = 0; i < count; ++i )
+// 	{
+// 		calc->sendByte(data[i]);
+// 		
+// 		// wait for bytes to be processed...
+// 		while ( calc->isReceiving() )
+// 			usleep(1000);
+// 		
+// 		printf(" %02X", data[i]);
+// 	}
+// 	
+// 	printf("\n");
+// 	fflush(stdout);
 	
-	calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
-	prevmask = calc->z80.stop_mask;
-	calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE
-				      | TILEM_STOP_LINK_WRITE_BYTE
-				      | TILEM_STOP_LINK_ERROR);
+	QByteArray d;
+	d.resize(count);
 	
-	tilem_z80_run_time(calc, 1000, NULL);
+	for ( uint32_t i = 0; i < count; ++i )
+		d[i] = data[i];
 	
-	#ifdef _TILEM_LINK_DEBUG_
-	printf(" >>");
-	#endif
+	calc->sendBytes(d);
 	
-	while ( count > 0 )
-	{
-		if ( !tilem_linkport_graylink_send_byte(calc, data[0]) )
-		{
-			#ifdef _TILEM_LINK_DEBUG_
-			printf(" %02X", data[0]);
-			#endif
-			++data;
-			--count;
-		}
-		
-		for ( i = 0; i < cbl->timeout; i++)
-			if ( tilem_linkport_graylink_ready(calc)
-			    || tilem_z80_run_time(calc, 100000, NULL))
-				break;
-		
-		if ( i == cbl->timeout || (calc->z80.stop_reason & TILEM_STOP_LINK_ERROR))
-		{
-			tilem_linkport_graylink_reset(calc);
-			status = ERROR_WRITE_TIMEOUT;
-			break;
-		}
-	}
-	#ifdef _TILEM_LINK_DEBUG_
-	printf("\n");
-	#endif
-
-	calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
-	calc->z80.stop_mask = prevmask;
-	
-	return status;
-}
-
-static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
-{
-	TilemCalc *calc = static_cast<TilemCalc*>(cbl->priv);
-	
-	int status = 0;
-	int value;
-	unsigned int i;
-	dword prevmask;
-	
-	calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
-	prevmask = calc->z80.stop_mask;
-	calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE
-				      | TILEM_STOP_LINK_WRITE_BYTE
-				      | TILEM_STOP_LINK_ERROR);
-	
-	tilem_z80_run_time(calc, 1000, NULL);
-	
-	#ifdef _TILEM_LINK_DEBUG_
-	printf(" <<");
-	#endif
-	
-	while ( count > 0 )
-	{
-		value = tilem_linkport_graylink_get_byte(calc);
-		
-		if ( value != -1 )
-		{
-			#ifdef _TILEM_LINK_DEBUG_
-			printf(" %02X", value);
-			#endif
-			
-			data[0] = value;
-			++data;
-			--count;
-			
-			if (!count)
-				break;
-		}
-		
-		for ( i = 0; i < cbl->timeout; ++i )
-			if (tilem_z80_run_time(calc, 100000, NULL))
-				break;
-		
-		if ( i == cbl->timeout || (calc->z80.stop_reason & TILEM_STOP_LINK_ERROR) )
-		{
-			tilem_linkport_graylink_reset(calc);
-			status = ERROR_READ_TIMEOUT;
-			break;
-		}
-	}
-	#ifdef _TILEM_LINK_DEBUG_
-	printf("\n");
-	#endif
-	
-	calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
-	calc->z80.stop_mask = prevmask;
-	
-	return status;
-
-}
-
-static int ilp_check(CableHandle* cbl, int* status)
-{
-	TilemCalc *calc = static_cast<TilemCalc*>(cbl->priv);
-	
-	*status = STATUS_NONE;
-	if ( calc->linkport.lines )
-		*status |= STATUS_RX;
-	if ( calc->linkport.extlines )
-		*status |= STATUS_TX;
+	// wait for bytes to be processed...
+	//qDebug("waiting for reception of %i bytes...", count);
+	while ( calc->isReceiving() )
+		QApplication::processEvents();//QThread::yieldCurrentThread();
+	//qDebug("mkay...");
 	
 	return 0;
 }
 
-static CableHandle* internal_link_handle_new(TilemCalc *calc)
+static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
+{
+	Calc *calc = static_cast<Calc*>(cbl->priv);
+	
+	//printf(">");
+	
+	for ( uint32_t i = 0; i < count; ++i )
+	{
+		// wait for bytes to be available...
+		while ( !calc->isSending() )
+			usleep(1000);
+		
+		data[i] = calc->getByte();
+		
+		//printf(" %02X", data[i]);
+	}
+	
+	//printf("\n");
+	//fflush(stdout);
+	
+	return 0;
+}
+
+static int ilp_check(CableHandle* cbl, int* status)
+{
+	Calc *calc = static_cast<Calc*>(cbl->priv);
+	
+	*status = STATUS_NONE;
+// 	if ( calc->linkport.lines )
+// 		*status |= STATUS_RX;
+// 	if ( calc->linkport.extlines )
+// 		*status |= STATUS_TX;
+	
+	if ( calc->isSending() )
+		*status |= STATUS_TX;
+	if ( calc->isReceiving() )
+		*status |= STATUS_RX;
+	
+	return 0;
+}
+
+static CableHandle* internal_link_handle_new(Calc *calc)
 {
 	CableHandle* cbl;
 
@@ -335,50 +290,17 @@ static int print_tilibs_error(int errcode)
 	return errcode;
 }
 
-static void send_file(TilemCalc *calc, CalcHandle* ch,
-		      int first, int last, const char* filename)
+static void send_file(CalcHandle* ch, int first, int last, const char* filename)
 {
 	CalcScreenCoord sc;
 	uint8_t *bitmap = NULL;
-	//int tmr, k;
-
-	if (first) {
-		//tilem_z80_run_time(calc, 500000, NULL);
-		//tilem_keypad_press_key(calc, TILEM_KEY_ON);
-		//tilem_z80_run_time(calc, 1000000, NULL);
-		//tilem_keypad_release_key(calc, TILEM_KEY_ON);
-		//tilem_z80_run_time(calc, 500000, NULL);
-	}
-
+	
 	switch ( tifiles_file_get_class(filename) )
 	{
 	case TIFILE_SINGLE:
 	case TIFILE_GROUP:
 	case TIFILE_REGULAR:
 		print_tilibs_error(ticalcs_calc_send_var2(ch, static_cast<CalcMode>(last ? MODE_SEND_LAST_VAR : 0), filename));
-		break;
-
-	case TIFILE_BACKUP:
-		/* press enter to accept backup */
-// 		if (calc->hw.model_id == TILEM_CALC_TI85
-// 		    || calc->hw.model_id == TILEM_CALC_TI86) {
-// 			k = TILEM_KEY_YEQU;
-// 		}
-// 		else {
-// 			k = TILEM_KEY_ENTER;
-// 		}
-// 
-// 		tmr = tilem_z80_add_timer(calc, 1000000, 0, 1,
-// 					  tmr_press_key,
-// 					  TILEM_DWORD_TO_PTR(k));
-// 
-// 		print_tilibs_error(ticalcs_calc_send_backup2(ch, filename));
-// 		tilem_z80_remove_timer(calc, tmr);
-// 		tilem_keypad_release_key(calc, k);
-// 
-// 		if (!last) {
-// 			//prepare_for_link(calc);
-// 		}
 		break;
 
 	case TIFILE_FLASH:
