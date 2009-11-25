@@ -25,6 +25,7 @@
 class QLayout;
 
 class CalcView;
+class ConnectionManager;
 
 class CalcGrid : public QScrollArea
 {
@@ -61,6 +62,8 @@ class CalcGrid : public QScrollArea
 		DisplayMode m_mode;
 		
 		QList<CalcView*> m_calcs;
+		
+		ConnectionManager *m_manager;
 };
 
 #endif

@@ -55,8 +55,13 @@ class Calc : public QObject
 		
 		void resetLink();
 		
+		bool isBroadcasting() const;
+		void setBroadcasting(bool y);
+		
 		bool isSending() const;
 		bool isReceiving() const;
+		
+		uint32_t byteCount() const;
 		
 		char getByte();
 		void sendByte(char c);
@@ -77,7 +82,7 @@ class Calc : public QObject
 		void keyRelease(int sk);
 		
 	signals:
-		void bytesAvailable(int n);
+		void bytesAvailable();
 		
 	private:
 		QString m_romFile;
@@ -88,7 +93,7 @@ class Calc : public QObject
 		unsigned char *m_lcd;
 		unsigned int *m_lcd_comp;
 		
-		bool m_link_lock;
+		bool m_link_lock, m_broadcast;
 		
 		LinkBuffer m_input, m_output;
 		mutable QMutex m_read, m_write;

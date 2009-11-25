@@ -20,6 +20,7 @@
 */
 
 #include "calcview.h"
+#include "connectionmanager.h"
 
 #include <QKeyEvent>
 #include <QHBoxLayout>
@@ -33,6 +34,8 @@ CalcGrid::CalcGrid(QWidget *p)
 	QWidget *w = new QWidget;
 	m_grid = new QHBoxLayout(w);
 	setWidget(w);
+	
+	m_manager = new ConnectionManager(this);
 }
 
 CalcGrid::~CalcGrid()
@@ -78,6 +81,10 @@ int CalcGrid::addCalc(CalcView *c)
 {
 	if ( !c )
 		return -1;
+	
+	// autoconnect calcs by two for testing purpose
+	if ( m_calcs.count() & 1 )
+		m_manager->addConnection(m_calcs.last()->calc(), c->calc());
 	
 	m_calcs << c;
 	

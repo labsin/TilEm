@@ -97,6 +97,18 @@ void Calc::resetLink()
 	tilem_linkport_graylink_reset(m_calc);
 }
 
+bool Calc::isBroadcasting() const
+{
+	return m_broadcast;
+}
+
+void Calc::setBroadcasting(bool y)
+{
+	QMutexLocker lock(&m_write);
+	
+	m_broadcast = y;
+}
+
 /*!
 	\return whether the *calc* is writing data through the linkport
 */
@@ -115,6 +127,14 @@ bool Calc::isReceiving() const
 	//QMutexLocker lock(&m_read);
 	
 	return m_input.count();
+}
+
+/*!
+	\return amount of data written to the linkport by the *calc* that can be retrieved using getByte()
+*/
+uint32_t Calc::byteCount() const
+{
+	return m_output.count();
 }
 
 /*!
@@ -207,6 +227,7 @@ void Calc::load(const QString& file)
 	m_calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
 	m_calc->z80.stop_mask &= ~(TILEM_STOP_LINK_READ_BYTE | TILEM_STOP_LINK_WRITE_BYTE | TILEM_STOP_LINK_ERROR);
 	
+	m_broadcast = true;
 	m_link_lock = false;
 	
 	// instant LCD state and "composite" LCD state (grayscale is a bitch...)
@@ -250,8 +271,6 @@ void Calc::save(const QString& file)
 	
 }
 
-#include <QTime>
-
 int Calc::run_us(int usec)
 {
 	QMutexLocker lock(&m_run);
@@ -260,9 +279,6 @@ int Calc::run_us(int usec)
 		return -1;
 	
 	int remaining = usec;
-	
-	//QTime t;
-	//t.start();
 	
 	while ( remaining > 0 )
 	{
@@ -277,7 +293,7 @@ int Calc::run_us(int usec)
 				
 				if ( !tilem_linkport_graylink_send_byte(m_calc, m_input.at(0)) )
 				{
-					//qDebug("@send : 0x%02x", m_input.at(0));
+					//qDebug("0x%x::send : 0x%02x", this, m_input.at(0));
 					m_input.remove(1);
 					
 					if ( !(m_calc->z80.stop_reason & TILEM_STOP_LINK_WRITE_BYTE) )
@@ -300,28 +316,24 @@ int Calc::run_us(int usec)
 				}
 				m_read.unlock();
 			} else {
-				
 				int b = tilem_linkport_graylink_get_byte(m_calc);
 				
 				if ( b != -1 )
 				{
-					m_write.lock();
 					// one byte successfully read yay!
-					//qDebug("@get : 0x%02x", b);
+					//qDebug("0x%x::get : 0x%02x", this, b);
+					
+					m_write.lock();
 					m_output.append(b);
-					//emit bytesAvailable(m_output.count());
 					m_write.unlock();
+					
+					if ( m_broadcast )
+						emit bytesAvailable();
 				}
 			}
 		}
 		
 		int res = tilem_z80_run_time(m_calc, remaining, &remaining);
-		
-		//if ( res )
-		//	qDebug("@%i", res);
-		
-// 		if ( !m_link_timeout && tilem_linkport_graylink_ready(m_calc) )
-// 			m_link_lock = false;
 		
 		/*
 			some link emulation magic : seamlessly transfer
@@ -332,21 +344,23 @@ int Calc::run_us(int usec)
 		{
 			//qDebug("@byte successfully read");
 			m_link_lock = false;
+			remaining = qMax(1, remaining);
 		}
 		
 		if ( res & TILEM_STOP_LINK_WRITE_BYTE )
 		{
 			//qDebug("@byte successfully written");
 			m_link_lock = false;
+			remaining = qMax(1, remaining);
 		}
 		
-// 		if ( res & TILEM_STOP_LINK_ERROR )
-// 		{
-// 			qWarning("@link error.");
-// 			tilem_linkport_graylink_reset(m_calc);
-// 			break;
-// 		}
-// 		
+		if ( res & TILEM_STOP_LINK_ERROR )
+		{
+			qWarning("@link error.");
+			tilem_linkport_graylink_reset(m_calc);
+			break;
+		}
+		
 // 		if ( res & TILEM_STOP_INVALID_INST )
 // 		{
 // 			break;
@@ -362,8 +376,6 @@ int Calc::run_us(int usec)
 // 			break;
 // 		}
 	}
-	
-	//qDebug("[%i, %i]", usec, t.elapsed());
 	
 	if ( m_calc->z80.stop_reason )
 		qDebug(">%i", m_calc->z80.stop_reason);

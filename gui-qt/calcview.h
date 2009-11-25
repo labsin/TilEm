@@ -39,6 +39,8 @@ class CalcView : public QFrame
 		CalcView(const QString& file, QWidget *p = 0);
 		virtual ~CalcView();
 		
+		Calc* calc() const;
+		
 	public slots:
 		void load();
 		void save();

@@ -159,6 +159,11 @@ CalcView::~CalcView()
 	delete m_skin;
 }
 
+Calc* CalcView::calc() const
+{
+	return m_calc;
+}
+
 void CalcView::load()
 {
 	QString romfile = QFileDialog::getOpenFileName(

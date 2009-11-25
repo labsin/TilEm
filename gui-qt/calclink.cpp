@@ -124,10 +124,15 @@ bool CalcLink::isSupportedFile(const QString& file) const
 void CalcLink::send(const QString& f)
 {
 	#ifdef _TILEM_QT_HAS_LINK_
-// 	// mutex lock to avoid simulation to kick back in during linking...
-// 	QMutexLocker lock(&m_calc->m_run);
-// 	
+	// avoid conflicts with calc2calc direct connections
+	bool broadcast = m_calc->isBroadcasting();
+	
+	// TODO : first wait for any exchange using direct connection to end...
+	m_calc->setBroadcasting(false);
+	
 	send_file(m_ch, 1, 0, f.toLocal8Bit().constData());
+	
+	m_calc->setBroadcasting(broadcast);
 	#endif
 }
 
@@ -170,8 +175,6 @@ static int ilp_reset(CableHandle* cbl)
 {
 	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
-	//tilem_linkport_graylink_reset(calc);
-	
 	calc->resetLink();
 	
 	return 0;
@@ -180,22 +183,6 @@ static int ilp_reset(CableHandle* cbl)
 static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	Calc *calc = static_cast<Calc*>(cbl->priv);
-	
-// 	printf("<");
-// 	
-// 	for ( uint32_t i = 0; i < count; ++i )
-// 	{
-// 		calc->sendByte(data[i]);
-// 		
-// 		// wait for bytes to be processed...
-// 		while ( calc->isReceiving() )
-// 			usleep(1000);
-// 		
-// 		printf(" %02X", data[i]);
-// 	}
-// 	
-// 	printf("\n");
-// 	fflush(stdout);
 	
 	QByteArray d;
 	d.resize(count);
@@ -206,10 +193,8 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 	calc->sendBytes(d);
 	
 	// wait for bytes to be processed...
-	//qDebug("waiting for reception of %i bytes...", count);
 	while ( calc->isReceiving() )
-		QApplication::processEvents();//QThread::yieldCurrentThread();
-	//qDebug("mkay...");
+		QApplication::processEvents();
 	
 	return 0;
 }
@@ -218,8 +203,6 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
-	//printf(">");
-	
 	for ( uint32_t i = 0; i < count; ++i )
 	{
 		// wait for bytes to be available...
@@ -227,12 +210,7 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 			usleep(1000);
 		
 		data[i] = calc->getByte();
-		
-		//printf(" %02X", data[i]);
 	}
-	
-	//printf("\n");
-	//fflush(stdout);
 	
 	return 0;
 }
@@ -242,10 +220,6 @@ static int ilp_check(CableHandle* cbl, int* status)
 	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
 	*status = STATUS_NONE;
-// 	if ( calc->linkport.lines )
-// 		*status |= STATUS_RX;
-// 	if ( calc->linkport.extlines )
-// 		*status |= STATUS_TX;
 	
 	if ( calc->isSending() )
 		*status |= STATUS_TX;
