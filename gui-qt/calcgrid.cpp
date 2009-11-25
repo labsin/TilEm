@@ -24,9 +24,10 @@
 #include <QKeyEvent>
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QMessageBox>
 
 CalcGrid::CalcGrid(QWidget *p)
- : QScrollArea(p)
+ : QScrollArea(p), m_mode(MergedWindows)
 {
 	setWidgetResizable(true);
 	QWidget *w = new QWidget;
@@ -36,7 +37,41 @@ CalcGrid::CalcGrid(QWidget *p)
 
 CalcGrid::~CalcGrid()
 {
+	foreach ( CalcView *v, m_calcs )
+		if ( !v->parent() )
+			delete v;
+}
+
+CalcGrid::DisplayMode CalcGrid::displayMode() const
+{
+	return m_mode;
+}
+
+void CalcGrid::setDisplayMode(CalcGrid::DisplayMode m)
+{
+	if ( m_mode == m )
+		return;
 	
+	if ( m_mode == MergedWindows )
+	{
+		// unmerge...
+		foreach ( CalcView *v, m_calcs )
+		{
+			m_grid->addWidget(v);
+			v->setParent(0);
+		}
+	}
+	
+	m_mode = m;
+	
+	if ( m_mode == MergedWindows )
+	{
+		// merge...
+		foreach ( CalcView *v, m_calcs )
+		{
+			m_grid->addWidget(v);
+		}
+	}
 }
 
 int CalcGrid::addCalc(CalcView *c)
@@ -46,7 +81,10 @@ int CalcGrid::addCalc(CalcView *c)
 	
 	m_calcs << c;
 	
-	m_grid->addWidget(c);
+	if ( m_mode == MergedWindows )
+		m_grid->addWidget(c);
+	else
+		c->setParent(0);
 	
 	c->setFocus();
 	
@@ -65,7 +103,10 @@ void CalcGrid::removeCalc(int idx, bool del)
 	
 	CalcView *c = m_calcs.takeAt(idx);
 	
-	m_grid->removeWidget(c);
+	if ( m_mode == MergedWindows )
+		m_grid->removeWidget(c);
+	else
+		c->hide();
 	
 	if ( del )
 		delete c;
@@ -76,14 +117,48 @@ void CalcGrid::removeCalc(CalcView *c, bool del)
 	if ( !c )
 		return;
 	
-	m_grid->removeWidget(c);
+	m_calcs.removeAll(c);
+	
+	if ( m_mode == MergedWindows )
+		m_grid->removeWidget(c);
+	else
+		c->hide();
 	
 	if ( del )
 		delete c;
 }
 
+void CalcGrid::closeEvent(QCloseEvent *e)
+{
+	if ( m_mode == FloatingWindows )
+	{
+		int ret = QMessageBox::warning(
+									this,
+									tr("Closing"),
+									tr("Closing this window will close all floating calculator windows.\nDo you want to continue?"),
+									QMessageBox::Yes | QMessageBox::No
+								);
+		
+		if ( ret == QMessageBox::Yes )
+		{
+			e->accept();
+		} else {
+			e->ignore();
+		}
+		
+		return;
+	}
+	
+	QWidget::closeEvent(e);
+}
+
 void CalcGrid::keyPressEvent(QKeyEvent *e)
 {
+	if ( e->key() == Qt::Key_F1 )
+		setDisplayMode(MergedWindows);
+	else if ( e->key() == Qt::Key_F2 )
+		setDisplayMode(FloatingWindows);
+	
 	return QScrollArea::keyPressEvent(e);
 }
 
@@ -92,7 +167,12 @@ bool CalcGrid::focusNextPrevChild(bool next)
 	int idx = (focusedCalc() + 1) % m_calcs.count();
 	
 	CalcView *c = m_calcs.at(idx);
-	ensureWidgetVisible(c);
+	
+	if ( m_mode == MergedWindows )
+		ensureWidgetVisible(c);
+	else
+		c->raise();
+	
 	c->setFocus();
 	return true;
 }

@@ -211,6 +211,8 @@ void CalcView::load(const QString& file)
 	
 	// start LCD update timer
 	m_lcdTimerId = startTimer(10);
+	
+	setWindowTitle(file);
 }
 
 void CalcView::save(const QString& file)

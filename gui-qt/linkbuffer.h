@@ -26,10 +26,20 @@ extern "C" {
 
 #include <QByteArray>
 
+/*!
+	\class LinkBuffer
+	\brief A small container class tailored for internal use in Calc
+	
+	It is basically a circular queue of bytes which offers maximum
+	performance when working with a number of items inferior to the
+	nominal value of 1024 and will slow down beyond that because it
+	falls back on a dynamic container to hold the "overflowing" data.
+*/
+
 class LinkBuffer
 {
 	public:
-		LinkBuffer()
+		inline LinkBuffer()
 		{
 			m_base = m_count = 0;
 		}
@@ -39,17 +49,17 @@ class LinkBuffer
 			
 		}
 		
-		bool isEmpty() const
+		inline bool isEmpty() const
 		{
 			return !m_count;
 		}
 		
-		uint32_t count() const
+		inline uint32_t count() const
 		{
 			return m_count;
 		}
 		
-		void append(char c)
+		inline void append(char c)
 		{
 			if ( m_count == 1024 )
 			{
@@ -93,12 +103,12 @@ class LinkBuffer
 			}
 		}
 		
-		char at(uint32_t idx) const
+		inline char at(uint32_t idx) const
 		{
 			return idx < 1024 ? m_d[(m_base + idx) & 1023] : m_overflow.at(idx - 1024);
 		}
 		
-		LinkBuffer& operator += (const QByteArray& ba)
+		inline LinkBuffer& operator += (const QByteArray& ba)
 		{
 			const int c = ba.count();
 			for ( int i = 0; i < c; ++i )

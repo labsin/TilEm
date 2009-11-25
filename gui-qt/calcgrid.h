@@ -29,8 +29,17 @@ class CalcView;
 class CalcGrid : public QScrollArea
 {
 	public:
+		enum DisplayMode
+		{
+			MergedWindows,
+			FloatingWindows
+		};
+		
 		CalcGrid(QWidget *p = 0);
 		~CalcGrid();
+		
+		DisplayMode displayMode() const;
+		void setDisplayMode(DisplayMode m);
 		
 	public slots:
 		int addCalc(CalcView *c);
@@ -40,6 +49,7 @@ class CalcGrid : public QScrollArea
 		void removeCalc(CalcView *c, bool del = true);
 		
 	protected:
+		virtual void closeEvent(QCloseEvent *e);
 		virtual void keyPressEvent(QKeyEvent *e);
 		
 		virtual bool focusNextPrevChild(bool next);
@@ -47,9 +57,10 @@ class CalcGrid : public QScrollArea
 		int focusedCalc() const;
 		
 	private:
-		QList<CalcView*> m_calcs;
-		
 		QLayout *m_grid;
+		DisplayMode m_mode;
+		
+		QList<CalcView*> m_calcs;
 };
 
 #endif
