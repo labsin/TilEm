@@ -40,6 +40,7 @@ class CalcView : public QFrame
 		virtual ~CalcView();
 		
 		Calc* calc() const;
+		CalcLink* link() const;
 		
 	public slots:
 		void load();

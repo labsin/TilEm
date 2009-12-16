@@ -20,6 +20,7 @@
 */
 
 #include "calcview.h"
+#include "calclink.h"
 #include "connectionmanager.h"
 
 #include <QKeyEvent>
@@ -94,7 +95,7 @@ int CalcGrid::addCalc(CalcView *c)
 		c->setParent(0);
 	
 	c->setFocus();
-	
+	c->link()->grabExternalLink();
 	return m_calcs.count() - 1;
 }
 

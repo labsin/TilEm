@@ -138,6 +138,21 @@ uint32_t Calc::byteCount() const
 }
 
 /*!
+	\brief get a byte from the buffer in which calc linkport writes are stored but does not remove it from the buffer
+*/
+char Calc::topByte()
+{
+	QMutexLocker lock(&m_write);
+	
+	if ( m_output.isEmpty() )
+		return 0;
+	
+	char c = m_output.at(0);
+	
+	return c;
+}
+
+/*!
 	\brief get a byte from the buffer in which calc linkport writes are stored
 */
 char Calc::getByte()

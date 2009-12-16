@@ -63,6 +63,7 @@ class Calc : public QObject
 		
 		uint32_t byteCount() const;
 		
+		char topByte();
 		char getByte();
 		void sendByte(char c);
 		

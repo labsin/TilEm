@@ -164,6 +164,11 @@ Calc* CalcView::calc() const
 	return m_calc;
 }
 
+CalcLink* CalcView::link() const
+{
+	return m_link;
+}
+
 void CalcView::load()
 {
 	QString romfile = QFileDialog::getOpenFileName(

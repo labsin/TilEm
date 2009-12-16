@@ -27,6 +27,7 @@ extern "C" {
 }
 
 #include <QObject>
+#include <QPointer>
 
 class Calc;
 
@@ -38,19 +39,37 @@ class CalcLink : public QObject
 		CalcLink(Calc *c, QObject *p = 0);
 		~CalcLink();
 		
+		bool hasExternalLink() const;
+		
 		bool isSupportedFile(const QString& file) const;
 		
 	public slots:
+		void grabExternalLink();
+		void releaseExternalLink();
+		
 		void setCalc(Calc *c);
 		
 		void send(const QString& file);
 		
+	protected:
+		virtual void timerEvent(QTimerEvent *e);
+		
 	private:
-		Calc *m_calc;
+		// status
+		static int m_count;
+		
+		QPointer<Calc> m_calc;
 		
 		#ifdef _TILEM_QT_HAS_LINK_
+		// internal linking : send file to calc
 		CalcHandle *m_ch;
 		CableHandle *m_cbl;
+		
+		//
+		static int m_ext_cable_timer;
+		
+		// external linking : communicate with TILP (or real calc?)
+		static CableHandle *m_ext;
 		#endif
 };
 

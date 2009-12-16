@@ -32,7 +32,34 @@ It is written in C++ using the Qt4 toolkit and released under GNU GPL3.
 	tilem supports z80-based TI calculators from the 73 to the 86 but some skins are lacking
 	at the moment so it is not recommended to try to load 76/81/82/85/86 ROMS at the moment.
 	
-3) Extending
+3) Linking
+	
+	TilEm has three mode of linking, all of which depend on the availability of libticables,
+	libticalcs and libtifiles.
+	
+	* internal "drag2calc" : drag and drop files to send them to any emulated calculator.
+	* internal "calc2calc" : create a connection between two emulated calcs and let them
+	communicate as they see fit
+	* external : open a "TIEMU cable" (libticables terminology) making it possible for
+	other programs using libticables (most notably TiLP) to communicate with an emulated
+	calc.
+	
+	The drag2calc mode is always active (provided link support was enabled at compile time)
+	but the other two modes have to be enabled manually.
+	
+	All linking mode are mutually exclusive : an emulated calc cannot respond to stimuli from
+	more than one linking mode at the same time. However it is possible to have multiple
+	calc2calc connections and drag2calc operations running at the same time as long as each
+	calc is only involved in one at the same time.
+	
+	The external connection is even more restricted (due to internal libticables limitaiton)
+	in that there can only one connection at a time (systemwide).
+	
+4) Debugging
+	
+	WIP
+	
+5) Extending
 
 	There are two main ways to extend TilEmQt and both are useful and welcome :
 	
@@ -43,7 +70,7 @@ It is written in C++ using the Qt4 toolkit and released under GNU GPL3.
 	-> requires C/C++ knowledge and some familiarity with either Qt or tilem/ticalcs/ticables
 	libs.
 	
-4) Whodunnit
+6) Whodunnit
 
 libtilemcore : Benjamin Moody aka FloppusMaximus <floppusmaximus@users.sf.net>
 
