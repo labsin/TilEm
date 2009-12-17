@@ -137,8 +137,6 @@ byte tilem_lcd_t6a04_read(TilemCalc* calc)
 
 	if (BUSY) return(0);
 
-	/* FIXME: I'm not sure this is correct.  How does horizontal
-	   wrapping actually work?  The documentation is unclear. */
 	if (calc->lcd.mode)
 		xlimit = stride;
 	else
@@ -212,7 +210,7 @@ void tilem_lcd_t6a04_write(TilemCalc* calc, byte sprite)
 		sprite <<= 2;
 		mask = ~(0xFC >> shift);
 		*(lcdbuf + ofs) = (*(lcdbuf + ofs) & mask) | (sprite >> shift);
-		if (shift > 2) {
+		if (shift > 2 && (col >> 3) < (stride - 1)) {
 			ofs++;
 			shift = 8 - shift;
 			mask = ~(0xFC << shift);
