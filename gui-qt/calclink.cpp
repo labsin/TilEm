@@ -111,21 +111,26 @@ void CalcLink::grabExternalLink()
 		
 		if ( l->m_calc )
 			l->m_calc->setBroadcasting(true);
+		
+		emit l->externalLinkGrabbed(false);
 	}
 	
 	m_ext->priv = this;
 	
 	if ( m_calc )
 	{
-		qDebug("grabbing external link");
 		m_calc->setBroadcasting(false);
 		
 		m_ext_cable_timer = startTimer(5);
 		
+// 		qDebug("grabbed");
+		emit externalLinkGrabbed(true);
+		
 		//int i = ticables_cable_open(m_ext);
 		//qDebug("%i", i);
 	} else {
-		qDebug("releasing external link");
+// 		qDebug("ungrabed");
+		emit externalLinkGrabbed(false);
 		
 		//ticables_cable_close(m_ext);
 	}
@@ -144,8 +149,11 @@ void CalcLink::releaseExternalLink()
 	
 	if ( m_calc )
 	{
+// 		qDebug("released");
 		m_calc->setBroadcasting(true);
 	}
+	
+	emit externalLinkGrabbed(false);
 	
 	//qDebug("releasing external link");
 	//ticables_cable_close(m_ext);

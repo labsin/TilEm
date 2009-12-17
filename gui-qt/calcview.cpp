@@ -144,6 +144,9 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	a->setEnabled(false);
 	a->connect(this, SIGNAL( paused(bool) ), SLOT( setEnabled(bool) ) );
 	m_cxt->addSeparator();
+	a = m_cxt->addAction("Grab external link", this, SLOT( grabExternalLink() ) );
+	a->connect(this, SIGNAL( externalLinkGrabbed(bool) ), SLOT( setDisabled(bool) ) );
+	m_cxt->addSeparator();
 	m_cxt->addAction("Change skin...", this, SLOT( selectSkin() ));
 	m_cxt->addSeparator();
 	m_cxt->addAction("Close", this, SLOT( close() ));
@@ -190,6 +193,12 @@ void CalcView::resume()
 	}
 }
 
+void CalcView::grabExternalLink()
+{
+	if ( m_link )
+		m_link->grabExternalLink();
+}
+
 Calc* CalcView::calc() const
 {
 	return m_calc;
@@ -232,8 +241,11 @@ void CalcView::load(const QString& file)
 	m_calc->load(file);
 	
 	if ( !m_link )
+	{
 		m_link = new CalcLink(m_calc, this);
-	else
+		
+		connect(m_link, SIGNAL( externalLinkGrabbed(bool) ), this, SIGNAL( externalLinkGrabbed(bool) ));
+	} else
 		m_link->setCalc(m_calc);
 	
 	if ( !m_thread )

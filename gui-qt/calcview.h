@@ -58,11 +58,15 @@ class CalcView : public QFrame
 		
 		void selectSkin();
 		
+		void grabExternalLink();
+		
 	signals:
 		void paused();
 		void resumed();
 		
 		void paused(bool y);
+		
+		void externalLinkGrabbed(bool y);
 		
 	protected:
 		virtual void keyPressEvent(QKeyEvent *e);

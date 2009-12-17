@@ -51,6 +51,9 @@ class CalcLink : public QObject
 		
 		void send(const QString& file);
 		
+	signals:
+		void externalLinkGrabbed(bool y);
+		
 	protected:
 		virtual void timerEvent(QTimerEvent *e);
 		
