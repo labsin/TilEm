@@ -115,6 +115,7 @@ void CalcLink::grabExternalLink()
 		emit l->externalLinkGrabbed(false);
 	}
 	
+	ticables_cable_reset(m_ext);
 	m_ext->priv = this;
 	
 	if ( m_calc )
@@ -125,14 +126,9 @@ void CalcLink::grabExternalLink()
 		
 // 		qDebug("grabbed");
 		emit externalLinkGrabbed(true);
-		
-		//int i = ticables_cable_open(m_ext);
-		//qDebug("%i", i);
 	} else {
 // 		qDebug("ungrabed");
 		emit externalLinkGrabbed(false);
-		
-		//ticables_cable_close(m_ext);
 	}
 	#endif
 }
@@ -154,9 +150,6 @@ void CalcLink::releaseExternalLink()
 	}
 	
 	emit externalLinkGrabbed(false);
-	
-	//qDebug("releasing external link");
-	//ticables_cable_close(m_ext);
 	#endif
 }
 
@@ -185,9 +178,11 @@ void CalcLink::timerEvent(QTimerEvent *e)
 					qDebug("error : unable to get byte from cable [%i]", error);
 					
 					// resetExtLink();
+					ticables_cable_reset(m_ext);
 					break;
 				} else {
 					//qDebug("byte received from cable.");
+					//qDebug("< 0x%02x", b);
 					m_calc->sendByte(b);
 					error = ticables_cable_check(m_ext, &stat);
 				}
@@ -199,16 +194,19 @@ void CalcLink::timerEvent(QTimerEvent *e)
 			
 			while ( m_calc->byteCount() && !error && limit )
 			{
-				error = ticables_cable_put(m_ext, m_calc->topByte());
+				byte b = m_calc->topByte();
+				error = ticables_cable_put(m_ext, b);
 				
 				if ( error )
 				{
 					qDebug("error : unable to send byte through cable [%i]", error);
 					
 					// resetExtLink();
+					ticables_cable_reset(m_ext);
 					break;
 				} else {
 					//qDebug("byte sent through cable");
+					//qDebug("> 0x%02x", b);
 					m_calc->getByte();
 				}
 				
