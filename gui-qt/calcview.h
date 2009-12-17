@@ -42,7 +42,12 @@ class CalcView : public QFrame
 		Calc* calc() const;
 		CalcLink* link() const;
 		
+		bool isPaused() const;
+		
 	public slots:
+		void pause();
+		void resume();
+		
 		void load();
 		void save();
 		
@@ -52,6 +57,12 @@ class CalcView : public QFrame
 		void quit();
 		
 		void selectSkin();
+		
+	signals:
+		void paused();
+		void resumed();
+		
+		void paused(bool y);
 		
 	protected:
 		virtual void keyPressEvent(QKeyEvent *e);
@@ -101,7 +112,8 @@ class CalcView : public QFrame
 		QList<QPoint> m_kCenter;
 		
 		int m_lcdX, m_lcdY, m_lcdW, m_lcdH;
-		QImage *m_screen, *m_skin, *m_keymask;
+		QPixmap *m_skin;
+		QImage *m_screen, *m_keymask;
 }; 
 
 #endif // _CALC_VIEW_H_

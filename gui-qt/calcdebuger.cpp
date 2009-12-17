@@ -12,26 +12,9 @@
 **
 ****************************************************************************/
 
+#include "calcdebuger.h"
+
 /*!
-	\file main.cpp
-	\brief Implementation of main()
+	\file calcdebuger.cpp
+	\brief Implementation of the CalcDebuger class
 */
-
-#include <QApplication>
-
-#include "tilemqt.h"
-
-int main(int argc, char **argv)
-{
-	QApplication app(argc, argv);
-	QStringList args = QCoreApplication::arguments();
-	
-	TilEmQt win;
-	
-	for ( int i = 1; i < args.count(); ++i )
-		win.addCalc(args.at(i));
-	
-	win.show();
-	
-	return app.exec();
-}

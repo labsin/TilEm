@@ -47,7 +47,7 @@ extern "C" {
 	\class CalcThread
 	\brief Utility class to manage calc emulation
 	
-	Perform the emulation in a separate thread to avoid latency in both GUI and emulator.
+	Perform the emulation in a separate thread to reduce latency in both GUI and emulator.
 */
 class CalcThread : public QThread
 {
@@ -115,7 +115,7 @@ class CalcThread : public QThread
 */
 
 CalcView::CalcView(const QString& file, QWidget *p)
-: QFrame(p), m_link(0), m_thread(0), m_screen(0), m_skin(0), m_keymask(0)
+: QFrame(p), m_link(0), m_thread(0), m_skin(0), m_screen(0), m_keymask(0)
 {
 	setFrameShape(QFrame::StyledPanel);
 	
@@ -131,19 +131,25 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	else
 		load();
 	
+	QAction *a;
 	// setup context menu
 	m_cxt = new QMenu(this);
 	
 	m_cxt->addAction("Load ROM/state...", this, SLOT( load() ));
 	m_cxt->addAction("Save ROM/state...", this, SLOT( save() ));
 	m_cxt->addSeparator();
+	a = m_cxt->addAction("Pause", this, SLOT( pause() ) );
+	a->connect(this, SIGNAL( paused(bool) ), SLOT( setDisabled(bool) ) );
+	a = m_cxt->addAction("Resume", this, SLOT( resume() ) );
+	a->setEnabled(false);
+	a->connect(this, SIGNAL( paused(bool) ), SLOT( setEnabled(bool) ) );
+	m_cxt->addSeparator();
 	m_cxt->addAction("Change skin...", this, SLOT( selectSkin() ));
 	m_cxt->addSeparator();
-	//m_cxt->addAction("Exit without saving", this, SLOT( abort() ));
-	m_cxt->addAction("Exit", this, SLOT( quit() ));
+	m_cxt->addAction("Close", this, SLOT( close() ));
 	
 	// launch emulator thread
-	m_thread->start();
+	resume();
 	
 	// start LCD update timer
 	m_lcdTimerId = startTimer(10);
@@ -157,6 +163,31 @@ CalcView::~CalcView()
 	delete m_screen;
 	delete m_keymask;
 	delete m_skin;
+}
+
+bool CalcView::isPaused() const
+{
+	return m_thread->isRunning();
+}
+
+void CalcView::pause()
+{
+	if ( m_thread->isRunning() )
+	{
+		m_thread->stop();
+		emit paused();
+		emit paused(true);
+	}
+}
+
+void CalcView::resume()
+{
+	if ( !m_thread->isRunning() )
+	{
+		m_thread->start();
+		emit resumed();
+		emit paused(false);
+	}
 }
 
 Calc* CalcView::calc() const
@@ -268,12 +299,11 @@ void CalcView::setupSkin()
 		qWarning("skin: Missing or malformed lcd-coords field.");
 	}
 	
-	m_keymask = new QImage(QImage(d.filePath(s.value("keymask"))).createHeuristicMask());
-	m_skin = new QImage(d.filePath(s.value("skin")));
+	m_skin = new QPixmap(d.filePath(s.value("skin")));
 	m_screen = new QImage(m_lcdW, m_lcdH, QImage::Format_RGB32);
+	m_keymask = new QImage(QImage(d.filePath(s.value("keymask"))).createHeuristicMask());
 	
 	setFixedSize(m_skin->size());
-	//setMask(QBitmap::fromImage(m_skin->createHeuristicMask()));
 	
 	//qDebug() << s.value("skin") << m_skin->size();
 	
@@ -506,7 +536,7 @@ void CalcView::paintEvent(QPaintEvent *e)
 			
 		}
 		
-		p.drawImage(0, 0, *m_skin);
+		p.drawPixmap(0, 0, *m_skin);
 	}
 	
 	p.drawImage(m_lcdX, m_lcdY, *m_screen);

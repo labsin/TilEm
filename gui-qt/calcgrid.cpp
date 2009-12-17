@@ -31,6 +31,8 @@
 CalcGrid::CalcGrid(QWidget *p)
  : QScrollArea(p), m_mode(MergedWindows)
 {
+	setFocusPolicy(Qt::NoFocus);
+	
 	setWidgetResizable(true);
 	QWidget *w = new QWidget;
 	m_grid = new QHBoxLayout(w);
@@ -76,6 +78,18 @@ void CalcGrid::setDisplayMode(CalcGrid::DisplayMode m)
 			m_grid->addWidget(v);
 		}
 	}
+}
+
+void CalcGrid::pause()
+{
+	foreach ( CalcView *v, m_calcs )
+		v->pause();
+}
+
+void CalcGrid::resume()
+{
+	foreach ( CalcView *v, m_calcs )
+		v->resume();
 }
 
 int CalcGrid::addCalc(CalcView *c)
@@ -134,6 +148,16 @@ void CalcGrid::removeCalc(CalcView *c, bool del)
 	
 	if ( del )
 		delete c;
+}
+
+void CalcGrid::paused()
+{
+	
+}
+
+void CalcGrid::resumed()
+{
+	
 }
 
 void CalcGrid::closeEvent(QCloseEvent *e)

@@ -1,4 +1,6 @@
 
+ * connection management UI [external and virtual]
+ * keypress visual feedback
  * calc 2 calc linking (physical) [i.e between a real calc and an emulated one]
  * debugging :
 	* breakpoints management

@@ -29,6 +29,8 @@ class ConnectionManager;
 
 class CalcGrid : public QScrollArea
 {
+	Q_OBJECT
+	
 	public:
 		enum DisplayMode
 		{
@@ -43,11 +45,18 @@ class CalcGrid : public QScrollArea
 		void setDisplayMode(DisplayMode m);
 		
 	public slots:
+		void pause();
+		void resume();
+		
 		int addCalc(CalcView *c);
 		int addCalc(const QString& romfile);
 		
 		void removeCalc(int idx, bool del = true);
 		void removeCalc(CalcView *c, bool del = true);
+		
+	protected slots:
+		void paused();
+		void resumed();
 		
 	protected:
 		virtual void closeEvent(QCloseEvent *e);

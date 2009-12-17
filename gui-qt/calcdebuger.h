@@ -12,26 +12,26 @@
 **
 ****************************************************************************/
 
+#ifndef _CALC_DEBUGER_H_
+#define _CALC_DEBUGER_H_
+
 /*!
-	\file main.cpp
-	\brief Implementation of main()
+	\file calcdebuger.h
+	\brief Definition of the CalcDebuger class
 */
 
-#include <QApplication>
+#include <QWidget>
 
-#include "tilemqt.h"
-
-int main(int argc, char **argv)
+class CalcDebuger : public QWidget
 {
-	QApplication app(argc, argv);
-	QStringList args = QCoreApplication::arguments();
+	Q_OBJECT
 	
-	TilEmQt win;
-	
-	for ( int i = 1; i < args.count(); ++i )
-		win.addCalc(args.at(i));
-	
-	win.show();
-	
-	return app.exec();
-}
+	public:
+		
+		
+		
+	private:
+		
+};
+
+#endif

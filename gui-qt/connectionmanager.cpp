@@ -21,6 +21,11 @@
 
 #include "calc.h"
 
+/*!
+	\class ConnectionManager
+	\brief 
+*/
+
 ConnectionManager::ConnectionManager(QObject *p)
  : QObject(p)
 {

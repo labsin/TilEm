@@ -16,8 +16,25 @@ enable_link {
 }
 
 # Input
-HEADERS += calc.h calclink.h settings.h calcview.h calcgrid.h connectionmanager.h
-SOURCES += main.cpp calc.cpp calclink.cpp settings.cpp calcview.cpp calcgrid.cpp connectionmanager.cpp
+HEADERS += \
+	tilemqt.h \
+	calc.h \
+	calclink.h \
+	settings.h \
+	calcview.h \
+	calcgrid.h \
+	connectionmanager.h \
+	calcdebuger.h
+
+SOURCES += main.cpp \
+	tilemqt.cpp \
+	calc.cpp \
+	calclink.cpp \
+	settings.cpp \
+	calcview.cpp \
+	calcgrid.cpp \
+	connectionmanager.cpp \
+	calcdebuger.cpp
 
 INCLUDEPATH += ../core
 LIBS += -L../core -ltilemcore

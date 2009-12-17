@@ -12,26 +12,33 @@
 **
 ****************************************************************************/
 
+#ifndef _TILEM_QT_H_
+#define _TILEM_QT_H_
+
 /*!
-	\file main.cpp
-	\brief Implementation of main()
+	\file tilemqt.h
+	\brief Definition of the TilEmQt class
 */
 
-#include <QApplication>
+#include <QMainWindow>
 
-#include "tilemqt.h"
+class QAction;
+class CalcGrid;
 
-int main(int argc, char **argv)
+class TilEmQt : public QMainWindow
 {
-	QApplication app(argc, argv);
-	QStringList args = QCoreApplication::arguments();
+	Q_OBJECT
 	
-	TilEmQt win;
-	
-	for ( int i = 1; i < args.count(); ++i )
-		win.addCalc(args.at(i));
-	
-	win.show();
-	
-	return app.exec();
-}
+	public:
+		TilEmQt(QWidget *p = 0);
+		~TilEmQt();
+		
+	public slots:
+		void addCalc();
+		void addCalc(const QString& rom);
+		
+	private:
+		CalcGrid *m_grid;
+};
+
+#endif

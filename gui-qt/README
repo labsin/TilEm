@@ -5,29 +5,48 @@ It is written in C++ using the Qt4 toolkit and released under GNU GPL3.
 
 1) Building
 
-	* get all dependencies, namely Qt4 and tilem (and obviously their dependencies as well)
+	* get all dependencies, namely Qt4 and libtilemcore (and obviously their dependencies as well)
 	optionnally you may want to get libticalcs2/libticables/libtifiles (all of which are TILP
 	dependencies) to enable link emulation.
 	
 	* run the following command in a shell (in the appropriate directory) :
 	
 		qmake && make
-		
-	or, to build with link emulation :
+	
+	or, to build with link emulation (requires libticalcs2 and co) :
 	
 		qmake -config enable_link && make
+	
+	To properly switch from a build to another (and make sure no remaining intermediate compilation
+	files get in the way) do :
 		
+		make distclean
+	
 2) Using
 	
 	To use the emulator you will need a ROM file. Note that the ROM file need not contain a
 	valid OS : TilEm supports OS-less ROMs and (if build with linking emulation) is able to
 	load the OS of your choice into such a "blank" ROM.
 	
-	The emulator window will show up as a calculator image. All buttons are clickable and most
-	keypresses can also be triggered through the keyboard.
+	TilEmQt can be invoked as follows (hope you don't mind regexps) :
 	
-	At anytime you have the possibility to save the emulator state (ROM/RAM/regs/...) into a file
-	(note that it may alter the source ROM) and to switch to a different ROM.
+	tilemqt (option | ROM file)+
+	
+	The emulator window is a grid of calculator images. You can add as much calculators as you
+	see fit (please not though that emulating a large number of calculators at the same time
+	may cause noticeable slowdown of the emulation of ALL calcs). To add a new calc use the "Add calc"
+	button in the toolbar and to remove one use the "Close" entry of the calc's context menu.
+	
+	The main UI supports two modes : Merged and Floating. Use F1 and F2 to select the one you
+	like most.
+	
+	All buttons of emulated calc skins are clickable and most keypresses can also be triggered
+	through the keyboard but only the active calc will catch keyboard events. In Merged windows
+	mode the active calc is indicated by the raised frame around it.
+	
+	At anytime, for every emulated calc, you have the possibility to save the emulator state
+	(ROM/RAM/regs/...) into a file (note that it may alter the source ROM if archive was written
+	to during the emulation session) and to switch to a different ROM.
 	
 	tilem supports z80-based TI calculators from the 73 to the 86 but some skins are lacking
 	at the moment so it is not recommended to try to load 76/81/82/85/86 ROMS at the moment.
