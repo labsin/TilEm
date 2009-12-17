@@ -77,6 +77,11 @@
 	if (calc->z80.emuflags & TILEM_Z80_SKIP_UNDOCUMENTED) {		\
 		delay(clks);						\
 		break;							\
+	}								\
+	if (calc->z80.emuflags & TILEM_Z80_RESET_UNDOCUMENTED) {	\
+		tilem_warning(calc, "Invalid opcode %x", op);		\
+		tilem_z80_reset(calc);					\
+		break;							\
 	}
 
 #define add8(dst, src) do {						\

@@ -42,7 +42,8 @@ const TilemHardware* hwmodels[] = {
 	&hardware_ti83p,
 	&hardware_ti83pse,
 	&hardware_ti84p,
-	&hardware_ti84pse,	
+	&hardware_ti84pse,
+	&hardware_ti84pns,
 	&hardware_ti85,
 	&hardware_ti86 };
 
@@ -107,6 +108,9 @@ TilemCalc* tilem_calc_new(char id)
 			calc->lcdmem = calc->ram + calc->hw.ramsize;
 
 			memset(calc->ram, 0, msize - calc->hw.romsize);
+
+			calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
+			calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
 
 			tilem_calc_reset(calc);
 			return calc;

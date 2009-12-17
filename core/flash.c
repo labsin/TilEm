@@ -170,6 +170,19 @@ byte tilem_flash_read_byte(TilemCalc* calc, dword pa)
 	}
 }
 
+void tilem_flash_erase_address(TilemCalc* calc, dword pa)
+{
+	const TilemFlashSector* sec = get_sector(calc, pa);
+
+	if (sec->writable) {
+		tilem_message(calc, "Erasing Flash sector at %06x", pa);
+		erase_sector(calc, sec->start, sec->size);
+	}
+	else {
+		WARN("erasing protected sector");
+	}
+}
+
 void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 {
 	int oldstate;
@@ -258,16 +271,7 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 			}
 		}
 		else if (v == 0x30) {
-			sec = get_sector(calc, pa);
-
-			if (sec->writable) {
-				tilem_message(calc, "Erasing Flash sector at %06x", pa);
-				erase_sector(calc, sec->start, sec->size);
-			}
-			else {
-				WARN("erasing protected sector");
-			}
-
+			tilem_flash_erase_address(calc, pa);
 		}
 		else if (v != 0xF0)
 			WARN2("undefined command %02x->%06x after pre-erase AA,55", v, pa);

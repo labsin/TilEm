@@ -102,7 +102,9 @@ char tilem_guess_rom_type(FILE* romfile)
 	}
 	else if (size >= 0x200000 && size < 0x224000) {
 		/* 2048k: TI-83 Plus SE, TI-84 Plus SE */
-		if (find_string("Operating", romfile, 0x1FC000, 0x4000))
+		if (find_string("\xed\xef", romfile, 0x1FC000, 0x4000))
+			result = TILEM_CALC_TI84P_NSPIRE;
+		else if (find_string("Operating", romfile, 0x1FC000, 0x4000))
 			result = TILEM_CALC_TI84P_SE;
 		else
 			result = TILEM_CALC_TI83P_SE;

@@ -147,9 +147,11 @@ enum {
 					     instructions */
 	TILEM_Z80_BREAK_UNDOCUMENTED = 2, /* Break on undocumented
 					     instructions */
-	TILEM_Z80_SKIP_UNDOCUMENTED  = 4  /* Ignore undocumented
+	TILEM_Z80_SKIP_UNDOCUMENTED  = 4, /* Ignore undocumented
 					     instructions entirely
 					     (act as two NOPs) */
+	TILEM_Z80_RESET_UNDOCUMENTED = 8  /* Reset CPU following
+					     undocumented instructions */
 };
 
 /* Reasons for stopping emulation */
@@ -529,6 +531,9 @@ void tilem_flash_reset(TilemCalc* calc);
 /* Read a byte from the Flash chip */
 byte tilem_flash_read_byte(TilemCalc* calc, dword pa);
 
+/* Erase a Flash sector */
+void tilem_flash_erase_address(TilemCalc* calc, dword pa);
+
 /* Write a byte to the Flash chip */
 void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v);
 
@@ -625,6 +630,7 @@ enum {
 	TILEM_CALC_TI83P_SE = 's',     /* TI-83 Plus Silver Edition */
 	TILEM_CALC_TI84P = '4',	       /* TI-84 Plus */
 	TILEM_CALC_TI84P_SE = 'z',     /* TI-84 Plus Silver Edition */
+	TILEM_CALC_TI84P_NSPIRE = 'n', /* TI-Nspire 84 Plus emulator */
 	TILEM_CALC_TI85 = '5',	       /* TI-85 */
 	TILEM_CALC_TI86 = '6'	       /* TI-86 */
 };

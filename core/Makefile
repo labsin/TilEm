@@ -18,12 +18,13 @@ xp_objects = xp_init.o xp_io.o xp_memory.o xp_subcore.o
 xs_objects = xs_init.o xs_io.o xs_memory.o xs_subcore.o
 x4_objects = x4_init.o x4_io.o x4_memory.o x4_subcore.o
 xz_objects = xz_init.o xz_io.o xz_memory.o xz_subcore.o
+xn_objects = xn_init.o xn_io.o xn_memory.o xn_subcore.o
 x5_objects = x5_init.o x5_io.o x5_memory.o x5_subcore.o
 x6_objects = x6_init.o x6_io.o x6_memory.o x6_subcore.o
 
 objects = $(core_objects) $(x7_objects) $(x1_objects) $(x2_objects) \
 	$(x3_objects) $(xp_objects) $(xs_objects) $(x4_objects) $(xz_objects) \
-	$(x5_objects) $(x6_objects)
+	$(xn_objects) $(x5_objects) $(x6_objects)
 
 compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS)
 
@@ -145,6 +146,17 @@ xz_memory.o: xz/xz_memory.c xz/xz.h tilem.h
 	$(compile) -c $(srcdir)/xz/xz_memory.c
 xz_subcore.o: xz/xz_subcore.c xz/xz.h tilem.h
 	$(compile) -c $(srcdir)/xz/xz_subcore.c
+
+# TI-Nspire 84 Plus emulator
+
+xn_init.o: xn/xn_init.c xn/xn.h tilem.h
+	$(compile) -c $(srcdir)/xn/xn_init.c
+xn_io.o: xn/xn_io.c xn/xn.h tilem.h
+	$(compile) -c $(srcdir)/xn/xn_io.c
+xn_memory.o: xn/xn_memory.c xn/xn.h tilem.h
+	$(compile) -c $(srcdir)/xn/xn_memory.c
+xn_subcore.o: xn/xn_subcore.c xn/xn.h tilem.h
+	$(compile) -c $(srcdir)/xn/xn_subcore.c
 
 # TI-85
 
