@@ -21,8 +21,9 @@
 */
 
 #include <QHash>
-#include <QString>
 #include <QFrame>
+#include <QString>
+#include <QRegion>
 
 class QMenu;
 class QImage;
@@ -72,6 +73,7 @@ class CalcView : public QFrame
 		virtual void keyPressEvent(QKeyEvent *e);
 		virtual void keyReleaseEvent(QKeyEvent *e);
 		
+		virtual void mouseMoveEvent(QMouseEvent *e);
 		virtual void mousePressEvent(QMouseEvent *e);
 		virtual void mouseReleaseEvent(QMouseEvent *e);
 		
@@ -98,6 +100,10 @@ class CalcView : public QFrame
 		int mappedKey(const QPoint& pos) const;
 		int closestKey(const QPoint& pos) const;
 		
+		int keyIndex(const QPoint& p) const;
+		QPolygon keyBoundaries(const QPoint& p) const;
+		//QRegion keyClip(const QPoint& p) const;
+		
 	private:
 		QString m_model;
 		
@@ -114,9 +120,16 @@ class CalcView : public QFrame
 		int m_kThresold;
 		QList<int> m_kScanCode;
 		QList<QPoint> m_kCenter;
+		//QList<QRegion> m_kClip;
+		QList<QPolygon> m_kBoundaries;
 		
 		int m_lcdX, m_lcdY, m_lcdW, m_lcdH;
+		
+		int m_hovered;
+		QList<int> m_pressed;
+		
 		QPixmap *m_skin;
+		//QRegion m_keyregion;
 		QImage *m_screen, *m_keymask;
 }; 
 

@@ -115,12 +115,14 @@ class CalcThread : public QThread
 */
 
 CalcView::CalcView(const QString& file, QWidget *p)
-: QFrame(p), m_link(0), m_thread(0), m_skin(0), m_screen(0), m_keymask(0)
+: QFrame(p), m_link(0), m_thread(0), m_skin(0), m_hovered(-1), m_screen(0), m_keymask(0)
 {
 	setFrameShape(QFrame::StyledPanel);
 	
 	// accept drops for easy file download
 	setAcceptDrops(true);
+	
+	setMouseTracking(true);
 	
 	// setup core objects
 	m_calc = new Calc(this);
@@ -315,6 +317,8 @@ void CalcView::setupSkin()
 	m_screen = new QImage(m_lcdW, m_lcdH, QImage::Format_RGB32);
 	m_keymask = new QImage(QImage(d.filePath(s.value("keymask"))).createHeuristicMask());
 	
+	//m_keyregion = QRegion(QBitmap::fromImage(*m_keymask));
+	
 	setFixedSize(m_skin->size());
 	
 	//qDebug() << s.value("skin") << m_skin->size();
@@ -332,6 +336,8 @@ void CalcView::setupSkin()
 			{
 				m_kCenter << QPoint(coords.at(0), coords.at(1));
 				m_kScanCode << coords.at(2);
+				//m_kClip << keyClip(m_kCenter.last());
+				m_kBoundaries << keyBoundaries(m_kCenter.last());
 			} else {
 				qWarning("skin: Malformed key-coords entry.");
 			}
@@ -458,6 +464,7 @@ int CalcView::mappedKey(int k) const
 
 int CalcView::mappedKey(const QPoint& pos) const
 {
+	//return m_keyregion.contains(pos) ? closestKey(pos) : 0;
 	return qGray(m_keymask->pixel(pos)) ? 0 : closestKey(pos);
 }
 
@@ -480,14 +487,197 @@ int CalcView::closestKey(const QPoint& p) const
 	return sk_min;
 }
 
+int CalcView::keyIndex(const QPoint& p) const
+{
+	for ( int i = 0; i < m_kBoundaries.count(); ++i )
+	{
+		if ( m_kBoundaries.at(i).containsPoint(p, Qt::WindingFill) )
+		{
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+// QRegion CalcView::keyClip(const QPoint& pos) const
+// {
+// 	QPoint xmin, ymin, xmax, ymax;
+// 	
+// 	xmin = ymin = xmax = ymax = pos;
+// 	
+// 	while ( m_keyregion.contains(xmin - QPoint(1, 0)) )
+// 		xmin -= QPoint(1, 0);
+// 	
+// 	while ( m_keyregion.contains(ymin - QPoint(0, 1)) )
+// 		ymin -= QPoint(0, 1);
+// 	
+// 	while ( m_keyregion.contains(xmax + QPoint(1, 0)) )
+// 		xmax += QPoint(1, 0);
+// 	
+// 	while ( m_keyregion.contains(ymax + QPoint(0, 1)) )
+// 		ymax += QPoint(0, 1);
+// 	
+// 	QPoint p(xmax - xmin);
+// 	
+// 	QRegion r = m_keyregion.intersected(QRect(ymin - p, ymax + p));
+// 	
+// 	//qDebug() << r;
+// 	
+// 	return r;
+// }
+
+enum ExpandDirection
+{
+	D_H	= 1,
+	D_H_L	= 0,
+	D_H_R	= 2,
+	
+	D_V	= 4,
+	D_V_U	= 0,
+	D_V_D	= 8,
+	
+	Left		= D_H | D_H_L,
+	Right		= D_H | D_H_R,
+	Up			= D_V | D_V_U,
+	Down		= D_V | D_V_D,
+};
+
+/*
+	note : clockwise sorting of points
+*/
+void boundaries(const QImage *img, QPolygon& poly, int idx, int dir)
+{
+	int xoff = (dir & D_H) ? ((dir & D_H_R) ? 1 : -1) : 0;
+	int yoff = (dir & D_V) ? ((dir & D_V_D) ? 1 : -1) : 0;
+	
+	QPoint p = poly.at(idx);
+	
+	if ( xoff )
+	{
+		QPoint n = p + QPoint(xoff, 0);
+		
+		if ( img->pixel(p) == img->pixel(n) )
+		{
+			if ( xoff && yoff )
+			{
+				if ( xoff == yoff )
+				{
+					poly.insert(idx, n);
+					boundaries(img, poly, idx, xoff < 0 ? Left : Right);
+					++idx;
+				} else {
+					poly.insert(idx + 1, n);
+					boundaries(img, poly, idx + 1, xoff < 0 ? Left : Right);
+				}
+			} else {
+				poly[idx] = n;
+				boundaries(img, poly, idx, xoff < 0 ? Left : Right);
+			}
+		}
+	}
+	
+	if ( yoff )
+	{
+		QPoint n = p + QPoint(0, yoff);
+		
+		if ( img->pixel(p) == img->pixel(n) )
+		{
+			if ( xoff && yoff )
+			{
+				if ( xoff != yoff )
+				{
+					poly.insert(idx, n);
+					boundaries(img, poly, idx, yoff < 0 ? Up : Down);
+					++idx;
+				} else {
+					poly.insert(idx + 1, n);
+					boundaries(img, poly, idx + 1, yoff < 0 ? Up : Down);
+				}
+			} else {
+				poly[idx] = n;
+				boundaries(img, poly, idx, yoff < 0 ? Up : Down);
+			}
+		}
+	}
+	
+	if ( xoff && yoff )
+	{
+		QPoint n = p + QPoint(xoff, yoff);
+		
+		if ( img->pixel(p) == img->pixel(n) )
+		{
+			poly[idx] = n;
+			
+			boundaries(img, poly, idx, dir);
+		}
+	}
+}
+
+QPolygon boundaries(const QImage *img, const QPoint& p)
+{
+	QPolygon r, t;
+	
+	t = QPolygon() << QPoint(p.x() - 1, p.y() - 1);
+	boundaries(img, t, 0, Left | Up);
+// 	qDebug() << t;
+	r += t;
+	
+	t = QPolygon() << QPoint(p.x() + 0, p.y() - 1);
+	boundaries(img, t, 0, Up);
+	r += t;
+	
+	t = QPolygon() << QPoint(p.x() + 1, p.y() - 1);
+	boundaries(img, t, 0, Right | Up);
+// 	qDebug() << t;
+	r += t;
+	
+	t = QPolygon() << QPoint(p.x() + 1, p.y() + 0);
+	boundaries(img, t, 0, Right);
+	r += t;
+	
+	t = QPolygon() << QPoint(p.x() + 1, p.y() + 1);
+	boundaries(img, t, 0, Right | Down);
+// 	qDebug() << t;
+	r += t;
+	
+	t = QPolygon() << QPoint(p.x() + 0, p.y() + 1);
+	boundaries(img, t, 0, Down);
+	r += t;
+	
+	t = QPolygon() << QPoint(p.x() - 1, p.y() + 1);
+	boundaries(img, t, 0, Left | Down);
+// 	qDebug() << t;
+	r += t;
+	
+	t = QPolygon() << QPoint(p.x() - 1, p.y() + 0);
+	boundaries(img, t, 0, Left);
+	r += t;
+	
+	return r;
+}
+
+QPolygon CalcView::keyBoundaries(const QPoint& p) const
+{
+	return boundaries(m_keymask, p);
+}
+
 void CalcView::keyPressEvent(QKeyEvent *e)
 {
 	int k = mappedKey(e->key());
 	
 	if ( k )
+	{
+// 		if ( !m_pressed.contains(k) )
+// 		{
+// 			m_pressed << k;
+// 			update();
+// 		}
+		
 		m_calc->keyPress(k);
-	else
+	} else {
 		QFrame::keyPressEvent(e);
+	}
 }
 
 void CalcView::keyReleaseEvent(QKeyEvent *e)
@@ -495,29 +685,72 @@ void CalcView::keyReleaseEvent(QKeyEvent *e)
 	int k = mappedKey(e->key());
 	
 	if ( k )
+	{
+// 		m_pressed.removeAll(k);
 		m_calc->keyRelease(k);
-	else
+	} else {
 		QFrame::keyReleaseEvent(e);
+	}
 }
 
 void CalcView::mousePressEvent(QMouseEvent *e)
 {
-	int k = mappedKey(e->pos());
+	int k = keyIndex(e->pos());
 	
-	if ( k )
-		m_calc->keyPress(k);
-	else
+	if ( k != -1 )
+	{
+		if ( !m_pressed.contains(k) )
+		{
+			m_pressed << k;
+		}
+		
+		m_calc->keyPress(m_kScanCode.at(k));
+	} else {
 		QFrame::mousePressEvent(e);
+	}
 }
 
 void CalcView::mouseReleaseEvent(QMouseEvent *e)
 {
-	int k = mappedKey(e->pos());
+	int k = keyIndex(e->pos());
 	
-	if ( k )
-		m_calc->keyRelease(k);
-	else
+	if ( k != -1 )
+	{
+		if ( m_pressed.removeAll(k) )
+		{
+			
+		}
+		
+		m_calc->keyRelease(m_kScanCode.at(k));
+	} else {
 		QFrame::mouseReleaseEvent(e);
+	}
+}
+
+void CalcView::mouseMoveEvent(QMouseEvent *e)
+{
+	int k = keyIndex(e->pos());
+	
+	if ( k != m_hovered )
+	{
+		if ( m_hovered != -1 )
+		{
+			int old = m_hovered;
+			m_hovered = -1;
+			
+			update(m_kBoundaries.at(old).boundingRect());
+		}
+		
+		m_hovered = k;
+		
+		if ( m_hovered != -1 )
+		{
+			update(m_kBoundaries.at(m_hovered).boundingRect());
+			//qDebug() << r << m_clip;
+		}
+	}
+	
+	return QFrame::mouseMoveEvent(e);
 }
 
 void CalcView::contextMenuEvent(QContextMenuEvent *e)
@@ -549,6 +782,34 @@ void CalcView::paintEvent(QPaintEvent *e)
 		}
 		
 		p.drawPixmap(0, 0, *m_skin);
+	} else {
+		// screen repaint
+		p.drawImage(m_lcdX, m_lcdY, *m_screen);
+		return;
+	}
+	
+	// hover marker repaint
+	if ( m_hovered != -1 )
+	{
+		if ( e->rect() == m_kBoundaries.at(m_hovered).boundingRect() )
+		{
+			//p.setClipRegion(m_kClip.at(m_hovered));
+			//p.fillRect(m_kClip.at(m_hovered).boundingRect(), QColor(0xff, 0x00, 0x00, 0x3f));
+			
+			p.setBrush(QColor(0xff, 0x00, 0x00, 0x3f));
+			p.drawPolygon(m_kBoundaries.at(m_hovered), Qt::WindingFill);
+// 			p.drawPolyline(m_kBoundaries.at(m_hovered));
+			
+			return;
+		}
+	}
+	
+	p.setBrush(QColor(0x00, 0xff, 0x00, 0x3f));
+	
+	foreach ( int k, m_pressed )
+	{
+		p.drawPolygon(m_kBoundaries.at(k), Qt::WindingFill);
+// 		p.drawPolyline(m_kBoundaries.at(m_hovered));
 	}
 	
 	p.drawImage(m_lcdX, m_lcdY, *m_screen);
