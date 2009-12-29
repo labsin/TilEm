@@ -34,6 +34,9 @@
 #define FLASH_ERAA 5
 #define FLASH_ER55 6
 #define FLASH_ERROR 7
+#define FLASH_FASTMODE 8
+#define FLASH_FASTPROG 9
+#define FLASH_FASTEXIT 10
 
 #define FLASH_BUSY_PROGRAM 1
 #define FLASH_BUSY_ERASE_WAIT 2
@@ -160,6 +163,9 @@ byte tilem_flash_read_byte(TilemCalc* calc, dword pa)
 		calc->flash.toggles ^= 0x40;
 		return (value);
 	}
+	else if (calc->flash.state == FLASH_FASTMODE) {
+		return (calc->mem[pa]);
+	}
 	else if (calc->flash.state == FLASH_READ) {
 		return (calc->mem[pa]);
 	}
@@ -222,6 +228,10 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 			case 0x30:
 				WARN("attempt to erase without pre-erase");
 				return;
+			case 0x20:
+				//WARN("entering fast mode");
+				calc->flash.state = FLASH_FASTMODE;
+				return;
 			case 0x80:
 				calc->flash.state = FLASH_ERASE;
 				return;
@@ -245,6 +255,37 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 			program_byte(calc, pa, v);
 		return;
 
+	case FLASH_FASTMODE:
+		//WARN2("fast mode cmd %02x->%06x", v, pa);
+		if ( v == 0x90 )
+			calc->flash.state = FLASH_FASTEXIT;
+		else if ( v == 0xA0 )
+			calc->flash.state = FLASH_FASTPROG;
+		else
+			// TODO : figure out whether mixing is allowed on real HW
+			WARN2("mixing fast programming with regular programming : %02x->%06x", v, pa);
+		return;
+
+	case FLASH_FASTPROG:
+		//WARN2("fast prog %02x->%06x", v, pa);
+		sec = get_sector(calc, pa);
+		if (!sec->writable)
+			WARN("programming protected sector");
+		else
+			program_byte(calc, pa, v);
+		calc->flash.state = FLASH_FASTMODE;
+		return;
+
+	case FLASH_FASTEXIT:
+		//WARN("leaving fast mode");
+		if ( v != 0xF0 )
+		{
+			WARN2("undefined command %02x->%06x after fast mode pre-exit 90", v, pa);
+			// TODO : figure out whether fast mode remains in such a case
+			calc->flash.state = FLASH_FASTMODE;
+		}
+		return;
+		
 	case FLASH_ERASE:
 		if (((pa&0xFFF) == 0xAAA) && (v == 0xAA))
 			calc->flash.state = FLASH_ERAA;
