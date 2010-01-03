@@ -29,9 +29,14 @@ extern "C" {
 #include <tilem.h>
 }
 
+#include <QHash>
 #include <QObject>
 #include <QMutex>
 #include <QByteArray>
+#include <QScriptValue>
+#include <QReadWriteLock>
+
+class QScriptEngine;
 
 class Calc : public QObject
 {
@@ -40,8 +45,17 @@ class Calc : public QObject
 	Q_OBJECT
 	
 	public:
+		struct Breakpoint
+		{
+			int id;
+			quint16 start, end, mask;
+			QScriptValue test;
+		};
+		
 		Calc(QObject *p = 0);
 		~Calc();
+		
+		QString name() const;
 		
 		QString romFile() const;
 		
@@ -68,7 +82,10 @@ class Calc : public QObject
 		void sendByte(char c);
 		
 		QByteArray getBytes(int n);
+		int getBytes(int n, char *d);
 		void sendBytes(const QByteArray& d);
+		
+		static int breakpointDispatch(TilemCalc *c, dword a, void *d);
 		
 	public slots:
 		void load(const QString& file);
@@ -82,11 +99,15 @@ class Calc : public QObject
 		void keyPress(int sk);
 		void keyRelease(int sk);
 		
+		void setName(const QString& n);
+		
 	signals:
+		void nameChanged(const QString& n);
+		
 		void bytesAvailable();
 		
 	private:
-		QString m_romFile;
+		QString m_romFile, m_name;
 		
 		QMutex m_run;
 		TilemCalc *m_calc;
@@ -94,10 +115,13 @@ class Calc : public QObject
 		unsigned char *m_lcd;
 		unsigned int *m_lcd_comp;
 		
-		bool m_link_lock, m_broadcast;
+		volatile bool m_link_lock, m_broadcast;
 		
 		LinkBuffer m_input, m_output;
-		mutable QMutex m_read, m_write;
+		
+		QScriptEngine *m_script;
+		
+		static QHash<TilemCalc*, Calc*> m_table;
 };
 
 #endif

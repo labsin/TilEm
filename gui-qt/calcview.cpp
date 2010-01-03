@@ -77,19 +77,6 @@ class CalcThread : public QThread
 				if ( m_calc->run_us(10000) )
 					break;
 				
-// 				printf("  PC=%02X:%04X AF=%04X BC=%04X DE=%04X HL=%04X IX=%04X IY=%04X SP=%04X\n",
-// 						m_calc->mempagemap[m_calc->z80.r.pc.b.h >> 6],
-// 						m_calc->z80.r.pc.w.l,
-// 						m_calc->z80.r.af.w.l,
-// 						m_calc->z80.r.bc.w.l,
-// 						m_calc->z80.r.de.w.l,
-// 						m_calc->z80.r.hl.w.l,
-// 						m_calc->z80.r.ix.w.l,
-// 						m_calc->z80.r.iy.w.l,
-// 						m_calc->z80.r.sp.w.l
-// 					);
-// 				
-				
 				// slightly slow down emulation (TODO : make delay adjustable)
 				usleep(10000);
 				
@@ -115,7 +102,7 @@ class CalcThread : public QThread
 */
 
 CalcView::CalcView(const QString& file, QWidget *p)
-: QFrame(p), m_link(0), m_thread(0), m_skin(0), m_hovered(-1), m_screen(0), m_keymask(0)
+: QFrame(p), m_link(0), m_thread(0), m_hovered(-1), m_skin(0), m_screen(0), m_keymask(0)
 {
 	setFrameShape(QFrame::StyledPanel);
 	
@@ -127,6 +114,8 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	// setup core objects
 	m_calc = new Calc(this);
 	
+	connect(m_calc, SIGNAL( nameChanged(QString) ), this, SLOT( setWindowTitle(QString) ) );
+	
 	// load ROM
 	if ( QFile::exists(file) )
 		load(file);
@@ -137,21 +126,22 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	// setup context menu
 	m_cxt = new QMenu(this);
 	
-	m_cxt->addAction("Load ROM/state...", this, SLOT( load() ));
-	m_cxt->addAction("Save ROM/state...", this, SLOT( save() ));
+	m_cxt->addAction(tr("Load ROM/state..."), this, SLOT( load() ));
+	m_cxt->addAction(tr("Save ROM/state..."), this, SLOT( save() ));
 	m_cxt->addSeparator();
-	a = m_cxt->addAction("Pause", this, SLOT( pause() ) );
+	a = m_cxt->addAction(tr("Pause"), this, SLOT( pause() ) );
 	a->connect(this, SIGNAL( paused(bool) ), SLOT( setDisabled(bool) ) );
-	a = m_cxt->addAction("Resume", this, SLOT( resume() ) );
+	a = m_cxt->addAction(tr("Resume"), this, SLOT( resume() ) );
 	a->setEnabled(false);
 	a->connect(this, SIGNAL( paused(bool) ), SLOT( setEnabled(bool) ) );
 	m_cxt->addSeparator();
-	a = m_cxt->addAction("Grab external link", this, SLOT( grabExternalLink() ) );
+	a = m_cxt->addAction(tr("Grab external link"), this, SLOT( grabExternalLink() ) );
 	a->connect(this, SIGNAL( externalLinkGrabbed(bool) ), SLOT( setDisabled(bool) ) );
 	m_cxt->addSeparator();
-	m_cxt->addAction("Change skin...", this, SLOT( selectSkin() ));
+	m_cxt->addAction(tr("Change skin..."), this, SLOT( selectSkin() ));
 	m_cxt->addSeparator();
-	m_cxt->addAction("Close", this, SLOT( close() ));
+	m_dock = m_cxt->addAction(tr("Float"), this, SIGNAL( toggleDocking() ) );
+	m_cxt->addAction(tr("Close"), this, SLOT( close() ));
 	
 	// launch emulator thread
 	resume();
@@ -199,6 +189,16 @@ void CalcView::grabExternalLink()
 {
 	if ( m_link )
 		m_link->grabExternalLink();
+}
+
+void CalcView::undocked()
+{
+	m_dock->setText(tr("Dock"));
+}
+
+void CalcView::docked()
+{
+	m_dock->setText(tr("Float"));
 }
 
 Calc* CalcView::calc() const
@@ -316,8 +316,6 @@ void CalcView::setupSkin()
 	m_skin = new QPixmap(d.filePath(s.value("skin")));
 	m_screen = new QImage(m_lcdW, m_lcdH, QImage::Format_RGB32);
 	m_keymask = new QImage(QImage(d.filePath(s.value("keymask"))).createHeuristicMask());
-	
-	//m_keyregion = QRegion(QBitmap::fromImage(*m_keymask));
 	
 	setFixedSize(m_skin->size());
 	
@@ -464,7 +462,6 @@ int CalcView::mappedKey(int k) const
 
 int CalcView::mappedKey(const QPoint& pos) const
 {
-	//return m_keyregion.contains(pos) ? closestKey(pos) : 0;
 	return qGray(m_keymask->pixel(pos)) ? 0 : closestKey(pos);
 }
 
@@ -499,33 +496,6 @@ int CalcView::keyIndex(const QPoint& p) const
 	
 	return -1;
 }
-
-// QRegion CalcView::keyClip(const QPoint& pos) const
-// {
-// 	QPoint xmin, ymin, xmax, ymax;
-// 	
-// 	xmin = ymin = xmax = ymax = pos;
-// 	
-// 	while ( m_keyregion.contains(xmin - QPoint(1, 0)) )
-// 		xmin -= QPoint(1, 0);
-// 	
-// 	while ( m_keyregion.contains(ymin - QPoint(0, 1)) )
-// 		ymin -= QPoint(0, 1);
-// 	
-// 	while ( m_keyregion.contains(xmax + QPoint(1, 0)) )
-// 		xmax += QPoint(1, 0);
-// 	
-// 	while ( m_keyregion.contains(ymax + QPoint(0, 1)) )
-// 		ymax += QPoint(0, 1);
-// 	
-// 	QPoint p(xmax - xmin);
-// 	
-// 	QRegion r = m_keyregion.intersected(QRect(ymin - p, ymax + p));
-// 	
-// 	//qDebug() << r;
-// 	
-// 	return r;
-// }
 
 enum ExpandDirection
 {
@@ -620,7 +590,6 @@ QPolygon boundaries(const QImage *img, const QPoint& p)
 	
 	t = QPolygon() << QPoint(p.x() - 1, p.y() - 1);
 	boundaries(img, t, 0, Left | Up);
-// 	qDebug() << t;
 	r += t;
 	
 	t = QPolygon() << QPoint(p.x() + 0, p.y() - 1);
@@ -629,7 +598,6 @@ QPolygon boundaries(const QImage *img, const QPoint& p)
 	
 	t = QPolygon() << QPoint(p.x() + 1, p.y() - 1);
 	boundaries(img, t, 0, Right | Up);
-// 	qDebug() << t;
 	r += t;
 	
 	t = QPolygon() << QPoint(p.x() + 1, p.y() + 0);
@@ -638,7 +606,6 @@ QPolygon boundaries(const QImage *img, const QPoint& p)
 	
 	t = QPolygon() << QPoint(p.x() + 1, p.y() + 1);
 	boundaries(img, t, 0, Right | Down);
-// 	qDebug() << t;
 	r += t;
 	
 	t = QPolygon() << QPoint(p.x() + 0, p.y() + 1);
@@ -647,7 +614,6 @@ QPolygon boundaries(const QImage *img, const QPoint& p)
 	
 	t = QPolygon() << QPoint(p.x() - 1, p.y() + 1);
 	boundaries(img, t, 0, Left | Down);
-// 	qDebug() << t;
 	r += t;
 	
 	t = QPolygon() << QPoint(p.x() - 1, p.y() + 0);
@@ -791,11 +757,8 @@ void CalcView::paintEvent(QPaintEvent *e)
 	// hover marker repaint
 	if ( m_hovered != -1 )
 	{
-		if ( e->rect() == m_kBoundaries.at(m_hovered).boundingRect() )
+		if ( e->rect().intersects(m_kBoundaries.at(m_hovered).boundingRect()) )
 		{
-			//p.setClipRegion(m_kClip.at(m_hovered));
-			//p.fillRect(m_kClip.at(m_hovered).boundingRect(), QColor(0xff, 0x00, 0x00, 0x3f));
-			
 			p.setBrush(QColor(0xff, 0x00, 0x00, 0x3f));
 			p.drawPolygon(m_kBoundaries.at(m_hovered), Qt::WindingFill);
 // 			p.drawPolyline(m_kBoundaries.at(m_hovered));

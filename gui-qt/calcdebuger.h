@@ -21,17 +21,25 @@
 */
 
 #include <QWidget>
+#include "ui_calcdebuger.h"
 
-class CalcDebuger : public QWidget
+#include <QPointer>
+
+class Calc;
+
+class CalcDebuger : public QWidget, private Ui::CalcDebuger
 {
 	Q_OBJECT
 	
 	public:
+		CalcDebuger(QWidget *p = 0);
+		~CalcDebuger();
 		
-		
+	public slots:
+		void setCalc(Calc *c);
 		
 	private:
-		
+		QPointer<Calc> m_calc;
 };
 
 #endif

@@ -23,7 +23,9 @@
 #include <QMainWindow>
 
 class QAction;
+
 class CalcGrid;
+class ConnectionManager;
 
 class TilEmQt : public QMainWindow
 {
@@ -38,7 +40,9 @@ class TilEmQt : public QMainWindow
 		void addCalc(const QString& rom);
 		
 	private:
-		CalcGrid *m_grid;
+		CalcGrid *m_calcGrid;
+		
+		ConnectionManager *m_connectionManager;
 };
 
 #endif

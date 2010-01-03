@@ -19,11 +19,12 @@
 	\brief Implementation of the TilEmQt class
 */
 
+#include "calcgrid.h"
+
 #include <QAction>
 #include <QToolBar>
+#include <QDockWidget>
 #include <QFileDialog>
-
-#include "calcgrid.h"
 
 /*!
 	\class TilEmQt
@@ -35,7 +36,9 @@
 TilEmQt::TilEmQt(QWidget *p)
  : QMainWindow(p)
 {
-	m_grid = new CalcGrid(this);
+	m_calcGrid = new CalcGrid(this);
+	
+	m_connectionManager = new ConnectionManager(this);
 	
 	QAction *a;
 	QToolBar *tb = addToolBar(tr("Emulation"));
@@ -44,12 +47,12 @@ TilEmQt::TilEmQt(QWidget *p)
 	connect(a, SIGNAL( triggered() ), SLOT( close() ) );
 	
 	a = tb->addAction(tr("Pause"));
-	m_grid->connect(a, SIGNAL( triggered() ), SLOT( pause() ) );
+	m_calcGrid->connect(a, SIGNAL( triggered() ), SLOT( pause() ) );
 	
 	a = tb->addAction(tr("Add calc"));
 	connect(a, SIGNAL( triggered() ), SLOT( addCalc() ) );
 	
-	setCentralWidget(m_grid);
+	setCentralWidget(m_calcGrid);
 }
 
 TilEmQt::~TilEmQt()
@@ -66,5 +69,5 @@ void TilEmQt::addCalc()
 void TilEmQt::addCalc(const QString& rom)
 {
 	if ( QFile::exists(rom) )
-		m_grid->addCalc(rom);
+		m_calcGrid->addCalc(rom);
 }

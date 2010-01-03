@@ -25,7 +25,6 @@
 class QLayout;
 
 class CalcView;
-class ConnectionManager;
 
 class CalcGrid : public QScrollArea
 {
@@ -41,8 +40,8 @@ class CalcGrid : public QScrollArea
 		CalcGrid(QWidget *p = 0);
 		~CalcGrid();
 		
-		DisplayMode displayMode() const;
-		void setDisplayMode(DisplayMode m);
+		int calcCount() const;
+		CalcView* calc(int idx) const;
 		
 	public slots:
 		void pause();
@@ -54,9 +53,20 @@ class CalcGrid : public QScrollArea
 		void removeCalc(int idx, bool del = true);
 		void removeCalc(CalcView *c, bool del = true);
 		
+		void dockCalc(CalcView *v);
+		void floatCalc(CalcView *v);
+		
+		void dockAllCalcs();
+		void floatAllCalcs();
+		
+	protected:
+		void contextMenuEvent(QContextMenuEvent *e);
+		
 	protected slots:
 		void paused();
 		void resumed();
+		
+		void toggleDocking();
 		
 	protected:
 		virtual void closeEvent(QCloseEvent *e);
@@ -68,11 +78,7 @@ class CalcGrid : public QScrollArea
 		
 	private:
 		QLayout *m_grid;
-		DisplayMode m_mode;
-		
 		QList<CalcView*> m_calcs;
-		
-		ConnectionManager *m_manager;
 };
 
 #endif

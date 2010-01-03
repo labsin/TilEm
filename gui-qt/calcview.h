@@ -61,11 +61,16 @@ class CalcView : public QFrame
 		
 		void grabExternalLink();
 		
+		void undocked();
+		void docked();
+		
 	signals:
 		void paused();
 		void resumed();
 		
 		void paused(bool y);
+		
+		void toggleDocking();
 		
 		void externalLinkGrabbed(bool y);
 		
@@ -102,12 +107,12 @@ class CalcView : public QFrame
 		
 		int keyIndex(const QPoint& p) const;
 		QPolygon keyBoundaries(const QPoint& p) const;
-		//QRegion keyClip(const QPoint& p) const;
 		
 	private:
 		QString m_model;
 		
 		QMenu *m_cxt;
+		QAction *m_dock;
 		
 		Calc *m_calc;
 		CalcLink *m_link;
@@ -120,7 +125,6 @@ class CalcView : public QFrame
 		int m_kThresold;
 		QList<int> m_kScanCode;
 		QList<QPoint> m_kCenter;
-		//QList<QRegion> m_kClip;
 		QList<QPolygon> m_kBoundaries;
 		
 		int m_lcdX, m_lcdY, m_lcdW, m_lcdH;
@@ -129,7 +133,6 @@ class CalcView : public QFrame
 		QList<int> m_pressed;
 		
 		QPixmap *m_skin;
-		//QRegion m_keyregion;
 		QImage *m_screen, *m_keymask;
 }; 
 

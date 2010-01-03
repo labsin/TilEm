@@ -21,9 +21,11 @@
 
 #include "calc.h"
 
+#include <QQueue>
 #include <QThread>
 #include <QStringList>
 #include <QApplication>
+#include <QMutex>
 
 #ifdef _TILEM_QT_HAS_LINK_
 static int get_calc_model(TilemCalc* calc);
@@ -31,6 +33,71 @@ static CableHandle* external_link_handle_new();
 static CableHandle* internal_link_handle_new(Calc *calc);
 static void send_file(CalcHandle* ch, int first, int last, const char* filename);
 #endif
+
+/*!
+	\internal
+	\class FileSender
+	\brief Utility class to send files to the calculator
+	
+	The point of this class is to abstract away file sending using tilibs
+	and to thread it to avoid GUI freeze. 
+*/
+class FileSender : public QThread
+{
+	public:
+		FileSender(CalcLink *l)
+		 : QThread(0), m_link(l)
+		{
+		}
+		
+		void send(const QString& s)
+		{
+			m_lock.lock();
+			m_files.enqueue(s);
+			m_lock.unlock();
+			
+			if ( !isRunning() )
+				start();
+		}
+		
+	protected:
+		virtual void run()
+		{
+			while ( m_files.count() )
+			{
+				m_lock.lock();
+				QString f = m_files.dequeue();
+				m_lock.unlock();
+				
+				#ifdef _TILEM_QT_HAS_LINK_
+				// avoid conflicts with calc2calc direct connections
+				bool broadcast = m_link->m_calc->isBroadcasting();
+				bool extlink = m_link->hasExternalLink();
+				
+				// prevent extlink from randomly messing with transfer
+				if ( extlink )
+					m_link->releaseExternalLink();
+				
+				// TODO : first wait for any exchange using direct connection to end...
+				m_link->m_calc->setBroadcasting(false);
+				
+				send_file(m_link->m_ch, 1, 0, f.toLocal8Bit().constData());
+				
+				m_link->m_calc->setBroadcasting(broadcast);
+				
+				if ( extlink )
+					m_link->grabExternalLink();
+				
+				#endif
+			}
+		}
+		
+	private:
+		CalcLink *m_link;
+		
+		QMutex m_lock;
+		QQueue<QString> m_files;
+};
 
 /*!
 	\class CalcLink
@@ -53,6 +120,8 @@ CalcLink::CalcLink(Calc *c, QObject *p)
  , m_ch(0), m_cbl(0)
 #endif
 {
+	m_sender = new FileSender(this);
+	
 	if ( !m_count )
 	{
 		#ifdef _TILEM_QT_HAS_LINK_
@@ -292,17 +361,7 @@ bool CalcLink::isSupportedFile(const QString& file) const
 
 void CalcLink::send(const QString& f)
 {
-	#ifdef _TILEM_QT_HAS_LINK_
-	// avoid conflicts with calc2calc direct connections
-	bool broadcast = m_calc->isBroadcasting();
-	
-	// TODO : first wait for any exchange using direct connection to end...
-	m_calc->setBroadcasting(false);
-	
-	send_file(m_ch, 1, 0, f.toLocal8Bit().constData());
-	
-	m_calc->setBroadcasting(broadcast);
-	#endif
+	m_sender->send(f);
 }
 
 #ifdef _TILEM_QT_HAS_LINK_
@@ -353,6 +412,17 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
+	#ifdef TILEM_QT_LINK_DEBUG
+	printf("<");
+	
+	for ( int i = 0; i < count; ++i )
+		printf(" %02x", data[i]);
+	
+	printf("\n");
+	
+	fflush(stdout);
+	#endif
+	
 	QByteArray d;
 	d.resize(count);
 	
@@ -363,7 +433,9 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 	
 	// wait for bytes to be processed...
 	while ( calc->isReceiving() )
-		QApplication::processEvents();
+	{
+		usleep(1000);
+	}
 	
 	return 0;
 }
@@ -372,14 +444,33 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
-	for ( uint32_t i = 0; i < count; ++i )
+	uint32_t newc, oldc = calc->byteCount();
+	
+	while ( oldc < count )
 	{
-		// wait for bytes to be available...
-		while ( !calc->isSending() )
-			usleep(1000);
+		qDebug("%i/%i [0x%x]", oldc, count, quintptr(calc));
 		
-		data[i] = calc->getByte();
+		do
+		{
+			usleep(1000);
+			newc = calc->byteCount();
+		} while ( newc <= oldc );
+		
+		oldc = newc;
 	}
+	
+	calc->getBytes(count, reinterpret_cast<char*>(data));
+	
+	#ifdef TILEM_QT_LINK_DEBUG
+	printf(">");
+	
+	for ( int i = 0; i < count; ++i )
+		printf(" %02x", data[i]);
+	
+	printf("\n");
+	
+	fflush(stdout);
+	#endif
 	
 	return 0;
 }
@@ -458,6 +549,8 @@ static int print_tilibs_error(int errcode)
 
 static void send_file(CalcHandle* ch, int first, int last, const char* filename)
 {
+	Q_UNUSED(first)
+	
 	CalcScreenCoord sc;
 	uint8_t *bitmap = NULL;
 	

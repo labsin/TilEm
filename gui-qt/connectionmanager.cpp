@@ -37,13 +37,18 @@ ConnectionManager::~ConnectionManager()
 	
 }
 
+int ConnectionManager::connectionCount() const
+{
+	return m_connections.count() / 2;
+}
+
 void ConnectionManager::addConnection(Calc *c1, Calc *c2)
 {
 	// clear any previous connection
 	removeConnection(c1);
 	removeConnection(c2);
 	
-	qDebug("adding connection : 0x%x <-> 0x%x", c1, c2);
+	//qDebug("adding connection : 0x%x <-> 0x%x", c1, c2);
 	
 	// add new connection
 	m_connections[c1] = c2;
@@ -51,6 +56,8 @@ void ConnectionManager::addConnection(Calc *c1, Calc *c2)
 	
 	connect(c1, SIGNAL( bytesAvailable() ), this, SLOT( bytesAvailable() ));
 	connect(c2, SIGNAL( bytesAvailable() ), this, SLOT( bytesAvailable() ));
+	
+	emit connectionAdded(c1, c2);
 }
 
 void ConnectionManager::removeConnection(Calc *c)
@@ -60,8 +67,11 @@ void ConnectionManager::removeConnection(Calc *c)
 	if ( it != m_connections.end() )
 	{
 		disconnect(c, SIGNAL( bytesAvailable() ), this, SLOT( bytesAvailable() ));
+		disconnect(*it, SIGNAL( bytesAvailable() ), this, SLOT( bytesAvailable() ));
 		
-		removeConnection(*it);
+		emit connectionRemoved(it.key(), *it);
+		
+		m_connections.remove(*it);
 		m_connections.erase(it);
 	}
 }

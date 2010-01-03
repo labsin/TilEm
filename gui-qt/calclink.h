@@ -30,9 +30,12 @@ extern "C" {
 #include <QPointer>
 
 class Calc;
+class FileSender;
 
 class CalcLink : public QObject
 {
+	friend class FileSender;
+	
 	Q_OBJECT
 	
 	public:
@@ -61,6 +64,7 @@ class CalcLink : public QObject
 		// status
 		static int m_count;
 		
+		FileSender *m_sender;
 		QPointer<Calc> m_calc;
 		
 		#ifdef _TILEM_QT_HAS_LINK_

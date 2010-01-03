@@ -7,7 +7,11 @@ TARGET = tilemqt
 DEPENDPATH += .
 INCLUDEPATH += .
 
+QT += script
+
 CONFIG += debug
+
+#DEFINES += TILEM_QT_LINK_DEBUG
 
 enable_link {
 	CONFIG += link_pkgconfig
@@ -35,6 +39,10 @@ SOURCES += main.cpp \
 	calcgrid.cpp \
 	connectionmanager.cpp \
 	calcdebuger.cpp
+
+FORMS += calcdebuger.ui
+
+OBJECTS_DIR = .build
 
 INCLUDEPATH += ../core
 LIBS += -L../core -ltilemcore

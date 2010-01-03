@@ -34,8 +34,14 @@ class ConnectionManager : public QObject
 		ConnectionManager(QObject *p = 0);
 		~ConnectionManager();
 		
+		int connectionCount() const;
+		
 		void addConnection(Calc *c1, Calc *c2);
 		void removeConnection(Calc *c);
+		
+	signals:
+		void connectionAdded(Calc *c1, Calc *c2);
+		void connectionRemoved(Calc *c1, Calc *c2);
 		
 	private slots:
 		void bytesAvailable();

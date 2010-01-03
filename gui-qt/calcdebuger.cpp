@@ -18,3 +18,36 @@
 	\file calcdebuger.cpp
 	\brief Implementation of the CalcDebuger class
 */
+
+#include "calc.h"
+
+/*!
+	\class CalcDebuger
+	\brief A widget offering debuging capabilities for an emulated calc
+*/
+
+CalcDebuger::CalcDebuger(QWidget *p)
+ : QWidget(p)
+{
+	setupUi(this);
+}
+
+CalcDebuger::~CalcDebuger()
+{
+	
+}
+
+void CalcDebuger::setCalc(Calc *c)
+{
+	if ( m_calc )
+	{
+		
+	}
+	
+	m_calc = c;
+	
+	if ( m_calc )
+	{
+		
+	}
+}
