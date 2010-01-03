@@ -26,18 +26,27 @@
 #include <QAction>
 #include <QKeyEvent>
 #include <QHBoxLayout>
-#include <QGridLayout>
 #include <QMessageBox>
 
+/*!
+	\class CalcGrid
+	\brief Container for CalcView instances
+	
+*/
+
 CalcGrid::CalcGrid(QWidget *p)
- : QScrollArea(p)
+ : CalcGridAncestor(p)
 {
 	setFocusPolicy(Qt::NoFocus);
 	
+	#ifdef SCROLLABLE_CALC_GRID
 	setWidgetResizable(true);
 	QWidget *w = new QWidget;
 	m_grid = new QHBoxLayout(w);
 	setWidget(w);
+	#else
+	m_grid = new QHBoxLayout(this);
+	#endif
 	
 	QAction *a;
 	a = new QAction(tr("Float all"), this);
@@ -57,6 +66,11 @@ CalcGrid::~CalcGrid()
 	foreach ( CalcView *v, m_calcs )
 		if ( !v->parent() )
 			delete v;
+}
+
+QSize CalcGrid::sizeHint() const
+{
+	return QSize(450 * m_calcs.count(), 800);
 }
 
 void CalcGrid::dockCalc(CalcView *v)
@@ -133,7 +147,12 @@ int CalcGrid::addCalc(CalcView *c)
 	if ( !c )
 		return -1;
 	
+	c->setAttribute(Qt::WA_DeleteOnClose);
+	connect(c, SIGNAL( destroyed(QObject*) ), this, SLOT( deleted(QObject*) ));
+	
+	emit beginAddCalc(m_calcs.count());
 	m_calcs << c;
+	emit endAddCalc();
 	
 	m_grid->addWidget(c);
 	
@@ -160,7 +179,11 @@ void CalcGrid::removeCalc(int idx, bool del)
 	if ( idx < 0 && idx >= m_calcs.count() )
 		return;
 	
+	emit beginRemoveCalc(idx);
+	
 	CalcView *c = m_calcs.takeAt(idx);
+	
+	emit endRemoveCalc();
 	
 	if ( c->parent() )
 		m_grid->removeWidget(c);
@@ -173,18 +196,7 @@ void CalcGrid::removeCalc(int idx, bool del)
 
 void CalcGrid::removeCalc(CalcView *c, bool del)
 {
-	if ( !c )
-		return;
-	
-	m_calcs.removeAll(c);
-	
-	if ( c->parent() )
-		m_grid->removeWidget(c);
-	else
-		c->hide();
-	
-	if ( del )
-		delete c;
+	removeCalc(m_calcs.indexOf(c), del);
 }
 
 void CalcGrid::paused()
@@ -197,19 +209,34 @@ void CalcGrid::resumed()
 	
 }
 
+void CalcGrid::deleted(QObject *o)
+{
+	for ( int i = 0; i < m_calcs.count(); ++i )
+	{
+		if ( m_calcs.at(i) == o )
+		{
+			emit beginRemoveCalc(i);
+			CalcView *c = m_calcs.takeAt(i);
+			emit endRemoveCalc();
+			
+			break;
+		}
+	}
+}
+
 void CalcGrid::closeEvent(QCloseEvent *e)
 {
-	QScrollArea::closeEvent(e);
+	CalcGridAncestor::closeEvent(e);
 }
 
 void CalcGrid::keyPressEvent(QKeyEvent *e)
 {
-	return QScrollArea::keyPressEvent(e);
+	CalcGridAncestor::keyPressEvent(e);
 }
 
 void CalcGrid::contextMenuEvent(QContextMenuEvent *e)
 {
-	return QScrollArea::contextMenuEvent(e);
+	CalcGridAncestor::contextMenuEvent(e);
 }
 
 bool CalcGrid::focusNextPrevChild(bool next)
@@ -219,7 +246,11 @@ bool CalcGrid::focusNextPrevChild(bool next)
 	CalcView *c = m_calcs.at(idx);
 	
 	if ( c->parent() )
+		#ifdef SCROLLABLE_CALC_GRID
 		ensureWidgetVisible(c);
+		#else
+		;
+		#endif
 	else
 		c->raise();
 	

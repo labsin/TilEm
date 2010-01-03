@@ -26,8 +26,19 @@ class QLayout;
 
 class CalcView;
 
-class CalcGrid : public QScrollArea
+#define SCROLLABLE_CALC_GRID
+
+#ifdef SCROLLABLE_CALC_GRID
+#define CalcGridAncestor QScrollArea
+#else
+#define CalcGridAncestor QWidget
+#endif
+
+class CalcGrid : public CalcGridAncestor
 {
+	friend class CalcTreeModel;
+	friend class CalcGridManager;
+	
 	Q_OBJECT
 	
 	public:
@@ -42,6 +53,8 @@ class CalcGrid : public QScrollArea
 		
 		int calcCount() const;
 		CalcView* calc(int idx) const;
+		
+		virtual QSize sizeHint() const;
 		
 	public slots:
 		void pause();
@@ -59,6 +72,15 @@ class CalcGrid : public QScrollArea
 		void dockAllCalcs();
 		void floatAllCalcs();
 		
+	signals:
+		void beginAddCalc(int i);
+		void endAddCalc();
+		
+		void beginRemoveCalc(int i);
+		void endRemoveCalc();
+		
+		void focusedCalcChanged(CalcView *v);
+		
 	protected:
 		void contextMenuEvent(QContextMenuEvent *e);
 		
@@ -67,6 +89,8 @@ class CalcGrid : public QScrollArea
 		void resumed();
 		
 		void toggleDocking();
+		
+		void deleted(QObject *o);
 		
 	protected:
 		virtual void closeEvent(QCloseEvent *e);

@@ -162,7 +162,7 @@ CalcView::~CalcView()
 
 bool CalcView::isPaused() const
 {
-	return m_thread->isRunning();
+	return !m_thread->isRunning();
 }
 
 void CalcView::pause()

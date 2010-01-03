@@ -27,6 +27,7 @@ HEADERS += \
 	settings.h \
 	calcview.h \
 	calcgrid.h \
+	calcgridmanager.h \
 	connectionmanager.h \
 	calcdebuger.h
 
@@ -37,6 +38,7 @@ SOURCES += main.cpp \
 	settings.cpp \
 	calcview.cpp \
 	calcgrid.cpp \
+	calcgridmanager.cpp \
 	connectionmanager.cpp \
 	calcdebuger.cpp
 

@@ -20,6 +20,9 @@
 */
 
 #include "calcgrid.h"
+#include "calcdebuger.h"
+#include "calcgridmanager.h"
+#include "connectionmanager.h"
 
 #include <QAction>
 #include <QToolBar>
@@ -37,7 +40,8 @@ TilEmQt::TilEmQt(QWidget *p)
  : QMainWindow(p)
 {
 	m_calcGrid = new CalcGrid(this);
-	
+	m_calcDebuger = new CalcDebuger(this);
+	m_calcManager = new CalcGridManager(m_calcGrid);
 	m_connectionManager = new ConnectionManager(this);
 	
 	QAction *a;
@@ -53,6 +57,16 @@ TilEmQt::TilEmQt(QWidget *p)
 	connect(a, SIGNAL( triggered() ), SLOT( addCalc() ) );
 	
 	setCentralWidget(m_calcGrid);
+	
+	QDockWidget *mgr = new QDockWidget(this);
+	mgr->setWindowTitle(tr("Manager"));
+	mgr->setWidget(m_calcManager);
+	addDockWidget(Qt::LeftDockWidgetArea, mgr);
+	
+	QDockWidget *dbg = new QDockWidget(this);
+	dbg->setWindowTitle(tr("Debuger"));
+	dbg->setWidget(m_calcDebuger);
+	addDockWidget(Qt::RightDockWidgetArea, dbg);
 }
 
 TilEmQt::~TilEmQt()

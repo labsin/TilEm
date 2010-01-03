@@ -35,6 +35,8 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 		CalcDebuger(QWidget *p = 0);
 		~CalcDebuger();
 		
+		virtual QSize sizeHint() const;
+		
 	public slots:
 		void setCalc(Calc *c);
 		

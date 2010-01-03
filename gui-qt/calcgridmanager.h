@@ -12,47 +12,27 @@
 **
 ****************************************************************************/
 
-#include "calcdebuger.h"
+#ifndef _CALC_GRID_MANAGER_H_
+#define _CALC_GRID_MANAGER_H_
 
 /*!
-	\file calcdebuger.cpp
-	\brief Implementation of the CalcDebuger class
+	\file calcgridmanager.h
+	\brief Definition of the CalcGridManager class
 */
 
-#include "calc.h"
+#include <QTreeView>
 
-/*!
-	\class CalcDebuger
-	\brief A widget offering debuging capabilities for an emulated calc
-*/
+class CalcGrid;
+class CalcTreeModel;
 
-CalcDebuger::CalcDebuger(QWidget *p)
- : QWidget(p)
+class CalcGridManager : public QTreeView
 {
-	setupUi(this);
-}
-
-CalcDebuger::~CalcDebuger()
-{
-	
-}
-
-QSize CalcDebuger::sizeHint() const
-{
-	return QSize(300, 800);
-}
-
-void CalcDebuger::setCalc(Calc *c)
-{
-	if ( m_calc )
-	{
+	public:
+		CalcGridManager(CalcGrid *g);
 		
-	}
-	
-	m_calc = c;
-	
-	if ( m_calc )
-	{
-		
-	}
-}
+	private:
+		CalcGrid *m_grid;
+		CalcTreeModel *m_model;
+};
+
+#endif
