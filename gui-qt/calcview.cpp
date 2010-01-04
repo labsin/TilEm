@@ -449,7 +449,7 @@ void CalcView::updateLCD()
 			}
 		}
 		
-		update(m_lcdX, m_lcdY, m_lcdW, m_lcdH);
+		repaint(m_lcdX, m_lcdY, m_lcdW, m_lcdH);
 	}
 }
 

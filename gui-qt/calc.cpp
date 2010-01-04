@@ -510,23 +510,37 @@ bool Calc::lcdUpdate()
 	if ( !m_calc )
 		return false;
 	
-	unsigned int low = qRgb(0xff, 0xff, 0xff), high = qRgb(0xff, 0xff, 0xff);
+	// low : black, high : white
+	unsigned int low, high;
 	
-	// contrast determination (FIXME)
+	// contrast determination
 	if ( m_calc->lcd.active && !(m_calc->z80.halted && !m_calc->poweronhalt) )
 	{
 		// update "plain" LCD data
 		(*m_calc->hw.get_lcd)(m_calc, m_lcd);
 		
-		// adjust "base" levels to tkae ocntrast into account
-		if (m_calc->lcd.contrast < 32) {
-			unsigned char a = m_calc->lcd.contrast * 4;
-			high = qRgb(a, a, a);
-		} else {
-			unsigned char a = (m_calc->lcd.contrast - 32) * 4;
-			low = qRgb(a, a, a);
-			high = qRgb(0xff, 0xff, 0xff);
-		}
+		/*
+			LCD behaves roughly as follows :
+			
+			0->31 : high is white, low goes from white to black
+			32->63 : low is black, high goes from white to black
+		*/
+		const int c = 63 - int(m_calc->lcd.contrast);
+		//low = qMin(31, c) / 8  + qMax(0, c - 31) * 4;
+		//high = qMax(31, c) * 4 + qMin(0, c - 31) / 8;
+		
+		low = 0x00;
+		high = 0xff;
+		
+// 		if ( c < 32 ) {
+// 			low = 0;
+// 			high = c * 8;
+// 		} else {
+// 			low = (c - 32) * 8;
+// 			high = 255;
+// 		}
+	} else {
+		low = high = 0xff;
 	}
 	
 	// update "composite" LCD data
@@ -539,7 +553,10 @@ bool Calc::lcdUpdate()
 		unsigned int v = m_lcd[idx >> 3] & (0x80 >> (idx & 7)) ? low : high;
 		
 		// TODO : blending for nice grayscale
-		//v += ((m_lcd_comp[idx] - v) * 3) / 4;
+		//unsigned int g = (qRed(m_lcd_comp[idx]) + 2*v) / 3;
+		unsigned int g = v + ((qRed(m_lcd_comp[idx]) - v) * 7) / 8;
+		
+		v = qRgb(g, g, g);
 		
 		if ( v != m_lcd_comp[idx] )
 		{
