@@ -7,12 +7,14 @@
 #include <gui.h>
 
 
-/* Just close the window (freeing allocation maybe in the futur?)*/
-void OnDestroy()
+
+/* Just close the window (freeing allocated memory maybe in the futur?)*/
+void on_destroy()
 {
-	printf("Thank you for using tilem...\n");
+	/*printf("\nThank you for using tilem...\n");*/
 	gtk_main_quit();
 }
+
 
 
 /* This event is executed when key (on keyboard not a click with mouse) is pressed */
@@ -20,102 +22,80 @@ void keyboard_event()
 { 
 	printf("You press a key : keyboard_event\n");	/* debug */
 }
-void toto(GtkWidget* pWindow,GdkEvent *event,GtkWidget * widget) {
-	pWindow=pWindow;
-	event=event;
-gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL,event->button.button, event->button.time);
-}
+
 
 
 /* This event is executed when click with mouse (the Calc_Key_Map is given as parameter) */
 /* Guess what key was clicked... ;D */
-void mouse_event(GtkWidget* pWindow,GdkEvent *event,TilemKeyMap *Calc_Key_Map) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
+void mouse_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS *gsi) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
 {  	
 	int i;
 	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
-
+	
+	/*printf("\nMOUSE_EVENT : name %s\n",gsi->si->name);*/
 
 	/* An alternative solution (used by "tilem old generation") */
 	GdkEventButton *bevent = (GdkEventButton *) event;
 	printf("%G %G",bevent->x,bevent->y);
-	/* if((event->button.x>40)&&(event->button.y>100)) */
-	/* end */
-	printf("hey %d %d %d %d",Calc_Key_Map->Calc_Key_Coord[0].x,Calc_Key_Map->Calc_Key_Coord[0].y,Calc_Key_Map->Calc_Key_Coord[0].h,Calc_Key_Map->Calc_Key_Coord[0].w);
 	
 	
 /* #################### Right Click Menu	#################### */
-	if(event->button.button==3)  {	//detect a right click to build menu
+	if(event->button.button==3)  {	/*detect a right click to build menu */
 		printf("right click !\n");
 		static GtkItemFactoryEntry right_click_menu[] = {
-			{"/Load file...", "F12", NULL, 0, NULL, NULL},
-			{"/Debugger...", "F11", NULL, 0, NULL, NULL},
-			{"/Hardware...", NULL, NULL, 0, NULL, NULL},
-#ifdef extlink
-			{"/Linking...", NULL, NULL, 0, NULL, NULL},
-#endif
+			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
+			{"/About", "<control>Q", on_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/Toggle autosave", NULL, NULL, 0, NULL, NULL},
-			{"/Toggle window", NULL, NULL, 0, NULL, NULL},
-			{"/Toggle speed", NULL, NULL, 0, NULL, NULL},
-			{"/Toggle key place", NULL, NULL, 0, NULL, NULL},
-			{"/Reset", NULL, NULL, 0, NULL, NULL},
-			{"/Reload state", NULL, NULL, 0, NULL, NULL},
-			{"/About", "<control>Q", OnAbout, 0, NULL, NULL},
-			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/Quit without saving", "<control>Q", OnDestroy, 0, NULL, NULL},
+			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
 			{"/Exit and save state", "<alt>X", NULL, 1, NULL, NULL}
 		};
-create_menus(pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>");
+		right_click_menu[0].extra_data=gsi;
+		create_menus(pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
+		
 /* #################### Left Click (test wich key is it)#################### */
 	} else {
-		for (i = 0; i < 60; i++)
+		for (i = 0; i < 80; i++)
 		{
 			
-			printf("\n testing ... %d %d %d %d",Calc_Key_Map->Calc_Key_Coord[0].x,Calc_Key_Map->Calc_Key_Coord[0].y,Calc_Key_Map->Calc_Key_Coord[0].h,Calc_Key_Map->Calc_Key_Coord[0].w);
-			if ((bevent->x > Calc_Key_Map->Calc_Key_Coord[i].x) && 
-			(bevent->x < (Calc_Key_Map->Calc_Key_Coord[i].x + Calc_Key_Map->Calc_Key_Coord[i].w)) &&
-			(bevent->y > Calc_Key_Map->Calc_Key_Coord[i].y) && 
-			(bevent->y < (Calc_Key_Map->Calc_Key_Coord[i].y + Calc_Key_Map->Calc_Key_Coord[i].h)))
+			//printf("\n testing ... %d %d %d %d",si->keys_pos[i].left,si->keys_pos[i].top,si->keys_pos[i].right,si->keys_pos[i].bottom);
+			if ((bevent->x > gsi->si->keys_pos[i].left) && 
+			(bevent->x < gsi->si->keys_pos[i].right) &&
+			(bevent->y > gsi->si->keys_pos[i].top) && 
+			(bevent->y < gsi->si->keys_pos[i].bottom))
 			break;
 			
 		}
-		printf("Key number : %d\n",i);
-		printf("Key : %s \n\n",Calc_Key_Map->Calc_Key_List[i].label);
+		/* for the test I will use the button ON to print an lcd effect :D */
+		if(i==45) {
+			
+			
+			
+			 //btnbreak(gsi);
+			 //screen_repaint(gsi->emu->lcdwin,gsi);
+			gtk_widget_activate(gsi->emu->lcdwin);
+			//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gsi->emu->lcdwin),TRUE);
+			//g_mutex_unlock(gsi->emu->run_mutex);
+			//run_with_key(gsi->emu->calc, x3_keylist[i].code);
+			//keypad_button_toggle2(0x29, gsi);
+			//gtk_widget_queue_draw(gsi->pWindow);
+			gtk_widget_queue_draw_area(gsi->emu->lcdwin,60,30,40,30);
+			tilem_z80_run(gsi->emu->calc, 1000, 0);
+			screen_update(gsi->emu);
+			tilem_keypad_press_key(gsi->emu->calc, x3_keylist[i].code);
+			screen_repaint(gsi->emu->lcdwin, gsi);
+			printstate(gsi->emu);
+			
+		}
+		printf("\nKey number : %d\n",i);
+		printf("Key name : %s\n",x3_keylist[i].label);
+		//printf("Key : %s \n\n",Calc_Key_Map->Calc_Key_List[i].label);
 	
 		printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
 	}
 };
 
 
-/* gint button_press (GtkWidget *widget, GdkEvent *event)
-{
-
-    if (event->type == GDK_BUTTON_PRESS) {
-        GdkEventButton *bevent = (GdkEventButton *) event; 
-        gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
-
-        // Say to caller that we handle the event
-
-        return TRUE;
-    }
-
-    // Say to caller that we don't handle the event
-
-    return FALSE;
-};
-
-gint show_menu(GtkWidget *widget, GdkEvent *event)
-{
-	GdkEventButton *bevent = (GdkEventButton *) event;
-	if ((event->type == GDK_BUTTON_PRESS) && (bevent->button != 1)) {
-		gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
-		return(TRUE);
-	}
-
-	return(FALSE);
-} */
-
-void OnAbout(GtkWidget *pBtn, gpointer data)
+void on_about(GtkWidget *pBtn, gpointer data)
 {
     GtkWidget *pAbout;
 	pBtn=pBtn;
@@ -138,3 +118,12 @@ void OnAbout(GtkWidget *pBtn, gpointer data)
 
 
 
+
+void btnbreak(gpointer data)
+{
+	GLOBAL_SKIN_INFOS *gsi = data;
+
+	g_mutex_lock(gsi->emu->run_mutex);
+	gsi->emu->forcebreak = TRUE;
+	g_mutex_unlock(gsi->emu->run_mutex);
+}

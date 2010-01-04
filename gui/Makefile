@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -O2 -W -Wall -Werror
+CFLAGS = -g -O2 -W -Wall 
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 
@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o skin.o event.o
+objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -26,10 +26,10 @@ all: testemu2
 
 #Main emulator GUI
 
-testemu2: $(objects) ../core/libtilemcore.a gui.h 
+testemu2: $(objects) ../core/libtilemcore.a gui.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu2 $(objects) $(libs)
 	
-testemu2.o: testemu2.c ../core/tilem.h gui.h 
+testemu2.o: testemu2.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/testemu2.c
 
 
@@ -39,16 +39,25 @@ memory.o: memory.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/memory.c
 
 # Build the Skin set and define the key coord and the key list
-skin.o: skin.c ../core/tilem.h gui.h 
-	$(compile) -c $(srcdir)/skin.c
+screen.o: screen.c ../core/tilem.h gui.h screen.h
+	$(compile) -c $(srcdir)/screen.c
 
 # Handle an GDKevent
-event.o: event.c ../core/tilem.h gui.h 
+event.o: event.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/event.c
+	
+skinops.o: skinops.c ../core/tilem.h skinops.h 
+	$(compile) -c $(srcdir)/skinops.c
+	
+skin.o: skin.c ../core/tilem.h gui.h 
+	$(compile) -c $(srcdir)/skin.c
+	
+tool.o: tool.c ../core/tilem.h gui.h 
+	$(compile) -c $(srcdir)/tool.c
 
 	
 clean:
 	rm -f *.o
-	rm -f testemu
+	rm -f testemu2
 
 .PHONY: all clean

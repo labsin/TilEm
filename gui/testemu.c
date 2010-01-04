@@ -971,7 +971,8 @@ int main(int argc, char** argv)
 
 	emu.lcdscaledpb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8,
 					 screenwidth, screenheight);
-
+	
+	
 	if (argc > 2) {
 		CableHandle* cbl;
 		CalcHandle* ch;
