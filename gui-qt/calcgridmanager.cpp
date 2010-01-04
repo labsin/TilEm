@@ -25,6 +25,11 @@
 #include "calcgrid.h"
 #include "connectionmanager.h"
 
+#include <QLineEdit>
+#include <QComboBox>
+#include <QAbstractItemModel>
+#include <QStyledItemDelegate>
+
 /*!
 	\internal
 	\class CalcTreeModel
@@ -76,7 +81,7 @@ class CalcTreeModel : public QAbstractItemModel
 		
 		inline CalcView* calc(const QModelIndex& i) const
 		{
-			return i.isValid() ? m_grid->m_calcs.at(i.internalId() & 0x0000ffff) : 0;
+			return i.isValid() ? m_grid->calc(i.internalId() & 0x0000ffff) : 0;
 		}
 		
 		virtual QModelIndex index(int row, int col, const QModelIndex& p) const
@@ -87,7 +92,7 @@ class CalcTreeModel : public QAbstractItemModel
 			if ( !p.isValid() )
 			{
 				// top level
-				if ( row < m_grid->m_calcs.count() )
+				if ( row < m_grid->calcCount() )
 					return createIndex(row, col, row & 0x0000ffff);
 			} else if ( depth(p) == 0 ) {
 				// prop level
@@ -110,12 +115,26 @@ class CalcTreeModel : public QAbstractItemModel
 		
 		virtual int rowCount(const QModelIndex& i) const
 		{
-			return i.isValid() ? (depth(i) ? 0 : PropCount) : m_grid->m_calcs.count();
+			return i.isValid() ? (depth(i) ? 0 : PropCount) : m_grid->calcCount();
 		}
 		
 		virtual int columnCount(const QModelIndex& i) const
 		{
 			return 2;
+		}
+		
+		virtual Qt::ItemFlags flags(const QModelIndex& i) const
+		{
+			Qt::ItemFlags f = QAbstractItemModel::flags(i);
+			
+			int d = depth(i);
+			
+			if ( d == 1 && i.column() == 1 )
+			{
+				f |= Qt::ItemIsEditable;
+			}
+			
+			return f;
 		}
 		
 		virtual QVariant data(const QModelIndex& i, int r) const
@@ -141,23 +160,19 @@ class CalcTreeModel : public QAbstractItemModel
 					{
 						switch ( i.row() )
 						{
-							case RomFile:
+							case CalcTreeModel::RomFile:
 								return i.column() ? c->romFile() : tr("ROM file");
-								break;
 								
-							case Status:
+							case CalcTreeModel::Status:
 								return i.column() ? (v->isPaused() ? tr("Paused") : tr("Running")) : tr("Status");
-								break;
 								
-							case Visibility:
+							case CalcTreeModel::Visibility:
 								return i.column() ? (v->isVisible() ? (v->parent() ? tr("Docked") : tr("Floating")) : tr("Hidden")) : tr("Visibility");
-								break;
 								
-							case ExternalLink:
+							case CalcTreeModel::ExternalLink:
 								return i.column() ? (v->link()->hasExternalLink() ? tr("Yes") : tr("No")) : tr("External link");
-								break;
 								
-							case Calc2CalcLink:
+							case CalcTreeModel::Calc2CalcLink:
 								
 								break;
 								
@@ -200,6 +215,172 @@ class CalcTreeModel : public QAbstractItemModel
 		CalcGrid *m_grid;
 };
 
+class CalcTreeDelegate : public QStyledItemDelegate
+{
+	public:
+		CalcTreeDelegate(CalcGrid *g, QObject *p = 0)
+		 : QStyledItemDelegate(p), m_grid(g)
+		{
+			
+		}
+		
+		inline CalcView* calc(const QModelIndex& i) const
+		{
+			return i.isValid() ? m_grid->calc(i.internalId() & 0x0000ffff) : 0;
+		}
+		
+		inline int depth(const QModelIndex& i) const
+		{
+			return i.isValid() ? ((i.internalId() >> 16) & 0x000000ff) : 0;
+		}
+		
+		QWidget* createEditor(QWidget *p, const QStyleOptionViewItem& o, const QModelIndex& i) const
+		{
+			if ( depth(i) == 1 && i.column() == 1 )
+			{
+				switch ( i.row() )
+				{
+					case CalcTreeModel::RomFile:
+						return new QLineEdit(p);
+						
+					case CalcTreeModel::Status:
+						return new QComboBox(p);
+						
+					case CalcTreeModel::Visibility:
+						return new QComboBox(p);
+						
+					case CalcTreeModel::ExternalLink:
+						return new QComboBox(p);
+						
+					case CalcTreeModel::Calc2CalcLink:
+						return new QComboBox(p);
+							
+					default:
+						break;
+				}
+			}
+			
+			return QStyledItemDelegate::createEditor(p, o, i);
+		}
+		
+		void setEditorData(QWidget *e, const QModelIndex& i) const
+		{
+			CalcView *v = calc(i);
+			Calc *c = v ? v->calc() : 0;
+			
+			if ( c && depth(i) == 1 && i.column() == 1 )
+			{
+				QComboBox *cb = qobject_cast<QComboBox*>(e);
+				
+				switch ( i.row() )
+				{
+					case CalcTreeModel::RomFile:
+						qobject_cast<QLineEdit*>(e)->setText(c->romFile());
+						return;
+						
+					case CalcTreeModel::Status:
+						cb->addItem(tr("Running"));
+						cb->addItem(tr("Paused"));
+						
+						cb->setCurrentIndex(v->isPaused() ? 1 : 0);
+						return;
+						
+					case CalcTreeModel::Visibility:
+						cb->addItem(tr("Docked"));
+						cb->addItem(tr("Floating"));
+						cb->addItem(tr("Hidden"));
+						
+						cb->setCurrentIndex(v->isVisible() ? (v->parent() ? 0 : 1 ) : 2);
+						return;
+						
+					case CalcTreeModel::ExternalLink:
+						cb->addItem(tr("Yes"));
+						cb->addItem(tr("No"));
+						
+						cb->setCurrentIndex(v->link()->hasExternalLink() ? 0 : 1);
+						return;
+						
+					case CalcTreeModel::Calc2CalcLink:
+						
+						return;
+						
+					default:
+						break;
+				}
+			}
+			
+			QStyledItemDelegate::setEditorData(e, i);
+		}
+		
+		void setModelData(QWidget *e, QAbstractItemModel *m, const QModelIndex& i) const
+		{
+			CalcView *v = calc(i);
+			Calc *c = v ? v->calc() : 0;
+			
+			if ( c && depth(i) == 1 && i.column() == 1 )
+			{
+				QComboBox *cb = qobject_cast<QComboBox*>(e);
+				
+				switch ( i.row() )
+				{
+					case CalcTreeModel::RomFile:
+						c->load(qobject_cast<QLineEdit*>(e)->text());
+						return;
+						
+					case CalcTreeModel::Status:
+						if ( cb->currentIndex() )
+							v->pause();
+						else
+							v->resume();
+						
+						return;
+						
+					case CalcTreeModel::Visibility:
+						switch ( cb->currentIndex() )
+						{
+							case 0:
+								v->show();
+								m_grid->dockCalc(v);
+								break;
+								
+							case 1:
+								v->show();
+								m_grid->floatCalc(v);
+								break;
+								
+							case 2:
+								v->hide();
+								break;
+								
+							default:
+								break;
+						}
+						return;
+						
+					case CalcTreeModel::ExternalLink:
+						if ( cb->currentIndex() )
+							v->link()->releaseExternalLink();
+						else
+							v->link()->grabExternalLink();
+						
+						return;
+						
+					case CalcTreeModel::Calc2CalcLink:
+						
+						return;
+						
+					default:
+						break;
+				}
+			}
+			
+			QStyledItemDelegate::setModelData(e, m, i);
+		}
+		
+	private:
+		CalcGrid *m_grid;
+};
+
 #include "calcgridmanager.moc"
 
 /*!
@@ -215,4 +396,5 @@ CalcGridManager::CalcGridManager(CalcGrid *g)
 	m_model = new CalcTreeModel(g, this);
 	
 	setModel(m_model);
+	setItemDelegate(new CalcTreeDelegate(g, this));
 }

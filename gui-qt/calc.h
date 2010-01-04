@@ -47,7 +47,10 @@ class Calc : public QObject
 	public:
 		struct Breakpoint
 		{
+			inline Breakpoint() : id(-1), mask(0xffff) {}
+			
 			int id;
+			int type;
 			quint16 start, end, mask;
 			QScriptValue test;
 		};
@@ -85,6 +88,9 @@ class Calc : public QObject
 		int getBytes(int n, char *d);
 		void sendBytes(const QByteArray& d);
 		
+		void addBreakpoint(Breakpoint *b);
+		void removeBreakpoint(Breakpoint *b);
+		
 		static int breakpointDispatch(TilemCalc *c, dword a, void *d);
 		
 	public slots:
@@ -93,6 +99,8 @@ class Calc : public QObject
 		
 		int run_us(int usec);
 		int run_cc(int clock);
+		
+		void reset();
 		
 		void stop(int reason = 0);
 		
@@ -120,6 +128,7 @@ class Calc : public QObject
 		LinkBuffer m_input, m_output;
 		
 		QScriptEngine *m_script;
+		QList<Breakpoint*> m_breakpoints;
 		
 		static QHash<TilemCalc*, Calc*> m_table;
 };

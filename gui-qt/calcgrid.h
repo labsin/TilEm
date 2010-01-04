@@ -36,9 +36,6 @@ class CalcView;
 
 class CalcGrid : public CalcGridAncestor
 {
-	friend class CalcTreeModel;
-	friend class CalcGridManager;
-	
 	Q_OBJECT
 	
 	public:

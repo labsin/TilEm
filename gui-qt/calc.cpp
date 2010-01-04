@@ -234,6 +234,31 @@ void Calc::sendBytes(const QByteArray& d)
 	m_input += d;
 }
 
+/*!
+	\brief Rest calc (simulate battery pull)
+*/
+void Calc::reset()
+{
+	m_calc->hw.reset(m_calc);
+}
+
+void Calc::addBreakpoint(Breakpoint *b)
+{
+	if ( b->id == -1 )
+	{
+		b->id = tilem_z80_add_breakpoint(m_calc, b->type, b->start, b->end, b->mask, breakpointDispatch, b);
+	}
+}
+
+void Calc::removeBreakpoint(Breakpoint *b)
+{
+	if ( b->id != -1 )
+	{
+		tilem_z80_remove_breakpoint(m_calc, b->id);
+		b->id = -1;
+	}
+}
+
 void Calc::load(const QString& file)
 {
 	QMutexLocker lock(&m_run);

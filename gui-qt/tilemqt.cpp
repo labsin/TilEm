@@ -40,7 +40,7 @@ TilEmQt::TilEmQt(QWidget *p)
  : QMainWindow(p)
 {
 	m_calcGrid = new CalcGrid(this);
-	m_calcDebuger = new CalcDebuger(this);
+	m_calcDebuger = new CalcDebuger(m_calcGrid, this);
 	m_calcManager = new CalcGridManager(m_calcGrid);
 	m_connectionManager = new ConnectionManager(this);
 	

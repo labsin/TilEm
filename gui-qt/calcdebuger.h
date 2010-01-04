@@ -26,22 +26,24 @@
 #include <QPointer>
 
 class Calc;
+class CalcGrid;
 
 class CalcDebuger : public QWidget, private Ui::CalcDebuger
 {
 	Q_OBJECT
 	
 	public:
-		CalcDebuger(QWidget *p = 0);
+		CalcDebuger(CalcGrid *g, QWidget *p = 0);
 		~CalcDebuger();
 		
 		virtual QSize sizeHint() const;
 		
-	public slots:
-		void setCalc(Calc *c);
+	private slots:
+		void on_cbTarget_currentIndexChanged(int idx);
 		
 	private:
 		QPointer<Calc> m_calc;
+		CalcGrid *m_calcGrid;
 };
 
 #endif
