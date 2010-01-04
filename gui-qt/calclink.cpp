@@ -21,6 +21,8 @@
 
 #include "calc.h"
 
+#include <unistd.h>
+
 #include <QQueue>
 #include <QThread>
 #include <QStringList>
