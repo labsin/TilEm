@@ -68,7 +68,7 @@ static inline dword get_duration(int fvalue, int nticks)
 			t = 328000000;
 			break;
 		case 3:
-			t = 3277000000;
+			t = 0xC3530D40; //3277000000;
 			break;
 		case 4:
 			t = 1000000;
@@ -80,7 +80,7 @@ static inline dword get_duration(int fvalue, int nticks)
 			t = 256000000;
 			break;
 		case 7:
-			t = 4096000000;
+			t = 0xF4240000; //4096000000;
 			break;
 		}
 
