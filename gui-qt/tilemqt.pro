@@ -9,14 +9,38 @@ INCLUDEPATH += .
 
 QT += script
 
+DESTDIR = $$PWD
+
 CONFIG += debug
 
 #DEFINES += TILEM_QT_LINK_DEBUG
 
 enable_link {
-	CONFIG += link_pkgconfig
-	PKGCONFIG += ticalcs2
 	DEFINES += _TILEM_QT_HAS_LINK_
+	win32 {
+		# tilibs depend on glib...
+		INCLUDEPATH += d:\prog\gtk\include \
+                               d:\prog\gtk\include\glib-2.0 \
+                               d:\prog\gtk\lib\glib-2.0\include \
+
+		LIBS += -Ld:\prog\gtk\lib \
+                        -lglib-2.0.dll
+		
+		# tilibs are so f****** troublesome to build under Win ...
+		# provide bins and hardcode pathes...
+		LIBS += -L..\..\tilibs2-build \
+                        -lticonv -ltifiles2 -lticables2 -lticalcs2
+                
+                DEFINES += HAVE_STDINT_H
+                
+		INCLUDEPATH += ..\..\libticonv\src \
+                               ..\..\libtifiles\src \
+                               ..\..\libticables\src \
+                               ..\..\libticalcs\src
+	} else {
+		CONFIG += link_pkgconfig
+		PKGCONFIG += ticalcs2
+	}
 }
 
 # Input
