@@ -41,6 +41,7 @@ class QScriptEngine;
 class Calc : public QObject
 {
 	friend class CalcLink;
+	friend class CalcDebuger;
 	
 	Q_OBJECT
 	

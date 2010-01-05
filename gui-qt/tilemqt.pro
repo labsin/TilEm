@@ -53,7 +53,8 @@ HEADERS += \
 	calcgrid.h \
 	calcgridmanager.h \
 	connectionmanager.h \
-	calcdebuger.h
+	calcdebuger.h \
+	calchexvalue.h
 
 SOURCES += main.cpp \
 	tilemqt.cpp \

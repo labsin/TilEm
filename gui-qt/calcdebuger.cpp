@@ -39,27 +39,10 @@ class CalcListModel : public QAbstractListModel
 			connect(g, SIGNAL( endRemoveCalc() ), this, SLOT( endRemoveCalc() ));
 		}
 		
-// 		virtual QModelIndex index(int row, int col, const QModelIndex& p) const
-// 		{
-// 			return (p.isValid() || col < 0 || col >= 2 || row < 0 || row >= m_grid->calcCount())
-// 					? QModelIndex()
-// 					: createIndex(row, col, 0);
-// 		}
-		
-// 		virtual QModelIndex parent(const QModelIndex& i) const
-// 		{
-// 			return QModelIndex();
-// 		}
-		
 		virtual int rowCount(const QModelIndex& i) const
 		{
 			return i.isValid() ? 0 : m_grid->calcCount();
 		}
-		
-// 		virtual int columnCount(const QModelIndex& i) const
-// 		{
-// 			return 1;
-// 		}
 		
 		virtual QVariant data(const QModelIndex& i, int r) const
 		{
@@ -104,6 +87,8 @@ CalcDebuger::CalcDebuger(CalcGrid *g, QWidget *p)
 	setupUi(this);
 	
 	cbTarget->setModel(new CalcListModel(g, this));
+	
+	m_refreshId = startTimer(spnRefresh->value());
 }
 
 CalcDebuger::~CalcDebuger()
@@ -114,6 +99,34 @@ CalcDebuger::~CalcDebuger()
 QSize CalcDebuger::sizeHint() const
 {
 	return QSize(300, 800);
+}
+
+void CalcDebuger::timerEvent(QTimerEvent *e)
+{
+	if ( e->timerId() == m_refreshId )
+	{
+		if ( tbPages->currentIndex() == 1 )
+		{
+// 			le_af->update();
+// 			le_bc->update();
+// 			le_de->update();
+// 			le_hl->update();
+// 			
+// 			le_af_shadow->update();
+// 			le_bc_shadow->update();
+// 			le_de_shadow->update();
+// 			le_hl_shadow->update();
+// 			
+// 			le_ix->update();
+// 			le_iy->update();
+// 			
+// 			le_pc->update();
+// 			le_sp->update();
+// 			
+// 			le_ir->update();
+			pageCPU->repaint();
+		}
+	}
 }
 
 void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
@@ -133,6 +146,42 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 	
 	if ( m_calc )
 	{
+		TilemZ80Regs& regs = m_calc->m_calc->z80.r;
 		
+		le_af->setPointer(&regs.af.w.l);
+		le_bc->setPointer(&regs.bc.w.l);
+		le_de->setPointer(&regs.de.w.l);
+		le_hl->setPointer(&regs.hl.w.l);
+		
+		le_af_shadow->setPointer(&regs.af2.w.l);
+		le_bc_shadow->setPointer(&regs.bc2.w.l);
+		le_de_shadow->setPointer(&regs.de2.w.l);
+		le_hl_shadow->setPointer(&regs.hl2.w.l);
+		
+		le_ix->setPointer(&regs.ix.w.l);
+		le_iy->setPointer(&regs.iy.w.l);
+		
+		le_pc->setPointer(&regs.pc.w.l);
+		le_sp->setPointer(&regs.sp.w.l);
+		
+		le_ir->setPointer(&regs.ir.w.l);
+		
+		// 	printf("  PC=%02X:%04X AF=%04X BC=%04X DE=%04X HL=%04X IX=%04X IY=%04X SP=%04X\n",
+// 			m_calc->mempagemap[m_calc->z80.r.pc.b.h >> 6],
+// 			m_calc->z80.r.pc.w.l,
+// 			m_calc->z80.r.af.w.l,
+// 			m_calc->z80.r.bc.w.l,
+// 			m_calc->z80.r.de.w.l,
+// 			m_calc->z80.r.hl.w.l,
+// 			m_calc->z80.r.ix.w.l,
+// 			m_calc->z80.r.iy.w.l,
+// 			m_calc->z80.r.sp.w.l
+// 		);
 	}
+}
+
+void CalcDebuger::on_spnRefresh_valueChanged(int val)
+{
+	killTimer(m_refreshId);
+	m_refreshId = startTimer(val);
 }

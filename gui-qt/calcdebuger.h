@@ -38,12 +38,19 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 		
 		virtual QSize sizeHint() const;
 		
+	protected:
+		virtual void timerEvent(QTimerEvent *e);
+		
 	private slots:
 		void on_cbTarget_currentIndexChanged(int idx);
+		
+		void on_spnRefresh_valueChanged(int val);
 		
 	private:
 		QPointer<Calc> m_calc;
 		CalcGrid *m_calcGrid;
+		
+		int m_refreshId;
 };
 
 #endif
