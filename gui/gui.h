@@ -243,6 +243,9 @@ gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,gpointer data);
 
 void update_lcdimage(TilemCalcEmulator *emu);
 
+/* Create the right click menu */
+void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
+
 
 
 

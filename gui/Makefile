@@ -39,7 +39,7 @@ memory.o: memory.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/memory.c
 
 # Build the Skin set and define the key coord and the key list
-screen.o: screen.c ../core/tilem.h gui.h screen.h
+screen.o: screen.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/screen.c
 
 # Handle an GDKevent
