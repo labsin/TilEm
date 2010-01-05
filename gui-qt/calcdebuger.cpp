@@ -105,26 +105,39 @@ void CalcDebuger::timerEvent(QTimerEvent *e)
 {
 	if ( e->timerId() == m_refreshId )
 	{
-		if ( tbPages->currentIndex() == 1 )
+		const byte flags = m_calc->m_calc->z80.r.af.b.l;
+		
+		switch ( tbPages->currentIndex() )
 		{
-// 			le_af->update();
-// 			le_bc->update();
-// 			le_de->update();
-// 			le_hl->update();
-// 			
-// 			le_af_shadow->update();
-// 			le_bc_shadow->update();
-// 			le_de_shadow->update();
-// 			le_hl_shadow->update();
-// 			
-// 			le_ix->update();
-// 			le_iy->update();
-// 			
-// 			le_pc->update();
-// 			le_sp->update();
-// 			
-// 			le_ir->update();
-			pageCPU->repaint();
+			case 1:
+				// update flags
+				chk_flag_S->setChecked(flags & FLAG_S);
+				chk_flag_Z->setChecked(flags & FLAG_Z);
+				chk_flag_5->setChecked(flags & FLAG_Y);
+				chk_flag_H->setChecked(flags & FLAG_H);
+				chk_flag_3->setChecked(flags & FLAG_X);
+				chk_flag_P->setChecked(flags & FLAG_P);
+				chk_flag_N->setChecked(flags & FLAG_N);
+				chk_flag_C->setChecked(flags & FLAG_C);
+				
+				/*
+					force repaint of all the watch widgets for changes to be visible
+					
+					optimization : directly repaint the parent widget to reduce overhead...
+				*/
+				pageCPU->repaint();
+				break;
+				
+			case 2:
+			{
+				chk_flash_lock->setChecked(!m_calc->m_calc->flash.unlock);
+				
+				pageMemory->repaint();
+				break;
+			}
+				
+			default:
+				break;
 		}
 	}
 }
@@ -146,6 +159,11 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 	
 	if ( m_calc )
 	{
+		// breakpoints page
+		
+		
+		// CPU page
+		
 		TilemZ80Regs& regs = m_calc->m_calc->z80.r;
 		
 		le_af->setPointer(&regs.af.w.l);
@@ -166,22 +184,23 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 		
 		le_ir->setPointer(&regs.ir.w.l);
 		
-		// 	printf("  PC=%02X:%04X AF=%04X BC=%04X DE=%04X HL=%04X IX=%04X IY=%04X SP=%04X\n",
-// 			m_calc->mempagemap[m_calc->z80.r.pc.b.h >> 6],
-// 			m_calc->z80.r.pc.w.l,
-// 			m_calc->z80.r.af.w.l,
-// 			m_calc->z80.r.bc.w.l,
-// 			m_calc->z80.r.de.w.l,
-// 			m_calc->z80.r.hl.w.l,
-// 			m_calc->z80.r.ix.w.l,
-// 			m_calc->z80.r.iy.w.l,
-// 			m_calc->z80.r.sp.w.l
-// 		);
+		
+		// memory page
+		
+		le_bankA->setPointer(m_calc->m_calc->mempagemap + 1);
+		le_bankB->setPointer(m_calc->m_calc->mempagemap + 2);
+		le_bankC->setPointer(m_calc->m_calc->mempagemap + 3);
+		
+		// ports page
+		
+		
 	}
 }
 
 void CalcDebuger::on_spnRefresh_valueChanged(int val)
 {
-	killTimer(m_refreshId);
-	m_refreshId = startTimer(val);
+	if ( m_refreshId != -1 )
+		killTimer(m_refreshId);
+	
+	m_refreshId = val > 0 ? startTimer(val) : -1;
 }

@@ -27,6 +27,7 @@ extern "C" {
 #include <stdlib.h>
 
 #include <tilem.h>
+#include <z80.h>
 }
 
 #include <QHash>
