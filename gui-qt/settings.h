@@ -87,6 +87,8 @@ class Settings
 		Settings();
 		~Settings();
 		
+		QString resource(const QString& r) const;
+		
 		bool load(const QString& file);
 		bool read(const QString& data);
 		
@@ -95,6 +97,7 @@ class Settings
 		
 	private:
 		Entry *m_root;
+		QString m_resourceDir;
 };
 
 #endif

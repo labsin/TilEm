@@ -14,8 +14,10 @@
 
 #include "settings.h"
 
+#include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QFileInfo>
 
 /*!
 	\file settings.cpp
@@ -41,6 +43,11 @@ Settings::Settings()
 Settings::~Settings()
 {
 	delete m_root;
+}
+
+QString Settings::resource(const QString& r) const
+{
+	return QDir(m_resourceDir).filePath(r);
 }
 
 Settings::Entry* Settings::entry(const QString& name) const
@@ -106,8 +113,11 @@ bool Settings::load(const QString& file)
 	QFile f(file);
 	
 	if ( f.open(QFile::ReadOnly | QFile::Text) )
+	{
+		m_resourceDir = QFileInfo(file).path();
+		
 		return read(QString::fromLocal8Bit(f.readAll()));
-	else
+	} else
 		return false;
 }
 

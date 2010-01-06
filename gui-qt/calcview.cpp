@@ -104,6 +104,7 @@ class CalcThread : public QThread
 CalcView::CalcView(const QString& file, QWidget *p)
 : QFrame(p), m_link(0), m_thread(0), m_hovered(-1), m_skin(0), m_screen(0), m_keymask(0)
 {
+	setFocusPolicy(Qt::StrongFocus);
 	setFrameShape(QFrame::StyledPanel);
 	
 	// accept drops for easy file download
@@ -282,7 +283,17 @@ void CalcView::quit()
 
 void CalcView::selectSkin()
 {
+	Settings s;
 	
+	QString fn = QFileDialog::getOpenFileName(
+									this,
+									tr("Select skin for %1").arg(m_model),
+									QApplication::applicationDirPath() + "/skins",
+									"Skin files (*.skin)"
+								);
+	
+	if ( s.load(fn) )
+		loadSkin(s);
 }
 
 void CalcView::setupSkin()
@@ -293,11 +304,12 @@ void CalcView::setupSkin()
 	delete m_screen;
 	
 	QDir d("skins");
+	QString fn = d.filePath(m_model + ".skin");
+	
 	Settings s;
 	
-	if ( !s.load(d.filePath(m_model + ".skin")) )
+	if ( !s.load(fn) )
 	{
-		QString fn;
 		do
 		{
 			fn = QFileDialog::getOpenFileName(
@@ -310,6 +322,11 @@ void CalcView::setupSkin()
 		} while ( !s.load(fn) );
 	}
 	
+	loadSkin(s);
+}
+
+void CalcView::loadSkin(Settings& s)
+{
 	Settings::Entry *e = s.entry("lcd-coords");
 	
 	QList<int> l;
@@ -327,15 +344,17 @@ void CalcView::setupSkin()
 		qWarning("skin: Missing or malformed lcd-coords field.");
 	}
 	
-	m_skin = new QPixmap(d.filePath(s.value("skin")));
+	m_skin = new QPixmap(s.resource(s.value("skin"))); // s.resource(s.value("keymask")), 0, Qt::MonoOnly);
 	m_screen = new QImage(m_lcdW, m_lcdH, QImage::Format_RGB32);
-	m_keymask = new QImage(QImage(d.filePath(s.value("keymask"))).createHeuristicMask());
+	m_keymask = new QImage(QImage(s.resource(s.value("keymask"))).createHeuristicMask()); //new QImage(m_skin->toImage());
 	
 	setFixedSize(m_skin->size());
 	
-	//qDebug() << s.value("skin") << m_skin->size();
-	
 	e = s.entry("key-coords");
+	
+	m_kCenter.clear();
+	m_kScanCode.clear();
+	m_kBoundaries.clear();
 	
 	if ( e )
 	{
@@ -348,7 +367,6 @@ void CalcView::setupSkin()
 			{
 				m_kCenter << QPoint(coords.at(0), coords.at(1));
 				m_kScanCode << coords.at(2);
-				//m_kClip << keyClip(m_kCenter.last());
 				m_kBoundaries << keyBoundaries(m_kCenter.last());
 			} else {
 				qWarning("skin: Malformed key-coords entry.");
@@ -536,6 +554,12 @@ void boundaries(const QImage *img, QPolygon& poly, int idx, int dir)
 	int yoff = (dir & D_V) ? ((dir & D_V_D) ? 1 : -1) : 0;
 	
 	QPoint p = poly.at(idx);
+	
+	if ( p.x() + xoff < 0 || p.x() + xoff >= img->width() )
+		return;
+	
+	if ( p.y() + yoff < 0 || p.y() + yoff >= img->height() )
+		return;
 	
 	if ( xoff )
 	{

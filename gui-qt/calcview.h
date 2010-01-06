@@ -28,6 +28,8 @@
 class QMenu;
 class QImage;
 
+class Settings;
+
 class Calc;
 class CalcLink;
 class CalcThread;
@@ -97,6 +99,8 @@ class CalcView : public QFrame
 		virtual void focusOutEvent(QFocusEvent *e);
 		
 		void setupSkin();
+		void loadSkin(Settings& s);
+		
 		void setupKeyboardLayout();
 		
 		void updateLCD();
