@@ -88,6 +88,8 @@ CalcDebuger::CalcDebuger(CalcGrid *g, QWidget *p)
 	
 	cbTarget->setModel(new CalcListModel(g, this));
 	
+	tbPages->setEnabled(false);
+	
 	m_refreshId = startTimer(spnRefresh->value());
 }
 
@@ -103,7 +105,7 @@ QSize CalcDebuger::sizeHint() const
 
 void CalcDebuger::timerEvent(QTimerEvent *e)
 {
-	if ( e->timerId() == m_refreshId )
+	if ( m_calc && (e->timerId() == m_refreshId) )
 	{
 		const byte flags = m_calc->m_calc->z80.r.af.b.l;
 		
@@ -159,6 +161,8 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 	
 	if ( m_calc )
 	{
+		tbPages->setEnabled(true);
+		
 		// breakpoints page
 		
 		
@@ -194,6 +198,8 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 		// ports page
 		
 		
+	} else {
+		tbPages->setEnabled(false);
 	}
 }
 
