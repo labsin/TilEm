@@ -136,6 +136,7 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	a->setEnabled(false);
 	a->connect(this, SIGNAL( paused(bool) ), SLOT( setEnabled(bool) ) );
 	m_cxt->addSeparator();
+	a = m_cxt->addAction(tr("Send file..."), this, SLOT( sendFile() ) );
 	a = m_cxt->addAction(tr("Grab external link"), this, SLOT( grabExternalLink() ) );
 	a->connect(this, SIGNAL( externalLinkGrabbed(bool) ), SLOT( setDisabled(bool) ) );
 	m_cxt->addSeparator();
@@ -183,6 +184,27 @@ void CalcView::resume()
 		m_thread->start();
 		emit resumed();
 		emit paused(false);
+	}
+}
+
+void CalcView::sendFile()
+{
+	if ( m_link )
+	{
+		QString file = QFileDialog::getOpenFileName(
+											this,
+											tr(""),
+											QString(),
+											tr(
+												"Programs (*.73p *.83p *.8xp *.85p *.86p);;"
+												"Groups (*.73g *.82g *.83g *.8xg *.85g *.86g);;"
+												"Flash apps (*.73k *.8xk);;"
+												"OS upgrades (*.73u *.8xu);;"
+												"All files (*)"
+											)
+										);
+		
+		m_link->send(file);
 	}
 }
 

@@ -61,6 +61,7 @@ class CalcView : public QFrame
 		
 		void selectSkin();
 		
+		void sendFile();
 		void grabExternalLink();
 		
 		void undocked();
