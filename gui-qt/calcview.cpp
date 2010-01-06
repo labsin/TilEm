@@ -294,7 +294,21 @@ void CalcView::setupSkin()
 	
 	QDir d("skins");
 	Settings s;
-	s.load(d.filePath(m_model + ".skin"));
+	
+	if ( !s.load(d.filePath(m_model + ".skin")) )
+	{
+		QString fn;
+		do
+		{
+			fn = QFileDialog::getOpenFileName(
+									this,
+									tr("Select skin for %1").arg(m_model),
+									QApplication::applicationDirPath() + "/skins",
+									"Skin files (*.skin)"
+								);
+			
+		} while ( !s.load(fn) );
+	}
 	
 	Settings::Entry *e = s.entry("lcd-coords");
 	

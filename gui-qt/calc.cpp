@@ -26,6 +26,7 @@ extern "C" {
 #include <QDir>
 #include <QColor>
 #include <QFileInfo>
+#include <QInputDialog>
 #include <QScriptEngine>
 
 QHash<TilemCalc*, Calc*> Calc::m_table;
@@ -92,35 +93,32 @@ int Calc::model() const
 	return m_calc ? m_calc->hw.model_id : 0;
 }
 
-QString Calc::modelString() const
+static const QHash<char, QString>& calc_models()
 {
-	switch ( model() )
+	static QHash<char, QString> _h;
+	
+	if ( _h.isEmpty() )
 	{
-		case TILEM_CALC_TI73:
-			return "73";
-		case TILEM_CALC_TI76:
-			return "76";
-		case TILEM_CALC_TI81:
-			return "81";
-		case TILEM_CALC_TI82:
-			return "82";
-		case TILEM_CALC_TI83:
-			return "83";
-		case TILEM_CALC_TI83P_SE:
-			return "83pSE";
-		case TILEM_CALC_TI84P:
-			return "84pBE";
-		case TILEM_CALC_TI84P_SE:
-			return "84pSE";
-		case TILEM_CALC_TI85:
-			return "85";
-		case TILEM_CALC_TI86:
-			return "86";
-		default:
-			break;
+		_h[TILEM_CALC_TI73] = "73";
+		_h[TILEM_CALC_TI76] = "76";
+		_h[TILEM_CALC_TI81] = "81";
+		_h[TILEM_CALC_TI82] = "82";
+		_h[TILEM_CALC_TI83] = "83";
+		_h[TILEM_CALC_TI83P] = "83+";
+		_h[TILEM_CALC_TI83P_SE] = "83+SE";
+		_h[TILEM_CALC_TI84P] = "84+";
+		_h[TILEM_CALC_TI84P_NSPIRE] = "84+nspire";
+		_h[TILEM_CALC_TI84P_SE] = "84+SE";
+		_h[TILEM_CALC_TI85] = "85";
+		_h[TILEM_CALC_TI86] = "86";
 	}
 	
-	return "83pBE";
+	return _h;
+}
+
+QString Calc::modelString() const
+{
+	return calc_models().value(model(), QString());
 }
 
 void Calc::resetLink()
@@ -291,7 +289,26 @@ void Calc::load(const QString& file)
 	
 	m_romFile = file;
 	
-	m_calc = tilem_calc_new(tilem_guess_rom_type(romfile));
+	char rom_type = tilem_guess_rom_type(romfile);
+	
+	QStringList l = calc_models().values();
+	qSort(l);
+	
+	QString t =
+	QInputDialog::getItem(
+						0,
+						tr("Select ROM type"),
+						tr("Select ROM type (keep default if unsure)"),
+						l,
+						l.indexOf(calc_models().value(rom_type)),
+						false
+					);
+	
+	rom_type = calc_models().key(t);
+	
+	qDebug("%c", rom_type);
+	
+	m_calc = tilem_calc_new(rom_type);
 	m_table[m_calc] = this;
 	tilem_calc_load_state(m_calc, romfile, savefile);
 	

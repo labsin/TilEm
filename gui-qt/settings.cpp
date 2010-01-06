@@ -101,12 +101,14 @@ QList<int> Settings::Entry::integerItems() const
 	return r;
 }
 
-void Settings::load(const QString& file)
+bool Settings::load(const QString& file)
 {
 	QFile f(file);
 	
 	if ( f.open(QFile::ReadOnly | QFile::Text) )
-		read(QString::fromLocal8Bit(f.readAll()));
+		return read(QString::fromLocal8Bit(f.readAll()));
+	else
+		return false;
 }
 
 static QStringList tokenize(const QString& d)
@@ -145,7 +147,7 @@ static QStringList tokenize(const QString& d)
 	return l;
 }
 
-void Settings::read(const QString& data)
+bool Settings::read(const QString& data)
 {
 	/*
 		very simple settings parser (mostly for skin files)
@@ -175,7 +177,7 @@ void Settings::read(const QString& data)
 			if ( !e->parent )
 			{
 				qWarning("Malformed settings data : overdose of block close");
-				return;
+				return false;
 			}
 			
 			e = e->parent;
@@ -185,5 +187,10 @@ void Settings::read(const QString& data)
 	}
 	
 	if ( e != m_root )
+	{
 		qWarning("Malformed settings data : missing block close");
+		return false;
+	}
+	
+	return true;
 }

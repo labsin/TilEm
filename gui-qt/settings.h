@@ -87,8 +87,8 @@ class Settings
 		Settings();
 		~Settings();
 		
-		void load(const QString& file);
-		void read(const QString& data);
+		bool load(const QString& file);
+		bool read(const QString& data);
 		
 		Entry* entry(const QString& name) const;
 		QString value(const QString& key, const QString& defaultValue = QString()) const;
