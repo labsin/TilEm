@@ -15,8 +15,13 @@ CONFIG += debug
 
 #DEFINES += TILEM_QT_LINK_DEBUG
 
+!disable_link:!win32:system(pkg-config --exists ticonv tifiles2 ticables2 ticalcs2):CONFIG *= enable_link
+
+# link support
 enable_link {
 	DEFINES += _TILEM_QT_HAS_LINK_
+	
+	# Windows hackish way
 	win32 {
 		# tilibs depend on glib...
 		INCLUDEPATH += d:\prog\gtk\include \
@@ -38,6 +43,7 @@ enable_link {
                                ..\..\libticables\src \
                                ..\..\libticalcs\src
 	} else {
+		# *nix clean way : forward the job to pkg-config
 		CONFIG += link_pkgconfig
 		PKGCONFIG += ticalcs2
 	}

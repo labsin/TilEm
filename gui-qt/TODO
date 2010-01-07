@@ -6,5 +6,7 @@
 	* pretty registers display (allow modifications)
 	* disassembly
  * settings UI
+ * screen capture (static and animated)
+ * ROM dumping
  * calc 2 calc linking (physical) [i.e between a real calc and an emulated one] (necessary?)
 
