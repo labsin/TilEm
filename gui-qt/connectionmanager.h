@@ -31,11 +31,13 @@ class ConnectionManager : public QObject
 	Q_OBJECT
 	
 	public:
-		ConnectionManager(QObject *p = 0);
-		~ConnectionManager();
+		static ConnectionManager* instance();
 		
 		int connectionCount() const;
 		
+		Calc* connection(Calc *c) const;
+		
+	public slots:
 		void addConnection(Calc *c1, Calc *c2);
 		void removeConnection(Calc *c);
 		
@@ -47,6 +49,9 @@ class ConnectionManager : public QObject
 		void bytesAvailable();
 		
 	private:
+		ConnectionManager(QObject *p = 0);
+		~ConnectionManager();
+		
 		QHash<Calc*, Calc*> m_connections;
 };
 

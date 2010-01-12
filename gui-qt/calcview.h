@@ -45,7 +45,11 @@ class CalcView : public QFrame
 		Calc* calc() const;
 		CalcLink* link() const;
 		
+		virtual QSize sizeHint() const;
+		
 		bool isPaused() const;
+		
+		float scale() const;
 		
 	public slots:
 		void pause();
@@ -60,6 +64,7 @@ class CalcView : public QFrame
 		void quit();
 		
 		void selectSkin();
+		void setScale(float s);
 		
 		void sendFile();
 		void grabExternalLink();
@@ -84,6 +89,8 @@ class CalcView : public QFrame
 		virtual void mouseMoveEvent(QMouseEvent *e);
 		virtual void mousePressEvent(QMouseEvent *e);
 		virtual void mouseReleaseEvent(QMouseEvent *e);
+		
+		virtual void wheelEvent(QWheelEvent *e);
 		
 		virtual void timerEvent(QTimerEvent *e);
 		
@@ -136,6 +143,8 @@ class CalcView : public QFrame
 		
 		int m_hovered;
 		QList<int> m_pressed;
+		
+		float m_scale;
 		
 		QPixmap *m_skin;
 		QImage *m_screen, *m_keymask;

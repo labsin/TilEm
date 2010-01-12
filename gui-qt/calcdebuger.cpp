@@ -105,7 +105,7 @@ QSize CalcDebuger::sizeHint() const
 
 void CalcDebuger::timerEvent(QTimerEvent *e)
 {
-	if ( m_calc && (e->timerId() == m_refreshId) )
+	if ( isVisible() && m_calc && (e->timerId() == m_refreshId) )
 	{
 		const byte flags = m_calc->m_calc->z80.r.af.b.l;
 		
@@ -128,6 +128,7 @@ void CalcDebuger::timerEvent(QTimerEvent *e)
 					optimization : directly repaint the parent widget to reduce overhead...
 				*/
 				pageCPU->repaint();
+				
 				break;
 				
 			case 2:

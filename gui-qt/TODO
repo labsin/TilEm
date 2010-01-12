@@ -1,5 +1,6 @@
  * keymap defined through tiemu compatible text files
- * connection management UI [external and virtual]
+ * connection management UI [external and virtual] => [DONE]
+ * CalcView smooth scaling => [DONE]
  * debugging :
 	* breakpoints management
 	* instruction stepping
@@ -9,4 +10,8 @@
  * screen capture (static and animated)
  * ROM dumping
  * calc 2 calc linking (physical) [i.e between a real calc and an emulated one] (necessary?)
+ * log widget (redirecting tilem errors/warnings)
+ 
+ * skin editor?
+ * auto-generation of keymask from skin image?
 

@@ -21,9 +21,16 @@
 
 #include "calc.h"
 
+ConnectionManager* ConnectionManager::instance()
+{
+	static ConnectionManager _i;
+	
+	return &_i;
+}
+
 /*!
 	\class ConnectionManager
-	\brief 
+	\brief Manages virtual connections among Calc objects
 */
 
 ConnectionManager::ConnectionManager(QObject *p)
@@ -40,6 +47,11 @@ ConnectionManager::~ConnectionManager()
 int ConnectionManager::connectionCount() const
 {
 	return m_connections.count() / 2;
+}
+
+Calc* ConnectionManager::connection(Calc *c) const
+{
+	return m_connections.value(c, 0);
 }
 
 void ConnectionManager::addConnection(Calc *c1, Calc *c2)

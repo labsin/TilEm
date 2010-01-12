@@ -173,8 +173,10 @@ class CalcTreeModel : public QAbstractItemModel
 								return i.column() ? (v->link()->hasExternalLink() ? tr("Yes") : tr("No")) : tr("External link");
 								
 							case CalcTreeModel::Calc2CalcLink:
-								
-								break;
+							{
+								Calc *cc = ConnectionManager::instance()->connection(c);
+								return i.column() ? (cc ? cc->name() : tr("None")) : tr("Link");
+							}
 								
 							default:
 								break;
@@ -236,7 +238,7 @@ class CalcTreeDelegate : public QStyledItemDelegate
 		
 		QWidget* createEditor(QWidget *p, const QStyleOptionViewItem& o, const QModelIndex& i) const
 		{
-			if ( depth(i) == 1 && i.column() == 1 )
+			if ( (depth(i) == 1) && (i.column() == 1) )
 			{
 				switch ( i.row() )
 				{
@@ -268,7 +270,7 @@ class CalcTreeDelegate : public QStyledItemDelegate
 			CalcView *v = calc(i);
 			Calc *c = v ? v->calc() : 0;
 			
-			if ( c && depth(i) == 1 && i.column() == 1 )
+			if ( c && (depth(i) == 1) && (i.column() == 1) )
 			{
 				QComboBox *cb = qobject_cast<QComboBox*>(e);
 				
@@ -301,8 +303,28 @@ class CalcTreeDelegate : public QStyledItemDelegate
 						return;
 						
 					case CalcTreeModel::Calc2CalcLink:
+					{
+						cb->addItem(tr("None"));
 						
+						int cci = 0;
+						Calc *cc = ConnectionManager::instance()->connection(c);
+						
+						for ( int k = 0; k < m_grid->calcCount(); ++k )
+						{
+							Calc *ck = m_grid->calc(k)->calc();
+							
+							if ( ck != c )
+							{
+								cb->addItem(ck->name());
+								
+								if ( ck == cc )
+									cci = k;
+							}
+						}
+						
+						cb->setCurrentIndex(cci);
 						return;
+					}
 						
 					default:
 						break;
@@ -317,18 +339,22 @@ class CalcTreeDelegate : public QStyledItemDelegate
 			CalcView *v = calc(i);
 			Calc *c = v ? v->calc() : 0;
 			
-			if ( c && depth(i) == 1 && i.column() == 1 )
+			if ( c && (depth(i) == 1) && (i.column() == 1) )
 			{
+				QLineEdit *le = qobject_cast<QLineEdit*>(e);
 				QComboBox *cb = qobject_cast<QComboBox*>(e);
+				
+				int cbi = cb ? cb->currentIndex() : 0;
 				
 				switch ( i.row() )
 				{
 					case CalcTreeModel::RomFile:
-						c->load(qobject_cast<QLineEdit*>(e)->text());
+						if ( le->isModified() && le->isUndoAvailable() && le->text() != c->romFile() )
+							c->load(le->text());
 						return;
 						
 					case CalcTreeModel::Status:
-						if ( cb->currentIndex() )
+						if ( cbi )
 							v->pause();
 						else
 							v->resume();
@@ -336,7 +362,7 @@ class CalcTreeDelegate : public QStyledItemDelegate
 						return;
 						
 					case CalcTreeModel::Visibility:
-						switch ( cb->currentIndex() )
+						switch ( cbi )
 						{
 							case 0:
 								v->show();
@@ -358,7 +384,7 @@ class CalcTreeDelegate : public QStyledItemDelegate
 						return;
 						
 					case CalcTreeModel::ExternalLink:
-						if ( cb->currentIndex() )
+						if ( cbi )
 							v->link()->releaseExternalLink();
 						else
 							v->link()->grabExternalLink();
@@ -366,7 +392,18 @@ class CalcTreeDelegate : public QStyledItemDelegate
 						return;
 						
 					case CalcTreeModel::Calc2CalcLink:
-						
+						if ( cbi )
+						{
+							--cbi;
+							
+							ConnectionManager::instance()
+								->addConnection(
+										c,
+										m_grid->calc(cbi < m_grid->index(v) ? cbi : cbi + 1)->calc()
+									);
+						} else {
+							ConnectionManager::instance()->removeConnection(c);
+						}
 						return;
 						
 					default:

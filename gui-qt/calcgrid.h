@@ -20,11 +20,14 @@
 	\brief Definition of the CalcGrid class
 */
 
+#include <QDebug>
+
 #include <QScrollArea>
 
 class QLayout;
 
 class CalcView;
+class CalcGridInternalWidget;
 
 #define SCROLLABLE_CALC_GRID
 
@@ -36,6 +39,8 @@ class CalcView;
 
 class CalcGrid : public CalcGridAncestor
 {
+	friend class CalcGridInternalWidget;
+	
 	Q_OBJECT
 	
 	public:
@@ -49,9 +54,12 @@ class CalcGrid : public CalcGridAncestor
 		~CalcGrid();
 		
 		int calcCount() const;
+		
+		int index(CalcView *v) const;
 		CalcView* calc(int idx) const;
 		
 		virtual QSize sizeHint() const;
+		virtual QSize minimumSizeHint() const;
 		
 	public slots:
 		void pause();

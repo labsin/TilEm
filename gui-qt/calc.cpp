@@ -254,6 +254,7 @@ void Calc::load(const QString& file)
 		qWarning("Unable to open romfile : %s", qPrintable(file));
 		return;
 	} else {
+		m_load_lock = true;
 		//qDebug("successfully opened %s", qPrintable(file));
 	}
 	
@@ -324,6 +325,7 @@ void Calc::load(const QString& file)
 	if ( savefile )
 		fclose(savefile);
 	
+	m_load_lock = false;
 }
 
 void Calc::save(const QString& file)
@@ -517,11 +519,13 @@ void Calc::keyRelease(int sk)
 
 bool Calc::lcdUpdate()
 {
-	if ( !m_calc )
+	if ( m_load_lock || !m_calc )
 		return false;
 	
 	// low : black, high : white
 	unsigned int low, high;
+	const int cc = int(m_calc->lcd.contrast);
+	const unsigned int end = m_calc->hw.lcdheight * m_calc->hw.lcdwidth;
 	
 	// contrast determination
 	if ( m_calc->lcd.active && !(m_calc->z80.halted && !m_calc->poweronhalt) )
@@ -535,7 +539,7 @@ bool Calc::lcdUpdate()
 			0->31 : high is white, low goes from white to black
 			32->63 : low is black, high goes from white to black
 		*/
-		const int c = 63 - int(m_calc->lcd.contrast);
+		const int c = 63 - cc;
 		//low = qMin(31, c) / 8  + qMax(0, c - 31) * 4;
 		//high = qMax(31, c) * 4 + qMin(0, c - 31) / 8;
 		
@@ -556,14 +560,11 @@ bool Calc::lcdUpdate()
 	// update "composite" LCD data
 	bool changed = false;
 	
-	const unsigned int end = m_calc->hw.lcdheight * m_calc->hw.lcdwidth;
-	
 	for ( unsigned int idx = 0; idx < end; ++idx )
 	{
 		unsigned int v = m_lcd[idx >> 3] & (0x80 >> (idx & 7)) ? low : high;
 		
-		// TODO : blending for nice grayscale
-		//unsigned int g = (qRed(m_lcd_comp[idx]) + 2*v) / 3;
+		// blending for grayscale
 		unsigned int g = v + ((qRed(m_lcd_comp[idx]) - v) * 7) / 8;
 		
 		v = qRgb(g, g, g);
@@ -637,36 +638,63 @@ void* tilem_try_malloc_atomic(size_t s)
 {
 	return malloc(s);
 }
+}
 
 /* Logging */
 
-void tilem_message(TilemCalc* calc, const char* msg, ...)
+extern "C" void tilem_message(TilemCalc* calc, const char* msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
-	fprintf(stderr, "x%c: ", calc->hw.model_id);
-	vfprintf(stderr, msg, ap);
-	fputc('\n', stderr);
+	
+	Calc *c = Calc::m_table.value(calc, 0);
+	
+	if ( c )
+	{
+		emit c->log(QString().vsprintf(msg, ap), Calc::Message);
+	} else {
+		fprintf(stderr, "x%c: ", calc->hw.model_id);
+		vfprintf(stderr, msg, ap);
+		fputc('\n', stderr);
+	}
+	
 	va_end(ap);
 }
 
-void tilem_warning(TilemCalc* calc, const char* msg, ...)
+extern "C" void tilem_warning(TilemCalc* calc, const char* msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
-	fprintf(stderr, "x%c: WARNING: ", calc->hw.model_id);
-	vfprintf(stderr, msg, ap);
-	fputc('\n', stderr);
+	
+	Calc *c = Calc::m_table.value(calc, 0);
+	
+	if ( c )
+	{
+		emit c->log(QString().vsprintf(msg, ap), Calc::Warning);
+	} else {
+		fprintf(stderr, "x%c: WARNING: ", calc->hw.model_id);
+		vfprintf(stderr, msg, ap);
+		fputc('\n', stderr);
+	}
+	
 	va_end(ap);
 }
 
-void tilem_internal(TilemCalc* calc, const char* msg, ...)
+extern "C" void tilem_internal(TilemCalc* calc, const char* msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
-	fprintf(stderr, "x%c: INTERNAL ERROR: ", calc->hw.model_id);
-	vfprintf(stderr, msg, ap);
-	fputc('\n', stderr);
+	
+	Calc *c = Calc::m_table.value(calc, 0);
+	
+	if ( c )
+	{
+		emit c->log(QString().vsprintf(msg, ap), Calc::Internal);
+	} else {
+		fprintf(stderr, "x%c: INTERNAL ERROR: ", calc->hw.model_id);
+		vfprintf(stderr, msg, ap);
+		fputc('\n', stderr);
+	}
+	
 	va_end(ap);
-}
 }

@@ -102,10 +102,11 @@ class CalcThread : public QThread
 */
 
 CalcView::CalcView(const QString& file, QWidget *p)
-: QFrame(p), m_link(0), m_thread(0), m_hovered(-1), m_skin(0), m_screen(0), m_keymask(0)
+: QFrame(p), m_link(0), m_thread(0), m_hovered(-1), m_scale(1.0), m_skin(0), m_screen(0), m_keymask(0)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setFrameShape(QFrame::StyledPanel);
+	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	
 	// accept drops for easy file download
 	setAcceptDrops(true);
@@ -366,11 +367,13 @@ void CalcView::loadSkin(Settings& s)
 		qWarning("skin: Missing or malformed lcd-coords field.");
 	}
 	
-	m_skin = new QPixmap(s.resource(s.value("skin"))); // s.resource(s.value("keymask")), 0, Qt::MonoOnly);
+	m_skin = new QPixmap(s.resource(s.value("skin")));
 	m_screen = new QImage(m_lcdW, m_lcdH, QImage::Format_RGB32);
-	m_keymask = new QImage(QImage(s.resource(s.value("keymask"))).createHeuristicMask()); //new QImage(m_skin->toImage());
+	m_keymask = new QImage(QImage(s.resource(s.value("keymask"))).createHeuristicMask());
 	
-	setFixedSize(m_skin->size());
+	QSize sz = m_skin->size() * m_scale;
+	setFixedSize(sz);
+	setMask(m_skin->mask().scaled(sz));
 	
 	e = s.entry("key-coords");
 	
@@ -478,6 +481,32 @@ void CalcView::setupKeyboardLayout()
 	m_kbdMap[Qt::Key_QuoteDbl] = TILEM_KEY_ADD;
 }
 
+QSize CalcView::sizeHint() const
+{
+	return m_skin->size() * m_scale;
+}
+
+float CalcView::scale() const
+{
+	return m_scale;
+}
+
+void CalcView::setScale(float s)
+{
+	float ns = qBound(0.1f, s, 2.0f);
+	
+	if ( ns != m_scale )
+	{
+		m_scale = ns;
+		
+		QSize sz = m_skin->size() * m_scale;
+		setFixedSize(sz);
+		setMask(m_skin->mask().scaled(sz));
+		
+		updateGeometry();
+	}
+}
+
 void CalcView::updateLCD()
 {
 	// update QImage and schedule widget repaint
@@ -497,13 +526,11 @@ void CalcView::updateLCD()
 				int y = (h * i) / m_lcdH;
 				int x = (w * j) / m_lcdW;
 				
-				//qDebug("(%i, %i) maps (%i, %i)", j, i, x, y);
-				//m_screen->setPixel(j, i, m_calc->lcdData()[y * w + x]);
 				d[i * m_lcdW + j] = cd[y * w + x];
 			}
 		}
 		
-		repaint(m_lcdX, m_lcdY, m_lcdW, m_lcdH);
+		repaint(m_lcdX * m_scale, m_lcdY * m_scale, m_lcdW * m_scale, m_lcdH * m_scale);
 	}
 }
 
@@ -694,6 +721,8 @@ void CalcView::keyPressEvent(QKeyEvent *e)
 	
 	if ( k )
 	{
+		e->accept();
+		
 // 		if ( !m_pressed.contains(k) )
 // 		{
 // 			m_pressed << k;
@@ -712,6 +741,8 @@ void CalcView::keyReleaseEvent(QKeyEvent *e)
 	
 	if ( k )
 	{
+		e->accept();
+		
 // 		m_pressed.removeAll(k);
 		m_calc->keyRelease(k);
 	} else {
@@ -721,10 +752,12 @@ void CalcView::keyReleaseEvent(QKeyEvent *e)
 
 void CalcView::mousePressEvent(QMouseEvent *e)
 {
-	int k = keyIndex(e->pos());
+	int k = keyIndex(e->pos() / m_scale);
 	
 	if ( k != -1 )
 	{
+		e->accept();
+		
 		if ( !m_pressed.contains(k) )
 		{
 			m_pressed << k;
@@ -738,10 +771,12 @@ void CalcView::mousePressEvent(QMouseEvent *e)
 
 void CalcView::mouseReleaseEvent(QMouseEvent *e)
 {
-	int k = keyIndex(e->pos());
+	int k = keyIndex(e->pos() / m_scale);
 	
-	if ( k != -1 )
+	if ( (k != -1) && !(e->modifiers() & Qt::ControlModifier) )
 	{
+		e->accept();
+		
 		if ( m_pressed.removeAll(k) )
 		{
 			
@@ -755,7 +790,7 @@ void CalcView::mouseReleaseEvent(QMouseEvent *e)
 
 void CalcView::mouseMoveEvent(QMouseEvent *e)
 {
-	int k = keyIndex(e->pos());
+	int k = keyIndex(e->pos() / m_scale);
 	
 	if ( k != m_hovered )
 	{
@@ -763,15 +798,18 @@ void CalcView::mouseMoveEvent(QMouseEvent *e)
 		{
 			int old = m_hovered;
 			m_hovered = -1;
+			QRect r = m_kBoundaries.at(old).boundingRect();
 			
-			update(m_kBoundaries.at(old).boundingRect());
+			update(r.x() * m_scale, r.y() * m_scale, r.width() * m_scale, r.height() * m_scale);
 		}
 		
 		m_hovered = k;
 		
 		if ( m_hovered != -1 )
 		{
-			update(m_kBoundaries.at(m_hovered).boundingRect());
+			QRect r = m_kBoundaries.at(m_hovered).boundingRect();
+			
+			update(r.x() * m_scale, r.y() * m_scale, r.width() * m_scale, r.height() * m_scale);
 			//qDebug() << r << m_clip;
 		}
 	}
@@ -779,8 +817,22 @@ void CalcView::mouseMoveEvent(QMouseEvent *e)
 	return QFrame::mouseMoveEvent(e);
 }
 
+void CalcView::wheelEvent(QWheelEvent *e)
+{
+	if ( e->modifiers() & Qt::ControlModifier )
+	{
+		e->accept();
+		
+		setScale(m_scale + float(e->delta()) / 1200.0);
+	} else {
+		QFrame::wheelEvent(e);
+	}
+}
+
 void CalcView::contextMenuEvent(QContextMenuEvent *e)
 {
+	e->accept();
+	
 	m_cxt->exec(e->globalPos());
 }
 
@@ -798,8 +850,10 @@ void CalcView::paintEvent(QPaintEvent *e)
 	
 	QPainter p(this);
 	
+	p.scale(m_scale, m_scale);
+	
 	// smart update to reduce repaint overhead
-	if ( e->rect() != QRect(m_lcdX, m_lcdY, m_lcdW, m_lcdH) )
+	if ( e->rect() != QRect(m_lcdX * m_scale, m_lcdY * m_scale, m_lcdW * m_scale, m_lcdH * m_scale) )
 	{
 		if ( hasFocus() )
 		{
@@ -817,7 +871,10 @@ void CalcView::paintEvent(QPaintEvent *e)
 	// hover marker repaint
 	if ( m_hovered != -1 )
 	{
-		if ( e->rect().intersects(m_kBoundaries.at(m_hovered).boundingRect()) )
+		QRect r = m_kBoundaries.at(m_hovered).boundingRect();
+		r = QRect(r.x() * m_scale, r.y() * m_scale, r.width() * m_scale, r.height() * m_scale);
+		
+		if ( e->rect().intersects(r) )
 		{
 			p.setBrush(QColor(0xff, 0x00, 0x00, 0x3f));
 			p.drawPolygon(m_kBoundaries.at(m_hovered), Qt::WindingFill);

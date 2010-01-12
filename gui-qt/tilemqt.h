@@ -21,8 +21,10 @@
 */
 
 #include <QMainWindow>
+#include <QSystemTrayIcon>
 
 class QAction;
+class QSystemTrayIcon;
 
 class CalcGrid;
 class CalcDebuger;
@@ -41,11 +43,18 @@ class TilEmQt : public QMainWindow
 		void addCalc();
 		void addCalc(const QString& rom);
 		
+	protected:
+		virtual void closeEvent(QCloseEvent *e);
+		
+	private slots:
+		void trayActivated(QSystemTrayIcon::ActivationReason r);
+		
 	private:
 		CalcGrid *m_calcGrid;
 		CalcDebuger *m_calcDebuger;
 		CalcGridManager *m_calcManager;
-		ConnectionManager *m_connectionManager;
+		
+		QSystemTrayIcon *m_trayIcon;
 };
 
 #endif

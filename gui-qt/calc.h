@@ -44,9 +44,20 @@ class Calc : public QObject
 	friend class CalcLink;
 	friend class CalcDebuger;
 	
+	friend void tilem_message(TilemCalc* calc, const char* msg, ...);
+	friend void tilem_warning(TilemCalc* calc, const char* msg, ...);
+	friend void tilem_internal(TilemCalc* calc, const char* msg, ...);
+	
 	Q_OBJECT
 	
 	public:
+		enum LogLevel
+		{
+			Internal,
+			Warning,
+			Message
+		};
+		
 		struct Breakpoint
 		{
 			inline Breakpoint() : id(-1), mask(0xffff) {}
@@ -117,6 +128,8 @@ class Calc : public QObject
 		
 		void bytesAvailable();
 		
+		void log(const QString& message, int type);
+		
 	private:
 		QString m_romFile, m_name;
 		
@@ -126,7 +139,7 @@ class Calc : public QObject
 		unsigned char *m_lcd;
 		unsigned int *m_lcd_comp;
 		
-		volatile bool m_link_lock, m_broadcast;
+		volatile bool m_load_lock, m_link_lock, m_broadcast;
 		
 		LinkBuffer m_input, m_output;
 		

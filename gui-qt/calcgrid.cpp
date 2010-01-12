@@ -28,6 +28,41 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 
+// class CalcGridInternalWidget : public QWidget
+// {
+// 	public:
+// 		CalcGridInternalWidget(CalcGrid *g)
+// 		 : QWidget(g), m_grid(g)
+// 		{
+// 			setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+// 		}
+// 		
+// 		virtual QSize sizeHint() const
+// 		{
+// 			QSize sz;
+// 			
+// 			foreach ( CalcView *v, m_grid->m_calcs )
+// 			{
+// 				QSize sh = v->sizeHint();
+// 				
+// 				sz.rwidth() += sh.width();
+// 				sz.rheight() = qMax(sz.height(), sh.height() + 20);
+// 			}
+// 			
+// 			return sz;
+// 		}
+// 		
+// 		virtual QSize minimumSizeHint() const
+// 		{
+// 			QSize sz = sizeHint();
+// 			const int n =  m_grid->m_calcs.count();
+// 			return n > 1 ? sz / n : sz;
+// 		}
+// 		
+// 	private:
+// 		CalcGrid *m_grid;
+// };
+
 /*!
 	\class CalcGrid
 	\brief Container for CalcView instances
@@ -38,12 +73,13 @@ CalcGrid::CalcGrid(QWidget *p)
  : CalcGridAncestor(p)
 {
 	setFocusPolicy(Qt::NoFocus);
+// 	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 	
 	#ifdef SCROLLABLE_CALC_GRID
-	setWidgetResizable(true);
-	QWidget *w = new QWidget;
+	QWidget *w = new QWidget(this);
 	m_grid = new QHBoxLayout(w);
 	setWidget(w);
+	setWidgetResizable(true);
 	#else
 	m_grid = new QHBoxLayout(this);
 	#endif
@@ -70,7 +106,24 @@ CalcGrid::~CalcGrid()
 
 QSize CalcGrid::sizeHint() const
 {
-	return QSize(450 * m_calcs.count(), 800);
+	return CalcGridAncestor::sizeHint();
+	
+// 	QSize sz;
+// 	
+// 	foreach ( CalcView *v, m_calcs )
+// 	{
+// 		QSize sh = v->sizeHint();
+// 		
+// 		sz.rwidth() += sh.width() + 40;
+// 		sz.rheight() = qMax(sz.height(), sh.height() + 20);
+// 	}
+// 	
+// 	return sz;
+}
+
+QSize CalcGrid::minimumSizeHint() const
+{
+	return CalcGridAncestor::minimumSizeHint();
 }
 
 void CalcGrid::dockCalc(CalcView *v)
@@ -135,6 +188,11 @@ void CalcGrid::resume()
 int CalcGrid::calcCount() const
 {
 	return m_calcs.count();
+}
+
+int CalcGrid::index(CalcView *v) const
+{
+	return m_calcs.indexOf(v);
 }
 
 CalcView* CalcGrid::calc(int idx) const

@@ -39,16 +39,24 @@
 TilEmQt::TilEmQt(QWidget *p)
  : QMainWindow(p)
 {
+	m_trayIcon = new QSystemTrayIcon(QIcon(""), this);
+	m_trayIcon->setVisible(true);
+	
+	connect(m_trayIcon	, SIGNAL( activated(QSystemTrayIcon::ActivationReason) ),
+			this		, SLOT  ( trayActivated(QSystemTrayIcon::ActivationReason) ));
+	
 	m_calcGrid = new CalcGrid(this);
 	m_calcDebuger = new CalcDebuger(m_calcGrid, this);
 	m_calcManager = new CalcGridManager(m_calcGrid);
-	m_connectionManager = new ConnectionManager(this);
+	
+	m_calcManager->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+	m_calcDebuger->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 	
 	QAction *a;
 	QToolBar *tb = addToolBar(tr("Emulation"));
 	
 	a = tb->addAction(tr("Quit"));
-	connect(a, SIGNAL( triggered() ), SLOT( close() ) );
+	connect(a, SIGNAL( triggered() ), qApp, SLOT( quit() ) );
 	
 	a = tb->addAction(tr("Pause"));
 	m_calcGrid->connect(a, SIGNAL( triggered() ), SLOT( pause() ) );
@@ -62,11 +70,15 @@ TilEmQt::TilEmQt(QWidget *p)
 	mgr->setWindowTitle(tr("Manager"));
 	mgr->setWidget(m_calcManager);
 	addDockWidget(Qt::LeftDockWidgetArea, mgr);
+	tb->addAction(mgr->toggleViewAction());
+	mgr->hide();
 	
 	QDockWidget *dbg = new QDockWidget(this);
 	dbg->setWindowTitle(tr("Debuger"));
 	dbg->setWidget(m_calcDebuger);
 	addDockWidget(Qt::RightDockWidgetArea, dbg);
+	tb->addAction(dbg->toggleViewAction());
+	dbg->hide();
 }
 
 TilEmQt::~TilEmQt()
@@ -84,4 +96,18 @@ void TilEmQt::addCalc(const QString& rom)
 {
 	if ( QFile::exists(rom) )
 		m_calcGrid->addCalc(rom);
+}
+
+void TilEmQt::closeEvent(QCloseEvent *e)
+{
+	e->ignore();
+	hide();
+}
+
+void TilEmQt::trayActivated(QSystemTrayIcon::ActivationReason r)
+{
+	if ( isVisible() )
+		hide();
+	else
+		show();
 }
