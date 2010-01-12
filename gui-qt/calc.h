@@ -65,7 +65,8 @@ class Calc : public QObject
 		QString romFile() const;
 		
 		int model() const;
-		QString modelString() const;
+		QString modelName() const;
+		QString modelDescription() const;
 		
 		bool lcdUpdate();
 		int lcdWidth() const;

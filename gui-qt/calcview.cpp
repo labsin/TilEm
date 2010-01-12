@@ -276,7 +276,7 @@ void CalcView::load(const QString& file)
 	if ( !m_thread )
 		m_thread = new CalcThread(m_calc, this);
 	
-	m_model = m_calc->modelString();
+	m_model = m_calc->modelName();
 	
 	// setup skin and keyboard layout
 	setupSkin();

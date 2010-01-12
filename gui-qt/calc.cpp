@@ -93,32 +93,14 @@ int Calc::model() const
 	return m_calc ? m_calc->hw.model_id : 0;
 }
 
-static const QHash<char, QString>& calc_models()
+QString Calc::modelName() const
 {
-	static QHash<char, QString> _h;
-	
-	if ( _h.isEmpty() )
-	{
-		_h[TILEM_CALC_TI73] = "73";
-		_h[TILEM_CALC_TI76] = "76";
-		_h[TILEM_CALC_TI81] = "81";
-		_h[TILEM_CALC_TI82] = "82";
-		_h[TILEM_CALC_TI83] = "83";
-		_h[TILEM_CALC_TI83P] = "83+";
-		_h[TILEM_CALC_TI83P_SE] = "83+SE";
-		_h[TILEM_CALC_TI84P] = "84+";
-		_h[TILEM_CALC_TI84P_NSPIRE] = "84+nspire";
-		_h[TILEM_CALC_TI84P_SE] = "84+SE";
-		_h[TILEM_CALC_TI85] = "85";
-		_h[TILEM_CALC_TI86] = "86";
-	}
-	
-	return _h;
+	return QString(m_calc->hw.name);
 }
 
-QString Calc::modelString() const
+QString Calc::modelDescription() const
 {
-	return calc_models().value(model(), QString());
+	return QString(m_calc->hw.desc);
 }
 
 void Calc::resetLink()
@@ -290,22 +272,33 @@ void Calc::load(const QString& file)
 	m_romFile = file;
 	
 	char rom_type = tilem_guess_rom_type(romfile);
-	
-	QStringList l = calc_models().values();
-	qSort(l);
-	
+
+	const TilemHardware** models;
+	int nmodels, i, selected;
+	QStringList options;
+
+	tilem_get_supported_hardware(&models, &nmodels);
+
+	for (i = 0; i < nmodels; i++) {
+		options.append(models[i]->desc);
+		if (models[i]->model_id == rom_type)
+			selected = i;
+	}
+
 	QString t =
 	QInputDialog::getItem(
 						0,
 						tr("Select ROM type"),
 						tr("Select ROM type (keep default if unsure)"),
-						l,
-						l.indexOf(calc_models().value(rom_type)),
+						options,
+						selected,
 						false
 					);
-	
-	rom_type = calc_models().key(t);
-	
+
+	for (i = 0; i < nmodels; i++)
+		if (t == models[i]->desc)
+			rom_type = models[i]->model_id;
+
 	qDebug("%c", rom_type);
 	
 	m_calc = tilem_calc_new(rom_type);
