@@ -60,7 +60,7 @@ class Calc : public QObject
 		
 		struct Breakpoint
 		{
-			inline Breakpoint() : id(-1), mask(0xffff) {}
+			inline Breakpoint() : id(-1), start(0), end(0), mask(0xffff) {}
 			
 			int id;
 			int type;
@@ -128,7 +128,7 @@ class Calc : public QObject
 		
 		void bytesAvailable();
 		
-		void log(const QString& message, int type);
+		void log(const QString& message, int type, dword addr);
 		
 	private:
 		QString m_romFile, m_name;

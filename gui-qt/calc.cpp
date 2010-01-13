@@ -29,6 +29,17 @@ extern "C" {
 #include <QInputDialog>
 #include <QScriptEngine>
 
+class RegisterDword
+{
+	public:
+		RegisterDword()
+		{
+			qRegisterMetaType<dword>("dword");
+		}
+};
+
+static RegisterDword rdw;
+
 QHash<TilemCalc*, Calc*> Calc::m_table;
 
 int Calc::breakpointDispatch(TilemCalc *tc, dword a, void *d)
@@ -651,7 +662,7 @@ extern "C" void tilem_message(TilemCalc* calc, const char* msg, ...)
 	
 	if ( c )
 	{
-		emit c->log(QString().vsprintf(msg, ap), Calc::Message);
+		emit c->log(QString().vsprintf(msg, ap), Calc::Message, c->m_calc->z80.r.pc.w.l);
 	} else {
 		fprintf(stderr, "x%c: ", calc->hw.model_id);
 		vfprintf(stderr, msg, ap);
@@ -670,7 +681,7 @@ extern "C" void tilem_warning(TilemCalc* calc, const char* msg, ...)
 	
 	if ( c )
 	{
-		emit c->log(QString().vsprintf(msg, ap), Calc::Warning);
+		emit c->log(QString().vsprintf(msg, ap), Calc::Warning, c->m_calc->z80.r.pc.w.l);
 	} else {
 		fprintf(stderr, "x%c: WARNING: ", calc->hw.model_id);
 		vfprintf(stderr, msg, ap);
@@ -689,7 +700,7 @@ extern "C" void tilem_internal(TilemCalc* calc, const char* msg, ...)
 	
 	if ( c )
 	{
-		emit c->log(QString().vsprintf(msg, ap), Calc::Internal);
+		emit c->log(QString().vsprintf(msg, ap), Calc::Internal, c->m_calc->z80.r.pc.w.l);
 	} else {
 		fprintf(stderr, "x%c: INTERNAL ERROR: ", calc->hw.model_id);
 		vfprintf(stderr, msg, ap);
