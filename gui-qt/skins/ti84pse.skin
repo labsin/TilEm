@@ -5,7 +5,7 @@
 skin 		{ skin-84pSE.png }
 
 # keymask image
-keymask		{ keymask-84p.png }
+keymask		{ keymask-84pSE.png }
 
 # LCD rect section
 # format :
