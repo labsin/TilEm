@@ -1,13 +1,11 @@
  * keymap defined through tiemu compatible text files
- * connection management UI [external and virtual] => [DONE]
- * CalcView smooth scaling => [DONE]
  * debugging :
 	* breakpoints management
 	* instruction stepping
 	* pretty registers display (allow modifications)
 	* disassembly
  * settings UI
- * screen capture (static and animated)
+ * animated screen capture
  * ROM dumping
  * calc 2 calc linking (physical) [i.e between a real calc and an emulated one] (necessary?)
  * log widget (redirecting tilem errors/warnings)

@@ -66,6 +66,8 @@ class CalcView : public QFrame
 		void selectSkin();
 		void setScale(float s);
 		
+		void takeScreenshot();
+		
 		void sendFile();
 		void grabExternalLink();
 		

@@ -29,11 +29,13 @@
 #include <QPainter>
 #include <QFileInfo>
 #include <QKeyEvent>
+#include <QMessageBox>
 #include <QPaintEvent>
 #include <QMouseEvent>
 #include <QTimerEvent>
 #include <QFileDialog>
 #include <QApplication>
+#include <QImageWriter>
 
 extern "C" {
 #include <scancodes.h>
@@ -137,6 +139,8 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	a->setEnabled(false);
 	a->connect(this, SIGNAL( paused(bool) ), SLOT( setEnabled(bool) ) );
 	m_cxt->addSeparator();
+	a = m_cxt->addAction(tr("Take screenshot"), this, SLOT( takeScreenshot() ) );
+	m_cxt->addSeparator();
 	a = m_cxt->addAction(tr("Send file..."), this, SLOT( sendFile() ) );
 	a = m_cxt->addAction(tr("Grab external link"), this, SLOT( grabExternalLink() ) );
 	a->connect(this, SIGNAL( externalLinkGrabbed(bool) ), SLOT( setDisabled(bool) ) );
@@ -185,6 +189,50 @@ void CalcView::resume()
 		m_thread->start();
 		emit resumed();
 		emit paused(false);
+	}
+}
+
+void CalcView::takeScreenshot()
+{
+	const int w = m_calc->lcdWidth();
+	const int h = m_calc->lcdHeight();
+	const void *cd = m_calc->lcdData();
+	
+	QImage cpy(static_cast<const unsigned char*>(cd), w, h, QImage::Format_RGB32);
+	
+	QList<QByteArray> fmts = QImageWriter::supportedImageFormats();
+	
+	QString filters, all_filters("(");
+	
+	foreach ( QByteArray fmt, fmts )
+	{
+		filters += tr("%1 files (*%1);;").arg(QString::fromLocal8Bit(fmt));
+		
+		all_filters += '*';
+		all_filters += fmt;
+		all_filters += ' ';
+	}
+	
+	all_filters += ')';
+	
+	QString file = QFileDialog::getSaveFileName(
+											this,
+											tr("Save screenshot as..."),
+											QString(),
+											tr("%1All image files%2").arg(filters).arg(all_filters)
+										);
+	
+	if ( file.count() )
+	{
+		if ( !cpy.save(file) )
+			QMessageBox::warning(
+							this,
+							tr("Screenshot taking failed"),
+							tr(
+								"Unable to write screenshot image :"
+								"unsupported format or insufficient permissions"
+							)
+						);
 	}
 }
 
@@ -850,17 +898,15 @@ void CalcView::paintEvent(QPaintEvent *e)
 	
 	QPainter p(this);
 	
+	// reduce opacity for unfocused calc (to notify which one has kbd focus)
+	if ( !hasFocus() )
+		p.setOpacity(0.5);
+	
 	p.scale(m_scale, m_scale);
 	
 	// smart update to reduce repaint overhead
 	if ( e->rect() != QRect(m_lcdX * m_scale, m_lcdY * m_scale, m_lcdW * m_scale, m_lcdH * m_scale) )
 	{
-		if ( hasFocus() )
-		{
-			// TODO : draw focus marker
-			
-		}
-		
 		p.drawPixmap(0, 0, *m_skin);
 	} else {
 		// screen repaint
@@ -878,7 +924,6 @@ void CalcView::paintEvent(QPaintEvent *e)
 		{
 			p.setBrush(QColor(0xff, 0x00, 0x00, 0x3f));
 			p.drawPolygon(m_kBoundaries.at(m_hovered), Qt::WindingFill);
-// 			p.drawPolyline(m_kBoundaries.at(m_hovered));
 			
 			return;
 		}
@@ -887,10 +932,7 @@ void CalcView::paintEvent(QPaintEvent *e)
 	p.setBrush(QColor(0x00, 0xff, 0x00, 0x3f));
 	
 	foreach ( int k, m_pressed )
-	{
 		p.drawPolygon(m_kBoundaries.at(k), Qt::WindingFill);
-// 		p.drawPolyline(m_kBoundaries.at(m_hovered));
-	}
 	
 	p.drawImage(m_lcdX, m_lcdY, *m_screen);
 }
@@ -898,7 +940,6 @@ void CalcView::paintEvent(QPaintEvent *e)
 void CalcView::focusInEvent(QFocusEvent *e)
 {
 	setFrameShadow(QFrame::Raised);
-	
 	setBackgroundRole(QPalette::AlternateBase);
 	
 	QFrame::focusInEvent(e);
@@ -909,7 +950,6 @@ void CalcView::focusInEvent(QFocusEvent *e)
 void CalcView::focusOutEvent(QFocusEvent *e)
 {
 	setFrameShadow(QFrame::Plain);
-	
 	setBackgroundRole(QPalette::Base);
 	
 	QFrame::focusOutEvent(e);
