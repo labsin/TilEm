@@ -19,7 +19,9 @@
 	\brief Implementation of the TilEmQt class
 */
 
+#include "calcview.h"
 #include "calcgrid.h"
+#include "calclogview.h"
 #include "calcdebuger.h"
 #include "calcgridmanager.h"
 #include "connectionmanager.h"
@@ -46,6 +48,7 @@ TilEmQt::TilEmQt(QWidget *p)
 			this		, SLOT  ( trayActivated(QSystemTrayIcon::ActivationReason) ));
 	
 	m_calcGrid = new CalcGrid(this);
+	m_calcLogView = new CalcLogView(this);
 	m_calcDebuger = new CalcDebuger(m_calcGrid, this);
 	m_calcManager = new CalcGridManager(m_calcGrid);
 	
@@ -79,6 +82,13 @@ TilEmQt::TilEmQt(QWidget *p)
 	addDockWidget(Qt::RightDockWidgetArea, dbg);
 	tb->addAction(dbg->toggleViewAction());
 	dbg->hide();
+	
+	QDockWidget *log = new QDockWidget(this);
+	log->setWindowTitle(tr("Log"));
+	log->setWidget(m_calcLogView);
+	addDockWidget(Qt::BottomDockWidgetArea, log);
+	tb->addAction(log->toggleViewAction());
+	log->hide();
 }
 
 TilEmQt::~TilEmQt()
@@ -95,7 +105,14 @@ void TilEmQt::addCalc()
 void TilEmQt::addCalc(const QString& rom)
 {
 	if ( QFile::exists(rom) )
+	{
+		int c = m_calcGrid->calcCount();
+		
 		m_calcGrid->addCalc(rom);
+		
+		if ( c < m_calcGrid->calcCount() )
+			m_calcLogView->addCalc(m_calcGrid->calc(c)->calc());
+	}
 }
 
 void TilEmQt::closeEvent(QCloseEvent *e)

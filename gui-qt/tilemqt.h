@@ -27,6 +27,7 @@ class QAction;
 class QSystemTrayIcon;
 
 class CalcGrid;
+class CalcLogView;
 class CalcDebuger;
 class CalcGridManager;
 class ConnectionManager;
@@ -51,6 +52,7 @@ class TilEmQt : public QMainWindow
 		
 	private:
 		CalcGrid *m_calcGrid;
+		CalcLogView *m_calcLogView;
 		CalcDebuger *m_calcDebuger;
 		CalcGridManager *m_calcManager;
 		

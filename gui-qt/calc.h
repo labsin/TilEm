@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Hugues Luc BRUANT aka fullmetalcoder 
+** Copyright (C) 2009,2010 Hugues Luc BRUANT aka fullmetalcoder 
 **                    <non.deterministic.finite.organism@gmail.com>
 ** 
 ** This file may be used under the terms of the GNU General Public License
@@ -53,9 +53,9 @@ class Calc : public QObject
 	public:
 		enum LogLevel
 		{
-			Internal,
+			Message,
 			Warning,
-			Message
+			Internal
 		};
 		
 		struct Breakpoint

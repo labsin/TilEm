@@ -60,6 +60,7 @@ HEADERS += \
 	calcgridmanager.h \
 	connectionmanager.h \
 	calcdebuger.h \
+	calclogview.h \
 	calchexvalue.h
 
 SOURCES += main.cpp \
@@ -71,7 +72,8 @@ SOURCES += main.cpp \
 	calcgrid.cpp \
 	calcgridmanager.cpp \
 	connectionmanager.cpp \
-	calcdebuger.cpp
+	calcdebuger.cpp \
+	calclogview.cpp
 
 FORMS += calcdebuger.ui
 
