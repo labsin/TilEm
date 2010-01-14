@@ -610,19 +610,38 @@ const unsigned int* Calc::lcdData() const
 */
 
 extern "C" {
+void* tilem_realloc(void* p, size_t s)
+{
+	if (s) {
+		if (p) {
+			p = realloc(p, s);
+		}
+		else {
+			p = malloc(s);
+		}
+
+		if (!p) {
+			fprintf(stderr, "out of memory (need %lu bytes)\n",
+				(unsigned long) s);
+			abort();
+		}
+	}
+	else if (p) {
+		free(p);
+		p = 0;
+	}
+
+	return p;
+}
+
 void tilem_free(void* p)
 {
-	free(p);
+	tilem_realloc(p, 0);
 }
 
 void* tilem_malloc(size_t s)
 {
-	return malloc(s);
-}
-
-void* tilem_realloc(void* p, size_t s)
-{
-	return realloc(p, s);
+	return tilem_realloc(0, s);
 }
 
 void* tilem_try_malloc(size_t s)
@@ -632,7 +651,15 @@ void* tilem_try_malloc(size_t s)
 
 void* tilem_malloc0(size_t s)
 {
-	return calloc(s, 1);
+	void* p = calloc(s, 1);
+
+	if (!p) {
+		fprintf(stderr, "out of memory (need %lu bytes)\n",
+			(unsigned long) s);
+		abort();
+	}
+
+	return p;
 }
 
 void* tilem_try_malloc0(size_t s)
@@ -642,7 +669,7 @@ void* tilem_try_malloc0(size_t s)
 
 void* tilem_malloc_atomic(size_t s)
 {
-	return malloc(s);
+	return tilem_malloc(s);
 }
 
 void* tilem_try_malloc_atomic(size_t s)
