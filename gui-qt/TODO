@@ -2,13 +2,12 @@
  * debugging :
 	* breakpoints management
 	* instruction stepping
-	* pretty registers display (allow modifications)
+	* hex mem view
 	* disassembly
  * settings UI
  * animated screen capture
  * ROM dumping
  * calc 2 calc linking (physical) [i.e between a real calc and an emulated one] (necessary?)
- * log widget (redirecting tilem errors/warnings)
  
  * skin editor?
  * auto-generation of keymask from skin image?

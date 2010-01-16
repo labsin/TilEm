@@ -42,17 +42,6 @@ static RegisterDword rdw;
 
 QHash<TilemCalc*, Calc*> Calc::m_table;
 
-int Calc::breakpointDispatch(TilemCalc *tc, dword a, void *d)
-{
-	//Calc *c = m_table.value(tc, 0);
-	Calc::Breakpoint *bp = static_cast<Calc::Breakpoint*>(d);
-	
-	QScriptValueList args;
-	args << QScriptValue(a);
-	
-	return bp->test.isFunction() ? bp->test.call(QScriptValue(), args).toInt32() : 1;
-}
-
 /*!
 	\class Calc
 	\brief Core class to manage calc emulation
@@ -63,7 +52,7 @@ int Calc::breakpointDispatch(TilemCalc *tc, dword a, void *d)
 Calc::Calc(QObject *p)
  : QObject(p), m_calc(0), m_lcd(0), m_lcd_comp(0)
 {
-	m_script = new QScriptEngine(this);
+	
 }
 
 Calc::~Calc()
@@ -230,24 +219,10 @@ void Calc::sendBytes(const QByteArray& d)
 */
 void Calc::reset()
 {
-	m_calc->hw.reset(m_calc);
-}
-
-void Calc::addBreakpoint(Breakpoint *b)
-{
-	if ( b->id == -1 )
-	{
-		b->id = tilem_z80_add_breakpoint(m_calc, b->type, b->start, b->end, b->mask, breakpointDispatch, b);
-	}
-}
-
-void Calc::removeBreakpoint(Breakpoint *b)
-{
-	if ( b->id != -1 )
-	{
-		tilem_z80_remove_breakpoint(m_calc, b->id);
-		b->id = -1;
-	}
+	// preserve keypad state somehow...
+	tilem_calc_reset(m_calc);
+	
+	//m_calc->hw.reset(m_calc);
 }
 
 void Calc::load(const QString& file)
@@ -284,19 +259,21 @@ void Calc::load(const QString& file)
 	m_romFile = file;
 	
 	char rom_type = tilem_guess_rom_type(romfile);
-
-	const TilemHardware** models;
-	int nmodels, i, selected;
+	
 	QStringList options;
-
+	int nmodels, selected;
+	const TilemHardware** models;
+	
 	tilem_get_supported_hardware(&models, &nmodels);
-
-	for (i = 0; i < nmodels; i++) {
-		options.append(models[i]->desc);
-		if (models[i]->model_id == rom_type)
+	
+	for ( int i = 0; i < nmodels; ++i )
+	{
+		options << QString::fromLatin1(models[i]->desc);
+		
+		if ( models[i]->model_id == rom_type )
 			selected = i;
 	}
-
+	
 	QString t =
 	QInputDialog::getItem(
 						0,
@@ -307,11 +284,12 @@ void Calc::load(const QString& file)
 						false
 					);
 
-	for (i = 0; i < nmodels; i++)
-		if (t == models[i]->desc)
-			rom_type = models[i]->model_id;
-
-	qDebug("%c", rom_type);
+	selected = options.indexOf(t);
+	
+	if ( selected != -1 )
+		rom_type = models[selected]->model_id;
+	
+	//qDebug("%c", rom_type);
 	
 	m_calc = tilem_calc_new(rom_type);
 	m_table[m_calc] = this;

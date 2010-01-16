@@ -25,6 +25,71 @@
 
 #include <QAbstractListModel>
 
+int breakpointDispatch(TilemCalc *tc, dword a, void *d)
+{
+// 	Calc::Breakpoint *bp = static_cast<Calc::Breakpoint*>(d);
+// 	
+// 	QScriptValueList args;
+// 	args << QScriptValue(a);
+// 	
+// 	return bp->test.isFunction() ? bp->test.call(QScriptValue(), args).toInt32() : 1;
+	return 0;
+}
+
+class BreakpointModel : public QAbstractListModel
+{
+	Q_OBJECT
+	
+	public:
+		BreakpointModel(QObject *p = 0)
+		 : QAbstractListModel(p), m_calc(0)
+		{
+			
+		}
+		
+		void setCalc(TilemCalc *c)
+		{
+// 			QAbstractItemModel::beginResetModel();
+			
+			m_calc = c;
+			reset();
+// 			QAbstractItemModel::endResetModel();
+		}
+		
+		virtual int rowCount(const QModelIndex& i) const
+		{
+			int n = 0;
+			
+			for ( int i = 0; i < m_calc->z80.nbreakpoints; ++i )
+				if ( m_calc->z80.breakpoints[i].type )
+					++n;
+			
+			return n;
+		}
+		
+		virtual QVariant data(const QModelIndex& i, int r) const
+		{
+			int id = nth(i.row());
+			
+			return (r == Qt::DisplayRole && id != -1) ? QString::number(m_calc->z80.breakpoints[id].start) : QVariant();
+		}
+		
+		int nth(int n) const
+		{
+			int k = 0;
+			
+			for ( int i = 0; i < m_calc->z80.nbreakpoints; ++i )
+				if ( m_calc->z80.breakpoints[i].type )
+					if ( k++ == n )
+						return i;
+			
+			return -1;
+		}
+		
+	private:
+		TilemCalc *m_calc;
+};
+
 class CalcListModel : public QAbstractListModel
 {
 	Q_OBJECT
@@ -87,6 +152,7 @@ CalcDebuger::CalcDebuger(CalcGrid *g, QWidget *p)
 	setupUi(this);
 	
 	cbTarget->setModel(new CalcListModel(g, this));
+	lwBreakpoints->setModel(new BreakpointModel(this));
 	
 	tbPages->setEnabled(false);
 	
@@ -165,7 +231,7 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 		tbPages->setEnabled(true);
 		
 		// breakpoints page
-		
+		qobject_cast<BreakpointModel*>(lwBreakpoints->model())->setCalc(m_calc->m_calc);
 		
 		// CPU page
 		

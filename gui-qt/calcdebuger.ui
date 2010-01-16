@@ -36,7 +36,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QListWidget" name="lwBreakpoints">
+        <widget class="QListView" name="lwBreakpoints">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -725,8 +725,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>278</width>
-        <height>412</height>
+        <width>162</width>
+        <height>203</height>
        </rect>
       </property>
       <attribute name="label">
@@ -881,8 +881,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>278</width>
-        <height>412</height>
+        <width>94</width>
+        <height>24</height>
        </rect>
       </property>
       <attribute name="label">

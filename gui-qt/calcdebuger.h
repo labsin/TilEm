@@ -47,10 +47,10 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 		void on_spnRefresh_valueChanged(int val);
 		
 	private:
-		QPointer<Calc> m_calc;
-		CalcGrid *m_calcGrid;
-		
 		int m_refreshId;
+		
+		CalcGrid *m_calcGrid;
+		QPointer<Calc> m_calc;
 };
 
 #endif
