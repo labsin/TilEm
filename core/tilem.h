@@ -138,7 +138,9 @@ enum {
 	TILEM_BREAK_MEM_WRITE,	  /* Break after writing to memory */
 	TILEM_BREAK_PORT_READ,	  /* Break after reading from port */
 	TILEM_BREAK_PORT_WRITE,	  /* Break after writing to port */
-	TILEM_BREAK_EXECUTE	  /* Break after executing opcode */
+	TILEM_BREAK_EXECUTE,	  /* Break after executing opcode */
+	
+	TILEM_BREAK_DISABLED = 0x80000000	/* Internal : Indicates a (temporarily) disabled breakpoint */
 };
 
 /* Emulation flags */
@@ -316,6 +318,40 @@ int tilem_z80_add_breakpoint_physical(TilemCalc* calc, int type,
 
 /* Remove the given breakpoint. */
 void tilem_z80_remove_breakpoint(TilemCalc* calc, int id);
+
+/* Enable the given breakpoint. */
+void tilem_z80_enable_breakpoint(TilemCalc* calc, int id);
+/* Disable the given breakpoint. */
+void tilem_z80_disable_breakpoint(TilemCalc* calc, int id);
+/* Check whether the given breakpoint is currently enabled. */
+int tilem_z80_breakpoint_enabled(TilemCalc* calc, int id);
+
+/* Get the type of the given breakpoint. */
+int tilem_z80_get_breakpoint_type(TilemCalc* calc, int id);
+/* Get the start address of the given breakpoint. */
+dword tilem_z80_get_breakpoint_address_start(TilemCalc* calc, int id);
+/* Get the start address of the given breakpoint. */
+dword tilem_z80_get_breakpoint_address_end(TilemCalc* calc, int id);
+/* Get the start address of the given breakpoint. */
+dword tilem_z80_get_breakpoint_address_mask(TilemCalc* calc, int id);
+/* Get the callback/filter function associated to the given breakpoint. */
+TilemZ80BreakpointFunc tilem_z80_get_breakpoint_callback(TilemCalc* calc, int id);
+/* Get the data associated to the given breakpoint. */
+void* tilem_z80_get_breakpoint_data(TilemCalc* calc, int id);
+
+/* Set the type of the given breakpoint. */
+void tilem_z80_set_breakpoint_type(TilemCalc* calc, int id, int type);
+/* Set the start address of the given breakpoint. */
+void tilem_z80_set_breakpoint_address_start(TilemCalc* calc, int id, dword start);
+/* Set the start address of the given breakpoint. */
+void tilem_z80_set_breakpoint_address_end(TilemCalc* calc, int id, dword end);
+/* Set the start address of the given breakpoint. */
+void tilem_z80_set_breakpoint_address_mask(TilemCalc* calc, int id, dword mask);
+/* Set the callback/filter function associated to the given breakpoint. */
+void tilem_z80_set_breakpoint_callback(TilemCalc* calc, int id, TilemZ80BreakpointFunc func);
+/* Set the data associated to the given breakpoint. */
+void tilem_z80_set_breakpoint_data(TilemCalc* calc, int id, void* data);
+
 
 /* Run the simulated CPU for the given number of clock
    ticks/microseconds, or until a breakpoint is hit or

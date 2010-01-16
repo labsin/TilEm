@@ -478,6 +478,186 @@ void tilem_z80_remove_breakpoint(TilemCalc* calc, int id)
 	bp_free(&calc->z80, id);
 }
 
+void tilem_z80_enable_breakpoint(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to enable invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].type &= ~TILEM_BREAK_DISABLED;
+}
+
+void tilem_z80_disable_breakpoint(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to disable invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].type |= TILEM_BREAK_DISABLED;
+}
+
+int tilem_z80_breakpoint_enabled(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return -1;
+	}
+	
+	return !(calc->z80.breakpoints[id].type & TILEM_BREAK_DISABLED);
+}
+
+int tilem_z80_get_breakpoint_type(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return -1;
+	}
+	
+	return calc->z80.breakpoints[id].type & (~TILEM_BREAK_DISABLED);
+}
+
+dword tilem_z80_get_breakpoint_address_start(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return -1;
+	}
+	
+	return calc->z80.breakpoints[id].start;
+}
+
+dword tilem_z80_get_breakpoint_address_end(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return -1;
+	}
+	
+	return calc->z80.breakpoints[id].end;
+}
+
+dword tilem_z80_get_breakpoint_address_mask(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return -1;
+	}
+	
+	return calc->z80.breakpoints[id].mask;
+}
+
+TilemZ80BreakpointFunc tilem_z80_get_breakpoint_callback(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return 0;
+	}
+	
+	return calc->z80.breakpoints[id].testfunc;
+}
+
+void* tilem_z80_get_breakpoint_data(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return 0;
+	}
+	
+	return calc->z80.breakpoints[id].testdata;
+}
+
+void tilem_z80_set_breakpoint_type(TilemCalc* calc, int id, int type)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to modify invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].type = type;
+}
+
+void tilem_z80_set_breakpoint_address_start(TilemCalc* calc, int id, dword start)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to modify invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].start = start;
+}
+
+void tilem_z80_set_breakpoint_address_end(TilemCalc* calc, int id, dword end)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to modify invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].end = end;
+}
+
+void tilem_z80_set_breakpoint_address_mask(TilemCalc* calc, int id, dword mask)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to modify invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].mask = mask;
+}
+
+void tilem_z80_set_breakpoint_callback(TilemCalc* calc, int id, TilemZ80BreakpointFunc func)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to modify invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].testfunc = func;
+}
+
+void tilem_z80_set_breakpoint_data(TilemCalc* calc, int id, void* data)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to modify invalid breakpoint %d", id);
+		return;
+	}
+	
+	calc->z80.breakpoints[id].testdata = data;
+}
+
 
 static inline void check_timers(TilemCalc* calc)
 {
@@ -527,6 +707,9 @@ static inline void check_breakpoints(TilemCalc* calc, int list, dword addr)
 	void* testdata;
 
 	for (bp = list; bp; bp = calc->z80.breakpoints[bp].next) {
+		if (calc->z80.breakpoints[bp].type & TILEM_BREAK_DISABLED)
+			continue;
+		
 		masked = addr & calc->z80.breakpoints[bp].mask;
 		if (masked < calc->z80.breakpoints[bp].start
 		    || masked > calc->z80.breakpoints[bp].end)
