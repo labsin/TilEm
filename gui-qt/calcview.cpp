@@ -53,6 +53,8 @@ extern "C" {
 */
 class CalcThread : public QThread
 {
+	Q_OBJECT
+	
 	public:
 		CalcThread(Calc *c, QObject * p = 0)
 		: QThread(p), m_calc(c), exiting(0)
@@ -71,13 +73,28 @@ class CalcThread : public QThread
 			
 		}
 		
+	signals:
+		void runningChanged(bool y);
+		
 	protected:
 		virtual void run()
 		{
+			int res;
+			
+			emit runningChanged(false);
+			
 			forever
 			{
-				if ( m_calc->run_us(10000) )
+				if ( (res = m_calc->run_us(10000)) )
+				{
+// 					if ( res & TILEM_STOP_BREAKPOINT )
+// 					{
+// 						qDebug("breakpoint hit");
+// 					} else {
+// 						qDebug("stop:%i", res);
+// 					}
 					break;
+				}
 				
 				// slightly slow down emulation (TODO : make delay adjustable)
 				usleep(10000);
@@ -87,12 +104,16 @@ class CalcThread : public QThread
 			}
 			
 			exiting = 0;
+			
+			emit runningChanged(true);
 		}
 		
 	private:
 		Calc *m_calc;
 		volatile int exiting;
 };
+
+#include "calcview.moc"
 
 /*!
 	\class CalcView
@@ -177,8 +198,8 @@ void CalcView::pause()
 	if ( m_thread->isRunning() )
 	{
 		m_thread->stop();
-		emit paused();
-		emit paused(true);
+// 		emit paused();
+// 		emit paused(true);
 	}
 }
 
@@ -187,8 +208,8 @@ void CalcView::resume()
 	if ( !m_thread->isRunning() )
 	{
 		m_thread->start();
-		emit resumed();
-		emit paused(false);
+// 		emit resumed();
+// 		emit paused(false);
 	}
 }
 
@@ -323,7 +344,12 @@ void CalcView::load(const QString& file)
 		m_link->setCalc(m_calc);
 	
 	if ( !m_thread )
+	{
 		m_thread = new CalcThread(m_calc, this);
+		connect(m_thread, SIGNAL( started() ), this, SIGNAL( resumed() ) );
+		connect(m_thread, SIGNAL( finished() ), this, SIGNAL( paused() ) );
+		connect(m_thread, SIGNAL( runningChanged(bool) ), this, SIGNAL( paused(bool) ) );
+	}
 	
 	m_model = m_calc->modelName();
 	

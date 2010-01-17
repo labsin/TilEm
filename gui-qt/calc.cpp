@@ -448,6 +448,7 @@ int Calc::run_us(int usec)
 // 		
 		if ( res & TILEM_STOP_BREAKPOINT )
 		{
+// 			qDebug("breakpoint hit : %i", m_calc->z80.stop_breakpoint);
 			emit breakpoint(m_calc->z80.stop_breakpoint);
 			break;
 		}

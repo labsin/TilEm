@@ -44,7 +44,7 @@ int bpDispatch(TilemCalc *tc, dword a, void *d)
 // 	args << QScriptValue(a);
 // 	
 // 	return bp->test.isFunction() ? bp->test.call(QScriptValue(), args).toInt32() : 1;
-	return 0;
+	return 1;
 }
 
 class BreakpointModel : public QAbstractListModel
