@@ -75,9 +75,7 @@ class CalcHexValue : public QLineEdit
 					QString t = QString::number(n, 16).toUpper();
 					
 					while ( t.length() < maxLength() )
-					{
 						t.prepend('0');
-					}
 					
 					setText(t);
 				}

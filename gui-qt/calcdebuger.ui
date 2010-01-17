@@ -46,57 +46,57 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="gb_break_range">
+        <widget class="QGroupBox" name="gb_break_trigger">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="title">
-          <string>Trigger range</string>
+          <string>Trigger</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="label_27">
             <property name="text">
              <string>Start</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="le_break_start_addr">
             <property name="inputMask">
              <string>HHHH; </string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="label_28">
             <property name="text">
              <string>End</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="le_break_end_addr">
             <property name="inputMask">
              <string>HHHH; </string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="label_29">
             <property name="text">
              <string>Mask</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="le_break_mask_addr">
             <property name="inputMask">
              <string>HHHH; </string>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
+          <item row="2" column="2">
            <widget class="QLineEdit" name="le_break_start_page">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -109,7 +109,7 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
+          <item row="3" column="2">
            <widget class="QLineEdit" name="le_break_end_page">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -122,7 +122,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
+          <item row="4" column="2">
            <widget class="QLineEdit" name="le_break_mask_page">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -135,7 +135,7 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QLabel" name="label_30">
             <property name="text">
              <string>Address</string>
@@ -145,13 +145,54 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
+          <item row="1" column="2">
            <widget class="QLabel" name="label_31">
             <property name="text">
              <string>Page</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="2">
+           <widget class="QComboBox" name="cb_break_type">
+            <item>
+             <property name="text">
+              <string>Memory read</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Memory execute</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Memory write</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Port read</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Port write</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Execute</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Type</string>
             </property>
            </widget>
           </item>
@@ -725,8 +766,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>162</width>
-        <height>203</height>
+        <width>278</width>
+        <height>412</height>
        </rect>
       </property>
       <attribute name="label">
@@ -881,8 +922,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>94</width>
-        <height>24</height>
+        <width>278</width>
+        <height>412</height>
        </rect>
       </property>
       <attribute name="label">

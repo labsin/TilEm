@@ -44,6 +44,18 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 	private slots:
 		void on_cbTarget_currentIndexChanged(int idx);
 		
+		void on_lwBreakpoints_customContextMenuRequested(const QPoint& p);
+		void currentBreakpointChanged(const QModelIndex& idx);
+		
+		void on_cb_break_type_currentIndexChanged(int idx);
+		
+		void on_le_break_start_addr_textEdited(const QString& s);
+		void on_le_break_start_page_textEdited(const QString& s);
+		void on_le_break_end_addr_textEdited(const QString& s);
+		void on_le_break_end_page_textEdited(const QString& s);
+		void on_le_break_mask_addr_textEdited(const QString& s);
+		void on_le_break_mask_page_textEdited(const QString& s);
+		
 		void on_spnRefresh_valueChanged(int val);
 		
 	private:

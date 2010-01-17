@@ -113,6 +113,7 @@ class Calc : public QObject
 		
 		void bytesAvailable();
 		
+		void breakpoint(int id);
 		void log(const QString& message, int type, dword addr);
 		
 	private:

@@ -446,28 +446,15 @@ int Calc::run_us(int usec)
 // 			break;
 // 		}
 // 		
-// 		if ( res & TILEM_STOP_BREAKPOINT )
-// 		{
-// 			break;
-// 		}
+		if ( res & TILEM_STOP_BREAKPOINT )
+		{
+			emit breakpoint(m_calc->z80.stop_breakpoint);
+			break;
+		}
 	}
 	
-	if ( m_calc->z80.stop_reason )
-		qDebug("stop:%i", m_calc->z80.stop_reason);
-	
-	
-// 	printf("  PC=%02X:%04X AF=%04X BC=%04X DE=%04X HL=%04X IX=%04X IY=%04X SP=%04X\n",
-// 			m_calc->mempagemap[m_calc->z80.r.pc.b.h >> 6],
-// 			m_calc->z80.r.pc.w.l,
-// 			m_calc->z80.r.af.w.l,
-// 			m_calc->z80.r.bc.w.l,
-// 			m_calc->z80.r.de.w.l,
-// 			m_calc->z80.r.hl.w.l,
-// 			m_calc->z80.r.ix.w.l,
-// 			m_calc->z80.r.iy.w.l,
-// 			m_calc->z80.r.sp.w.l
-// 		);
-	
+// 	if ( m_calc->z80.stop_reason )
+// 		qDebug("stop:%i", m_calc->z80.stop_reason);
 	
 	return m_calc->z80.stop_reason;
 }
