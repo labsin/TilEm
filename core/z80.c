@@ -204,6 +204,65 @@ static inline int bp_alloc(TilemZ80* z80)
 	return bp;
 }
 
+static int* bp_head(TilemCalc *calc, int type)
+{
+	switch (type) {
+	case TILEM_BREAK_MEM_READ:
+		return &calc->z80.breakpoint_mr;
+
+	case TILEM_BREAK_MEM_EXEC:
+		return &calc->z80.breakpoint_mx;
+
+	case TILEM_BREAK_MEM_WRITE:
+		return &calc->z80.breakpoint_mw;
+
+	case TILEM_BREAK_PORT_READ:
+		return  &calc->z80.breakpoint_pr;
+
+	case TILEM_BREAK_PORT_WRITE:
+		return &calc->z80.breakpoint_pw;
+
+	case TILEM_BREAK_EXECUTE:
+		return &calc->z80.breakpoint_op;
+
+	default:
+		tilem_internal(calc, "invalid bp type");
+		return 0;
+	}
+}
+
+static int bp_add(TilemCalc *calc, int bp, int type)
+{
+	int *head = bp_head(calc, type);
+	
+	if ( !head )
+	{
+		bp_free(&calc->z80, bp);
+		return 0;
+	}
+	
+	calc->z80.breakpoints[bp].next = *head;
+	calc->z80.breakpoints[*head].prev = *head ? bp : 0;
+	*head = bp;
+	
+	return bp;
+}
+
+static void bp_rem(TilemCalc *calc, int bp, int type)
+{
+	int prev, next;
+	int *head = bp_head(calc, type);
+
+	prev = calc->z80.breakpoints[bp].prev;
+	next = calc->z80.breakpoints[bp].next;
+	
+	if ( bp == *head )
+		*head = next;
+	
+	calc->z80.breakpoints[prev].next = prev ? next : 0;
+	calc->z80.breakpoints[next].prev = next ? prev : 0;
+}
+
 static void invoke_ptimer(TilemCalc* calc, void* data)
 {
 	(*calc->hw.z80_ptimer)(calc, TILEM_PTR_TO_DWORD(data));
@@ -396,51 +455,8 @@ int tilem_z80_add_breakpoint(TilemCalc* calc, int type,
 	calc->z80.breakpoints[bp].testfunc = func;
 	calc->z80.breakpoints[bp].testdata = data;
 	calc->z80.breakpoints[bp].prev = 0;
-
-	switch (type) {
-	case TILEM_BREAK_MEM_READ:
-		calc->z80.breakpoints[bp].next = calc->z80.breakpoint_mr;
-		calc->z80.breakpoints[calc->z80.breakpoint_mr].prev = bp;
-		calc->z80.breakpoint_mr = bp;
-		break;
-
-	case TILEM_BREAK_MEM_EXEC:
-		calc->z80.breakpoints[bp].next = calc->z80.breakpoint_mx;
-		calc->z80.breakpoints[calc->z80.breakpoint_mx].prev = bp;
-		calc->z80.breakpoint_mx = bp;
-		break;
-
-	case TILEM_BREAK_MEM_WRITE:
-		calc->z80.breakpoints[bp].next = calc->z80.breakpoint_mw;
-		calc->z80.breakpoints[calc->z80.breakpoint_mw].prev = bp;
-		calc->z80.breakpoint_mw = bp;
-		break;
-
-	case TILEM_BREAK_PORT_READ:
-		calc->z80.breakpoints[bp].next = calc->z80.breakpoint_pr;
-		calc->z80.breakpoints[calc->z80.breakpoint_pr].prev = bp;
-		calc->z80.breakpoint_pr = bp;
-		break;
-
-	case TILEM_BREAK_PORT_WRITE:
-		calc->z80.breakpoints[bp].next = calc->z80.breakpoint_pw;
-		calc->z80.breakpoints[calc->z80.breakpoint_pw].prev = bp;
-		calc->z80.breakpoint_pw = bp;
-		break;
-
-	case TILEM_BREAK_EXECUTE:
-		calc->z80.breakpoints[bp].next = calc->z80.breakpoint_op;
-		calc->z80.breakpoints[calc->z80.breakpoint_op].prev = bp;
-		calc->z80.breakpoint_op = bp;
-		break;
-
-	default:
-		tilem_internal(calc, "invalid bp type");
-		bp_free(&calc->z80, bp);
-		return 0;
-	}
-
-	return bp;
+	
+	return bp_add(calc, bp, type);
 }
 
 static int bptest_physical(TilemCalc* calc, dword addr, void* data)
@@ -462,19 +478,15 @@ int tilem_z80_add_breakpoint_physical(TilemCalc* calc, int type,
 
 void tilem_z80_remove_breakpoint(TilemCalc* calc, int id)
 {
-	int prev, next;
-
 	if (id < 1 || id > calc->z80.nbreakpoints
 	    || !calc->z80.breakpoints[id].type) {
 		tilem_internal(calc,
 			       "attempt to remove invalid breakpoint %d", id);
 		return;
 	}
-
-	prev = calc->z80.breakpoints[id].prev;
-	next = calc->z80.breakpoints[id].next;
-	calc->z80.breakpoints[prev].next = next;
-	calc->z80.breakpoints[next].prev = prev;
+	
+	bp_rem(calc, id, calc->z80.breakpoints[id].type);
+	
 	bp_free(&calc->z80, id);
 }
 
@@ -595,7 +607,14 @@ void tilem_z80_set_breakpoint_type(TilemCalc* calc, int id, int type)
 		return;
 	}
 	
-	calc->z80.breakpoints[id].type = type;
+	if ( type == calc->z80.breakpoints[id].type )
+		return;
+	
+	bp_rem(calc, id, calc->z80.breakpoints[id].type);
+	
+	calc->z80.breakpoints[id].type = type | (calc->z80.breakpoints[id].type & TILEM_BREAK_DISABLED);
+	
+	bp_add(calc, id, type);
 }
 
 void tilem_z80_set_breakpoint_address_start(TilemCalc* calc, int id, dword start)
