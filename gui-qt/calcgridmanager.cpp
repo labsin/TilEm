@@ -219,6 +219,8 @@ class CalcTreeModel : public QAbstractItemModel
 
 class CalcTreeDelegate : public QStyledItemDelegate
 {
+	Q_OBJECT
+	
 	public:
 		CalcTreeDelegate(CalcGrid *g, QObject *p = 0)
 		 : QStyledItemDelegate(p), m_grid(g)
@@ -238,31 +240,37 @@ class CalcTreeDelegate : public QStyledItemDelegate
 		
 		QWidget* createEditor(QWidget *p, const QStyleOptionViewItem& o, const QModelIndex& i) const
 		{
+			QWidget *w = 0;
+			
 			if ( (depth(i) == 1) && (i.column() == 1) )
 			{
 				switch ( i.row() )
 				{
 					case CalcTreeModel::RomFile:
-						return new QLineEdit(p);
+						w = new QLineEdit(p);
+						
+						connect(w	, SIGNAL( editingFinished() ),
+								this, SLOT  ( editingFinished() ) );
+						
+						break;
 						
 					case CalcTreeModel::Status:
-						return new QComboBox(p);
-						
 					case CalcTreeModel::Visibility:
-						return new QComboBox(p);
-						
 					case CalcTreeModel::ExternalLink:
-						return new QComboBox(p);
-						
 					case CalcTreeModel::Calc2CalcLink:
-						return new QComboBox(p);
-							
+						w = new QComboBox(p);
+						
+						connect(w	, SIGNAL( currentIndexChanged(int) ),
+								this, SLOT  ( editingFinished() ) );
+						
+						break;
+						
 					default:
 						break;
 				}
 			}
 			
-			return QStyledItemDelegate::createEditor(p, o, i);
+			return w ? w : QStyledItemDelegate::createEditor(p, o, i);
 		}
 		
 		void setEditorData(QWidget *e, const QModelIndex& i) const
@@ -414,6 +422,12 @@ class CalcTreeDelegate : public QStyledItemDelegate
 			QStyledItemDelegate::setModelData(e, m, i);
 		}
 		
+	private slots:
+		void editingFinished()
+		{
+			emit commitData(qobject_cast<QWidget*>(sender()));
+		}
+		
 	private:
 		CalcGrid *m_grid;
 };
@@ -434,4 +448,5 @@ CalcGridManager::CalcGridManager(CalcGrid *g)
 	
 	setModel(m_model);
 	setItemDelegate(new CalcTreeDelegate(g, this));
+	setEditTriggers(QAbstractItemView::AllEditTriggers);
 }

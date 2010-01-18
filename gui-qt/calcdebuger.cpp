@@ -85,6 +85,12 @@ class BreakpointModel : public QAbstractListModel
 			return QVariant();
 		}
 		
+		void changed(int row)
+		{
+			QModelIndex idx = index(row, 0, QModelIndex());
+			emit dataChanged(idx, idx);
+		}
+		
 		int type(int id) const
 		{
 			return tilem_z80_get_breakpoint_type(m_calc, id);
@@ -444,79 +450,100 @@ void CalcDebuger::currentBreakpointChanged(const QModelIndex& idx)
 
 void CalcDebuger::on_cb_break_type_currentIndexChanged(int idx)
 {
+	int r = lwBreakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
-	int id = bkpt ? bkpt->nth(lwBreakpoints->selectionModel()->currentIndex().row()) : -1;
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
 	
 	if ( id == -1 )
 		return;
 	
 	bkpt->setType(id, idx + 1);
+	bkpt->changed(r);
 }
 
 void CalcDebuger::on_le_break_start_addr_textEdited(const QString& s)
 {
+	int r = lwBreakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
-	int id = bkpt ? bkpt->nth(lwBreakpoints->selectionModel()->currentIndex().row()) : -1;
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
 	
 	if ( id == -1 )
 		return;
 	
 	bkpt->setStartAddress(id, s.toULong(0, 16));
+	bkpt->changed(r);
 }
 
 void CalcDebuger::on_le_break_start_page_textEdited(const QString& s)
 {
+	int r = lwBreakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
-	int id = bkpt ? bkpt->nth(lwBreakpoints->selectionModel()->currentIndex().row()) : -1;
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
 	
 	if ( id == -1 )
 		return;
 	
 	bkpt->setStartPage(id, s.toULong(0, 16));
+	bkpt->changed(r);
 }
 
 void CalcDebuger::on_le_break_end_addr_textEdited(const QString& s)
 {
+	int r = lwBreakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
-	int id = bkpt ? bkpt->nth(lwBreakpoints->selectionModel()->currentIndex().row()) : -1;
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
 	
 	if ( id == -1 )
 		return;
 	
 	bkpt->setEndAddress(id, s.toULong(0, 16));
+	bkpt->changed(r);
 }
 
 void CalcDebuger::on_le_break_end_page_textEdited(const QString& s)
 {
+	int r = lwBreakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
-	int id = bkpt ? bkpt->nth(lwBreakpoints->selectionModel()->currentIndex().row()) : -1;
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
 	
 	if ( id == -1 )
 		return;
 	
 	bkpt->setEndPage(id, s.toULong(0, 16));
+	bkpt->changed(r);
 }
 
 void CalcDebuger::on_le_break_mask_addr_textEdited(const QString& s)
 {
+	int r = lwBreakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
-	int id = bkpt ? bkpt->nth(lwBreakpoints->selectionModel()->currentIndex().row()) : -1;
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
 	
 	if ( id == -1 )
 		return;
 	
 	bkpt->setMaskAddress(id, s.toULong(0, 16));
+	bkpt->changed(r);
 }
 
 void CalcDebuger::on_le_break_mask_page_textEdited(const QString& s)
 {
+	int r = lwBreakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
-	int id = bkpt ? bkpt->nth(lwBreakpoints->selectionModel()->currentIndex().row()) : -1;
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
 	
 	if ( id == -1 )
 		return;
 	
 	bkpt->setMaskPage(id, s.toULong(0, 16));
+	bkpt->changed(r);
 }
 
 void CalcDebuger::on_spnRefresh_valueChanged(int val)
