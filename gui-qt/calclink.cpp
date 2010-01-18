@@ -83,8 +83,7 @@ class FileSender : public QThread
 				// TODO : first wait for any exchange using direct connection to end...
 				m_link->m_calc->setBroadcasting(false);
 				
-				send_file(m_link->m_ch, (m_files.count() == 0),
-					  f.toLocal8Bit().constData());
+				send_file(m_link->m_ch, m_files.isEmpty(), f.toLocal8Bit().constData());
 				
 				m_link->m_calc->setBroadcasting(broadcast);
 				
@@ -368,35 +367,36 @@ void CalcLink::send(const QString& f)
 }
 
 #ifdef _TILEM_QT_HAS_LINK_
-int get_calc_model(TilemCalc* calc)
+int get_calc_model(TilemCalc *calc)
 {
-	switch ( calc->hw.model_id ) {
-	case TILEM_CALC_TI73:
-		return CALC_TI73;
-
-	case TILEM_CALC_TI81:
-	case TILEM_CALC_TI82:
-		return CALC_TI82;
-
-	case TILEM_CALC_TI83:
-		return CALC_TI83;
-
-	case TILEM_CALC_TI83P:
-	case TILEM_CALC_TI83P_SE:
-		return CALC_TI83P;
-
-	case TILEM_CALC_TI84P:
-	case TILEM_CALC_TI84P_SE:
-		return CALC_TI84P;
-
-	case TILEM_CALC_TI85:
-		return CALC_TI85;
-
-	case TILEM_CALC_TI86:
-		return CALC_TI86;
-
-	default:
-		return CALC_NONE;
+	switch ( calc->hw.model_id )
+	{
+		case TILEM_CALC_TI73:
+			return CALC_TI73;
+			
+		case TILEM_CALC_TI81:
+		case TILEM_CALC_TI82:
+			return CALC_TI82;
+			
+		case TILEM_CALC_TI83:
+			return CALC_TI83;
+			
+		case TILEM_CALC_TI83P:
+		case TILEM_CALC_TI83P_SE:
+			return CALC_TI83P;
+			
+		case TILEM_CALC_TI84P:
+		case TILEM_CALC_TI84P_SE:
+			return CALC_TI84P;
+			
+		case TILEM_CALC_TI85:
+			return CALC_TI85;
+			
+		case TILEM_CALC_TI86:
+			return CALC_TI86;
+			
+		default:
+			return CALC_NONE;
 	}
 }
 
@@ -411,7 +411,7 @@ static int ilp_reset(CableHandle* cbl)
 	return 0;
 }
 
-static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
+static int ilp_send(CableHandle *cbl, uint8_t *data, uint32_t count)
 {
 	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
@@ -443,7 +443,7 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 	return 0;
 }
 
-static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
+static int ilp_recv(CableHandle *cbl, uint8_t *data, uint32_t count)
 {
 	Calc *calc = static_cast<Calc*>(cbl->priv);
 	
@@ -494,16 +494,16 @@ static int ilp_check(CableHandle* cbl, int* status)
 
 static CableHandle* internal_link_handle_new(Calc *calc)
 {
-	CableHandle* cbl = ticables_handle_new(CABLE_ILP, PORT_0);
+	CableHandle *cbl = ticables_handle_new(CABLE_ILP, PORT_0);
 	
-	if (cbl) {
+	if ( cbl )
+	{
 		cbl->priv = calc;
 		cbl->cable->reset = ilp_reset;
 		cbl->cable->send = ilp_send;
 		cbl->cable->recv = ilp_recv;
 		cbl->cable->check = ilp_check;
-	}
-	else {
+	} else {
 		qDebug("unable to create internal link handle");
 	}
 	
@@ -514,12 +514,12 @@ static CableHandle* external_link_handle_new()
 {
 	CableHandle* cbl = ticables_handle_new(CABLE_TIE, PORT_0);
 	
-	if (cbl) {
+	if ( cbl )
+	{
 		ticables_options_set_timeout(cbl, DFLT_TIMEOUT);
 		ticables_options_set_delay(cbl, DFLT_DELAY);
 		ticables_cable_open(cbl);
-	}
-	else {
+	} else {
 		qDebug("unable to create external link handle");
 	}
 	
@@ -528,110 +528,122 @@ static CableHandle* external_link_handle_new()
 
 static int print_tilibs_error(int errcode)
 {
-	char* p = NULL;
-	if (errcode) {
-		if (ticalcs_error_get(errcode, &p)
-		    && tifiles_error_get(errcode, &p)
-		    && ticables_error_get(errcode, &p)) {
+	char *p = NULL;
+	
+	if ( errcode )
+	{
+		if (
+				ticalcs_error_get(errcode, &p)
+		    &&
+				tifiles_error_get(errcode, &p)
+		    &&
+				ticables_error_get(errcode, &p)
+		    )
+		{
 			fprintf(stderr, "Unknown error: %d\n", errcode);
-		}
-		else {
+		} else {
 			fprintf(stderr, "%s\n", p);
 			free(p);
 		}
 	}
+	
 	return errcode;
 }
 
-static int send_file(CalcHandle* ch, int last, const char* filename)
+static int send_file(CalcHandle *ch, int last, const char *filename)
 {
 	CalcMode mode;
-	FileContent* filec;
-	BackupContent* backupc;
-	FlashContent* flashc;
-	TigContent* tigc;
+	FileContent *filec;
+	BackupContent *backupc;
+	FlashContent *flashc;
+	TigContent *tigc;
 	int err;
 
-	switch (tifiles_file_get_class(filename)) {
-	case TIFILE_SINGLE:
-	case TIFILE_GROUP:
-	case TIFILE_REGULAR:
-		filec = tifiles_content_create_regular(ch->model);
-		err = tifiles_file_read_regular(filename, filec);
+	switch ( tifiles_file_get_class(filename) )
+	{
+		case TIFILE_SINGLE:
+		case TIFILE_GROUP:
+		case TIFILE_REGULAR:
+			filec = tifiles_content_create_regular(ch->model);
+			err = tifiles_file_read_regular(filename, filec);
 
-		if (err) {
-			print_tilibs_error(err);
+			if ( err )
+			{
+				print_tilibs_error(err);
+				tifiles_content_delete_regular(filec);
+				return 1;
+			}
+
+			if ( last )
+				mode = MODE_SEND_LAST_VAR;
+			else
+				mode = MODE_NORMAL;
+
+			err = ticalcs_calc_send_var(ch, mode, filec);
 			tifiles_content_delete_regular(filec);
-			return 1;
-		}
+			break;
 
-		if (last)
-			mode = MODE_SEND_LAST_VAR;
-		else
-			mode = MODE_NORMAL;
+		case TIFILE_BACKUP:
+			backupc = tifiles_content_create_backup(ch->model);
+			err = tifiles_file_read_backup(filename, backupc);
 
-		err = ticalcs_calc_send_var(ch, mode, filec);
-		tifiles_content_delete_regular(filec);
-		break;
+			if ( err )
+			{
+				print_tilibs_error(err);
+				tifiles_content_delete_backup(backupc);
+				return 1;
+			}
 
-	case TIFILE_BACKUP:
-		backupc = tifiles_content_create_backup(ch->model);
-		err = tifiles_file_read_backup(filename, backupc);
-
-		if (err) {
-			print_tilibs_error(err);
+			err = ticalcs_calc_send_backup(ch, backupc);
 			tifiles_content_delete_backup(backupc);
-			return 1;
-		}
+			break;
 
-		err = ticalcs_calc_send_backup(ch, backupc);
-		tifiles_content_delete_backup(backupc);
-		break;
+		case TIFILE_FLASH:
+		case TIFILE_OS:
+		case TIFILE_APP:
+			flashc = tifiles_content_create_flash(ch->model);
+			err = tifiles_file_read_flash(filename, flashc);
 
-	case TIFILE_FLASH:
-	case TIFILE_OS:
-	case TIFILE_APP:
-		flashc = tifiles_content_create_flash(ch->model);
-		err = tifiles_file_read_flash(filename, flashc);
+			if ( err )
+			{
+				print_tilibs_error(err);
+				tifiles_content_delete_flash(flashc);
+				return 1;
+			}
 
-		if (err) {
-			print_tilibs_error(err);
+			if ( tifiles_file_is_os(filename) )
+				err = print_tilibs_error(ticalcs_calc_send_os(ch, flashc));
+			else if ( tifiles_file_is_app(filename) )
+				err = print_tilibs_error(ticalcs_calc_send_app(ch, flashc));
+			else
+				err = print_tilibs_error(ticalcs_calc_send_cert(ch, flashc));
+
 			tifiles_content_delete_flash(flashc);
+			break;
+
+		case TIFILE_TIGROUP:
+			tigc = tifiles_content_create_tigroup(ch->model, 0);
+			err = tifiles_file_read_tigroup(filename, tigc);
+
+			if ( err )
+			{
+				print_tilibs_error(err);
+				tifiles_content_delete_tigroup(tigc);
+				return 1;
+			}
+			
+			err = ticalcs_calc_send_tigroup(ch, tigc, TIG_ALL);
+			break;
+			
+		default:
 			return 1;
-		}
-
-		if (tifiles_file_is_os(filename))
-			err = print_tilibs_error(ticalcs_calc_send_os(ch, flashc));
-		else if (tifiles_file_is_app(filename))
-			err = print_tilibs_error(ticalcs_calc_send_app(ch, flashc));
-		else
-			err = print_tilibs_error(ticalcs_calc_send_cert(ch, flashc));
-
-		tifiles_content_delete_flash(flashc);
-		break;
-
-	case TIFILE_TIGROUP:
-		tigc = tifiles_content_create_tigroup(ch->model, 0);
-		err = tifiles_file_read_tigroup(filename, tigc);
-
-		if (err) {
-			print_tilibs_error(err);
-			tifiles_content_delete_tigroup(tigc);
-			return 1;
-		}
-
-		err = ticalcs_calc_send_tigroup(ch, tigc, TIG_ALL);
-		break;
-
-	default:
-		return 1;
 	}
 
-	if (err) {
+	if ( err )
+	{
 		print_tilibs_error(err);
 		return -1;
-	}
-	else {
+	} else {
 		return 0;
 	}
 }
