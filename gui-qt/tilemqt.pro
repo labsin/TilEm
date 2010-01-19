@@ -61,7 +61,8 @@ HEADERS += \
 	connectionmanager.h \
 	calcdebuger.h \
 	calclogview.h \
-	calchexvalue.h
+	calchexvalue.h \
+	calcflags.h
 
 SOURCES += main.cpp \
 	tilemqt.cpp \
@@ -79,5 +80,5 @@ FORMS += calcdebuger.ui
 
 OBJECTS_DIR = .build
 
-INCLUDEPATH += ../core
-LIBS += -L../core -ltilemcore
+INCLUDEPATH += ../core ../db
+LIBS += -L../core -L../db -ltilemcore -ltilemdb

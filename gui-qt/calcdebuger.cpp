@@ -24,6 +24,7 @@
 #include "calcgrid.h"
 
 #include <QMenu>
+#include <QMessageBox>
 #include <QAbstractListModel>
 
 static inline QString hex(dword val, int ml)
@@ -35,6 +36,12 @@ static inline QString hex(dword val, int ml)
 	
 	return t;
 }
+
+struct BreakData
+{
+	QString m_script;
+	QScriptValue m_comp;
+};
 
 int bpDispatch(TilemCalc *tc, dword a, void *d)
 {
@@ -262,22 +269,29 @@ CalcDebuger::CalcDebuger(CalcGrid *g, QWidget *p)
 {
 	setupUi(this);
 	
-	cbTarget->setModel(new CalcListModel(g, this));
+	m_disasm = tilem_disasm_new();
 	
-	lwBreakpoints->setModel(new BreakpointModel(this));
-	lwBreakpoints->setContextMenuPolicy(Qt::CustomContextMenu);
+	cb_target->setModel(new CalcListModel(g, this));
 	
-	connect(lwBreakpoints->selectionModel()	, SIGNAL( currentChanged(QModelIndex, QModelIndex) ),
+	lw_breakpoints->setModel(new BreakpointModel(this));
+	lw_breakpoints->setContextMenuPolicy(Qt::CustomContextMenu);
+	
+	connect(lw_breakpoints->selectionModel(), SIGNAL( currentChanged(QModelIndex, QModelIndex) ),
 			this							, SLOT  ( currentBreakpointChanged(QModelIndex) ) );
+	
+	QFont f("Monospace");
+	f.setStyleHint(QFont::Courier);
+	
+	lv_disasm->setFont(f);
 	
 	tbPages->setEnabled(false);
 	
-	m_refreshId = startTimer(spnRefresh->value());
+	m_refreshId = startTimer(spn_refresh->value());
 }
 
 CalcDebuger::~CalcDebuger()
 {
-	
+	tilem_disasm_free(m_disasm);
 }
 
 QSize CalcDebuger::sizeHint() const
@@ -295,14 +309,14 @@ void CalcDebuger::timerEvent(QTimerEvent *e)
 		{
 			case 1:
 				// update flags
-				chk_flag_S->setChecked(flags & FLAG_S);
-				chk_flag_Z->setChecked(flags & FLAG_Z);
-				chk_flag_5->setChecked(flags & FLAG_Y);
-				chk_flag_H->setChecked(flags & FLAG_H);
-				chk_flag_3->setChecked(flags & FLAG_X);
-				chk_flag_P->setChecked(flags & FLAG_P);
-				chk_flag_N->setChecked(flags & FLAG_N);
-				chk_flag_C->setChecked(flags & FLAG_C);
+// 				chk_flag_S->setChecked(flags & FLAG_S);
+// 				chk_flag_Z->setChecked(flags & FLAG_Z);
+// 				chk_flag_5->setChecked(flags & FLAG_Y);
+// 				chk_flag_H->setChecked(flags & FLAG_H);
+// 				chk_flag_3->setChecked(flags & FLAG_X);
+// 				chk_flag_P->setChecked(flags & FLAG_P);
+// 				chk_flag_N->setChecked(flags & FLAG_N);
+// 				chk_flag_C->setChecked(flags & FLAG_C);
 				
 				/*
 					force repaint of all the watch widgets for changes to be visible
@@ -327,7 +341,7 @@ void CalcDebuger::timerEvent(QTimerEvent *e)
 	}
 }
 
-void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
+void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
 {
 	CalcView *v = idx != -1 ? m_calcGrid->calc(idx) : 0;
 	Calc *c = v ? v->calc() : 0;
@@ -337,7 +351,8 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 	
 	if ( m_calc )
 	{
-		
+		disconnect(m_calc	, SIGNAL( breakpoint(int) ),
+				   this		, SLOT  ( breakpoint(int) ) );
 	}
 	
 	m_calc = c;
@@ -347,7 +362,7 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 		tbPages->setEnabled(true);
 		
 		// breakpoints page
-		qobject_cast<BreakpointModel*>(lwBreakpoints->model())->setCalc(m_calc->m_calc);
+		qobject_cast<BreakpointModel*>(lw_breakpoints->model())->setCalc(m_calc->m_calc);
 		
 		// CPU page
 		
@@ -371,6 +386,7 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 		
 		le_ir->setPointer(&regs.ir.w.l);
 		
+		lbl_flags->setPointer(&regs.af.b.l);
 		
 		// memory page
 		
@@ -381,16 +397,19 @@ void CalcDebuger::on_cbTarget_currentIndexChanged(int idx)
 		// ports page
 		
 		
+		connect(m_calc	, SIGNAL( breakpoint(int) ),
+			   this		, SLOT  ( breakpoint(int) ) );
+		
 	} else {
 		tbPages->setEnabled(false);
 	}
 }
 
-void CalcDebuger::on_lwBreakpoints_customContextMenuRequested(const QPoint& p)
+void CalcDebuger::on_lw_breakpoints_customContextMenuRequested(const QPoint& p)
 {
-	const QModelIndex& idx = lwBreakpoints->indexAt(p);
+	const QModelIndex& idx = lw_breakpoints->indexAt(p);
 	
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	if ( !bkpt )
 		return;
@@ -399,7 +418,7 @@ void CalcDebuger::on_lwBreakpoints_customContextMenuRequested(const QPoint& p)
 	QAction *add = m.addAction(tr("New breakpoint"));
 	QAction *rem = idx.isValid() ? m.addAction(tr("Remove breakpoint")) : 0;
 	
-	QAction *a = m.exec(lwBreakpoints->mapToGlobal(p));
+	QAction *a = m.exec(lw_breakpoints->mapToGlobal(p));
 	
 	if ( a == add )
 	{
@@ -416,7 +435,7 @@ static inline void setHex(QLineEdit *e, dword val)
 
 void CalcDebuger::currentBreakpointChanged(const QModelIndex& idx)
 {
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	if ( !bkpt )
 		return;
@@ -450,8 +469,8 @@ void CalcDebuger::currentBreakpointChanged(const QModelIndex& idx)
 
 void CalcDebuger::on_cb_break_type_currentIndexChanged(int idx)
 {
-	int r = lwBreakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	int id = bkpt ? bkpt->nth(r) : -1;
 	
@@ -464,8 +483,8 @@ void CalcDebuger::on_cb_break_type_currentIndexChanged(int idx)
 
 void CalcDebuger::on_le_break_start_addr_textEdited(const QString& s)
 {
-	int r = lwBreakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	int id = bkpt ? bkpt->nth(r) : -1;
 	
@@ -478,8 +497,8 @@ void CalcDebuger::on_le_break_start_addr_textEdited(const QString& s)
 
 void CalcDebuger::on_le_break_start_page_textEdited(const QString& s)
 {
-	int r = lwBreakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	int id = bkpt ? bkpt->nth(r) : -1;
 	
@@ -492,8 +511,8 @@ void CalcDebuger::on_le_break_start_page_textEdited(const QString& s)
 
 void CalcDebuger::on_le_break_end_addr_textEdited(const QString& s)
 {
-	int r = lwBreakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	int id = bkpt ? bkpt->nth(r) : -1;
 	
@@ -506,8 +525,8 @@ void CalcDebuger::on_le_break_end_addr_textEdited(const QString& s)
 
 void CalcDebuger::on_le_break_end_page_textEdited(const QString& s)
 {
-	int r = lwBreakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	int id = bkpt ? bkpt->nth(r) : -1;
 	
@@ -520,8 +539,8 @@ void CalcDebuger::on_le_break_end_page_textEdited(const QString& s)
 
 void CalcDebuger::on_le_break_mask_addr_textEdited(const QString& s)
 {
-	int r = lwBreakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	int id = bkpt ? bkpt->nth(r) : -1;
 	
@@ -534,8 +553,8 @@ void CalcDebuger::on_le_break_mask_addr_textEdited(const QString& s)
 
 void CalcDebuger::on_le_break_mask_page_textEdited(const QString& s)
 {
-	int r = lwBreakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lwBreakpoints->model());
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	
 	int id = bkpt ? bkpt->nth(r) : -1;
 	
@@ -546,10 +565,49 @@ void CalcDebuger::on_le_break_mask_page_textEdited(const QString& s)
 	bkpt->changed(r);
 }
 
-void CalcDebuger::on_spnRefresh_valueChanged(int val)
+void CalcDebuger::on_spn_refresh_valueChanged(int val)
 {
 	if ( m_refreshId != -1 )
 		killTimer(m_refreshId);
 	
 	m_refreshId = val > 0 ? startTimer(val) : -1;
+}
+
+void CalcDebuger::on_le_disasm_start_textChanged(const QString& s)
+{
+	updateDisasm(s.toULong(0, 16), spn_disasm_length->value());
+}
+
+void CalcDebuger::on_spn_disasm_length_valueChanged(int val)
+{
+	updateDisasm(le_disasm_start->text().toULong(0, 16), val);
+}
+
+void CalcDebuger::updateDisasm(dword addr, int len)
+{
+	const int ml = 60;
+	char inst_buffer[ml];
+	
+	lv_disasm->clear();
+	
+	for ( int i = 0; i < len; ++i )
+	{
+		QString l = QString("%1   %2").arg(addr, 6, 16, QChar('0')).toUpper();
+		
+		tilem_disasm_disassemble(m_disasm, m_calc->m_calc, 0, addr, &addr, inst_buffer, ml);
+		
+		lv_disasm->addItem(l.arg(QString(inst_buffer).toLower()));
+	}
+}
+
+void CalcDebuger::breakpoint(int id)
+{
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
+	
+	//bkpt->(id);
+	//QMessageBox::information(0, tr("Calc paused"), tr("Breakpoint hit : %1").arg(id));
+	
+	le_disasm_start->setText(QString::number(m_calc->m_calc->z80.r.pc.d, 16));
+	
+	tbPages->setCurrentIndex(2);
 }

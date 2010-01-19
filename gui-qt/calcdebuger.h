@@ -23,6 +23,10 @@
 #include <QWidget>
 #include "ui_calcdebuger.h"
 
+extern "C" {
+#include <tilemdb.h>
+}
+
 #include <QPointer>
 
 class Calc;
@@ -42,9 +46,9 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 		virtual void timerEvent(QTimerEvent *e);
 		
 	private slots:
-		void on_cbTarget_currentIndexChanged(int idx);
+		void on_cb_target_currentIndexChanged(int idx);
 		
-		void on_lwBreakpoints_customContextMenuRequested(const QPoint& p);
+		void on_lw_breakpoints_customContextMenuRequested(const QPoint& p);
 		void currentBreakpointChanged(const QModelIndex& idx);
 		
 		void on_cb_break_type_currentIndexChanged(int idx);
@@ -56,13 +60,22 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 		void on_le_break_mask_addr_textEdited(const QString& s);
 		void on_le_break_mask_page_textEdited(const QString& s);
 		
-		void on_spnRefresh_valueChanged(int val);
+		void on_spn_refresh_valueChanged(int val);
+		
+		void on_le_disasm_start_textChanged(const QString& s);
+		void on_spn_disasm_length_valueChanged(int val);
+		
+		void breakpoint(int id);
 		
 	private:
+		void updateDisasm(dword addr, int len);
+		
 		int m_refreshId;
 		
 		CalcGrid *m_calcGrid;
 		QPointer<Calc> m_calc;
+		
+		TilemDisasm *m_disasm;
 };
 
 #endif
