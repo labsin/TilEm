@@ -206,7 +206,7 @@ static inline int bp_alloc(TilemZ80* z80)
 
 static int* bp_head(TilemCalc *calc, int type)
 {
-	switch (type) {
+	switch (type & TILEM_BREAK_TYPE_MASK) {
 	case TILEM_BREAK_MEM_READ:
 		return &calc->z80.breakpoint_mr;
 
@@ -535,7 +535,19 @@ int tilem_z80_get_breakpoint_type(TilemCalc* calc, int id)
 		return -1;
 	}
 	
-	return calc->z80.breakpoints[id].type & (~TILEM_BREAK_DISABLED);
+	return calc->z80.breakpoints[id].type & TILEM_BREAK_TYPE_MASK;
+}
+
+int tilem_z80_get_breakpoint_flags(TilemCalc* calc, int id)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to access invalid breakpoint %d", id);
+		return -1;
+	}
+	
+	return calc->z80.breakpoints[id].type & TILEM_BREAK_FLAGS_MASK;
 }
 
 dword tilem_z80_get_breakpoint_address_start(TilemCalc* calc, int id)
@@ -610,11 +622,27 @@ void tilem_z80_set_breakpoint_type(TilemCalc* calc, int id, int type)
 	if ( type == calc->z80.breakpoints[id].type )
 		return;
 	
-	bp_rem(calc, id, calc->z80.breakpoints[id].type);
+	int old = calc->z80.breakpoints[id].type;
 	
-	calc->z80.breakpoints[id].type = type | (calc->z80.breakpoints[id].type & TILEM_BREAK_DISABLED);
+	bp_rem(calc, id, old);
+	
+	calc->z80.breakpoints[id].type = (type & TILEM_BREAK_TYPE_MASK) | (old & TILEM_BREAK_FLAGS_MASK);
 	
 	bp_add(calc, id, type);
+}
+
+void tilem_z80_set_breakpoint_flags(TilemCalc* calc, int id, int flags)
+{
+	if (id < 1 || id > calc->z80.nbreakpoints
+	    || !calc->z80.breakpoints[id].type) {
+		tilem_internal(calc,
+			       "attempt to modify invalid breakpoint %d", id);
+		return;
+	}
+	
+	int old = calc->z80.breakpoints[id].type & TILEM_BREAK_TYPE_MASK;
+	
+	calc->z80.breakpoints[id].type = old | (flags & TILEM_BREAK_FLAGS_MASK);
 }
 
 void tilem_z80_set_breakpoint_address_start(TilemCalc* calc, int id, dword start)
@@ -728,6 +756,9 @@ static inline void check_breakpoints(TilemCalc* calc, int list, dword addr)
 	for (bp = list; bp; bp = calc->z80.breakpoints[bp].next) {
 		if (calc->z80.breakpoints[bp].type & TILEM_BREAK_DISABLED)
 			continue;
+		
+		if (calc->z80.breakpoints[bp].type & TILEM_BREAK_PHYSICAL)
+			addr = (*calc->hw.mem_ltop)(calc, addr);
 		
 		masked = addr & calc->z80.breakpoints[bp].mask;
 		if (masked < calc->z80.breakpoints[bp].start

@@ -140,7 +140,11 @@ enum {
 	TILEM_BREAK_PORT_WRITE,	  /* Break after writing to port */
 	TILEM_BREAK_EXECUTE,	  /* Break after executing opcode */
 	
-	TILEM_BREAK_DISABLED = 0x80000000	/* Internal : Indicates a (temporarily) disabled breakpoint */
+	TILEM_BREAK_TYPE_MASK	= 0x0000ffff,	/* Mask for breakpoint type */
+	TILEM_BREAK_FLAGS_MASK	= 0xffff0000,	/* Mask for breakpoint flags */
+	
+	TILEM_BREAK_PHYSICAL 	= 0x40000000,	/* breakpoint matching physical addresses */
+	TILEM_BREAK_DISABLED 	= 0x80000000	/* Internal : (temporarily) disabled breakpoint */
 };
 
 /* Emulation flags */
@@ -328,6 +332,8 @@ int tilem_z80_breakpoint_enabled(TilemCalc* calc, int id);
 
 /* Get the type of the given breakpoint. */
 int tilem_z80_get_breakpoint_type(TilemCalc* calc, int id);
+/* Get the flags of the given breakpoint. */
+int tilem_z80_get_breakpoint_flags(TilemCalc* calc, int id);
 /* Get the start address of the given breakpoint. */
 dword tilem_z80_get_breakpoint_address_start(TilemCalc* calc, int id);
 /* Get the start address of the given breakpoint. */
@@ -341,6 +347,8 @@ void* tilem_z80_get_breakpoint_data(TilemCalc* calc, int id);
 
 /* Set the type of the given breakpoint. */
 void tilem_z80_set_breakpoint_type(TilemCalc* calc, int id, int type);
+/* Set the flags of the given breakpoint. */
+void tilem_z80_set_breakpoint_flags(TilemCalc* calc, int id, int flags);
 /* Set the start address of the given breakpoint. */
 void tilem_z80_set_breakpoint_address_start(TilemCalc* calc, int id, dword start);
 /* Set the start address of the given breakpoint. */
