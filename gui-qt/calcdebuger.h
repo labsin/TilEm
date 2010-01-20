@@ -53,12 +53,11 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 		
 		void on_cb_break_type_currentIndexChanged(int idx);
 		
+		void on_rb_break_physical_toggled(bool y);
+		
 		void on_le_break_start_addr_textEdited(const QString& s);
-		void on_le_break_start_page_textEdited(const QString& s);
 		void on_le_break_end_addr_textEdited(const QString& s);
-		void on_le_break_end_page_textEdited(const QString& s);
 		void on_le_break_mask_addr_textEdited(const QString& s);
-		void on_le_break_mask_page_textEdited(const QString& s);
 		
 		void on_spn_refresh_valueChanged(int val);
 		

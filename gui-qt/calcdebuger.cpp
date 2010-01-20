@@ -108,64 +108,44 @@ class BreakpointModel : public QAbstractListModel
 			tilem_z80_set_breakpoint_type(m_calc, id, type);
 		}
 		
+		bool isPhysical(int id)
+		{
+			return tilem_z80_get_breakpoint_flags(m_calc, id) & TILEM_BREAK_PHYSICAL;
+		}
+		
+		void setPhysical(int id, bool y)
+		{
+			tilem_z80_set_breakpoint_flags(m_calc, id, tilem_z80_get_breakpoint_flags(m_calc, id) | TILEM_BREAK_PHYSICAL);
+		}
+		
 		dword startAddress(int id) const
 		{
-			return tilem_z80_get_breakpoint_address_start(m_calc, id) & 0xffff;
+			return tilem_z80_get_breakpoint_address_start(m_calc, id);
 		}
 		
 		void setStartAddress(int id, dword a)
 		{
-			tilem_z80_set_breakpoint_address_start(m_calc, id, (a & 0xffff) | startPage(id));
-		}
-		
-		dword startPage(int id) const
-		{
-			return (tilem_z80_get_breakpoint_address_start(m_calc, id) >> 16) & 0xff;
-		}
-		
-		void setStartPage(int id, dword a)
-		{
-			tilem_z80_set_breakpoint_address_start(m_calc, id, ((a & 0xff) << 16) | startAddress(id));
+			tilem_z80_set_breakpoint_address_start(m_calc, id, a);
 		}
 		
 		dword endAddress(int id) const
 		{
-			return tilem_z80_get_breakpoint_address_end(m_calc, id) & 0xffff;
+			return tilem_z80_get_breakpoint_address_end(m_calc, id);
 		}
 		
 		void setEndAddress(int id, dword a)
 		{
-			tilem_z80_set_breakpoint_address_end(m_calc, id, (a & 0xffff) | endPage(id));
-		}
-		
-		dword endPage(int id) const
-		{
-			return (tilem_z80_get_breakpoint_address_end(m_calc, id) >> 16) & 0xff;
-		}
-		
-		void setEndPage(int id, dword a)
-		{
-			tilem_z80_set_breakpoint_address_end(m_calc, id, ((a & 0xff) << 16) | endAddress(id));
+			tilem_z80_set_breakpoint_address_end(m_calc, id, a);
 		}
 		
 		dword maskAddress(int id) const
 		{
-			return tilem_z80_get_breakpoint_address_mask(m_calc, id) & 0xffff;
+			return tilem_z80_get_breakpoint_address_mask(m_calc, id);
 		}
 		
 		void setMaskAddress(int id, dword a)
 		{
-			tilem_z80_set_breakpoint_address_mask(m_calc, id, (a & 0xffff) | maskPage(id));
-		}
-		
-		dword maskPage(int id) const
-		{
-			return (tilem_z80_get_breakpoint_address_mask(m_calc, id) >> 16) & 0xff;
-		}
-		
-		void setMaskPage(int id, dword a)
-		{
-			tilem_z80_set_breakpoint_address_mask(m_calc, id, ((a & 0xff) << 16) | maskAddress(id));
+			tilem_z80_set_breakpoint_address_mask(m_calc, id, a);
 		}
 		
 		int nth(int n) const
@@ -449,21 +429,28 @@ void CalcDebuger::currentBreakpointChanged(const QModelIndex& idx)
 		
 		cb_break_type->setCurrentIndex(bkpt->type(id) - 1);
 		
+		bool phy = bkpt->isPhysical(id);
+		rb_break_physical->setChecked(phy);
+		/*
+		QString m("HHHH;");
+		
+		if ( phy )
+			m.prepend("HH");
+		
+		le_break_start_addr->setInputMask(m);
+		le_break_end_addr->setInputMask(m);
+		le_break_mask_addr->setInputMask(m);
+		*/
+		
 		setHex(le_break_start_addr, bkpt->startAddress(id));
-		setHex(le_break_start_page, bkpt->startPage(id));
 		setHex(le_break_end_addr, bkpt->endAddress(id));
-		setHex(le_break_end_page, bkpt->endPage(id));
 		setHex(le_break_mask_addr, bkpt->maskAddress(id));
-		setHex(le_break_mask_page, bkpt->maskPage(id));
 	} else {
 		cb_break_type->setCurrentIndex(0);
 		
 		le_break_start_addr->clear();
-		le_break_start_page->clear();
 		le_break_end_addr->clear();
-		le_break_end_page->clear();
 		le_break_mask_addr->clear();
-		le_break_mask_page->clear();
 	}
 }
 
@@ -481,6 +468,20 @@ void CalcDebuger::on_cb_break_type_currentIndexChanged(int idx)
 	bkpt->changed(r);
 }
 
+void CalcDebuger::on_rb_break_physical_toggled(bool y)
+{
+	int r = lw_breakpoints->selectionModel()->currentIndex().row();
+	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
+	
+	int id = bkpt ? bkpt->nth(r) : -1;
+	
+	if ( id == -1 )
+		return;
+	
+	bkpt->setPhysical(id, y);
+	bkpt->changed(r);
+}
+
 void CalcDebuger::on_le_break_start_addr_textEdited(const QString& s)
 {
 	int r = lw_breakpoints->selectionModel()->currentIndex().row();
@@ -492,20 +493,6 @@ void CalcDebuger::on_le_break_start_addr_textEdited(const QString& s)
 		return;
 	
 	bkpt->setStartAddress(id, s.toULong(0, 16));
-	bkpt->changed(r);
-}
-
-void CalcDebuger::on_le_break_start_page_textEdited(const QString& s)
-{
-	int r = lw_breakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
-	
-	int id = bkpt ? bkpt->nth(r) : -1;
-	
-	if ( id == -1 )
-		return;
-	
-	bkpt->setStartPage(id, s.toULong(0, 16));
 	bkpt->changed(r);
 }
 
@@ -523,20 +510,6 @@ void CalcDebuger::on_le_break_end_addr_textEdited(const QString& s)
 	bkpt->changed(r);
 }
 
-void CalcDebuger::on_le_break_end_page_textEdited(const QString& s)
-{
-	int r = lw_breakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
-	
-	int id = bkpt ? bkpt->nth(r) : -1;
-	
-	if ( id == -1 )
-		return;
-	
-	bkpt->setEndPage(id, s.toULong(0, 16));
-	bkpt->changed(r);
-}
-
 void CalcDebuger::on_le_break_mask_addr_textEdited(const QString& s)
 {
 	int r = lw_breakpoints->selectionModel()->currentIndex().row();
@@ -548,20 +521,6 @@ void CalcDebuger::on_le_break_mask_addr_textEdited(const QString& s)
 		return;
 	
 	bkpt->setMaskAddress(id, s.toULong(0, 16));
-	bkpt->changed(r);
-}
-
-void CalcDebuger::on_le_break_mask_page_textEdited(const QString& s)
-{
-	int r = lw_breakpoints->selectionModel()->currentIndex().row();
-	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
-	
-	int id = bkpt ? bkpt->nth(r) : -1;
-	
-	if ( id == -1 )
-		return;
-	
-	bkpt->setMaskPage(id, s.toULong(0, 16));
 	bkpt->changed(r);
 }
 
