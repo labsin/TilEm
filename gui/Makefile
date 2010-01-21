@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -O2 -W -Wall 
+CFLAGS = -g -O2 -W -Wall -DDEBUG
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 
@@ -10,7 +10,7 @@ top_builddir = ../..
 
 GTK_CFLAGS = `pkg-config --cflags gtk+-2.0 gthread-2.0 ticalcs2`
 GTK_LIBS = `pkg-config --libs gtk+-2.0 gthread-2.0 ticalcs2`
-
+	
 TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 

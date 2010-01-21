@@ -720,20 +720,6 @@ void btnbreak(GtkButton* btn G_GNUC_UNUSED, gpointer data)
 	g_mutex_unlock(emu->run_mutex);
 }
 
-void keypad_button_toggle(GtkToggleButton* tb, gpointer data)
-{
-	TilemCalcEmulator* emu = data;
-	gpointer data2 = g_object_get_data(G_OBJECT(tb), "keycode");
-	int keycode = GPOINTER_TO_INT(data2);
-
-	g_mutex_lock(emu->calc_mutex);
-	if (gtk_toggle_button_get_active(tb))
-		tilem_keypad_press_key(emu->calc, keycode);
-	else
-		tilem_keypad_release_key(emu->calc, keycode);
-	g_mutex_unlock(emu->calc_mutex);
-}
-
 gboolean keypad_button_press(GtkWidget* w, GdkEventButton* ev,
 			     gpointer data G_GNUC_UNUSED)
 {
@@ -764,6 +750,23 @@ gboolean keypad_button_release(GtkWidget* w, GdkEventButton* ev,
 		return FALSE;
 	}
 }
+
+
+void keypad_button_toggle(GtkToggleButton* tb, gpointer data)
+{
+	TilemCalcEmulator* emu = data;
+	gpointer data2 = g_object_get_data(G_OBJECT(tb), "keycode");
+	int keycode = GPOINTER_TO_INT(data2);
+
+	g_mutex_lock(emu->calc_mutex);
+	if (gtk_toggle_button_get_active(tb))
+		tilem_keypad_press_key(emu->calc, keycode);
+	else
+		tilem_keypad_release_key(emu->calc, keycode);
+	g_mutex_unlock(emu->calc_mutex);
+}
+
+
 
 struct kpinfo {
 	int x, y, code;

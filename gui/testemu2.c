@@ -77,8 +77,6 @@
 */
 
 
-
-
 /* #########  MAIN  ######### */
 
 int main(int argc, char **argv)
@@ -154,7 +152,13 @@ int main(int argc, char **argv)
 	gsi->pWindow=draw_screen(gsi);
 		       
 	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
+	//th = g_thread_create(&core_thread, gsi, TRUE, NULL);
+	
+	
+	//g_signal_connect(gsi->emu->lcdwin, "expose-event",G_CALLBACK(screen_repaint), (gpointer)gsi);
 	gtk_main();
+	
+
 
 	
 	

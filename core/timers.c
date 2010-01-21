@@ -38,7 +38,7 @@ void tilem_user_timers_reset(TilemCalc* calc)
 
 static inline dword get_duration(int fvalue, int nticks)
 {
-	qword t;
+	qword t=0;
 
 	if (fvalue & 0x80) {
 		if (fvalue & 0x20)

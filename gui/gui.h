@@ -12,6 +12,17 @@
 #define X_FRINGE 2
 #define Y_FRINGE 1
 
+#ifdef DEBUG
+#define DEBUGGING(x)  printf(x)
+#define DEBUGGING2(x,y)  printf(x,y)
+#define DEBUGGING3(x,y,z)  printf(x,y,z)
+#else
+#define DEBUGGING(x)
+#define DEBUGGING2(x,y)
+#define DEBUGGING3(x,y,z)
+#endif
+
+
 
 static const char* bpstring[7] = {0, "read", "exec", "write", "in", "out", "op"};
 
@@ -230,11 +241,13 @@ void on_valid(GtkWidget *pBtn, GLOBAL_SKIN_INFOS *gsi);
 
 static volatile int sforcebreak = 0;
 
+/* Display reg state */
 void printstate(TilemCalcEmulator* emu);
 
+/* Create the lcd area */
 GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
 
-void btnbreak(gpointer data);
+
 
 gboolean screen_update(gpointer data);
 
@@ -245,6 +258,8 @@ void update_lcdimage(TilemCalcEmulator *emu);
 
 /* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
+
+void run_with_key(TilemCalc* calc, int key);
 
 
 

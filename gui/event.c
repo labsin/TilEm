@@ -6,7 +6,14 @@
 #include <tilem.h>
 #include <gui.h>
 
-
+void run_with_key(TilemCalc* calc, int key)
+{
+	tilem_z80_run_time(calc, 500000, NULL);
+	tilem_keypad_press_key(calc, key);
+	tilem_z80_run_time(calc, 1000000, NULL);
+	tilem_keypad_release_key(calc, key);
+	tilem_z80_run_time(calc, 500000, NULL);
+}
 
 /* Just close the window (freeing allocated memory maybe in the futur?)*/
 void on_destroy()
@@ -65,27 +72,32 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS *gsi) 	// 
 			break;
 			
 		}
-		/* for the test I will use the button ON to print an lcd effect :D */
-		if(i==45) {
-			
-			
-			
-			 //btnbreak(gsi);
-			 //screen_repaint(gsi->emu->lcdwin,gsi);
-			gtk_widget_activate(gsi->emu->lcdwin);
+			//btnbreak(gsi);
+			//screen_repaint(gsi->emu->lcdwin,gsi);
+			//gtk_widget_activate(gsi->emu->lcdwin);
 			//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gsi->emu->lcdwin),TRUE);
 			//g_mutex_unlock(gsi->emu->run_mutex);
 			//run_with_key(gsi->emu->calc, x3_keylist[i].code);
 			//keypad_button_toggle2(0x29, gsi);
 			//gtk_widget_queue_draw(gsi->pWindow);
-			gtk_widget_queue_draw_area(gsi->emu->lcdwin,60,30,40,30);
-			tilem_z80_run(gsi->emu->calc, 1000, 0);
+			//gtk_widget_queue_draw_area(gsi->emu->lcdwin,60,30,40,30);
+			/*tilem_z80_run(gsi->emu->calc, 1000, 0);
 			screen_update(gsi->emu);
 			tilem_keypad_press_key(gsi->emu->calc, x3_keylist[i].code);
 			screen_repaint(gsi->emu->lcdwin, gsi);
-			printstate(gsi->emu);
+			printstate(gsi->emu);*/
 			
-		}
+
+		
+		//run_with_key(gsi->emu->calc, x3_keylist[i].code);
+		tilem_keypad_press_key(gsi->emu->calc, x3_keylist[i].code);
+		//tilem_keypad_release_key(gsi->emu->calc, x3_keylist[i].code);
+		printstate(gsi->emu);
+		/*(*gsi->emu->calc->hw.get_lcd)(gsi->emu->calc, lcddata);*/
+		
+		screen_repaint(gsi->emu->lcdwin, gsi);
+
+		//screen_update(gsi->emu);
 		printf("\nKey number : %d\n",i);
 		printf("Key name : %s\n",x3_keylist[i].label);
 		//printf("Key : %s \n\n",Calc_Key_Map->Calc_Key_List[i].label);
