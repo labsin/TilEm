@@ -73,6 +73,9 @@ class BreakpointModel : public QAbstractListModel
 		
 		virtual int rowCount(const QModelIndex& i) const
 		{
+			if ( !m_calc )
+				return 0;
+			
 			int n = 0;
 			
 			for ( int i = 0; i < m_calc->z80.nbreakpoints; ++i )
@@ -84,6 +87,9 @@ class BreakpointModel : public QAbstractListModel
 		
 		virtual QVariant data(const QModelIndex& i, int r) const
 		{
+			if ( !m_calc )
+				return QVariant();
+			
 			int id = nth(i.row());
 			
 			if ( r == Qt::DisplayRole && id != -1 )
@@ -256,6 +262,9 @@ CalcDebuger::CalcDebuger(CalcGrid *g, QWidget *p)
 	lw_breakpoints->setModel(new BreakpointModel(this));
 	lw_breakpoints->setContextMenuPolicy(Qt::CustomContextMenu);
 	
+	connect(b_step	, SIGNAL( clicked() ),
+			this	, SIGNAL( step() ) );
+	
 	connect(lw_breakpoints->selectionModel(), SIGNAL( currentChanged(QModelIndex, QModelIndex) ),
 			this							, SLOT  ( currentBreakpointChanged(QModelIndex) ) );
 	
@@ -326,21 +335,24 @@ void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
 	CalcView *v = idx != -1 ? m_calcGrid->calc(idx) : 0;
 	Calc *c = v ? v->calc() : 0;
 	
-	if ( m_calc == c )
+	if ( c && m_calc == c )
 		return;
 	
 	if ( m_calc )
 	{
+		disconnect(m_calc	, SIGNAL( paused(bool) ),
+				   this		, SLOT  ( paused(bool) ) );
+		
 		disconnect(m_calc	, SIGNAL( breakpoint(int) ),
 				   this		, SLOT  ( breakpoint(int) ) );
 	}
 	
 	m_calc = c;
 	
+	tbPages->setEnabled(m_calc);
+	
 	if ( m_calc )
 	{
-		tbPages->setEnabled(true);
-		
 		// breakpoints page
 		qobject_cast<BreakpointModel*>(lw_breakpoints->model())->setCalc(m_calc->m_calc);
 		
@@ -368,6 +380,25 @@ void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
 		
 		lbl_flags->setPointer(&regs.af.b.l);
 		
+		le_disasm_start->setText("0000");
+		b_resume->setEnabled(true);
+		paused(v->isPaused());
+		
+		connect(v	, SIGNAL( paused(bool) ),
+				this, SLOT  ( paused(bool) ) );
+		
+		connect(this, SIGNAL( pause() ),
+				v	, SLOT  ( pause() ) );
+		
+		connect(this, SIGNAL( resume() ),
+				v	, SLOT  ( resume() ) );
+		
+		connect(this, SIGNAL( step() ),
+				v	, SLOT  ( step() ) );
+		
+		connect(m_calc	, SIGNAL( breakpoint(int) ),
+				this	, SLOT  ( breakpoint(int) ) );
+		
 		// memory page
 		
 		le_bankA->setPointer(m_calc->m_calc->mempagemap + 1);
@@ -376,12 +407,8 @@ void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
 		
 		// ports page
 		
-		
-		connect(m_calc	, SIGNAL( breakpoint(int) ),
-			   this		, SLOT  ( breakpoint(int) ) );
-		
 	} else {
-		tbPages->setEnabled(false);
+		
 	}
 }
 
@@ -559,6 +586,26 @@ void CalcDebuger::updateDisasm(dword addr, int len)
 	}
 }
 
+void CalcDebuger::paused(bool y)
+{
+	b_resume->setText(y ? tr("Resume") : tr("Pause"));
+	b_step->setEnabled(y);
+	
+	static const char *s_resume = SIGNAL( resume() ), *s_pause = SIGNAL( pause() );
+	
+	connect(b_resume, SIGNAL( clicked() ),
+			this	, y ? s_resume : s_pause);
+	
+	disconnect(b_resume	, SIGNAL( clicked() ),
+			   this		, y ? s_pause : s_resume);
+	
+	if ( y )
+	{
+		le_disasm_start->setText(QString::number(m_calc->m_calc->z80.r.pc.d, 16));
+		tbPages->setCurrentIndex(1);
+	}
+}
+
 void CalcDebuger::breakpoint(int id)
 {
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
@@ -566,7 +613,7 @@ void CalcDebuger::breakpoint(int id)
 	//bkpt->(id);
 	//QMessageBox::information(0, tr("Calc paused"), tr("Breakpoint hit : %1").arg(id));
 	
-	le_disasm_start->setText(QString::number(m_calc->m_calc->z80.r.pc.d, 16));
-	
-	tbPages->setCurrentIndex(2);
+// 	le_disasm_start->setText(QString::number(m_calc->m_calc->z80.r.pc.d, 16));
+// 	
+// 	tbPages->setCurrentIndex(1);
 }

@@ -344,16 +344,26 @@ void Calc::save(const QString& file)
 	
 }
 
-int Calc::run_us(int usec)
+dword Calc::run_us(int usec)
+{
+	return run(usec, tilem_z80_run_time);
+}
+
+dword Calc::run_cc(int clock)
+{
+	return run(clock, tilem_z80_run);
+}
+
+dword Calc::run(int amount, emulator emu)
 {
 	QMutexLocker lock(&m_run);
 	
 	if ( !m_calc )
 		return -1;
 	
-	int remaining = usec;
+	int remaining = amount;
 	
-	while ( remaining > 0 )
+	do
 	{
 		// try to forward data written into input buffer to link port
 		
@@ -415,7 +425,7 @@ int Calc::run_us(int usec)
 			}
 		}
 		
-		int res = tilem_z80_run_time(m_calc, remaining, &remaining);
+		dword res = emu(m_calc, remaining, &remaining);
 		
 		/*
 			some link emulation magic : seamlessly transfer
@@ -448,29 +458,14 @@ int Calc::run_us(int usec)
 // 		
 		if ( res & TILEM_STOP_BREAKPOINT )
 		{
-// 			qDebug("breakpoint hit : %i", m_calc->z80.stop_breakpoint);
 			emit breakpoint(m_calc->z80.stop_breakpoint);
 			break;
 		}
-	}
+	} while ( remaining > 0 );
 	
 // 	if ( m_calc->z80.stop_reason )
 // 		qDebug("stop:%i", m_calc->z80.stop_reason);
 	
-	return m_calc->z80.stop_reason;
-}
-
-int Calc::run_cc(int clock)
-{
-	QMutexLocker lock(&m_run);
-	
-	if ( !m_calc )
-		return -1;
-	
-	int remaining = 0;
-	
-	tilem_z80_run(m_calc, clock, &remaining);
-				
 	return m_calc->z80.stop_reason;
 }
 

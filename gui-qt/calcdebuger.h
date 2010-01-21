@@ -64,7 +64,13 @@ class CalcDebuger : public QWidget, private Ui::CalcDebuger
 		void on_le_disasm_start_textChanged(const QString& s);
 		void on_spn_disasm_length_valueChanged(int val);
 		
+		void paused(bool y);
 		void breakpoint(int id);
+		
+	signals:
+		void resume();
+		void pause();
+		void step();
 		
 	private:
 		void updateDisasm(dword addr, int len);

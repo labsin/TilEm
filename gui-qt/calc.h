@@ -96,8 +96,8 @@ class Calc : public QObject
 		void load(const QString& file);
 		void save(const QString& file);
 		
-		int run_us(int usec);
-		int run_cc(int clock);
+		dword run_us(int usec);
+		dword run_cc(int clock);
 		
 		void reset();
 		
@@ -117,6 +117,9 @@ class Calc : public QObject
 		void log(const QString& message, int type, dword addr);
 		
 	private:
+		typedef dword (*emulator)(TilemCalc *c, int amount, int *remaining);
+		dword run(int amount, emulator emu);
+		
 		QString m_romFile, m_name;
 		
 		QMutex m_run;

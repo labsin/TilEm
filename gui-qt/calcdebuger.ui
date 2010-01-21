@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>227</width>
-    <height>558</height>
+    <width>264</width>
+    <height>671</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,15 +26,15 @@
    <item>
     <widget class="QToolBox" name="tbPages">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="pageBreakpoints">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>217</width>
-        <height>354</height>
+        <width>254</width>
+        <height>499</height>
        </rect>
       </property>
       <attribute name="label">
@@ -196,8 +196,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>217</width>
-        <height>354</height>
+        <width>254</width>
+        <height>499</height>
        </rect>
       </property>
       <attribute name="label">
@@ -220,19 +220,6 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
@@ -243,7 +230,7 @@
        <item row="1" column="0" colspan="2">
         <widget class="QGroupBox" name="gbRegisters">
          <property name="title">
-          <string>Registers</string>
+          <string/>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <property name="margin">
@@ -603,93 +590,82 @@
          </layout>
         </widget>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="pageDisasm">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>217</width>
-        <height>354</height>
-       </rect>
-      </property>
-      <attribute name="label">
-       <string>Disassembly</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Start</string>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="gb_disasm">
+         <property name="title">
+          <string/>
          </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <property name="margin">
+           <number>2</number>
+          </property>
+          <item row="0" column="0" colspan="3">
+           <widget class="QLineEdit" name="le_disasm_start">
+            <property name="inputMask">
+             <string>HHHHHH; </string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="5">
+           <widget class="QListWidget" name="lv_disasm"/>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QPushButton" name="b_resume">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Resume</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2" colspan="2">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>68</width>
+              <height>26</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="4">
+           <widget class="QPushButton" name="b_step">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Step</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3" colspan="2">
+           <widget class="QSpinBox" name="spn_disasm_length">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="suffix">
+             <string> lines</string>
+            </property>
+            <property name="minimum">
+             <number>5</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="value">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
-       </item>
-       <item row="0" column="1" colspan="2">
-        <widget class="QLineEdit" name="le_disasm_start">
-         <property name="inputMask">
-          <string>HHHHHH; </string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Length</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1" colspan="2">
-        <widget class="QSpinBox" name="spn_disasm_length">
-         <property name="suffix">
-          <string> lines</string>
-         </property>
-         <property name="minimum">
-          <number>5</number>
-         </property>
-         <property name="maximum">
-          <number>1000</number>
-         </property>
-         <property name="value">
-          <number>10</number>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QPushButton" name="b_resume">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Resume</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>54</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="3" column="2">
-        <widget class="QPushButton" name="b_step">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Step</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="3">
-        <widget class="QListWidget" name="lv_disasm"/>
        </item>
       </layout>
      </widget>
@@ -698,8 +674,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>217</width>
-        <height>354</height>
+        <width>254</width>
+        <height>499</height>
        </rect>
       </property>
       <attribute name="label">
@@ -857,8 +833,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>217</width>
-        <height>354</height>
+        <width>254</width>
+        <height>499</height>
        </rect>
       </property>
       <attribute name="label">

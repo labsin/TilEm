@@ -62,6 +62,15 @@ class CalcThread : public QThread
 			
 		}
 		
+		void step()
+		{
+			if ( isRunning() )
+				return;
+			
+			exiting = 1;
+			start();
+		}
+		
 		void stop()
 		{
 			// stop emulator thread before loading a new ROM
@@ -85,7 +94,7 @@ class CalcThread : public QThread
 			
 			forever
 			{
-				if ( (res = m_calc->run_us(10000)) )
+				if ( (res = exiting ? m_calc->run_cc(1) : m_calc->run_us(10000)) || exiting )
 				{
 // 					if ( res & TILEM_STOP_BREAKPOINT )
 // 					{
@@ -191,6 +200,11 @@ CalcView::~CalcView()
 bool CalcView::isPaused() const
 {
 	return !m_thread->isRunning();
+}
+
+void CalcView::step()
+{
+	m_thread->step();
 }
 
 void CalcView::pause()

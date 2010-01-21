@@ -52,6 +52,7 @@ class CalcView : public QFrame
 		float scale() const;
 		
 	public slots:
+		void step();
 		void pause();
 		void resume();
 		
