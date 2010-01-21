@@ -183,7 +183,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QTextEdit" name="te_break_script">
+        <widget class="QPlainTextEdit" name="te_break_script">
          <property name="enabled">
           <bool>false</bool>
          </property>
