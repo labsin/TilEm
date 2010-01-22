@@ -164,7 +164,7 @@ void tilem_listing_append_line(TilemListing* lst, int srclinenum, dword address,
 
 	line->listing = lst;
 	line->srclinenum = srclinenum;
-	line->address = address;
+	line->address = address & 0xffff;
 	line->depth = depth;
 
 	if (datasize > TILEM_MAX_LINE_BYTES)

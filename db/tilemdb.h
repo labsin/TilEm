@@ -80,8 +80,7 @@ struct _TilemListingLine {
 	dword address;			 /* Address */
 	int depth;			 /* Source file inclusion
 					    depth */
-	byte datasize;			 /* Number of data bytes (up
-					    to 14) */
+	byte datasize;			 /* Number of data bytes */
 	unsigned is_label : 1;		 /* = 1 if line appears to
 					    contain a label */
 	unsigned is_expansion : 1;	 /* = 1 if line is part of a

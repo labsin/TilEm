@@ -206,18 +206,27 @@ static inline int bp_alloc(TilemZ80* z80)
 
 static int* bp_head(TilemCalc *calc, int type)
 {
-	switch (type & TILEM_BREAK_TYPE_MASK) {
+	if (type & TILEM_BREAK_DISABLED)
+		return &calc->z80.breakpoint_disabled;
+
+	switch (type & ~TILEM_BREAK_PHYSICAL) {
 	case TILEM_BREAK_MEM_READ:
-		return &calc->z80.breakpoint_mr;
+		return (type & TILEM_BREAK_PHYSICAL
+			? &calc->z80.breakpoint_mr
+			: &calc->z80.breakpoint_mpr);
 
 	case TILEM_BREAK_MEM_EXEC:
-		return &calc->z80.breakpoint_mx;
+		return (type & TILEM_BREAK_PHYSICAL
+			? &calc->z80.breakpoint_mx
+			: &calc->z80.breakpoint_mpx);
 
 	case TILEM_BREAK_MEM_WRITE:
-		return &calc->z80.breakpoint_mw;
+		return (type & TILEM_BREAK_PHYSICAL
+			? &calc->z80.breakpoint_mw
+			: &calc->z80.breakpoint_mpw);
 
 	case TILEM_BREAK_PORT_READ:
-		return  &calc->z80.breakpoint_pr;
+		return &calc->z80.breakpoint_pr;
 
 	case TILEM_BREAK_PORT_WRITE:
 		return &calc->z80.breakpoint_pw;
@@ -234,17 +243,16 @@ static int* bp_head(TilemCalc *calc, int type)
 static int bp_add(TilemCalc *calc, int bp, int type)
 {
 	int *head = bp_head(calc, type);
-	
-	if ( !head )
-	{
+
+	if (!head) {
 		bp_free(&calc->z80, bp);
 		return 0;
 	}
-	
+
 	calc->z80.breakpoints[bp].next = *head;
 	calc->z80.breakpoints[*head].prev = *head ? bp : 0;
 	*head = bp;
-	
+
 	return bp;
 }
 
@@ -255,10 +263,10 @@ static void bp_rem(TilemCalc *calc, int bp, int type)
 
 	prev = calc->z80.breakpoints[bp].prev;
 	next = calc->z80.breakpoints[bp].next;
-	
-	if ( bp == *head )
+
+	if (bp == *head)
 		*head = next;
-	
+
 	calc->z80.breakpoints[prev].next = prev ? next : 0;
 	calc->z80.breakpoints[next].prev = next ? prev : 0;
 }
@@ -455,25 +463,8 @@ int tilem_z80_add_breakpoint(TilemCalc* calc, int type,
 	calc->z80.breakpoints[bp].testfunc = func;
 	calc->z80.breakpoints[bp].testdata = data;
 	calc->z80.breakpoints[bp].prev = 0;
-	
+
 	return bp_add(calc, bp, type);
-}
-
-static int bptest_physical(TilemCalc* calc, dword addr, void* data)
-{
-	dword bpaddr = TILEM_PTR_TO_DWORD(data);
-	dword maddr = (*calc->hw.mem_ltop)(calc, addr);
-
-	return (!((bpaddr ^ maddr) & ~0x3fff));
-}
-
-int tilem_z80_add_breakpoint_physical(TilemCalc* calc, int type,
-				      dword start, dword end)
-{
-	return tilem_z80_add_breakpoint(calc, type, start & 0x3fff,
-					end & 0x3fff, 0x3fff,
-					&bptest_physical,
-					TILEM_DWORD_TO_PTR(start));
 }
 
 void tilem_z80_remove_breakpoint(TilemCalc* calc, int id)
@@ -484,46 +475,28 @@ void tilem_z80_remove_breakpoint(TilemCalc* calc, int id)
 			       "attempt to remove invalid breakpoint %d", id);
 		return;
 	}
-	
+
 	bp_rem(calc, id, calc->z80.breakpoints[id].type);
-	
+
 	bp_free(&calc->z80, id);
 }
 
 void tilem_z80_enable_breakpoint(TilemCalc* calc, int id)
 {
-	if (id < 1 || id > calc->z80.nbreakpoints
-	    || !calc->z80.breakpoints[id].type) {
-		tilem_internal(calc,
-			       "attempt to enable invalid breakpoint %d", id);
-		return;
-	}
-	
-	calc->z80.breakpoints[id].type &= ~TILEM_BREAK_DISABLED;
+	int type = tilem_z80_get_breakpoint_type(calc, id);
+	tilem_z80_set_breakpoint_type(calc, id, type & ~TILEM_BREAK_DISABLED);
 }
 
 void tilem_z80_disable_breakpoint(TilemCalc* calc, int id)
 {
-	if (id < 1 || id > calc->z80.nbreakpoints
-	    || !calc->z80.breakpoints[id].type) {
-		tilem_internal(calc,
-			       "attempt to disable invalid breakpoint %d", id);
-		return;
-	}
-	
-	calc->z80.breakpoints[id].type |= TILEM_BREAK_DISABLED;
+	int type = tilem_z80_get_breakpoint_type(calc, id);
+	tilem_z80_set_breakpoint_type(calc, id, type | TILEM_BREAK_DISABLED);
 }
 
 int tilem_z80_breakpoint_enabled(TilemCalc* calc, int id)
 {
-	if (id < 1 || id > calc->z80.nbreakpoints
-	    || !calc->z80.breakpoints[id].type) {
-		tilem_internal(calc,
-			       "attempt to access invalid breakpoint %d", id);
-		return -1;
-	}
-	
-	return !(calc->z80.breakpoints[id].type & TILEM_BREAK_DISABLED);
+	int type = tilem_z80_get_breakpoint_type(calc, id);
+	return !(type & TILEM_BREAK_DISABLED);
 }
 
 int tilem_z80_get_breakpoint_type(TilemCalc* calc, int id)
@@ -534,20 +507,8 @@ int tilem_z80_get_breakpoint_type(TilemCalc* calc, int id)
 			       "attempt to access invalid breakpoint %d", id);
 		return -1;
 	}
-	
-	return calc->z80.breakpoints[id].type & TILEM_BREAK_TYPE_MASK;
-}
 
-int tilem_z80_get_breakpoint_flags(TilemCalc* calc, int id)
-{
-	if (id < 1 || id > calc->z80.nbreakpoints
-	    || !calc->z80.breakpoints[id].type) {
-		tilem_internal(calc,
-			       "attempt to access invalid breakpoint %d", id);
-		return -1;
-	}
-	
-	return calc->z80.breakpoints[id].type & TILEM_BREAK_FLAGS_MASK;
+	return calc->z80.breakpoints[id].type;
 }
 
 dword tilem_z80_get_breakpoint_address_start(TilemCalc* calc, int id)
@@ -558,7 +519,7 @@ dword tilem_z80_get_breakpoint_address_start(TilemCalc* calc, int id)
 			       "attempt to access invalid breakpoint %d", id);
 		return -1;
 	}
-	
+
 	return calc->z80.breakpoints[id].start;
 }
 
@@ -570,7 +531,7 @@ dword tilem_z80_get_breakpoint_address_end(TilemCalc* calc, int id)
 			       "attempt to access invalid breakpoint %d", id);
 		return -1;
 	}
-	
+
 	return calc->z80.breakpoints[id].end;
 }
 
@@ -582,7 +543,7 @@ dword tilem_z80_get_breakpoint_address_mask(TilemCalc* calc, int id)
 			       "attempt to access invalid breakpoint %d", id);
 		return -1;
 	}
-	
+
 	return calc->z80.breakpoints[id].mask;
 }
 
@@ -594,7 +555,7 @@ TilemZ80BreakpointFunc tilem_z80_get_breakpoint_callback(TilemCalc* calc, int id
 			       "attempt to access invalid breakpoint %d", id);
 		return 0;
 	}
-	
+
 	return calc->z80.breakpoints[id].testfunc;
 }
 
@@ -606,7 +567,7 @@ void* tilem_z80_get_breakpoint_data(TilemCalc* calc, int id)
 			       "attempt to access invalid breakpoint %d", id);
 		return 0;
 	}
-	
+
 	return calc->z80.breakpoints[id].testdata;
 }
 
@@ -618,31 +579,15 @@ void tilem_z80_set_breakpoint_type(TilemCalc* calc, int id, int type)
 			       "attempt to modify invalid breakpoint %d", id);
 		return;
 	}
-	
-	if ( type == calc->z80.breakpoints[id].type )
-		return;
-	
-	int old = calc->z80.breakpoints[id].type;
-	
-	bp_rem(calc, id, old);
-	
-	calc->z80.breakpoints[id].type = (type & TILEM_BREAK_TYPE_MASK) | (old & TILEM_BREAK_FLAGS_MASK);
-	
-	bp_add(calc, id, type);
-}
 
-void tilem_z80_set_breakpoint_flags(TilemCalc* calc, int id, int flags)
-{
-	if (id < 1 || id > calc->z80.nbreakpoints
-	    || !calc->z80.breakpoints[id].type) {
-		tilem_internal(calc,
-			       "attempt to modify invalid breakpoint %d", id);
+	if (type == calc->z80.breakpoints[id].type)
 		return;
-	}
-	
-	int old = calc->z80.breakpoints[id].type & TILEM_BREAK_TYPE_MASK;
-	
-	calc->z80.breakpoints[id].type = old | (flags & TILEM_BREAK_FLAGS_MASK);
+
+	bp_rem(calc, id, calc->z80.breakpoints[id].type);
+
+	calc->z80.breakpoints[id].type = type;
+
+	bp_add(calc, id, type);
 }
 
 void tilem_z80_set_breakpoint_address_start(TilemCalc* calc, int id, dword start)
@@ -653,7 +598,7 @@ void tilem_z80_set_breakpoint_address_start(TilemCalc* calc, int id, dword start
 			       "attempt to modify invalid breakpoint %d", id);
 		return;
 	}
-	
+
 	calc->z80.breakpoints[id].start = start;
 }
 
@@ -665,7 +610,7 @@ void tilem_z80_set_breakpoint_address_end(TilemCalc* calc, int id, dword end)
 			       "attempt to modify invalid breakpoint %d", id);
 		return;
 	}
-	
+
 	calc->z80.breakpoints[id].end = end;
 }
 
@@ -677,11 +622,12 @@ void tilem_z80_set_breakpoint_address_mask(TilemCalc* calc, int id, dword mask)
 			       "attempt to modify invalid breakpoint %d", id);
 		return;
 	}
-	
+
 	calc->z80.breakpoints[id].mask = mask;
 }
 
-void tilem_z80_set_breakpoint_callback(TilemCalc* calc, int id, TilemZ80BreakpointFunc func)
+void tilem_z80_set_breakpoint_callback(TilemCalc* calc, int id,
+				       TilemZ80BreakpointFunc func)
 {
 	if (id < 1 || id > calc->z80.nbreakpoints
 	    || !calc->z80.breakpoints[id].type) {
@@ -689,7 +635,7 @@ void tilem_z80_set_breakpoint_callback(TilemCalc* calc, int id, TilemZ80Breakpoi
 			       "attempt to modify invalid breakpoint %d", id);
 		return;
 	}
-	
+
 	calc->z80.breakpoints[id].testfunc = func;
 }
 
@@ -701,7 +647,7 @@ void tilem_z80_set_breakpoint_data(TilemCalc* calc, int id, void* data)
 			       "attempt to modify invalid breakpoint %d", id);
 		return;
 	}
-	
+
 	calc->z80.breakpoints[id].testdata = data;
 }
 
@@ -754,12 +700,6 @@ static inline void check_breakpoints(TilemCalc* calc, int list, dword addr)
 	void* testdata;
 
 	for (bp = list; bp; bp = calc->z80.breakpoints[bp].next) {
-		if (calc->z80.breakpoints[bp].type & TILEM_BREAK_DISABLED)
-			continue;
-		
-		if (calc->z80.breakpoints[bp].type & TILEM_BREAK_PHYSICAL)
-			addr = (*calc->hw.mem_ltop)(calc, addr);
-		
 		masked = addr & calc->z80.breakpoints[bp].mask;
 		if (masked < calc->z80.breakpoints[bp].start
 		    || masked > calc->z80.breakpoints[bp].end)
@@ -776,12 +716,24 @@ static inline void check_breakpoints(TilemCalc* calc, int list, dword addr)
 	}
 }
 
+static inline void check_mem_breakpoints(TilemCalc* calc, int list_l,
+					 int list_p, dword addr)
+{
+	check_breakpoints(calc, list_l, addr);
+
+	if (list_p) {
+		addr = (*calc->hw.mem_ltop)(calc, addr);
+		check_breakpoints(calc, list_p, addr);
+	}
+}
+
 static inline byte z80_readb_m1(TilemCalc* calc, dword addr)
 {
 	byte b;
 	addr &= 0xffff;
 	b = (*calc->hw.z80_rdmem_m1)(calc, addr);
-	check_breakpoints(calc, calc->z80.breakpoint_mx, addr);
+	check_mem_breakpoints(calc, calc->z80.breakpoint_mx,
+			      calc->z80.breakpoint_mpx, addr);
 	Rl++;
 	return b;
 }
@@ -791,7 +743,8 @@ static inline byte z80_readb(TilemCalc* calc, dword addr)
 	byte b;
 	addr &= 0xffff;
 	b = (*calc->hw.z80_rdmem)(calc, addr);
-	check_breakpoints(calc, calc->z80.breakpoint_mr, addr);
+	check_mem_breakpoints(calc, calc->z80.breakpoint_mr,
+			      calc->z80.breakpoint_mpr, addr);
 	return b;
 }
 
@@ -800,10 +753,12 @@ static inline dword z80_readw(TilemCalc* calc, dword addr)
 	dword v;
 	addr &= 0xffff;
 	v = (*calc->hw.z80_rdmem)(calc, addr);
-	check_breakpoints(calc, calc->z80.breakpoint_mr, addr);
+	check_mem_breakpoints(calc, calc->z80.breakpoint_mr,
+			      calc->z80.breakpoint_mpr, addr);
 	addr = (addr + 1) & 0xffff;
 	v |= (*calc->hw.z80_rdmem)(calc, addr) << 8;
-	check_breakpoints(calc, calc->z80.breakpoint_mr, addr);
+	check_mem_breakpoints(calc, calc->z80.breakpoint_mr,
+			      calc->z80.breakpoint_mpr, addr);
 	return v;
 }
 
@@ -821,7 +776,8 @@ static inline void z80_writeb(TilemCalc* calc, dword addr, byte value)
 {
 	addr &= 0xffff;
 	(*calc->hw.z80_wrmem)(calc, addr, value);
-	check_breakpoints(calc, calc->z80.breakpoint_mw, addr);
+	check_mem_breakpoints(calc, calc->z80.breakpoint_mw,
+			      calc->z80.breakpoint_mpw, addr);
 	calc->z80.lastwrite = calc->z80.clock;
 }
 
@@ -829,11 +785,13 @@ static inline void z80_writew(TilemCalc* calc, dword addr, word value)
 {
 	addr &= 0xffff;
 	(*calc->hw.z80_wrmem)(calc, addr, value);
-	check_breakpoints(calc, calc->z80.breakpoint_mw, addr);
+	check_mem_breakpoints(calc, calc->z80.breakpoint_mw,
+			      calc->z80.breakpoint_mpw, addr);
 	addr = (addr + 1) & 0xffff;
 	value >>= 8;
 	(*calc->hw.z80_wrmem)(calc, addr, value);
-	check_breakpoints(calc, calc->z80.breakpoint_mw, addr);
+	check_mem_breakpoints(calc, calc->z80.breakpoint_mw,
+			      calc->z80.breakpoint_mpw, addr);
 	calc->z80.lastwrite = calc->z80.clock;
 }
 

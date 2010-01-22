@@ -106,22 +106,31 @@ class BreakpointModel : public QAbstractListModel
 		
 		int type(int id) const
 		{
-			return tilem_z80_get_breakpoint_type(m_calc, id);
+			return tilem_z80_get_breakpoint_type(m_calc, id) & TILEM_BREAK_TYPE_MASK;
 		}
 		
 		void setType(int id, int type)
 		{
+			int oldtype = tilem_z80_get_breakpoint_type(m_calc, id);
+			type |= oldtype & ~TILEM_BREAK_TYPE_MASK;
 			tilem_z80_set_breakpoint_type(m_calc, id, type);
 		}
 		
 		bool isPhysical(int id)
 		{
-			return tilem_z80_get_breakpoint_flags(m_calc, id) & TILEM_BREAK_PHYSICAL;
+			return tilem_z80_get_breakpoint_type(m_calc, id) & TILEM_BREAK_PHYSICAL;
 		}
 		
 		void setPhysical(int id, bool y)
 		{
-			tilem_z80_set_breakpoint_flags(m_calc, id, tilem_z80_get_breakpoint_flags(m_calc, id) | TILEM_BREAK_PHYSICAL);
+			int type = tilem_z80_get_breakpoint_type(m_calc, id);
+
+			if (y)
+				type |= TILEM_BREAK_PHYSICAL;
+			else
+				type &= ~TILEM_BREAK_PHYSICAL;
+
+			tilem_z80_set_breakpoint_type(m_calc, id, type);
 		}
 		
 		dword startAddress(int id) const
@@ -378,7 +387,7 @@ void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
 		
 		le_ir->setPointer(&regs.ir.w.l);
 		
-		lbl_flags->setPointer(&regs.af.b.l);
+		//lbl_flags->setPointer(&regs.af.b.l); ***** FIXME *****
 		
 		le_disasm_start->setText("0000");
 		b_resume->setEnabled(true);
