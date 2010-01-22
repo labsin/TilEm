@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -O2 -W -Wall -DDEBUG
+CFLAGS = -g -W -Wall -DDEBUG -DG_ERRORCHECK_MUTEXES
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 

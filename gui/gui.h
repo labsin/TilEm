@@ -66,6 +66,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	char calc_id;
 	char RomType;
 	TilemCalcEmulator *emu;
+	int act;
 }GLOBAL_SKIN_INFOS;
 
 static const struct KEY_LIST x3_keylist[] = {
@@ -252,7 +253,7 @@ GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
 gboolean screen_update(gpointer data);
 
 /* Repaint another skin */
-gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,gpointer data);
+gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi);
 
 void update_lcdimage(TilemCalcEmulator *emu);
 
@@ -261,7 +262,9 @@ void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, 
 
 void run_with_key(TilemCalc* calc, int key);
 
+void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,gpointer data);
 
+void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, gpointer data);
 
 
 

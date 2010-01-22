@@ -72,35 +72,18 @@ void mouse_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS *gsi) 	// 
 			break;
 			
 		}
-			//btnbreak(gsi);
-			//screen_repaint(gsi->emu->lcdwin,gsi);
-			//gtk_widget_activate(gsi->emu->lcdwin);
-			//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gsi->emu->lcdwin),TRUE);
-			//g_mutex_unlock(gsi->emu->run_mutex);
-			//run_with_key(gsi->emu->calc, x3_keylist[i].code);
-			//keypad_button_toggle2(0x29, gsi);
-			//gtk_widget_queue_draw(gsi->pWindow);
-			//gtk_widget_queue_draw_area(gsi->emu->lcdwin,60,30,40,30);
-			/*tilem_z80_run(gsi->emu->calc, 1000, 0);
-			screen_update(gsi->emu);
-			tilem_keypad_press_key(gsi->emu->calc, x3_keylist[i].code);
-			screen_repaint(gsi->emu->lcdwin, gsi);
-			printstate(gsi->emu);*/
-			
-
 		
-		//run_with_key(gsi->emu->calc, x3_keylist[i].code);
-		tilem_keypad_press_key(gsi->emu->calc, x3_keylist[i].code);
-		//tilem_keypad_release_key(gsi->emu->calc, x3_keylist[i].code);
-		printstate(gsi->emu);
-		/*(*gsi->emu->calc->hw.get_lcd)(gsi->emu->calc, lcddata);*/
+		gsi->act=1; // inform the core that a button is clicked.
+		tilem_keypad_press_key(gsi->emu->calc, 45);//x3_keylist[i].code); 
 		
-		screen_repaint(gsi->emu->lcdwin, gsi);
-
+		printstate(gsi->emu); 
+		
+		
+		screen_repaint(gsi->emu->lcdwin,event, gsi); 
 		//screen_update(gsi->emu);
+		gsi->act=0; // button released
 		printf("\nKey number : %d\n",i);
 		printf("Key name : %s\n",x3_keylist[i].label);
-		//printf("Key : %s \n\n",Calc_Key_Map->Calc_Key_List[i].label);
 	
 		printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
 	}

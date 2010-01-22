@@ -16,6 +16,10 @@
 #include <glib/gstdio.h>
 #include <ticalcs.h>
 
+/* LCD */
+#define X_FRINGE 2
+#define Y_FRINGE 1
+
 typedef struct _TilemCalcEmulator {
 	GMutex* run_mutex;
 	gboolean exiting;
@@ -403,10 +407,7 @@ int get_calc_model(TilemCalc* calc)
 }
 
 
-/* LCD */
 
-#define X_FRINGE 2
-#define Y_FRINGE 1
 
 static void update_lcdimage(TilemCalcEmulator* emu)
 {
@@ -893,8 +894,7 @@ int main(int argc, char** argv)
 	char calc_id;
 	TilemCalcEmulator emu;
 	FILE *romfile, *savfile;
-	GtkWidget *window, *vbox, *af, *hbox, *tbl, *button1, *button2,
-		*tbl2, *arrow;
+	GtkWidget *window, *vbox, *af, *hbox, *tbl, *button1, *button2,*tbl2, *arrow;
 	GThread *th;
 	int screenwidth, screenheight;
 	gsize i;

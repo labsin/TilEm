@@ -138,11 +138,21 @@ int main(int argc, char **argv)
 	gsi->romname=(char*)malloc(sizeof(strlen(romname)));
 	strcpy(gsi->romname,romname);
 	
+	
+	
 	choose_rom_type(gsi);
 	
 	calc_id='3';
 	gsi->emu=malloc(sizeof(TilemCalcEmulator));
 	gsi->emu->calc = tilem_calc_new(calc_id);
+	
+	gsi->emu->run_mutex = g_mutex_new();
+	gsi->emu->calc_mutex = g_mutex_new();
+	gsi->emu->lcd_mutex = g_mutex_new();
+	gsi->emu->exiting = FALSE;
+	gsi->emu->forcebreak = FALSE;
+	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
+	gsi->emu->calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
 	
 	printf("emu.calc->hw.model= %c \n",gsi->emu->calc->hw.model_id);	
 	printf("emu.calc->hw.name= %s \n",gsi->emu->calc->hw.name);		
@@ -152,10 +162,6 @@ int main(int argc, char **argv)
 	gsi->pWindow=draw_screen(gsi);
 		       
 	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
-	//th = g_thread_create(&core_thread, gsi, TRUE, NULL);
-	
-	
-	//g_signal_connect(gsi->emu->lcdwin, "expose-event",G_CALLBACK(screen_repaint), (gpointer)gsi);
 	gtk_main();
 	
 
