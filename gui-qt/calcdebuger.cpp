@@ -387,7 +387,7 @@ void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
 		
 		le_ir->setPointer(&regs.ir.w.l);
 		
-		//lbl_flags->setPointer(&regs.af.b.l); ***** FIXME *****
+		lbl_flags->setPointer(&regs.af.b.l);
 		
 		le_disasm_start->setText("0000");
 		b_resume->setEnabled(true);
