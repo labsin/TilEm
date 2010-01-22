@@ -810,6 +810,7 @@ static void print_word(const TilemDisasm* dasm, char** buf, int* bsize,
 
 	if (autonum && w < 0x100) {
 		printv(buf, bsize, "$%04X", w);
+		return;
 	}
 
 	sym = find_prev_symbol(&dasm->labels, w);
