@@ -964,8 +964,6 @@ void CalcView::paintEvent(QPaintEvent *e)
 		{
 			p.setBrush(QColor(0xff, 0x00, 0x00, 0x3f));
 			p.drawPolygon(m_kBoundaries.at(m_hovered), Qt::WindingFill);
-			
-			return;
 		}
 	}
 	
