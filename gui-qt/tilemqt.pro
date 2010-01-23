@@ -81,4 +81,7 @@ FORMS += calcdebuger.ui
 OBJECTS_DIR = .build
 
 INCLUDEPATH += ../core ../db
+
 LIBS += -L../core -L../db -ltilemcore -ltilemdb
+
+PRE_TARGETDEPS += ../core/libtilemcore.a ../db/libtilemdb.a

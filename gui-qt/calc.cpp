@@ -214,6 +214,101 @@ void Calc::sendBytes(const QByteArray& d)
 	m_input += d;
 }
 
+int Calc::breakpointCount() const
+{
+	return m_breakIds.count();
+}
+
+void Calc::addBreakpoint(BreakCallback cb)
+{
+	m_breakIds << tilem_z80_add_breakpoint(m_calc, TILEM_BREAK_MEM_EXEC, 0, 0, -1, cb, 0);
+}
+
+void Calc::removeBreakpoint(int n)
+{
+	if ( n >= 0 && n < m_breakIds.count() )
+		tilem_z80_remove_breakpoint(m_calc, m_breakIds.takeAt(n));
+}
+
+int Calc::breakpointType(int n) const
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	return tilem_z80_get_breakpoint_type(m_calc, id) & TILEM_BREAK_TYPE_MASK;
+}
+
+void Calc::setBreakpointType(int n, int type)
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	int oldtype = tilem_z80_get_breakpoint_type(m_calc, id);
+	type |= oldtype & ~TILEM_BREAK_TYPE_MASK;
+	tilem_z80_set_breakpoint_type(m_calc, id, type);
+}
+
+bool Calc::isBreakpointPhysical(int n) const
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	return tilem_z80_get_breakpoint_type(m_calc, id) & TILEM_BREAK_PHYSICAL;
+}
+
+void Calc::setBreakpointPhysical(int n, bool y)
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	int type = tilem_z80_get_breakpoint_type(m_calc, id);
+
+	if (y)
+		type |= TILEM_BREAK_PHYSICAL;
+	else
+		type &= ~TILEM_BREAK_PHYSICAL;
+
+	tilem_z80_set_breakpoint_type(m_calc, id, type);
+}
+
+dword Calc::breakpointStartAddress(int n) const
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	return tilem_z80_get_breakpoint_address_start(m_calc, id);
+}
+
+void Calc::setBreakpointStartAddress(int n, dword a)
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	tilem_z80_set_breakpoint_address_start(m_calc, id, a);
+}
+
+dword Calc::breakpointEndAddress(int n) const
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	return tilem_z80_get_breakpoint_address_end(m_calc, id);
+}
+
+void Calc::setBreakpointEndAddress(int n, dword a)
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	tilem_z80_set_breakpoint_address_end(m_calc, id, a);
+}
+
+dword Calc::breakpointMaskAddress(int n) const
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	return tilem_z80_get_breakpoint_address_mask(m_calc, id);
+}
+
+void Calc::setBreakpointMaskAddress(int n, dword a)
+{
+	int id = n >= 0 && n < m_breakIds.count() ? m_breakIds.at(n) : 0;
+	
+	tilem_z80_set_breakpoint_address_mask(m_calc, id, a);
+}
+
 /*!
 	\brief Rest calc (simulate battery pull)
 */

@@ -24,7 +24,7 @@
 #include "ui_calcdebuger.h"
 
 extern "C" {
-#include <tilemdb.h>
+#include "../db/tilemdb.h"
 }
 
 #include <QPointer>

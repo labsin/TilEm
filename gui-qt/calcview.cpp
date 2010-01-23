@@ -94,7 +94,7 @@ class CalcThread : public QThread
 			
 			forever
 			{
-				if ( (res = exiting ? m_calc->run_cc(1) : m_calc->run_us(10000)) || exiting )
+				if ( (res = (exiting ? m_calc->run_cc(1) : m_calc->run_us(10000))) )
 				{
 // 					if ( res & TILEM_STOP_BREAKPOINT )
 // 					{
@@ -105,11 +105,11 @@ class CalcThread : public QThread
 					break;
 				}
 				
-				// slightly slow down emulation (TODO : make delay adjustable)
-				usleep(10000);
-				
 				if ( exiting )
 					break;
+				
+				// slightly slow down emulation (TODO : make delay adjustable)
+				usleep(10000);
 			}
 			
 			exiting = 0;

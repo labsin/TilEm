@@ -26,8 +26,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <tilem.h>
-#include <z80.h>
+#include "../core/tilem.h"
 }
 
 #include <QHash>
@@ -57,6 +56,8 @@ class Calc : public QObject
 			Warning,
 			Internal
 		};
+		
+		typedef TilemZ80BreakpointFunc BreakCallback;
 		
 		Calc(QObject *p = 0);
 		~Calc();
@@ -92,6 +93,26 @@ class Calc : public QObject
 		int getBytes(int n, char *d);
 		void sendBytes(const QByteArray& d);
 		
+		int breakpointCount() const;
+		
+		void addBreakpoint(BreakCallback cb);
+		void removeBreakpoint(int n);
+		
+		int breakpointType(int n) const;
+		void setBreakpointType(int n, int type);
+
+		bool isBreakpointPhysical(int n) const;
+		void setBreakpointPhysical(int n, bool y);
+
+		dword breakpointStartAddress(int n) const;
+		void setBreakpointStartAddress(int n, dword a);
+		
+		dword breakpointEndAddress(int n) const;
+		void setBreakpointEndAddress(int n, dword a);
+		
+		dword breakpointMaskAddress(int n) const;
+		void setBreakpointMaskAddress(int n, dword a);
+		
 	public slots:
 		void load(const QString& file);
 		void save(const QString& file);
@@ -124,6 +145,8 @@ class Calc : public QObject
 		
 		QMutex m_run;
 		TilemCalc *m_calc;
+		
+		QList<int> m_breakIds;
 		
 		unsigned char *m_lcd;
 		unsigned int *m_lcd_comp;
