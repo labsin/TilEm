@@ -55,6 +55,7 @@ class CalcView : public QFrame
 		void step();
 		void pause();
 		void resume();
+		void reset();
 		
 		void load();
 		void save();

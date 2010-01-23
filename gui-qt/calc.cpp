@@ -314,10 +314,15 @@ void Calc::setBreakpointMaskAddress(int n, dword a)
 */
 void Calc::reset()
 {
-	// preserve keypad state somehow...
+	QMutexLocker lock(&m_run);
+	
+	byte keys[8];
+	
+	memcpy(keys, m_calc->keypad.keysdown, 8 * sizeof(byte));
+	
 	tilem_calc_reset(m_calc);
 	
-	//m_calc->hw.reset(m_calc);
+	memcpy(m_calc->keypad.keysdown, keys, 8 * sizeof(byte));
 }
 
 void Calc::load(const QString& file)

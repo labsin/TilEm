@@ -168,6 +168,7 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	a = m_cxt->addAction(tr("Resume"), this, SLOT( resume() ) );
 	a->setEnabled(false);
 	a->connect(this, SIGNAL( paused(bool) ), SLOT( setEnabled(bool) ) );
+	a = m_cxt->addAction(tr("Reset"), this, SLOT( reset() ) );
 	m_cxt->addSeparator();
 	a = m_cxt->addAction(tr("Take screenshot"), this, SLOT( takeScreenshot() ) );
 	m_cxt->addSeparator();
@@ -225,6 +226,11 @@ void CalcView::resume()
 // 		emit resumed();
 // 		emit paused(false);
 	}
+}
+
+void CalcView::reset()
+{
+	m_calc->reset();
 }
 
 void CalcView::takeScreenshot()
