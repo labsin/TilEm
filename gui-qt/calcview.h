@@ -34,6 +34,8 @@ class Calc;
 class CalcLink;
 class CalcThread;
 
+class CalcViewKeyMap;
+
 class CalcView : public QFrame
 {
 	Q_OBJECT
@@ -134,9 +136,9 @@ class CalcView : public QFrame
 		CalcLink *m_link;
 		CalcThread *m_thread;
 		
-		int m_lcdTimerId;
+		CalcViewKeyMap *m_keymap;
 		
-		QHash<int, int> m_kbdMap;
+		int m_lcdTimerId;
 		
 		int m_kThresold;
 		QList<int> m_kScanCode;

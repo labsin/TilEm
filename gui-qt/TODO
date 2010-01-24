@@ -1,14 +1,17 @@
- * keymap defined through tiemu compatible text files
+ * automatic keymap selection
+ * keymap switching UI
  * debugging :
 	* breakpoints management
 	* instruction stepping
 	* hex mem view
 	* disassembly
+	* scripting
  * settings UI
  * animated screen capture
  * ROM dumping
  * calc 2 calc linking (physical) [i.e between a real calc and an emulated one] (necessary?)
  
+ * keymaps
  * skins
  
  * skin editor?

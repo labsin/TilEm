@@ -62,7 +62,9 @@ HEADERS += \
 	calcdebuger.h \
 	calclogview.h \
 	calchexvalue.h \
-	calcflags.h
+	calcflags.h \
+	keymap.h \
+	keymaploader.h
 
 SOURCES += main.cpp \
 	tilemqt.cpp \
@@ -74,10 +76,16 @@ SOURCES += main.cpp \
 	calcgridmanager.cpp \
 	connectionmanager.cpp \
 	calcdebuger.cpp \
-	calclogview.cpp
+	calclogview.cpp \
+	keymap.cpp \
+	keymaploader.cpp \
+	tilemkeymap.cpp
 
 FORMS += calcdebuger.ui
 
+UIC_DIR = .build
+RCC_DIR = .build
+MOC_DIR = .build
 OBJECTS_DIR = .build
 
 INCLUDEPATH += ../core ../db

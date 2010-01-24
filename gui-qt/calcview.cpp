@@ -42,8 +42,70 @@ extern "C" {
 }
 
 #include "calc.h"
+#include "keymap.h"
 #include "calclink.h"
 #include "settings.h"
+#include "keymaploader.h"
+
+extern const KeySpace ti_space, pc_space;
+
+class CalcViewKeyMap : public KeyMap, public KeyLoadCallback
+{
+	public:
+		CalcViewKeyMap(CalcView *v)
+		 : KeyMap(v), m_view(v)
+		{
+			m_combos << KM;
+		}
+		
+		virtual void operator () (QList<int>& in, QList<int>& out)
+		{
+			setKeys(in, m_combos.count());
+			m_combos << out;
+		}
+		
+	protected:
+		virtual void activate(quintptr id)
+		{
+			KeyMap::activate(id);
+			
+			if ( id >= m_combos.count() )
+				return;
+			
+			QList<int> keys = m_combos.at(id);
+			
+			foreach ( int k, keys )
+			{
+				if ( m_pressed.value(k, 0) )
+					++m_pressed[k];
+				else {
+					m_pressed[k] = 1;
+					m_view->calc()->keyPress(k);
+				}
+			}
+		}
+		
+		virtual void deactivate(quintptr id)
+		{
+			KeyMap::deactivate(id);
+			
+			if ( id >= m_combos.count() )
+				return;
+			
+			QList<int> keys = m_combos.at(id);
+			
+			foreach ( int k, keys )
+			{
+				if ( !(--m_pressed[k]) )
+					m_view->calc()->keyRelease(k);
+			}
+		}
+	private:
+		CalcView *m_view;
+		
+		QHash<int, int> m_pressed;
+		QList< QList<int> > m_combos;
+};
 
 /*!
 	\class CalcThread
@@ -145,6 +207,8 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	
 	setMouseTracking(true);
 	
+	m_keymap = new CalcViewKeyMap(this);
+	
 	// setup core objects
 	m_calc = new Calc(this);
 	
@@ -211,21 +275,13 @@ void CalcView::step()
 void CalcView::pause()
 {
 	if ( m_thread->isRunning() )
-	{
 		m_thread->stop();
-// 		emit paused();
-// 		emit paused(true);
-	}
 }
 
 void CalcView::resume()
 {
 	if ( !m_thread->isRunning() )
-	{
 		m_thread->start();
-// 		emit resumed();
-// 		emit paused(false);
-	}
 }
 
 void CalcView::reset()
@@ -501,78 +557,98 @@ void CalcView::setupKeyboardLayout()
 	// keyboard -> keypad mapping
 	// TODO : move to external file (slightly kbd layout-dependent)
 	
-	m_kbdMap[Qt::Key_Enter] = TILEM_KEY_ENTER;
-	m_kbdMap[Qt::Key_Return] = TILEM_KEY_ENTER;
+	// new way
+	KeyMapLoader loader(&pc_space, &ti_space);
 	
-	m_kbdMap[Qt::Key_Left] = TILEM_KEY_LEFT;
-	m_kbdMap[Qt::Key_Right] = TILEM_KEY_RIGHT;
-	m_kbdMap[Qt::Key_Up] = TILEM_KEY_UP;
-	m_kbdMap[Qt::Key_Down] = TILEM_KEY_DOWN;
+	QByteArray d(
+	"PCKEY_ENTER:TIKEY_ENTER\n"
+	"PCKEY_RETURN:TIKEY_ENTER\n"
+	);
 	
-	m_kbdMap[Qt::Key_F1] = TILEM_KEY_YEQU;
-	m_kbdMap[Qt::Key_F2] = TILEM_KEY_WINDOW;
-	m_kbdMap[Qt::Key_F3] = TILEM_KEY_ZOOM;
-	m_kbdMap[Qt::Key_F4] = TILEM_KEY_TRACE;
-	m_kbdMap[Qt::Key_F5] = TILEM_KEY_GRAPH;
+	loader.load(d, *m_keymap);
 	
-	m_kbdMap[Qt::Key_0] = TILEM_KEY_0;
-	m_kbdMap[Qt::Key_1] = TILEM_KEY_1;
-	m_kbdMap[Qt::Key_2] = TILEM_KEY_2;
-	m_kbdMap[Qt::Key_3] = TILEM_KEY_3;
-	m_kbdMap[Qt::Key_4] = TILEM_KEY_4;
-	m_kbdMap[Qt::Key_5] = TILEM_KEY_5;
-	m_kbdMap[Qt::Key_6] = TILEM_KEY_6;
-	m_kbdMap[Qt::Key_7] = TILEM_KEY_7;
-	m_kbdMap[Qt::Key_8] = TILEM_KEY_8;
-	m_kbdMap[Qt::Key_9] = TILEM_KEY_9;
+	// intermediate
+// 	m_keymap->setKeys(KM << Qt::Key_Enter, TILEM_KEY_ENTER);
+// 	m_keymap->setKeys(KM << Qt::Key_Return, TILEM_KEY_ENTER);
+// 	
+// 	m_keymap->setKeys(KM << Qt::Key_Left, TILEM_KEY_LEFT);
+// 	m_keymap->setKeys(KM << Qt::Key_Right, TILEM_KEY_RIGHT);
+// 	m_keymap->setKeys(KM << Qt::Key_Up, TILEM_KEY_UP);
+// 	m_keymap->setKeys(KM << Qt::Key_Down, TILEM_KEY_DOWN);
 	
-	m_kbdMap[Qt::Key_Plus] = TILEM_KEY_ADD;
-	m_kbdMap[Qt::Key_Minus] = TILEM_KEY_SUB;
-	m_kbdMap[Qt::Key_Asterisk] = TILEM_KEY_MUL;
-	m_kbdMap[Qt::Key_Slash] = TILEM_KEY_DIV;
-	
-	m_kbdMap[Qt::Key_Backspace] = TILEM_KEY_DEL;
-	m_kbdMap[Qt::Key_Delete] = TILEM_KEY_CLEAR;
-	
-	m_kbdMap[Qt::Key_Alt] = TILEM_KEY_ON;
-	m_kbdMap[Qt::Key_Control] = TILEM_KEY_2ND;
-	m_kbdMap[Qt::Key_Shift] = TILEM_KEY_ALPHA;
-	m_kbdMap[Qt::Key_Escape] = TILEM_KEY_MODE;
-	
-	
-	m_kbdMap[Qt::Key_A] = TILEM_KEY_MATH;
-	m_kbdMap[Qt::Key_B] = TILEM_KEY_MATRIX; //TILEM_KEY_APPS;
-	m_kbdMap[Qt::Key_C] = TILEM_KEY_PRGM;
-	m_kbdMap[Qt::Key_D] = TILEM_KEY_RECIP;
-	m_kbdMap[Qt::Key_E] = TILEM_KEY_SIN;
-	m_kbdMap[Qt::Key_F] = TILEM_KEY_COS;
-	m_kbdMap[Qt::Key_G] = TILEM_KEY_TAN;
-	m_kbdMap[Qt::Key_H] = TILEM_KEY_POWER;
-	m_kbdMap[Qt::Key_I] = TILEM_KEY_SQUARE;
-	m_kbdMap[Qt::Key_J] = TILEM_KEY_COMMA;
-	m_kbdMap[Qt::Key_K] = TILEM_KEY_LPAREN;
-	m_kbdMap[Qt::Key_L] = TILEM_KEY_RPAREN;
-	m_kbdMap[Qt::Key_M] = TILEM_KEY_DIV;
-	m_kbdMap[Qt::Key_N] = TILEM_KEY_LOG;
-	m_kbdMap[Qt::Key_O] = TILEM_KEY_7;
-	m_kbdMap[Qt::Key_P] = TILEM_KEY_8;
-	m_kbdMap[Qt::Key_Q] = TILEM_KEY_9;
-	m_kbdMap[Qt::Key_R] = TILEM_KEY_MUL;
-	m_kbdMap[Qt::Key_S] = TILEM_KEY_LN;
-	m_kbdMap[Qt::Key_T] = TILEM_KEY_4;
-	m_kbdMap[Qt::Key_U] = TILEM_KEY_5;
-	m_kbdMap[Qt::Key_V] = TILEM_KEY_6;
-	m_kbdMap[Qt::Key_W] = TILEM_KEY_SUB;
-	m_kbdMap[Qt::Key_X] = TILEM_KEY_STORE;
-	m_kbdMap[Qt::Key_Y] = TILEM_KEY_1;
-	m_kbdMap[Qt::Key_Z] = TILEM_KEY_2;
-	
-	m_kbdMap[Qt::Key_Space] = TILEM_KEY_0;
-	
-	m_kbdMap[Qt::Key_Period] = TILEM_KEY_DECPNT;
-	m_kbdMap[Qt::Key_Colon] = TILEM_KEY_DECPNT;
-	
-	m_kbdMap[Qt::Key_QuoteDbl] = TILEM_KEY_ADD;
+	// old way
+// 	m_kbdMap[Qt::Key_Enter] = TILEM_KEY_ENTER;
+// 	m_kbdMap[Qt::Key_Return] = TILEM_KEY_ENTER;
+// 	
+// 	m_kbdMap[Qt::Key_Left] = TILEM_KEY_LEFT;
+// 	m_kbdMap[Qt::Key_Right] = TILEM_KEY_RIGHT;
+// 	m_kbdMap[Qt::Key_Up] = TILEM_KEY_UP;
+// 	m_kbdMap[Qt::Key_Down] = TILEM_KEY_DOWN;
+// 	
+// 	m_kbdMap[Qt::Key_F1] = TILEM_KEY_YEQU;
+// 	m_kbdMap[Qt::Key_F2] = TILEM_KEY_WINDOW;
+// 	m_kbdMap[Qt::Key_F3] = TILEM_KEY_ZOOM;
+// 	m_kbdMap[Qt::Key_F4] = TILEM_KEY_TRACE;
+// 	m_kbdMap[Qt::Key_F5] = TILEM_KEY_GRAPH;
+// 	
+// 	m_kbdMap[Qt::Key_0] = TILEM_KEY_0;
+// 	m_kbdMap[Qt::Key_1] = TILEM_KEY_1;
+// 	m_kbdMap[Qt::Key_2] = TILEM_KEY_2;
+// 	m_kbdMap[Qt::Key_3] = TILEM_KEY_3;
+// 	m_kbdMap[Qt::Key_4] = TILEM_KEY_4;
+// 	m_kbdMap[Qt::Key_5] = TILEM_KEY_5;
+// 	m_kbdMap[Qt::Key_6] = TILEM_KEY_6;
+// 	m_kbdMap[Qt::Key_7] = TILEM_KEY_7;
+// 	m_kbdMap[Qt::Key_8] = TILEM_KEY_8;
+// 	m_kbdMap[Qt::Key_9] = TILEM_KEY_9;
+// 	
+// 	m_kbdMap[Qt::Key_Plus] = TILEM_KEY_ADD;
+// 	m_kbdMap[Qt::Key_Minus] = TILEM_KEY_SUB;
+// 	m_kbdMap[Qt::Key_Asterisk] = TILEM_KEY_MUL;
+// 	m_kbdMap[Qt::Key_Slash] = TILEM_KEY_DIV;
+// 	
+// 	m_kbdMap[Qt::Key_Backspace] = TILEM_KEY_DEL;
+// 	m_kbdMap[Qt::Key_Delete] = TILEM_KEY_CLEAR;
+// 	
+// 	m_kbdMap[Qt::Key_Alt] = TILEM_KEY_ON;
+// 	m_kbdMap[Qt::Key_Control] = TILEM_KEY_2ND;
+// 	m_kbdMap[Qt::Key_Shift] = TILEM_KEY_ALPHA;
+// 	m_kbdMap[Qt::Key_Escape] = TILEM_KEY_MODE;
+// 	
+// 	
+// 	m_kbdMap[Qt::Key_A] = TILEM_KEY_MATH;
+// 	m_kbdMap[Qt::Key_B] = TILEM_KEY_MATRIX; //TILEM_KEY_APPS;
+// 	m_kbdMap[Qt::Key_C] = TILEM_KEY_PRGM;
+// 	m_kbdMap[Qt::Key_D] = TILEM_KEY_RECIP;
+// 	m_kbdMap[Qt::Key_E] = TILEM_KEY_SIN;
+// 	m_kbdMap[Qt::Key_F] = TILEM_KEY_COS;
+// 	m_kbdMap[Qt::Key_G] = TILEM_KEY_TAN;
+// 	m_kbdMap[Qt::Key_H] = TILEM_KEY_POWER;
+// 	m_kbdMap[Qt::Key_I] = TILEM_KEY_SQUARE;
+// 	m_kbdMap[Qt::Key_J] = TILEM_KEY_COMMA;
+// 	m_kbdMap[Qt::Key_K] = TILEM_KEY_LPAREN;
+// 	m_kbdMap[Qt::Key_L] = TILEM_KEY_RPAREN;
+// 	m_kbdMap[Qt::Key_M] = TILEM_KEY_DIV;
+// 	m_kbdMap[Qt::Key_N] = TILEM_KEY_LOG;
+// 	m_kbdMap[Qt::Key_O] = TILEM_KEY_7;
+// 	m_kbdMap[Qt::Key_P] = TILEM_KEY_8;
+// 	m_kbdMap[Qt::Key_Q] = TILEM_KEY_9;
+// 	m_kbdMap[Qt::Key_R] = TILEM_KEY_MUL;
+// 	m_kbdMap[Qt::Key_S] = TILEM_KEY_LN;
+// 	m_kbdMap[Qt::Key_T] = TILEM_KEY_4;
+// 	m_kbdMap[Qt::Key_U] = TILEM_KEY_5;
+// 	m_kbdMap[Qt::Key_V] = TILEM_KEY_6;
+// 	m_kbdMap[Qt::Key_W] = TILEM_KEY_SUB;
+// 	m_kbdMap[Qt::Key_X] = TILEM_KEY_STORE;
+// 	m_kbdMap[Qt::Key_Y] = TILEM_KEY_1;
+// 	m_kbdMap[Qt::Key_Z] = TILEM_KEY_2;
+// 	
+// 	m_kbdMap[Qt::Key_Space] = TILEM_KEY_0;
+// 	
+// 	m_kbdMap[Qt::Key_Period] = TILEM_KEY_DECPNT;
+// 	m_kbdMap[Qt::Key_Colon] = TILEM_KEY_DECPNT;
+// 	
+// 	m_kbdMap[Qt::Key_QuoteDbl] = TILEM_KEY_ADD;
 }
 
 QSize CalcView::sizeHint() const
@@ -626,13 +702,6 @@ void CalcView::updateLCD()
 		
 		repaint(m_lcdX * m_scale, m_lcdY * m_scale, m_lcdW * m_scale, m_lcdH * m_scale);
 	}
-}
-
-int CalcView::mappedKey(int k) const
-{
-	const QHash<int, int>::const_iterator it = m_kbdMap.constFind(k);
-	
-	return it != m_kbdMap.constEnd() ? *it : 0;
 }
 
 int CalcView::mappedKey(const QPoint& pos) const
@@ -811,37 +880,12 @@ QPolygon CalcView::keyBoundaries(const QPoint& p) const
 
 void CalcView::keyPressEvent(QKeyEvent *e)
 {
-	int k = mappedKey(e->key());
-	
-	if ( k )
-	{
-		e->accept();
-		
-// 		if ( !m_pressed.contains(k) )
-// 		{
-// 			m_pressed << k;
-// 			update();
-// 		}
-		
-		m_calc->keyPress(k);
-	} else {
-		QFrame::keyPressEvent(e);
-	}
+	QFrame::keyPressEvent(e);
 }
 
 void CalcView::keyReleaseEvent(QKeyEvent *e)
 {
-	int k = mappedKey(e->key());
-	
-	if ( k )
-	{
-		e->accept();
-		
-// 		m_pressed.removeAll(k);
-		m_calc->keyRelease(k);
-	} else {
-		QFrame::keyReleaseEvent(e);
-	}
+	QFrame::keyReleaseEvent(e);
 }
 
 void CalcView::mousePressEvent(QMouseEvent *e)
