@@ -36,6 +36,8 @@ static CableHandle* internal_link_handle_new(Calc *calc);
 static int send_file(CalcHandle* ch, int last, const char* filename);
 #endif
 
+static volatile int _link_abort = 0;
+
 /*!
 	\internal
 	\class FileSender
@@ -52,6 +54,11 @@ class FileSender : public QThread
 		{
 		}
 		
+		void abort()
+		{
+			_link_abort = 1;
+		}
+		
 		void send(const QString& s)
 		{
 			m_lock.lock();
@@ -65,7 +72,7 @@ class FileSender : public QThread
 	protected:
 		virtual void run()
 		{
-			while ( m_files.count() )
+			while ( !_link_abort && m_files.count() )
 			{
 				m_lock.lock();
 				QString f = m_files.dequeue();
@@ -83,7 +90,8 @@ class FileSender : public QThread
 				// TODO : first wait for any exchange using direct connection to end...
 				m_link->m_calc->setBroadcasting(false);
 				
-				send_file(m_link->m_ch, m_files.isEmpty(), f.toLocal8Bit().constData());
+				if ( !_link_abort )
+					send_file(m_link->m_ch, m_files.isEmpty(), f.toLocal8Bit().constData());
 				
 				m_link->m_calc->setBroadcasting(broadcast);
 				
@@ -145,6 +153,9 @@ CalcLink::CalcLink(Calc *c, QObject *p)
 CalcLink::~CalcLink()
 {
 	--m_count;
+	
+	m_sender->abort();
+	m_sender->wait();
 	
 	setCalc(0);
 	
@@ -437,6 +448,9 @@ static int ilp_send(CableHandle *cbl, uint8_t *data, uint32_t count)
 	// wait for bytes to be processed...
 	while ( calc->isReceiving() )
 	{
+		if ( _link_abort )
+			return ERROR_WRITE_TIMEOUT;
+		
 		usleep(1000);
 	}
 	
@@ -455,6 +469,9 @@ static int ilp_recv(CableHandle *cbl, uint8_t *data, uint32_t count)
 		
 		do
 		{
+			if ( _link_abort )
+				return ERROR_READ_TIMEOUT;
+			
 			usleep(1000);
 			newc = calc->byteCount();
 		} while ( newc <= oldc );

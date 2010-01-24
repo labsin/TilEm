@@ -254,6 +254,8 @@ CalcView::CalcView(const QString& file, QWidget *p)
 
 CalcView::~CalcView()
 {
+	delete m_link;
+	
 	m_thread->stop();
 	
 	// cleanup
