@@ -209,21 +209,21 @@ static int* bp_head(TilemCalc *calc, int type)
 	if (type & TILEM_BREAK_DISABLED)
 		return &calc->z80.breakpoint_disabled;
 
-	switch (type & ~TILEM_BREAK_PHYSICAL) {
+	switch (type & TILEM_BREAK_TYPE_MASK) {
 	case TILEM_BREAK_MEM_READ:
 		return (type & TILEM_BREAK_PHYSICAL
-			? &calc->z80.breakpoint_mr
-			: &calc->z80.breakpoint_mpr);
+			? &calc->z80.breakpoint_mpr
+			: &calc->z80.breakpoint_mr);
 
 	case TILEM_BREAK_MEM_EXEC:
 		return (type & TILEM_BREAK_PHYSICAL
-			? &calc->z80.breakpoint_mx
-			: &calc->z80.breakpoint_mpx);
+			? &calc->z80.breakpoint_mpx
+			: &calc->z80.breakpoint_mx);
 
 	case TILEM_BREAK_MEM_WRITE:
 		return (type & TILEM_BREAK_PHYSICAL
-			? &calc->z80.breakpoint_mw
-			: &calc->z80.breakpoint_mpw);
+			? &calc->z80.breakpoint_mpw
+			: &calc->z80.breakpoint_mw);
 
 	case TILEM_BREAK_PORT_READ:
 		return &calc->z80.breakpoint_pr;
@@ -919,11 +919,11 @@ static void z80_execute(TilemCalc* calc)
 				PC = readw((IR & 0xff00) | busbyte);
 				delay(19);
 			}
-			check_breakpoints(calc, z80->breakpoint_mx, PC);
+			check_mem_breakpoints(calc, z80->breakpoint_mx, z80->breakpoint_mpx, PC);
 			check_timers(calc);
 		}
 		else if (op != 0x76) {
-			check_breakpoints(calc, z80->breakpoint_mx, PC);
+			check_mem_breakpoints(calc, z80->breakpoint_mx, z80->breakpoint_mpx, PC);
 		}
 		else {
 			z80->halted = 1;
