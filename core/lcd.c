@@ -124,6 +124,7 @@ void tilem_lcd_t6a04_control(TilemCalc* calc, byte val)
 
 	}
 
+	calc->z80.lastlcdwrite = calc->z80.clock;
 	SET_BUSY;
 }
 
@@ -225,6 +226,7 @@ void tilem_lcd_t6a04_write(TilemCalc* calc, byte sprite)
 		case 7: calc->lcd.x++; break;
 	}
 
+	calc->z80.lastlcdwrite = calc->z80.clock;
 	SET_BUSY;
 	return;
 }

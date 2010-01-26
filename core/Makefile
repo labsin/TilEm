@@ -8,7 +8,8 @@ srcdir = .
 top_srcdir = ../..
 top_builddir = ../..
 
-core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o cert.o md5.o timers.o
+core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o \
+	cert.o md5.o timers.o graylcd.o grayimage.o graycolor.o
 
 x7_objects = x7_init.o x7_io.o x7_memory.o x7_subcore.o
 x1_objects = x1_init.o x1_io.o x1_memory.o x1_subcore.o
@@ -58,6 +59,12 @@ md5.o: md5.c tilem.h
 	$(compile) -c $(srcdir)/md5.c
 timers.o: timers.c tilem.h
 	$(compile) -c $(srcdir)/timers.c
+graylcd.o: graylcd.c tilem.h graylcd.h
+	$(compile) -c $(srcdir)/graylcd.c
+grayimage.o: grayimage.c tilem.h graylcd.h
+	$(compile) -c $(srcdir)/grayimage.c
+graycolor.o: graycolor.c tilem.h
+	$(compile) -c $(srcdir)/graycolor.c
 
 # TI-73
 

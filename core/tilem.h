@@ -219,6 +219,7 @@ typedef struct _TilemZ80 {
 	int halted;
 	dword clock;
 	dword lastwrite;
+	dword lastlcdwrite;
 
 	unsigned int emuflags;
 
@@ -803,6 +804,73 @@ int tilem_calc_load_state(TilemCalc* calc, FILE* romfile, FILE* savfile);
 
 /* Save calculator state to ROM and/or save files. */
 int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile);
+
+
+/* Grayscale LCD simulation */
+
+typedef struct _TilemGrayLCD TilemGrayLCD;
+
+/* Scaling algorithms */
+enum {
+	TILEM_SCALE_FAST = 0,	/* Fast scaling (nearest neighbor) -
+				   looks lousy unless the scaling
+				   factor is fairly large */
+	TILEM_SCALE_SMOOTH	/* Smooth scaling - slower and looks
+				   better at small sizes; note that
+				   this falls back to using the "fast"
+				   algorithm if we are scaling up by
+				   an integer factor */
+};
+
+/* Create a new LCD and attach to a calculator.  Sampling for
+   grayscale is done across WINDOWSIZE frames, with samples taken
+   every SAMPLEINT microseconds. */
+TilemGrayLCD* tilem_gray_lcd_new(TilemCalc *calc, int windowsize,
+				 int sampleint);
+
+/* Detach and free an LCD. */
+void tilem_gray_lcd_free(TilemGrayLCD *glcd);
+
+/* Update LCD image for next frame, based on current calculator
+   state. */
+void tilem_gray_lcd_next_frame(TilemGrayLCD *glcd, int mono);
+
+/* Draw current LCD contents to an 8-bit indexed image buffer.
+   IMGWIDTH and IMGHEIGHT are the width and height of the output
+   image, ROWSTRIDE the number of bytes from the start of one row to
+   the next (often equal to IMGWIDTH), and SCALETYPE the scaling
+   algorithm to use.  (This function uses the result produced by
+   tilem_gray_lcd_next_frame(), but does not interact with the
+   calculator itself; thus, this function can run concurrently with
+   tilem_z80_run(), but not with tilem_gray_lcd_next_frame().)  */
+void tilem_gray_lcd_draw_image_indexed(TilemGrayLCD *glcd,
+				       byte * /*restrict*/ buffer,
+				       int imgwidth, int imgheight,
+				       int rowstride, int scaletype);
+
+/* Draw current LCD contents to a 24-bit RGB or 32-bit RGBA image
+   buffer.  IMGWIDTH and IMGHEIGHT are the width and height of the
+   output image, ROWSTRIDE the number of bytes from the start of one
+   row to the next (often equal to 3 * IMGWIDTH), PIXBYTES the number
+   of bytes per pixel (3 or 4), and SCALETYPE the scaling algorithm to
+   use.  PALETTE is an array of 256 color values.  (As with
+   tilem_gray_lcd_draw_image_indexed(), this function can run
+   concurrently with tilem_z80_run(), but not with
+   tilem_gray_lcd_next_frame().) */
+void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * /*restrict*/ buffer,
+				   int imgwidth, int imgheight, int rowstride,
+				   int pixbytes, const dword * /*restrict*/ palette,
+				   int scaletype);
+
+/* Calculate a color palette for use with the above functions.
+   RLIGHT, GLIGHT, BLIGHT are the RGB components (0 to 255) of the
+   lightest possible color; RDARK, GDARK, BDARK are the RGB components
+   of the darkest possible color.  GAMMA is the gamma value for the
+   output device (2.2 for most current computer displays and image
+   file formats.) */
+dword* tilem_color_palette_new(int rlight, int glight, int blight,
+			       int rdark, int gdark, int bdark,
+			       double gamma);
 
 
 /* Miscellaneous functions */

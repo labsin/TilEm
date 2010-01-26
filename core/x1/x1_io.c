@@ -140,6 +140,7 @@ void x1_z80_out(TilemCalc* calc, dword port, byte value)
 	switch(port&0x1f) {
 	case 0x00:
 		calc->lcd.addr = ((value & 0x1f) << 8);
+		calc->z80.lastlcdwrite = calc->z80.clock;
 		break;
 
 	case 0x01:

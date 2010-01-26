@@ -290,6 +290,7 @@ void tilem_z80_reset(TilemCalc* calc)
 	calc->z80.interrupts = 0;
 	calc->z80.clock = 0;
 	calc->z80.lastwrite = 0;
+	calc->z80.lastlcdwrite = 0;
 	calc->z80.halted = 0;
 
 	/* Unset existing timers (they aren't freed, merely
