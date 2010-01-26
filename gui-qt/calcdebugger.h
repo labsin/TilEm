@@ -12,16 +12,16 @@
 **
 ****************************************************************************/
 
-#ifndef _CALC_DEBUGER_H_
-#define _CALC_DEBUGER_H_
+#ifndef _CALC_DEBUGGER_H_
+#define _CALC_DEBUGGER_H_
 
 /*!
-	\file calcdebuger.h
-	\brief Definition of the CalcDebuger class
+	\file calcdebugger.h
+	\brief Definition of the CalcDebugger class
 */
 
 #include <QWidget>
-#include "ui_calcdebuger.h"
+#include "ui_calcdebugger.h"
 
 extern "C" {
 #include "../db/tilemdb.h"
@@ -32,13 +32,13 @@ extern "C" {
 class Calc;
 class CalcGrid;
 
-class CalcDebuger : public QWidget, private Ui::CalcDebuger
+class CalcDebugger : public QWidget, private Ui::CalcDebugger
 {
 	Q_OBJECT
 	
 	public:
-		CalcDebuger(CalcGrid *g, QWidget *p = 0);
-		~CalcDebuger();
+		CalcDebugger(CalcGrid *g, QWidget *p = 0);
+		~CalcDebugger();
 		
 		virtual QSize sizeHint() const;
 		

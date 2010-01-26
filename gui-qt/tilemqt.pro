@@ -59,7 +59,7 @@ HEADERS += \
 	calcgrid.h \
 	calcgridmanager.h \
 	connectionmanager.h \
-	calcdebuger.h \
+	calcdebugger.h \
 	calclogview.h \
 	calchexvalue.h \
 	calcflags.h \
@@ -75,13 +75,13 @@ SOURCES += main.cpp \
 	calcgrid.cpp \
 	calcgridmanager.cpp \
 	connectionmanager.cpp \
-	calcdebuger.cpp \
+	calcdebugger.cpp \
 	calclogview.cpp \
 	keymap.cpp \
 	keymaploader.cpp \
 	tilemkeymap.cpp
 
-FORMS += calcdebuger.ui
+FORMS += calcdebugger.ui
 
 UIC_DIR = .build
 RCC_DIR = .build

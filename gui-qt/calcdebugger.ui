@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CalcDebuger</class>
- <widget class="QWidget" name="CalcDebuger">
+ <class>CalcDebugger</class>
+ <widget class="QWidget" name="CalcDebugger">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Debuger</string>
+   <string>Debugger</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <property name="sizeConstraint">

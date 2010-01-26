@@ -41,7 +41,7 @@ class QScriptEngine;
 class Calc : public QObject
 {
 	friend class CalcLink;
-	friend class CalcDebuger;
+	friend class CalcDebugger;
 	
 	friend void tilem_message(TilemCalc* calc, const char* msg, ...);
 	friend void tilem_warning(TilemCalc* calc, const char* msg, ...);

@@ -12,11 +12,11 @@
 **
 ****************************************************************************/
 
-#include "calcdebuger.h"
+#include "calcdebugger.h"
 
 /*!
-	\file calcdebuger.cpp
-	\brief Implementation of the CalcDebuger class
+	\file calcdebugger.cpp
+	\brief Implementation of the CalcDebugger class
 */
 
 #include "calc.h"
@@ -172,14 +172,14 @@ class CalcListModel : public QAbstractListModel
 		CalcGrid *m_grid;
 };
 
-#include "calcdebuger.moc"
+#include "calcdebugger.moc"
 
 /*!
-	\class CalcDebuger
+	\class CalcDebugger
 	\brief A widget offering debuging capabilities for an emulated calc
 */
 
-CalcDebuger::CalcDebuger(CalcGrid *g, QWidget *p)
+CalcDebugger::CalcDebugger(CalcGrid *g, QWidget *p)
  : QWidget(p), m_calcGrid(g)
 {
 	setupUi(this);
@@ -207,17 +207,17 @@ CalcDebuger::CalcDebuger(CalcGrid *g, QWidget *p)
 	m_refreshId = startTimer(spn_refresh->value());
 }
 
-CalcDebuger::~CalcDebuger()
+CalcDebugger::~CalcDebugger()
 {
 	tilem_disasm_free(m_disasm);
 }
 
-QSize CalcDebuger::sizeHint() const
+QSize CalcDebugger::sizeHint() const
 {
 	return QSize(300, 800);
 }
 
-void CalcDebuger::timerEvent(QTimerEvent *e)
+void CalcDebugger::timerEvent(QTimerEvent *e)
 {
 	if ( isVisible() && m_calc && (e->timerId() == m_refreshId) )
 	{
@@ -259,7 +259,7 @@ void CalcDebuger::timerEvent(QTimerEvent *e)
 	}
 }
 
-void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
+void CalcDebugger::on_cb_target_currentIndexChanged(int idx)
 {
 	CalcView *v = idx != -1 ? m_calcGrid->calc(idx) : 0;
 	Calc *c = v ? v->calc() : 0;
@@ -341,7 +341,7 @@ void CalcDebuger::on_cb_target_currentIndexChanged(int idx)
 	}
 }
 
-void CalcDebuger::on_lw_breakpoints_customContextMenuRequested(const QPoint& p)
+void CalcDebugger::on_lw_breakpoints_customContextMenuRequested(const QPoint& p)
 {
 	const QModelIndex& idx = lw_breakpoints->indexAt(p);
 	
@@ -369,7 +369,7 @@ static inline void setHex(QLineEdit *e, dword val)
 	e->setText(hex(val, e->maxLength()));
 }
 
-void CalcDebuger::currentBreakpointChanged(const QModelIndex& idx)
+void CalcDebugger::currentBreakpointChanged(const QModelIndex& idx)
 {
 	if ( !m_calc )
 		return;
@@ -408,7 +408,7 @@ void CalcDebuger::currentBreakpointChanged(const QModelIndex& idx)
 	}
 }
 
-void CalcDebuger::on_cb_break_type_currentIndexChanged(int idx)
+void CalcDebugger::on_cb_break_type_currentIndexChanged(int idx)
 {
 	int r = lw_breakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
@@ -417,7 +417,7 @@ void CalcDebuger::on_cb_break_type_currentIndexChanged(int idx)
 	bkpt->changed(r);
 }
 
-void CalcDebuger::on_rb_break_physical_toggled(bool y)
+void CalcDebugger::on_rb_break_physical_toggled(bool y)
 {
 	int r = lw_breakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
@@ -426,7 +426,7 @@ void CalcDebuger::on_rb_break_physical_toggled(bool y)
 	bkpt->changed(r);
 }
 
-void CalcDebuger::on_le_break_start_addr_textEdited(const QString& s)
+void CalcDebugger::on_le_break_start_addr_textEdited(const QString& s)
 {
 	int r = lw_breakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
@@ -435,7 +435,7 @@ void CalcDebuger::on_le_break_start_addr_textEdited(const QString& s)
 	bkpt->changed(r);
 }
 
-void CalcDebuger::on_le_break_end_addr_textEdited(const QString& s)
+void CalcDebugger::on_le_break_end_addr_textEdited(const QString& s)
 {
 	int r = lw_breakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
@@ -444,7 +444,7 @@ void CalcDebuger::on_le_break_end_addr_textEdited(const QString& s)
 	bkpt->changed(r);
 }
 
-void CalcDebuger::on_le_break_mask_addr_textEdited(const QString& s)
+void CalcDebugger::on_le_break_mask_addr_textEdited(const QString& s)
 {
 	int r = lw_breakpoints->selectionModel()->currentIndex().row();
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
@@ -453,7 +453,7 @@ void CalcDebuger::on_le_break_mask_addr_textEdited(const QString& s)
 	bkpt->changed(r);
 }
 
-void CalcDebuger::on_spn_refresh_valueChanged(int val)
+void CalcDebugger::on_spn_refresh_valueChanged(int val)
 {
 	if ( m_refreshId != -1 )
 		killTimer(m_refreshId);
@@ -461,17 +461,17 @@ void CalcDebuger::on_spn_refresh_valueChanged(int val)
 	m_refreshId = val > 0 ? startTimer(val) : -1;
 }
 
-void CalcDebuger::on_le_disasm_start_textChanged(const QString& s)
+void CalcDebugger::on_le_disasm_start_textChanged(const QString& s)
 {
 	updateDisasm(s.toULong(0, 16), spn_disasm_length->value());
 }
 
-void CalcDebuger::on_spn_disasm_length_valueChanged(int val)
+void CalcDebugger::on_spn_disasm_length_valueChanged(int val)
 {
 	updateDisasm(le_disasm_start->text().toULong(0, 16), val);
 }
 
-void CalcDebuger::updateDisasm(dword addr, int len)
+void CalcDebugger::updateDisasm(dword addr, int len)
 {
 	const int ml = 60;
 	char inst_buffer[ml];
@@ -488,7 +488,7 @@ void CalcDebuger::updateDisasm(dword addr, int len)
 	}
 }
 
-void CalcDebuger::paused(bool y)
+void CalcDebugger::paused(bool y)
 {
 	b_resume->setText(y ? tr("Resume") : tr("Pause"));
 	b_step->setEnabled(y);
@@ -508,7 +508,7 @@ void CalcDebuger::paused(bool y)
 	}
 }
 
-void CalcDebuger::breakpoint(int id)
+void CalcDebugger::breakpoint(int id)
 {
 	BreakpointModel *bkpt = qobject_cast<BreakpointModel*>(lw_breakpoints->model());
 	

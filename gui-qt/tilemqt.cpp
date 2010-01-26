@@ -22,7 +22,7 @@
 #include "calcview.h"
 #include "calcgrid.h"
 #include "calclogview.h"
-#include "calcdebuger.h"
+#include "calcdebugger.h"
 #include "calcgridmanager.h"
 #include "connectionmanager.h"
 
@@ -49,11 +49,11 @@ TilEmQt::TilEmQt(QWidget *p)
 	
 	m_calcGrid = new CalcGrid(this);
 	m_calcLogView = new CalcLogView(this);
-	m_calcDebuger = new CalcDebuger(m_calcGrid, this);
+	m_calcDebugger = new CalcDebugger(m_calcGrid, this);
 	m_calcManager = new CalcGridManager(m_calcGrid);
 	
 	m_calcManager->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-	m_calcDebuger->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+	m_calcDebugger->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 	
 	QAction *a;
 	QToolBar *tb = addToolBar(tr("Emulation"));
@@ -77,8 +77,8 @@ TilEmQt::TilEmQt(QWidget *p)
 	mgr->hide();
 	
 	QDockWidget *dbg = new QDockWidget(this);
-	dbg->setWindowTitle(tr("Debuger"));
-	dbg->setWidget(m_calcDebuger);
+	dbg->setWindowTitle(tr("Debugger"));
+	dbg->setWidget(m_calcDebugger);
 	addDockWidget(Qt::RightDockWidgetArea, dbg);
 	tb->addAction(dbg->toggleViewAction());
 	dbg->hide();
