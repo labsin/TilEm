@@ -29,6 +29,8 @@ extern "C" {
 #include <QInputDialog>
 #include <QScriptEngine>
 
+#include <errno.h>
+
 class RegisterDword
 {
 	public:
@@ -332,19 +334,22 @@ void Calc::load(const QString& file)
 	QFileInfo info(file);
 	
 	FILE *romfile, *savefile;
+
+	QString savefilename = QDir(info.path()).filePath(info.completeBaseName() + ".sav");
 	
 	romfile = fopen(qPrintable(file), "rb");
 	
 	if ( !romfile )
 	{
-		qWarning("Unable to open romfile : %s", qPrintable(file));
+		qWarning(qPrintable(tr("Unable to load ROM file \"%s\": %s")),
+			 qPrintable(file), strerror(errno));
 		return;
 	} else {
 		m_load_lock = true;
 		//qDebug("successfully opened %s", qPrintable(file));
 	}
 	
-	savefile = fopen(qPrintable(QDir(info.path()).filePath(info.baseName() + ".sav")), "rt");
+	savefile = fopen(qPrintable(savefilename), "rt");
 	
 	if ( m_calc )
 	{
@@ -424,18 +429,28 @@ void Calc::save(const QString& file)
 	QFileInfo info(file);
 	
 	FILE *romfile, *savefile;
+
+	QString savefilename = QDir(info.path()).filePath(info.completeBaseName() + ".sav");
 	
-	romfile = fopen(qPrintable(file), "wb");
-	savefile = fopen(qPrintable(QDir(info.path()).filePath(info.baseName() + ".sav")), "wt");
-	
-	if ( romfile && savefile )
+	if (!(m_calc->hw.flags & TILEM_CALC_HAS_FLASH)) {
+		romfile = NULL;
+	}
+	else if (!(romfile = fopen(qPrintable(file), "wb"))) {
+		qWarning(qPrintable(tr("Unable to save ROM file \"%s\": %s")),
+			 qPrintable(file), strerror(errno));
+	}
+
+	if (!(savefile = fopen(qPrintable(savefilename), "wt"))) {
+		qWarning(qPrintable(tr("Unable to save state file \"%s\": %s")),
+			 qPrintable(savefilename), strerror(errno));
+	}
+
+	if ( romfile || savefile )
 	{
 		// save state
 		tilem_calc_save_state(m_calc, romfile, savefile);
-	} else {
-		qWarning("Unable to save state.");
 	}
-	
+
 	if ( romfile )
 		fclose(romfile);
 	
