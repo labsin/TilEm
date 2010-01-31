@@ -402,6 +402,13 @@ const KeyName ti_keys[] = {
 	{"2ND", TILEM_KEY_2ND},
 	{"MODE", TILEM_KEY_MODE},
 	{"DEL", TILEM_KEY_DEL},
+	
+	// VTI/Tiemu compat
+	{"PLUS", TILEM_KEY_ADD},
+	{"MULTIPLY", TILEM_KEY_MUL},
+	{"DIVIDE", TILEM_KEY_DIV},
+	{"MINUS", TILEM_KEY_SUB},
+	
 	{0, 0}
 };
 

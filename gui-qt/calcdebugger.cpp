@@ -219,7 +219,7 @@ QSize CalcDebugger::sizeHint() const
 
 void CalcDebugger::timerEvent(QTimerEvent *e)
 {
-	if ( isVisible() && m_calc && (e->timerId() == m_refreshId) )
+	if ( isVisible() && m_calc && m_calc->m_calc && (e->timerId() == m_refreshId) )
 	{
 		const byte flags = m_calc->m_calc->z80.r.af.b.l;
 		
@@ -280,7 +280,7 @@ void CalcDebugger::on_cb_target_currentIndexChanged(int idx)
 	
 	tbPages->setEnabled(m_calc);
 	
-	if ( m_calc )
+	if ( m_calc && m_calc->m_calc )
 	{
 		// breakpoints page
 		qobject_cast<BreakpointModel*>(lw_breakpoints->model())->setCalc(m_calc);
@@ -501,7 +501,7 @@ void CalcDebugger::paused(bool y)
 	disconnect(b_resume	, SIGNAL( clicked() ),
 			   this		, y ? s_pause : s_resume);
 	
-	if ( y )
+	if ( y && m_calc->m_calc )
 	{
 		le_disasm_start->setText(QString::number(m_calc->m_calc->z80.r.pc.d, 16));
 		tbPages->setCurrentIndex(1);

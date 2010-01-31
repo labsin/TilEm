@@ -357,8 +357,13 @@ void Calc::load(const QString& file)
 		m_table.remove(m_calc);
 		
 		tilem_calc_free(m_calc);
+		m_calc = 0;
+		
 		delete m_lcd_comp;
+		m_lcd_comp = 0;
+		
 		delete m_lcd;
+		m_lcd = 0;
 	}
 	
 	m_romFile = file;
@@ -432,15 +437,16 @@ void Calc::save(const QString& file)
 
 	QString savefilename = QDir(info.path()).filePath(info.completeBaseName() + ".sav");
 	
-	if (!(m_calc->hw.flags & TILEM_CALC_HAS_FLASH)) {
+	if ( !(m_calc->hw.flags & TILEM_CALC_HAS_FLASH) )
+	{
 		romfile = NULL;
-	}
-	else if (!(romfile = fopen(qPrintable(file), "wb"))) {
+	} else if ( !(romfile = fopen(qPrintable(file), "wb")) ) {
 		qWarning(qPrintable(tr("Unable to save ROM file \"%s\": %s")),
 			 qPrintable(file), strerror(errno));
 	}
 
-	if (!(savefile = fopen(qPrintable(savefilename), "wt"))) {
+	if ( !(savefile = fopen(qPrintable(savefilename), "wt")) )
+	{
 		qWarning(qPrintable(tr("Unable to save state file \"%s\": %s")),
 			 qPrintable(savefilename), strerror(errno));
 	}

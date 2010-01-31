@@ -33,6 +33,14 @@ class KeyMap : public QObject
 	Q_OBJECT
 	
 	public:
+		enum InputFlag
+		{
+			MergeModifiers		= 1,
+			SkipAutoRepeat		= 2,
+			SingleActivation	= 4,
+			OrderedActivation	= 8
+		};
+		
 		KeyMap(QWidget *w);
 		KeyMap(QWidget *w, QObject *p);
 		~KeyMap();
@@ -58,7 +66,10 @@ class KeyMap : public QObject
 	private:
 		QWidget *m_widget;
 		
+		int m_mode;
+		
 		quintptr m_active;
+		QHash<int, int> m_keyDown;
 		
 		int m_matchStep;
 		QList<quintptr> m_curMatch;

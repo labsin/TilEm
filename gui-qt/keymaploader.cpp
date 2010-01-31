@@ -58,10 +58,15 @@ KeyMapLoader::KeyMapLoader(const KeySpace *in, const KeySpace *out)
  : m_spaceIn(in), m_spaceOut(out)
 {
 	// TIEmu compat...
+// 	m_separators[Entry] = '\n';
+// 	m_separators[Space] = ':';
+// 	m_separators[Sequence] = 0;
+// 	m_separators[Combo] = ',';
+	
 	m_separators[Entry] = '\n';
 	m_separators[Space] = ':';
-	m_separators[Sequence] = 0;
-	m_separators[Combo] = ',';
+	m_separators[Sequence] = ',';
+	m_separators[Combo] = '|';
 }
 
 KeyMapLoader::~KeyMapLoader()
@@ -122,10 +127,15 @@ void KeyMapLoader::load(const QByteArray& data, KeyLoadCallback& cb) const
 	
 	foreach ( QByteArray e, entries )
 	{
+		int cidx = e.indexOf("//");
+		
+		if ( cidx != -1 )
+			e = e.left(cidx).trimmed();
+		
 		if ( e.isEmpty() )
 			continue;
 		
-		qDebug() << e;
+		//qDebug() << e;
 		
 		QList<QByteArray> spaces = e.split(m_separators[Space]);
 		
@@ -138,7 +148,7 @@ void KeyMapLoader::load(const QByteArray& data, KeyLoadCallback& cb) const
 		QList<int> keys_in = keys(spaces.at(0), m_spaceIn);
 		QList<int> keys_out = keys(spaces.at(1), m_spaceOut);
 		
-		qDebug() << keys_in << keys_out;
+		//qDebug() << keys_in << keys_out;
 		
 		if ( keys_in.count() && keys_out.count() )
 			cb(keys_in, keys_out);
