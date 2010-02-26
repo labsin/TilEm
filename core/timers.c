@@ -30,6 +30,7 @@ void tilem_user_timers_reset(TilemCalc* calc)
 	int i;
 
 	for (i = 0; i < TILEM_MAX_USER_TIMERS; i++) {
+		tilem_z80_set_timer(calc, TILEM_TIMER_USER1 + i, 0, 0, 0);
 		calc->usertimers[i].frequency = 0;
 		calc->usertimers[i].loopvalue = 0;
 		calc->usertimers[i].status = 0;
