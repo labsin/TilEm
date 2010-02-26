@@ -52,25 +52,23 @@ static inline void add_scale1d_smooth(const byte * /*restrict*/ in, int incount,
 				      int outcount, int f)
 {
 	int in_rem, out_rem;
-	byte inv;
 	unsigned int outv;
 	int i;
 
 	in_rem = outcount;
 	out_rem = incount;
-	inv = *in;
 	outv = 0;
 	i = outcount;
 	while (i > 0) {
 		if (in_rem < out_rem) {
 			out_rem -= in_rem;
-			outv += in_rem * inv * f;
-			inv = *++in;
+			outv += in_rem * *in * f;
+			in++;
 			in_rem = outcount;
 		}
 		else {
 			in_rem -= out_rem;
-			outv += out_rem * inv * f;
+			outv += out_rem * *in * f;
 			*out += outv;
 			outv = 0;
 			out++;
@@ -131,7 +129,7 @@ static inline void scale1d_fast(const byte * /*restrict*/ in, int incount,
 {
 	int i, e;
 
-	e = outcount / 2;
+	e = outcount - incount / 2;
 	i = outcount;
 	while (i > 0) {
 		if (e >= 0) {
@@ -156,7 +154,7 @@ static void scale2d_fast(const byte * /*restrict*/ in,
 {
 	int i, e;
 
-	e = outheight / 2;
+	e = outheight - inheight / 2;
 	i = outheight;
 	while (i > 0) {
 		if (e >= 0) {
