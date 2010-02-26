@@ -124,8 +124,8 @@ byte x4_z80_rdmem_m1(TilemCalc* calc, dword A)
 			page = 0x41;
 	}
 
-	if (TILEM_UNLIKELY((page & 0x80)
-			   && calc->hwregs[NO_EXEC_RAM] & (1 << (page%8)))) {
+	if (TILEM_UNLIKELY((page & 0x40)
+			   && calc->hwregs[NO_EXEC_RAM] & (1 << (page&7)))) {
 		tilem_warning(calc, "Executing in restricted RAM area");
 		x4_reset(calc);
 		return (0x00);
