@@ -92,7 +92,6 @@ static void setup_mapping(TilemCalc* calc)
 		break;
 
 	case 2:
-		/* FIXME: test this */
 		if (calc->hwregs[PORT2] & 0x40)
 			pageA = 2;
 		else if (calc->hwregs[PORT2] & 1)
@@ -106,6 +105,7 @@ static void setup_mapping(TilemCalc* calc)
 			pageB = 1;
 		else
 			pageB = 0;
+		break;
 
 	default:
 		/* unknown HW version - ignore all output values and
