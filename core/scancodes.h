@@ -21,6 +21,10 @@
 #ifndef _TILEM_SCANCODES_H
 #define _TILEM_SCANCODES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {
 	TILEM_KEY_DOWN     = 0x01,
 	TILEM_KEY_LEFT     = 0x02,
@@ -73,5 +77,9 @@ enum {
 	TILEM_KEY_MODE     = 0x37,
 	TILEM_KEY_DEL      = 0x38
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

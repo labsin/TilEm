@@ -20,11 +20,9 @@
 	\brief Definition of the CalcLink class
 */
 
-extern "C" {
 #ifdef _TILEM_QT_HAS_LINK_
-#include <ticalcs.h>
+# include <ticalcs.h>
 #endif
-}
 
 #include <QObject>
 #include <QPointer>

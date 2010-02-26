@@ -23,9 +23,7 @@
 #include <QWidget>
 #include "ui_calcdebugger.h"
 
-extern "C" {
-#include "../db/tilemdb.h"
-}
+#include <tilemdb.h>
 
 #include <QPointer>
 

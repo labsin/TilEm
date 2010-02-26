@@ -19,9 +19,7 @@
 	\brief Implementation of the Calc class
 */
 
-extern "C" {
 #include <scancodes.h>
-}
 
 #include <QDir>
 #include <QColor>

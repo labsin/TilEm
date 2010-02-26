@@ -23,6 +23,10 @@
 
 #include "tilemint.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Basic integer types */
 typedef uint8_t byte;
 typedef uint16_t word;
@@ -880,5 +884,9 @@ char tilem_guess_rom_type(FILE* romfile);
 
 /* Check validity of calculator certificate; repair if necessary */
 void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

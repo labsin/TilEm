@@ -20,9 +20,7 @@
 	\brief Definition of the LinkBuffer class
 */
 
-extern "C" {
 #include <stdint.h>
-}
 
 #include <QByteArray>
 #include <QReadWriteLock>

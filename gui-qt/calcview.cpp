@@ -37,9 +37,7 @@
 #include <QApplication>
 #include <QImageWriter>
 
-extern "C" {
 #include <scancodes.h>
-}
 
 #include "calc.h"
 #include "keymap.h"

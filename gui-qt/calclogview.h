@@ -22,9 +22,7 @@
 
 #include <QListView>
 
-extern "C" {
-#include "tilem.h"
-}
+#include <tilem.h>
 
 class Calc;
 class CalcLogModel;
