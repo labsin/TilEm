@@ -816,12 +816,13 @@ static void print_word(const TilemDisasm* dasm, char** buf, int* bsize,
 	sym = find_prev_symbol(&dasm->labels, w);
 
 	if (sym && !strcmp(sym->name, "flags")) {
+		w -= sym->value;
 		sym = find_symbol(&dasm->flags, w);
 		if (sym) {
 			printv(buf, bsize, "flags + %s", sym->name);
 		}
 		else {
-			printv(buf, bsize, "flags + $%02X", w - sym->value);
+			printv(buf, bsize, "flags + $%02X", w);
 		}
 	}
 	else if (sym && w == sym->value) {
