@@ -12,22 +12,30 @@ choose_skin_filename is used to give the name of the default skin file name to l
 */
 
 void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
+	DEBUGGINGSKIN_L0_A0("**************** fct : choose_skin_filename *************\n");
 	
-	if(strcmp(calc->hw.name,"ti82")==0) {
-		#ifdef DEBUG
-		printf("\nFUNCTION : choose_skin_filename : calc->hw.name == \"ti82\"");
-		#endif
+	if(strcmp(calc->hw.name,"ti76")==0) {
 		  gsi->SkinFileName=(gchar*)malloc(15);
-		  strcpy(gsi->SkinFileName,"./skn/ti89.skn");
-	}
-		  
-	if(strcmp(calc->hw.name,"ti83")==0) {
-		#ifdef DEBUG
-		printf("\nFUNCTION : choose_skin_filename : calc->hw.name == \"ti83\"");
-		#endif
-		 gsi->SkinFileName=(gchar*)malloc(16);
 		  strcpy(gsi->SkinFileName,"./skn/ti89t.skn");
+	}else if(strcmp(calc->hw.name,"ti81")==0) {
+		  gsi->SkinFileName=(gchar*)malloc(15);
+		  strcpy(gsi->SkinFileName,"./skn/ti89t.skn");
+	}else if(strcmp(calc->hw.name,"ti82")==0) {
+		  gsi->SkinFileName=(gchar*)malloc(15);
+		  strcpy(gsi->SkinFileName,"./skn/ti89tnn.skn");
+	}else if(strcmp(calc->hw.name,"ti83")==0) {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti89t.skn");
+	}else if(strcmp(calc->hw.name,"ti83p")==0) {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti89.skn");
+	} else {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti92.skn");
 	}
+		
+	DEBUGGINGSKIN_L0_A1("*  calc->hw.name == %s                               *\n",calc->hw.name);
+	DEBUGGINGSKIN_L0_A0("*********************************************************\n");
 	//gsi->kl=x3_keylist;
 }
 
@@ -56,6 +64,10 @@ void GetSkinSelected(GLOBAL_SKIN_INFOS *gsi) {
 	printf("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
 	printf("file to load : %s\n",gsi->SkinFileName);
 	/* redraw the skin into the Window (here gsi->pWindow) */
+	
+	
+	/* Only while test */
+	
 	redraw_screen(gsi->pWindow,gsi);
 	
 }

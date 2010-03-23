@@ -6,25 +6,39 @@
 #include <tilem.h>
 #include <gui.h>
 
-void run_with_key(TilemCalc* calc, int key)
-{
-	tilem_z80_run_time(calc, 500000, NULL);
-	tilem_keypad_press_key(calc, key);
-	tilem_z80_run_time(calc, 1000000, NULL);
-	tilem_keypad_release_key(calc, key);
-	tilem_z80_run_time(calc, 500000, NULL);
-}
+
+int scan_click(int MAX, double x, double y, GLOBAL_SKIN_INFOS * gsi);
 
 /* Just close the window (freeing allocated memory maybe in the futur?)*/
 void on_destroy()
 {
-	/*printf("\nThank you for using tilem...\n");*/
+	printf("\nThank you for using tilem...\n");
 	gtk_main_quit();
 }
 
 
 
-/* This event is executed when key (on keyboard not a click with mouse) is pressed */
+void on_about(GtkWidget *pBtn, gpointer data)
+{
+	GtkWidget *pAbout;
+	pBtn=pBtn;
+
+	pAbout = gtk_message_dialog_new (GTK_WINDOW(data),
+        GTK_DIALOG_MODAL,
+        GTK_MESSAGE_INFO,
+        GTK_BUTTONS_OK,
+        "TilEm2\n\nCoded by : \n* Benjamin Moody (core/debugger) *\n* Thibault Duponchelle (GTK's gui) *\n* Luc Bruant (QT's gui) *\n\nCopyleft 2010 ;D");
+
+	/* Show the msg box */
+	gtk_dialog_run(GTK_DIALOG(pAbout));
+	
+	/* Destroy the msg box */
+	gtk_widget_destroy(pAbout);
+}
+
+
+
+/* This event is executed when key (on keyboard) is pressed */
 void keyboard_event() 
 { 
 	printf("You press a key : keyboard_event\n");	/* debug */
@@ -34,91 +48,97 @@ void keyboard_event()
 
 /* This event is executed when click with mouse (the Calc_Key_Map is given as parameter) */
 /* Guess what key was clicked... ;D */
-void mouse_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS *gsi) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
+gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS *gsi) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
 {  	
-	int i;
-	pWindow=pWindow;	// just to stop warning when I compil (that is in part why I made the mistake above)
-	
-	/*printf("\nMOUSE_EVENT : name %s\n",gsi->si->name);*/
-
-	/* An alternative solution (used by "tilem old generation") */
+	DEBUGGINGCLICK_L0_A0(">>>>>>>\"PRESS\"<<<<<<<\n");
+	DEBUGGINGCLICK_L0_A0("**************** fct : mouse_press_event ***************\n");
+	int code=0;
+	TilemCalcEmulator* emu = gsi->emu;
+	pWindow=pWindow;
 	GdkEventButton *bevent = (GdkEventButton *) event;
-	printf("%G %G",bevent->x,bevent->y);
+
+	if(event->button.button==3)  
+	{	
+	/* Right click ?  then do ... nothing ! (just press not release !)*/
+	} else {
+		
+		code =scan_click(50, bevent->x, bevent->y, gsi),
+		
+		g_mutex_lock(emu->calc_mutex);
+		tilem_keypad_press_key(emu->calc, code);
+		g_mutex_unlock(emu->calc_mutex);
+	}
+	return FALSE;
+}
+
+
+gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi) {
 	
+	DEBUGGINGCLICK_L0_A0(">>>>>>>\"RELEASE\"<<<<<<<\n");
+	DEBUGGINGCLICK_L0_A0("**************** fct : mouse_release_event *************\n");
+	TilemCalcEmulator* emu = gsi->emu;
+	int code=0;
+	pWindow=pWindow;
+	GdkEventButton *bevent = (GdkEventButton *) event;
+	/* DEBUGGINGCLICK_L0_A2("%G %G",bevent->x,bevent->y); */
 	
+
 /* #################### Right Click Menu	#################### */
 	if(event->button.button==3)  {	/*detect a right click to build menu */
-		printf("right click !\n");
+		DEBUGGINGCLICK_L0_A0("*  right click !                                       *\n");
 		static GtkItemFactoryEntry right_click_menu[] = {
 			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
-			{"/About", "<control>Q", on_about, 0, NULL, NULL},
+			{"/About", "<control>Q",on_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
 			{"/Exit and save state", "<alt>X", NULL, 1, NULL, NULL}
 		};
 		right_click_menu[0].extra_data=gsi;
-		create_menus(pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
+		create_menus(gsi->pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
 		
+
+		DEBUGGINGCLICK_L0_A0("********************************************************\n\n");
 /* #################### Left Click (test wich key is it)#################### */
 	} else {
-		for (i = 0; i < 80; i++)
+		code =scan_click(50, bevent->x, bevent->y, gsi),
+		/* Send the signal to libtilemcore */
+		g_mutex_lock(emu->calc_mutex);
+		tilem_keypad_release_key(emu->calc, code);
+		g_mutex_unlock(emu->calc_mutex);
+	}
+	
+	
+	return FALSE;
+}
+
+/* return the key code.This code is used to send a signal to libtilemcore */
+int scan_click(int MAX, double x, double y,  GLOBAL_SKIN_INFOS * gsi)
+ {
+	 int i=0;
+	 DEBUGGINGCLICK_L2_A0("..............................x   y   z   t ......... \n");
+		for (i = 0; i < MAX; i++)
 		{
 			
-			//printf("\n testing ... %d %d %d %d",si->keys_pos[i].left,si->keys_pos[i].top,si->keys_pos[i].right,si->keys_pos[i].bottom);
-			if ((bevent->x > gsi->si->keys_pos[i].left) && 
-			(bevent->x < gsi->si->keys_pos[i].right) &&
-			(bevent->y > gsi->si->keys_pos[i].top) && 
-			(bevent->y < gsi->si->keys_pos[i].bottom))
+			DEBUGGINGCLICK_L2_A5("%d............testing........ %d %d %d %d.........\n",i,gsi->si->keys_pos[i].left,gsi->si->keys_pos[i].top,gsi->si->keys_pos[i].right,gsi->si->keys_pos[i].bottom);
+			if ((x > gsi->si->keys_pos[i].left) && (x < gsi->si->keys_pos[i].right) &&(y > gsi->si->keys_pos[i].top) && (y < gsi->si->keys_pos[i].bottom))
 			break;
 			
-		}
+		}	
+		DEBUGGINGCLICK_L0_A1("*  Key number : %d                                     *\n",i);
+		DEBUGGINGCLICK_L0_A1("*  Key name : %s     ",x3_keylist[i].label);
+		DEBUGGINGCLICK_L0_A1("Key code : %02X                     *\n",x3_keylist[i].code);
+		DEBUGGINGCLICK_L0_A2("*  Click coordinates :     ----> x=%G    y=%G <----   *\n",x,y);
+		DEBUGGINGCLICK_L0_A0("********************************************************\n\n");
 		
-		gsi->act=1; // inform the core that a button is clicked.
-		tilem_keypad_press_key(gsi->emu->calc, 45);//x3_keylist[i].code); 
-		
-		printstate(gsi->emu); 
-		
-		
-		screen_repaint(gsi->emu->lcdwin,event, gsi); 
-		//screen_update(gsi->emu);
-		gsi->act=0; // button released
-		printf("\nKey number : %d\n",i);
-		printf("Key name : %s\n",x3_keylist[i].label);
-	
-		printf("click :     x=%G    y=%G\n",event->button.x,event->button.y);	//debug
-	}
-};
-
-
-void on_about(GtkWidget *pBtn, gpointer data)
-{
-    GtkWidget *pAbout;
-	pBtn=pBtn;
-
-    /* Creation de la boite de message */
-    /* Type : Information -> GTK_MESSAGE_INFO */
-    /* Bouton : 1 OK -> GTK_BUTTONS_OK */
-    pAbout = gtk_message_dialog_new (GTK_WINDOW(data),
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_INFO,
-        GTK_BUTTONS_OK,
-        "TilEm2");
-
-    /* Affichage de la boite de message */
-    gtk_dialog_run(GTK_DIALOG(pAbout));
-
-    /* Destruction de la boite de message */
-    gtk_widget_destroy(pAbout);
+		return x3_keylist[i].code;
 }
 
 
 
 
-void btnbreak(gpointer data)
-{
-	GLOBAL_SKIN_INFOS *gsi = data;
 
-	g_mutex_lock(gsi->emu->run_mutex);
-	gsi->emu->forcebreak = TRUE;
-	g_mutex_unlock(gsi->emu->run_mutex);
-}
+
+
+
+
+

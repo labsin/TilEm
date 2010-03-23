@@ -1,0 +1,13 @@
+
+all: press_release
+
+
+press_release: press_release.c
+	gcc `pkg-config --libs --cflags gtk+-2.0` press_release.c -o press_release
+	
+	
+clean:
+
+	rm -f press_release
+
+.PHONY: all clean

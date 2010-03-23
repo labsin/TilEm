@@ -1,8 +1,9 @@
 #include <tilem.h>
 #include <z80.h>
 #include <skinops.h>
-
 #include <scancodes.h>
+#include <debuginfo.h>
+
 #define TI73   "TI73"
 #define TI82   "TI82"
 #define TI83   "TI83"
@@ -11,21 +12,6 @@
 #define TI86   "TI86"
 #define X_FRINGE 2
 #define Y_FRINGE 1
-
-#ifdef DEBUG
-#define DEBUGGING(x)  printf(x)
-#define DEBUGGING2(x,y)  printf(x,y)
-#define DEBUGGING3(x,y,z)  printf(x,y,z)
-#else
-#define DEBUGGING(x)
-#define DEBUGGING2(x,y)
-#define DEBUGGING3(x,y,z)
-#endif
-
-
-
-static const char* bpstring[7] = {0, "read", "exec", "write", "in", "out", "op"};
-
 
 typedef struct _TilemCalcEmulator {
 	GMutex* run_mutex;
@@ -66,23 +52,38 @@ typedef struct GLOBAL_SKIN_INFOS {
 	char calc_id;
 	char RomType;
 	TilemCalcEmulator *emu;
-	int act;
 }GLOBAL_SKIN_INFOS;
 
+static const char rcstr[] =
+	"style \"tilem-key-default\" {\n"
+	"  font_name = \"Sans 7\"\n"
+	"  GtkButton::inner-border = { 0, 0, 0, 0 }\n"
+	"  GtkButton::focus-padding = 0\n"
+	"}\n"
+	"widget \"*.tilem-key\" style \"tilem-key-default\"\n"
+	"style \"tilem-lcd-default\" {\n"
+	"  bg[NORMAL] = { 0.74, 0.74, 0.70 }\n"
+	"  fg[NORMAL] = { 0.0, 0.0, 0.0 }\n"
+	"}\n"
+	"widget \"*.tilem-lcd\" style \"tilem-lcd-default\"\n";
+
 static const struct KEY_LIST x3_keylist[] = {
-	/* Window  (5keys at the top of the keyboard)  */
+	
 	{ 0x35, "Y=" },
 	{ 0x34, "WINDOW" },
 	{ 0x33, "ZOOM" },
 	{ 0x32, "TRACE" },
 	{ 0x31, "GRAPH" },
 	
-	/* 1rst row (only 3 keys by line)  */
-	{ 0x36, "2nd3" },
+	{ 0x36, "2nd" },
 	{ 0x37, "MODE" },
 	{ 0x38, "DEL" },
 	
-	/* 2nd row  (only 3 keys by line)  */
+	{ 0x02, "LEFT" },
+	{0x03, "RIGHT" },
+	{ 0x04, "TOP" },
+	{ 0x01, "BOTTOM" },
+	
 	{ 0x30, "ALPHA" },
 	{ 0x28, "X,T,\342\200\212\316\270,\342\200\212<i>n</i>" },
 	{ 0x20, "STAT" },
@@ -110,98 +111,61 @@ static const struct KEY_LIST x3_keylist[] = {
 	
 	/* 6th row   */
 	{ 0x2C, "LOG" },
-	{ 0x0C, "*" },
-	/* 7th row   */
-	{ 0x2B, "LN" },
-	{ 0x0B, "-" },
-	/* 8th row   */
-	{ 0x2A, "STO\342\200\211\342\226\266" },
-	{ 0x0A, "+" },
-	/* the last one   */
-	{ 0x29, "ON" },
-	{ 0x09, "ENTER" },
-	
-	/*6th row  */
 	{ 0x24, "7" },
 	{ 0x1C, "8" },
 	{ 0x14, "9" },
-	
+	{ 0x0C, "*" },
 	
 	/* 7th row   */
+	{ 0x2B, "LN" },
 	{ 0x23, "4" },
 	{ 0x1B, "5" },
 	{ 0x13, "6" },
-	
+	{ 0x0B, "-" },
 	
 	/* 8th row   */
+	{ 0x2A, "STO->" },
 	{ 0x22, "1" },
 	{ 0x1A, "2" },
 	{ 0x12, "3" },
+	{ 0x0A, "+" },
 	
-	
-	/* the last one  */
-	
+	/* the last one   */
+	{ 0x29, "ON" },	/* ## ON ## */
 	{ 0x21, "0" },
-	{ 0x19, "." },
-	{ 0x11, "(\342\210\222)" },
+	{ 0x25, "." },
+	{ 0x11, "(-)" }, 
+	{ 0x09, "ENTER" },
 	
+	/* the last one   */
+	{ 0x29, "ON" },	/* ## ON ## */
+	{ 0x21, "0" },
+	{ 0x21, "." },
+	{ 0x29, "(-)" }, 
+	{ 0x09, "ENTER" },
 	
-	/* Arrows */
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x04, "DOWN" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x03, "RIGHT" },
-	{ 0x04, "DOWN" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x29, "ON" },
-	{ 0x29, "ON" },
-	{ 0x29, "ON"  },
-	{ 0x29, "ON"  },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x03, "RIGHT" },
-	{ 0x04, "DOWN" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },
-	{ 0x03, "RIGHT" },
-	{ 0x01, "UP" },
-	{ 0x02, "LEFT" },};
+	/* the last one   */
+	{ 0x29, "ON" },	/* ## ON ## */
+	{ 0x21, "0" },
+	{ 0x21, "." },
+	{ 0x29, "(-)" }, 
+	{ 0x09, "ENTER" },
+	
+	/* the last one   */
+	{ 0x29, "ON" },	/* ## ON ## */
+	{ 0x21, "0" },
+	{ 0x21, "." },
+	{ 0x29, "(-)" }, 
+	{ 0x09, "ENTER" },
+	
+	/* the last one   */
+	{ 0x29, "ON" },	/* ## ON ## */
+	{ 0x21, "0" },
+	{ 0x21, "." },
+	{ 0x29, "(-)" }, 
+	{ 0x09, "ENTER" },
+	
+	};
 	
 
 	
@@ -212,7 +176,9 @@ void on_destroy(); /* close the pWindow */
 void keyboard_event();	
 
 /* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
-void mouse_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi);
+gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi);
+gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi) ;
+	
 	
 /* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
 void toto(GtkWidget* pWindow,GdkEvent *event,GtkWidget * tata);
@@ -238,7 +204,6 @@ void choose_rom_type(GLOBAL_SKIN_INFOS * gsi);
 
 void on_valid(GtkWidget *pBtn, GLOBAL_SKIN_INFOS *gsi);
 
-//gpointer core_thread(gpointer data);
 
 static volatile int sforcebreak = 0;
 
@@ -249,22 +214,23 @@ void printstate(TilemCalcEmulator* emu);
 GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
 
 
-
 gboolean screen_update(gpointer data);
 
 /* Repaint another skin */
-gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi);
+gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
 
 void update_lcdimage(TilemCalcEmulator *emu);
 
 /* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
 
-void run_with_key(TilemCalc* calc, int key);
+void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
 
-void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,gpointer data);
+void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi);
 
-void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, gpointer data);
+/* The popup to choose what kind of rom you are trying to load  (at startup)*/
+char choose_rom_popup();
+
 
 
 

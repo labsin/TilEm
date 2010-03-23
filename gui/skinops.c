@@ -18,7 +18,7 @@ contra-sh :
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <debuginfo.h>
 #include "skinops.h"
 
 
@@ -188,6 +188,7 @@ int skin_read_header(SKIN_INFOS *si, const char *filename)
 */
 int skin_read_image(SKIN_INFOS *si, const char *filename)
 {
+	DEBUGGINGSKIN_L2_A0("* -> fct : skin_read_image                             *\n");
     FILE *fp = NULL;	
 	int i;
 	int sw, sh;
@@ -215,12 +216,12 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 		lcd_h = 128;
 	}
   
-    fp = fopen(filename, "rb");
+    	fp = fopen(filename, "rb");
   	if (fp == NULL)
-    {
-    	fprintf(stderr, "Unable to open this file: <%s>\n", filename);
-    	return -1;
-    }
+    	{
+    		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
+    		return -1;
+    	}
     	
     // Extract image from skin
 	fseek(fp, si->jpeg_offset, SEEK_SET);
@@ -273,9 +274,9 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 	r = (rw < rh) ? rw : rh;
 	si->s = s = ceil(10 * r) / 10.0;
 
-	printf("image :<%i x %i>\n", sw, sh);
-	printf("lcd : <%i x %i>\n", lw, lh);
-	printf("ratios : <%2.2f x %2.2f> => %2.1f\n", rw, rh, s);
+	DEBUGGINGSKIN_L0_A2("*  image :<%i x %i>                                  *\n", sw, sh);
+	DEBUGGINGSKIN_L0_A2("*  lcd : <%i x %i>                                   *\n", lw, lh);
+	DEBUGGINGSKIN_L0_A3("*  ratios : <%2.2f x %2.2f> => %2.1f                       *\n", rw, rh, s);
     
 	//if(si->image)
 		//g_object_unref(si->image);
@@ -306,7 +307,7 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 int skin_load(SKIN_INFOS *si, const char *filename)
 {
   	int ret = 0;
-
+	DEBUGGINGSKIN_L0_A0("**************** fct : skin_load ***********************\n");
   	ret = skin_read_header(si, filename);
 	if(ret)
 		return ret;
@@ -316,7 +317,9 @@ int skin_load(SKIN_INFOS *si, const char *filename)
 		return ret;
 
 	if(!ret)
-   		printf("loading skin:  (%d x %d)\n", si->width, si->height);
+   		printf("*  loading skin:  (%d x %d)                          *\n", si->width, si->height);
+	
+	DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
   
   	return ret;
 }

@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -W -Wall -DDEBUG -DG_ERRORCHECK_MUTEXES
+CFLAGS = -g -W -Wall -DG_ERRORCHECK_MUTEXES -DDEBUGGINGGLOBAL_L0 -DDEBUGGINGGLOBAL_L2 -DDEBUGGINGSKIN_L0 -DDEBUGGINGCLICK_L0 #-DDEBUGGINGCLICK_L2 -DDEBUGGINGLCD_L0 #-DDEBUGGINGLCD_L2
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 
@@ -33,8 +33,7 @@ testemu2.o: testemu2.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/testemu2.c
 
 
-# Memory management and messages (maybe move it in the core directory ??)
-
+# Memory management and messages
 memory.o: memory.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/memory.c
 

@@ -17,19 +17,18 @@
 * - Modification of the Makefile (I hope it's good !? If you can control this... thx)
 * - LEARNING HOW COMMIT !!   :D
 * ---19/08/09---
-* - New structure TilemCalcSkin : define the different filenames for the SkinSet.
+* - New structure TilemCalcSkin : define the different filenames for the SkinSet (4 pieces).
 * - Draw the other models _automatically_ . ;D
 * ---20/08/09---
 * - Create skin.c
 * - Create gui.h (equivalent of tilem.h for the gui directory)
-* - Move the code struct in gui.h and TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) into skin.c (only one call in   *   the main file to define the skin set) ;D
+* - Move the code struct in gui.h and TilemCalcSkin* tilem_guess_skin_set(TilemCalc* calc) into skin.c (only one call in the main file to define the skin set) ;D
 * - Detect a keyboard event (function keyboard_event() in skin.c actually).No treatment.
 * - Detect an event click on mouse
 * ---21/08/09---
 * - Get the x and y values when click on mouse (now it will be easy to know how key is click on the pixmap, todo in priority : detect right click)
 * ---24/08/09---
 * - Detect right click.
-* - Modification of the TI86 and TI85 pixmaps. (Was a reason they were bigger than the others??)
 * ---26/08/09---
 * - New function : TilemKeyMap* tilem_guess_key_map(int id).Choose a TilemKeyMap with an id given in parameter. 
 * ---27/08/09---
@@ -72,8 +71,26 @@
 * ---14/12/09---
 * - New feature : add a popup rom type selector (radio button) at the start of tilem. Showed but not used for the moment.
 * - Connect the thread (no animation yet). Thanks to the "battle programming" 's spirit (hey bob ^^)
- * ---18/12/09---
- * - Launch the interactivity with emulation core. Could print into the draw area.
+* ---18/12/09---
+* - Launch the interactivity with emulation core. Could print into the draw area.
+* ---09/03/10---
+* - Restart working on this program ;D
+* ---11/03/10---
+* - I finally succeeded to connect the core. To print something into the lcd screen ! WahoOO ! This day is a great day !
+* - I succeded to type numbers etc...
+* - And now it works very well !! (the "button-release-event" is not catched by pWindow but by pLayout)
+* ---15/03/10---
+* - Create the scan_click function.Return wich keys was clicked.Print debug infos.
+* - Create the debuginfos.h to group the ifdef for debugging. (different level and different type of debug msg)
+* ---17/03/10---
+* - Create the rom_choose_popup function to replace choose_rom_type.It use GtkDialog instead of GtkWindow.
+* - rom_choose_popup _freeze_ the system... and get wich radio button is selected. So it will be easy to create the good emu.calc (and choose the default skin).
+* ---18/03/10 ---
+* - Resize the (printed) lcd area (gsi->emu->lcdwin) to fit(perfectly) into the skin.
+* - Replace a lot of printf by DEBUGGING****_L*_A* to easily switch what debug infos were printed.
+* - Try to make a nice debugging output (frames in ASCII ^^) :p
+* - WahooOO , load a skin works perfectly.You can easily change skin _while running_, no error, no warning.
+* - Could load automatically the good skin and run the good core using the choose_rom_popup() function and choose_skin_filename() function.
 */
 
 
@@ -82,7 +99,7 @@
 int main(int argc, char **argv)
 {
 	
-	const char* romname = "xp.rom";
+	const char* romname="xp.rom";
 	char* savname;
 	char* p;
 	FILE *romfile,*savfile;
@@ -93,11 +110,12 @@ int main(int argc, char **argv)
 	/* Init GTK+ */
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
+	gtk_rc_parse_string(rcstr);
 	printf("Running tilem ^^ \n");
 	
 	/* Get the romname */
-	if (argc >= 2)  /* If they are 2 parameters or more, the romfile is the first. */
-	{			
+	if (argc >= 2)  /* If they are 2 parameters or more, the romfile is the second. */
+	{
 		romname = argv[1];
 	}
 	/* end */
@@ -109,7 +127,9 @@ int main(int argc, char **argv)
 	if ((p = strrchr(savname, '.'))) 
 	{
 		strcpy(p, ".sav");
-		printf("romname=%s savname=%s \n",romname,savname);	/* debug */
+		DEBUGGINGGLOBAL_L0_A0("**************** fct : main ****************************\n");
+		DEBUGGINGGLOBAL_L0_A2("*  romname=%s savname=%s           *\n",romname,savname);	
+		DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
 	}
 	else 
 	{
@@ -127,8 +147,9 @@ int main(int argc, char **argv)
 	}
 	/* end */
 	
-		
 	savfile = g_fopen(savname, "rt");
+	
+	
 	
 	
 	GLOBAL_SKIN_INFOS *gsi;
@@ -140,12 +161,15 @@ int main(int argc, char **argv)
 	
 	
 	
-	choose_rom_type(gsi);
-	
-	calc_id='3';
+	/* The program must wait user choice before continuing */
+	if((calc_id=choose_rom_popup())=='0') {
+		calc_id=tilem_guess_rom_type(romfile);
+		DEBUGGINGGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
+	}
 	gsi->emu=malloc(sizeof(TilemCalcEmulator));
 	gsi->emu->calc = tilem_calc_new(calc_id);
 	
+	tilem_calc_load_state(gsi->emu->calc, romfile, savfile);
 	gsi->emu->run_mutex = g_mutex_new();
 	gsi->emu->calc_mutex = g_mutex_new();
 	gsi->emu->lcd_mutex = g_mutex_new();
@@ -154,9 +178,13 @@ int main(int argc, char **argv)
 	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
 	gsi->emu->calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
 	
-	printf("emu.calc->hw.model= %c \n",gsi->emu->calc->hw.model_id);	
-	printf("emu.calc->hw.name= %s \n",gsi->emu->calc->hw.name);		
-	printf("emu.calc->hw.name[3]= %c \n",gsi->emu->calc->hw.name[3]);
+	DEBUGGINGGLOBAL_L0_A0("**************** fct : main ****************************\n");
+	DEBUGGINGGLOBAL_L0_A1("*  calc_id= %c                                            *\n",calc_id);
+	DEBUGGINGGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",gsi->emu->calc->hw.model_id);	
+	DEBUGGINGGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",gsi->emu->calc->hw.name);		
+	DEBUGGINGGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",gsi->emu->calc->hw.name[3]);
+	DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
+	
 	choose_skin_filename(gsi->emu->calc,gsi);
 		
 	gsi->pWindow=draw_screen(gsi);
