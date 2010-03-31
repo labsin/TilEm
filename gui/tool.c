@@ -5,7 +5,9 @@
 #include <gui.h>
 
 static const char * list[] = { "TI-73", "TI-76", "TI-81", "TI-83", "TI-83+", "TI-83+(SE)", "TI-84+", "TI-84+(SE)", "TI-84+(nSpire)", "TI-85", "TI-86" };
+/*static const char id_list[] = {'6', '5 */
 static const int NB_RADIO_BUTTON=11;
+
 char choose_rom_popup()
 {
 	GtkDialog *pPopup;
@@ -18,17 +20,16 @@ char choose_rom_popup()
 	/* Create the dialog */
 	pPopup = (GtkDialog*)gtk_dialog_new();
 	
-
-
+	/* Create the button */
 	gtk_dialog_add_button(GTK_DIALOG(pPopup),"Valid", 1);
+	
+	/* Create the label */
 	pLabel = gtk_label_new("Type of rom :\n");
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPopup)->vbox),pLabel,FALSE,FALSE,0);
+	
+	/* First radio button */
 	pRadio1=gtk_radio_button_new_with_label(NULL,"Let TilEm guess");
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPopup)->vbox),pRadio1,FALSE,FALSE,0);
-	
-
-
-
 	
 	/* Create the other radio button with the pRadio1 group */
 	for(i=0; i<NB_RADIO_BUTTON;i++) {
@@ -36,9 +37,10 @@ char choose_rom_popup()
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPopup)->vbox),pRadio,FALSE,FALSE,0);
 	}
 	
+	/* Show the msg box */
 	gtk_widget_show_all(GTK_DIALOG(pPopup)->vbox);
 
-	/* Show the msg box */
+	/* Run it and freeze gtk loop */
 	result = gtk_dialog_run(GTK_DIALOG(pPopup));
 	DEBUGGINGGLOBAL_L0_A0("**************** fct : choose_rom_popup ****************\n");
 	DEBUGGINGGLOBAL_L0_A1("*  function choose_rom_popup : Button number : %d       *\n", result);
