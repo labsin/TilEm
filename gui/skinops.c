@@ -50,6 +50,8 @@ int skin_get_type(SKIN_INFOS *si, const char *filename)
 
 	if(!strncmp(str, "TiEmu v2.00", 16))
 		si->type = SKIN_TYPE_TIEMU;
+	else if(!strncmp(str, "TilEm v2.00 ", 16))
+		si->type = SKIN_TYPE_TIEMU;
 	else if(!strncmp(str, "VTIv2.1 ", 8))
 		si->type = SKIN_TYPE_OLD_VTI;
 	else if(!strncmp(str, "VTIv2.5 ", 8))
@@ -85,7 +87,7 @@ int skin_read_header(SKIN_INFOS *si, const char *filename)
  
 	/* signature & offsets */
 	fread(str, 16, 1, fp);
-  	if (strncmp(str, "TiEmu v2.00", 16))
+  	if (strncmp(str, "TilEm v2.00", 16))
   	{
   		fprintf(stderr, "Bad TiEmu skin format\n");
       	return -1;

@@ -197,14 +197,10 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS * gsi) ;
 /* Redraw_screen when modify the skin */
 GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) ;
 
-
+/* Choose automatically wich skin tilem must load */
 void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi);
 
-void choose_rom_type(GLOBAL_SKIN_INFOS * gsi);
-
-void on_valid(GtkWidget *pBtn, GLOBAL_SKIN_INFOS *gsi);
-
-
+/* core's forcebreak value */
 static volatile int sforcebreak = 0;
 
 /* Display reg state */
@@ -213,7 +209,7 @@ void printstate(TilemCalcEmulator* emu);
 /* Create the lcd area */
 GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
 
-
+/* update the screen */
 gboolean screen_update(gpointer data);
 
 /* Repaint another skin */
@@ -224,6 +220,7 @@ void update_lcdimage(TilemCalcEmulator *emu);
 /* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
 
+/* Adapt the style */
 void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
 
 void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi);

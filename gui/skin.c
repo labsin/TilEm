@@ -14,24 +14,36 @@ choose_skin_filename is used to give the name of the default skin file name to l
 void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 	DEBUGGINGSKIN_L0_A0("**************** fct : choose_skin_filename *************\n");
 	
-	if(strcmp(calc->hw.name,"ti76")==0) {
+	if(strcmp(calc->hw.name,"ti73")==0) {
 		  gsi->SkinFileName=(gchar*)malloc(15);
-		  strcpy(gsi->SkinFileName,"./skn/ti89t.skn");
+		  strcpy(gsi->SkinFileName,"./skn/ti73.skn");
+	}else if(strcmp(calc->hw.name,"ti76")==0) {
+		  gsi->SkinFileName=(gchar*)malloc(16);
+		  strcpy(gsi->SkinFileName,"./skn/ti73.skn"); /* no ti76skin for the moment */
 	}else if(strcmp(calc->hw.name,"ti81")==0) {
-		  gsi->SkinFileName=(gchar*)malloc(15);
-		  strcpy(gsi->SkinFileName,"./skn/ti89t.skn");
+		  gsi->SkinFileName=(gchar*)malloc(16);
+		  strcpy(gsi->SkinFileName,"./skn/ti81.skn");
 	}else if(strcmp(calc->hw.name,"ti82")==0) {
 		  gsi->SkinFileName=(gchar*)malloc(15);
-		  strcpy(gsi->SkinFileName,"./skn/ti89tnn.skn");
+		  strcpy(gsi->SkinFileName,"./skn/ti82.skn");
 	}else if(strcmp(calc->hw.name,"ti83")==0) {
 		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti89t.skn");
+		strcpy(gsi->SkinFileName,"./skn/ti82stats.skn"); /* no ti83skin for the moment */
 	}else if(strcmp(calc->hw.name,"ti83p")==0) {
 		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti89.skn");
+		strcpy(gsi->SkinFileName,"./skn/ti83plus.skn");
+	}else if(strcmp(calc->hw.name,"ti84p")==0) {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti84plus.skn");
+	}else if(strcmp(calc->hw.name,"ti85")==0) {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti82.skn");
+	}else if(strcmp(calc->hw.name,"ti86")==0) {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti82.skn");
 	} else {
 		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti92.skn");
+		strcpy(gsi->SkinFileName,"./skn/ti83plus.skn");
 	}
 		
 	DEBUGGINGSKIN_L0_A1("*  calc->hw.name == %s                               *\n",calc->hw.name);
