@@ -104,7 +104,7 @@ char choose_rom_popup()
 		return '1';
 	}else if(strcmp(choosen_model,"TI-76")==0) {
 		return 'f';
-	}else if(strcmp(choosen_model,"TI-76")==0) {
+	}else if(strcmp(choosen_model,"TI-73")==0) {
 		return '7';
 	}
 	return '0';
