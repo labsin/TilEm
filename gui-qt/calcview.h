@@ -80,11 +80,15 @@ class CalcView : public QFrame
 		void undocked();
 		void docked();
 		
+		void setSkinLess(bool y);
+		
 	signals:
 		void paused();
 		void resumed();
 		
 		void paused(bool y);
+		
+		void skinLessChanged(bool y);
 		
 		void toggleDocking();
 		
@@ -113,6 +117,8 @@ class CalcView : public QFrame
 		
 		virtual void focusInEvent(QFocusEvent *e);
 		virtual void focusOutEvent(QFocusEvent *e);
+		
+		void updateView();
 		
 		void setupSkin();
 		void loadSkin(Settings& s);
@@ -157,7 +163,7 @@ class CalcView : public QFrame
 		QList<int> m_pressed;
 		
 		float m_scale;
-		
+		bool m_skinLess;
 		QPixmap *m_skin;
 		QImage *m_screen, *m_keymask;
 }; 

@@ -274,9 +274,8 @@ void CalcGrid::deleted(QObject *o)
 		if ( m_calcs.at(i) == o )
 		{
 			emit beginRemoveCalc(i);
-			CalcView *c = m_calcs.takeAt(i);
+			m_calcs.takeAt(i);
 			emit endRemoveCalc();
-			
 			break;
 		}
 	}
@@ -299,7 +298,7 @@ void CalcGrid::contextMenuEvent(QContextMenuEvent *e)
 
 bool CalcGrid::focusNextPrevChild(bool next)
 {
-	int idx = (focusedCalc() + 1) % m_calcs.count();
+	int idx = (focusedCalc() + (next ? 1 : -1)) % m_calcs.count();
 	
 	CalcView *c = m_calcs.at(idx);
 	

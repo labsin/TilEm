@@ -194,7 +194,7 @@ class CalcThread : public QThread
 */
 
 CalcView::CalcView(const QString& file, QWidget *p)
-: QFrame(p), m_link(0), m_thread(0), m_hovered(-1), m_scale(1.0), m_skin(0), m_screen(0), m_keymask(0)
+: QFrame(p), m_link(0), m_thread(0), m_hovered(-1), m_scale(1.0), m_skinLess(false), m_skin(0), m_screen(0), m_keymask(0)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setFrameShape(QFrame::StyledPanel);
@@ -240,6 +240,11 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	m_cxt->addSeparator();
 	m_cxt->addAction(tr("Change skin..."), this, SLOT( selectSkin() ));
 	m_cxt->addAction(tr("Change keymap..."), this, SLOT( selectKeymap() ));
+	a = m_cxt->addAction(tr("Skinless"));
+	a->setCheckable(true);
+	a->setChecked(false);
+	connect(a, SIGNAL( toggled(bool) ), SLOT( setSkinLess(bool) ) );
+	a->connect(this, SIGNAL( skinLessChanged(bool) ), SLOT( setChecked(bool) ) );
 	m_cxt->addSeparator();
 	m_dock = m_cxt->addAction(tr("Float"), this, SIGNAL( toggleDocking() ) );
 	m_cxt->addAction(tr("Close"), this, SLOT( close() ));
@@ -369,6 +374,36 @@ void CalcView::undocked()
 void CalcView::docked()
 {
 	m_dock->setText(tr("Float"));
+}
+
+void CalcView::setSkinLess(bool y)
+{
+	if ( y != m_skinLess )
+	{
+		m_skinLess = y;
+		
+		updateView();
+		
+		emit skinLessChanged(y);
+	}
+}
+
+void CalcView::updateView()
+{
+	if ( m_skinLess )
+	{
+		QBitmap msk(m_screen->size() * m_scale);
+		msk.fill(Qt::color1);
+		setFixedSize(m_screen->size() * m_scale);
+		setMask(msk);
+	} else {
+		QSize sz = m_skin->size() * m_scale;
+		setFixedSize(sz);
+		setMask(m_skin->mask().scaled(sz));
+	}
+	
+	updateGeometry();
+	repaint();
 }
 
 Calc* CalcView::calc() const
@@ -533,9 +568,7 @@ void CalcView::loadSkin(Settings& s)
 	m_screen = new QImage(m_lcdW, m_lcdH, QImage::Format_RGB32);
 	m_keymask = new QImage(QImage(s.resource(s.value("keymask"))).createHeuristicMask());
 	
-	QSize sz = m_skin->size() * m_scale;
-	setFixedSize(sz);
-	setMask(m_skin->mask().scaled(sz));
+	updateView();
 	
 	e = s.entry("key-coords");
 	
@@ -597,11 +630,7 @@ void CalcView::setScale(float s)
 	{
 		m_scale = ns;
 		
-		QSize sz = m_skin->size() * m_scale;
-		setFixedSize(sz);
-		setMask(m_skin->mask().scaled(sz));
-		
-		updateGeometry();
+		updateView();
 	}
 }
 
@@ -628,7 +657,10 @@ void CalcView::updateLCD()
 			}
 		}
 		
-		repaint(m_lcdX * m_scale, m_lcdY * m_scale, m_lcdW * m_scale, m_lcdH * m_scale);
+		if ( m_skinLess )
+			repaint(0, 0, m_lcdW * m_scale, m_lcdH * m_scale);
+		else
+			repaint(m_lcdX * m_scale, m_lcdY * m_scale, m_lcdW * m_scale, m_lcdH * m_scale);
 	}
 }
 
@@ -639,6 +671,9 @@ int CalcView::mappedKey(const QPoint& pos) const
 
 int CalcView::closestKey(const QPoint& p) const
 {
+	if ( m_skinLess )
+		return -1;
+	
 	unsigned int sk_min = 0, d_min = 0x7fffffff;
 	
 	for ( int i = 0; i < m_kCenter.count(); ++i )
@@ -658,6 +693,9 @@ int CalcView::closestKey(const QPoint& p) const
 
 int CalcView::keyIndex(const QPoint& p) const
 {
+	if ( m_skinLess )
+		return -1;
+	
 	for ( int i = 0; i < m_kBoundaries.count(); ++i )
 	{
 		if ( m_kBoundaries.at(i).containsPoint(p, Qt::WindingFill) )
@@ -921,6 +959,12 @@ void CalcView::paintEvent(QPaintEvent *e)
 		p.setOpacity(0.5);
 	
 	p.scale(m_scale, m_scale);
+	
+	if ( m_skinLess )
+	{
+		p.drawImage(0, 0, *m_screen);
+		return;
+	}
 	
 	// smart update to reduce repaint overhead
 	if ( e->rect() != QRect(m_lcdX * m_scale, m_lcdY * m_scale, m_lcdW * m_scale, m_lcdH * m_scale) )
