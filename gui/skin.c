@@ -12,7 +12,7 @@ choose_skin_filename is used to give the name of the default skin file name to l
 */
 
 void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
-	DEBUGGINGSKIN_L0_A0("**************** fct : choose_skin_filename *************\n");
+	DEBUGGINGSKIN_L0_A0("**************** fct : choose_skin_filename ************\n");
 	
 	if(strcmp(calc->hw.name,"ti73")==0) {
 		  gsi->SkinFileName=(gchar*)malloc(15);
@@ -35,6 +35,12 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 	}else if(strcmp(calc->hw.name,"ti84p")==0) {
 		gsi->SkinFileName=(gchar*)malloc(16);
 		strcpy(gsi->SkinFileName,"./skn/ti84plus.skn");
+	}else if(strcmp(calc->hw.name,"ti84pse")==0) {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti84plus.skn");
+	}else if(strcmp(calc->hw.name,"ti84pns")==0) {
+		gsi->SkinFileName=(gchar*)malloc(16);
+		strcpy(gsi->SkinFileName,"./skn/ti84plus.skn");
 	}else if(strcmp(calc->hw.name,"ti85")==0) {
 		gsi->SkinFileName=(gchar*)malloc(16);
 		strcpy(gsi->SkinFileName,"./skn/ti82.skn");
@@ -46,8 +52,8 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 		strcpy(gsi->SkinFileName,"./skn/ti83plus.skn");
 	}
 		
-	DEBUGGINGSKIN_L0_A1("*  calc->hw.name == %s                               *\n",calc->hw.name);
-	DEBUGGINGSKIN_L0_A0("*********************************************************\n");
+	DEBUGGINGSKIN_L0_A1("*  calc->hw.name == %s                             *\n",calc->hw.name);
+	DEBUGGINGSKIN_L0_A0("********************************************************\n");
 	//gsi->kl=x3_keylist;
 }
 

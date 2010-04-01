@@ -481,6 +481,8 @@ int main(int argc, char** argv)
 	}
 
 	calc_id = tilem_guess_rom_type(romfile);
+	tilem_calc_load_state(emu.calc, romfile, savfile);
+	
 	if (!calc_id) {
 		fprintf(stderr, "%s: unknown calculator type\n", romname);
 		fclose(romfile);

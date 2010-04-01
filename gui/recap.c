@@ -67,6 +67,92 @@ typedef struct _TilemCalcEmulator {
 } TilemCalcEmulator;
 
 
+
+void switch_view_buggy(GLOBAL_SKIN_INFOS * gsi) 
+{
+	if(gsi->view==1) 
+	{
+		gsi->view=0;
+		DEBUGGINGLCD_L2_A0("Entering : draw_not_only_lcd...\n");
+		GtkWidget *pImage;
+		GtkWidget *pAf;
+		GtkWidget * pLayout;
+
+		DEBUGGINGLCD_L2_A1("draw_not_only_lcd name : %s\n",gsi->si->name);
+		skin_unload(gsi->si);
+		skin_load(gsi->si,gsi->SkinFileName);
+		
+		/* Remove the pImage from the pWindow */ 
+		gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
+		
+		pImage=gtk_image_new_from_pixbuf(gsi->si->image);
+		pAf=create_draw_area(gsi);
+			       
+		pLayout=gtk_layout_new(NULL,NULL);
+		
+		gsi->pLayout=pLayout;
+		gtk_widget_show(pAf);
+		gtk_layout_put(GTK_LAYOUT(pLayout),pImage,0,0);
+		gtk_layout_put(GTK_LAYOUT(pLayout),pAf,gsi->si->lcd_pos.left,gsi->si->lcd_pos.top);
+		gtk_container_add(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
+		gtk_window_resize(GTK_WINDOW(gsi->pWindow),gsi->si->width,gsi->si->height);
+		g_signal_connect(G_OBJECT(gsi->pWindow),"destroy",G_CALLBACK(on_destroy),NULL); 
+		
+		/* Connection signal keyboard key press */
+		g_signal_connect(gsi->emu->lcdwin, "size-allocate",G_CALLBACK(screen_resize), gsi);
+		g_signal_connect(gsi->emu->lcdwin, "style-set", G_CALLBACK(screen_restyle), gsi); 
+		gtk_widget_add_events(pLayout, GDK_KEY_RELEASE_MASK); 
+		gtk_signal_connect(GTK_OBJECT(pLayout), "key_press_event", G_CALLBACK(keyboard_event), NULL);
+		gtk_widget_add_events(pLayout,GDK_BUTTON_PRESS_MASK );
+		gtk_signal_connect(GTK_OBJECT(pLayout), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
+		gtk_widget_add_events(pLayout, GDK_BUTTON_RELEASE_MASK);	
+		gtk_signal_connect(GTK_OBJECT(pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
+		g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
+		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
+		//g_timeout_add(50, screen_update, gsi->emu);
+
+		DEBUGGINGLCD_L2_A0("Exiting : draw_not_only_lcd...\n");
+	} else {
+		/* Draw ONLY the lcd area */
+		gsi->view=1; /* keep in memory we just print lcd */
+		DEBUGGINGLCD_L2_A0("Entering : draw_only_lcd...\n");
+		GtkWidget *pAf;
+		
+		/* Remove the pImage from the pWindow */ 
+		gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
+		
+		int screenwidth=gsi->si->lcd_pos.right-gsi->si->lcd_pos.left;	
+		int screenheight=gsi->si->lcd_pos.bottom-gsi->si->lcd_pos.top;
+		printf("%d %d", screenwidth, screenheight);
+		gtk_window_resize(GTK_WINDOW(gsi->pWindow),screenwidth, screenheight);
+		pAf=create_draw_area(gsi);
+		gsi->pAf=pAf;
+		
+		
+		//gtk_container_add(GTK_CONTAINER(gsi->pWindow),pAf);
+		gtk_container_add(GTK_CONTAINER(gsi->pWindow),pAf);
+		gtk_widget_show(pAf);
+		g_signal_connect(G_OBJECT(gsi->pWindow),"destroy",G_CALLBACK(on_destroy),NULL); 
+		
+		/* Connection signal keyboard key press */
+		g_signal_connect(gsi->emu->lcdwin, "size-allocate",G_CALLBACK(screen_resize), gsi);
+		g_signal_connect(gsi->emu->lcdwin, "style-set", G_CALLBACK(screen_restyle), gsi); 
+		gtk_widget_add_events(gsi->pWindow, GDK_KEY_RELEASE_MASK); // Get the event on the window (leftclick, rightclick)
+		gtk_signal_connect(GTK_OBJECT(gsi->pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
+		gtk_widget_add_events(gsi->pWindow,GDK_BUTTON_PRESS_MASK );
+		gtk_signal_connect(GTK_OBJECT(gsi->pWindow), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
+		gtk_widget_add_events(gsi->pWindow, GDK_BUTTON_RELEASE_MASK);	
+		gtk_signal_connect(GTK_OBJECT(gsi->pWindow), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
+		g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
+		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
+		//g_timeout_add(50, screen_update, gsi->emu);
+		
+		DEBUGGINGLCD_L2_A0("Exiting : draw_only_lcd...\n");
+	}
+
+}
+
+
 /* Dans cette fonction, on crée l'ecran emu->lcd_image */
 /* Chaque boucle correspond à une partie de l'écran */
 static void update_lcdimage(TilemCalcEmulator* emu)   /* Absolument necessaire */

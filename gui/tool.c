@@ -4,7 +4,7 @@
 #include <glib/gstdio.h>
 #include <gui.h>
 
-static const char * list[] = { "TI-73", "TI-76", "TI-81", "TI-83", "TI-83+", "TI-83+(SE)", "TI-84+", "TI-84+(SE)", "TI-84+(nSpire)", "TI-85", "TI-86" };
+static const char * list[] = { "TI-73", "TI-76", "TI-81", "TI-82","TI-83", "TI-83+", "TI-83+(SE)", "TI-84+", "TI-84+(SE)", "TI-84+(nSpire)", "TI-85", "TI-86" };
 /*static const char id_list[] = {'6', '5 */
 static const int NB_RADIO_BUTTON=11;
 
@@ -15,6 +15,7 @@ char choose_rom_popup()
 	GtkWidget *pRadio1, *pRadio ;/*, *pRadio3, *pRadio4, *pRadio5, *pRadio6, *pRadio7,*pRadio8, *pRadio9, *pRadio10, *pRadio11, *pRadio12, *pRadio13;*/
 	int i=0; /* counter for the radio button creation */
 	gint result; /* to get the choice */
+	char * choosen_model;
 
 	
 	/* Create the dialog */
@@ -43,7 +44,7 @@ char choose_rom_popup()
 	/* Run it and freeze gtk loop */
 	result = gtk_dialog_run(GTK_DIALOG(pPopup));
 	DEBUGGINGGLOBAL_L0_A0("**************** fct : choose_rom_popup ****************\n");
-	DEBUGGINGGLOBAL_L0_A1("*  function choose_rom_popup : Button number : %d       *\n", result);
+	DEBUGGINGGLOBAL_L0_A1("*  Choosen button number : %d                           *\n", result);
 	
 	GSList *pList;
 	const gchar *sLabel=NULL;
@@ -73,9 +74,8 @@ char choose_rom_popup()
 	
 	DEBUGGINGGLOBAL_L0_A1("*  Choosen model : %s                               *\n", sLabel);
 	DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
-	char * choosen_model;
-	//choosen_model=malloc(strlen(sLabel)*sizeof(char)+1);
-	
+
+
 	/* Apply the patch of Mischa POSLAWSKY <shiar@shiar.org> */
 	choosen_model = strdup(sLabel); /* <--- Why another variable ?  Because sLabel is buggy after destroyed the window ... */
 	/* end patch */
@@ -85,29 +85,29 @@ char choose_rom_popup()
 
 	
 	if(strcmp(choosen_model,"TI-86")==0) {
-		return '6';
+		return TILEM_CALC_TI86; /* '6' */
 	}else if(strcmp(choosen_model,"TI-85")==0) {
-		return '5';
+		return TILEM_CALC_TI85; /* '5' */
 	}else if(strcmp(choosen_model,"TI-84+(nSpire)")==0) {
-		return 'n';
+		return TILEM_CALC_TI84P_NSPIRE; /* 'n' */
 	}else if(strcmp(choosen_model,"TI-84+(SE)")==0) {
-		return 'z';
+		return TILEM_CALC_TI84P_SE; /* 'z' */
 	}else if(strcmp(choosen_model,"TI-84+")==0) {
-		return '4';
+		return TILEM_CALC_TI84P; /* '4' */
 	}else if(strcmp(choosen_model,"TI-83+(SE)")==0) {
-		return 's';
+		return TILEM_CALC_TI83P_SE; /* 's' */
 	}else if(strcmp(choosen_model,"TI-83+")==0) {
-		return 'p';
+		return TILEM_CALC_TI83P; /* 'p' */
 	}else if(strcmp(choosen_model,"TI-83")==0) {
-		return '3';
+		return TILEM_CALC_TI83; /* '3' */
 	}else if(strcmp(choosen_model,"TI-82")==0) {
-		return '2';
+		return TILEM_CALC_TI82; /* '2 */
 	}else if(strcmp(choosen_model,"TI-81")==0) {
-		return '1';
+		return TILEM_CALC_TI81; /* '1' */
 	}else if(strcmp(choosen_model,"TI-76")==0) {
-		return 'f';
+		return TILEM_CALC_TI76;  /* 'f' */
 	}else if(strcmp(choosen_model,"TI-73")==0) {
-		return '7';
+		return TILEM_CALC_TI73;  /* '7' */
 	}
 	return '0';
 

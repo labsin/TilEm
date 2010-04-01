@@ -12,7 +12,21 @@ int scan_click(int MAX, double x, double y, GLOBAL_SKIN_INFOS * gsi);
 /* Just close the window (freeing allocated memory maybe in the futur?)*/
 void on_destroy()
 {
+	DEBUGGINGGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
+	SAVE_STATE=0;
+	DEBUGGINGGLOBAL_L2_A1("*  NO (%d)                                              *\n",SAVE_STATE);
+	DEBUGGINGGLOBAL_L2_A0("********************************************************\n\n");
 	printf("\nThank you for using tilem...\n");
+	gtk_main_quit();
+}
+
+void quit_with_save()
+{
+	printf("\nThank you for using tilem...\n");
+	DEBUGGINGGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
+	SAVE_STATE=1;
+	DEBUGGINGGLOBAL_L2_A1("*  YES (%d)                                             *\n",SAVE_STATE);
+	DEBUGGINGGLOBAL_L2_A0("********************************************************\n\n");
 	gtk_main_quit();
 }
 
@@ -88,10 +102,11 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		DEBUGGINGCLICK_L0_A0("*  right click !                                       *\n");
 		static GtkItemFactoryEntry right_click_menu[] = {
 			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
+			{"/Switch view",NULL,switch_view,1,NULL,NULL},
 			{"/About", "<control>Q",on_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
-			{"/Exit and save state", "<alt>X", NULL, 1, NULL, NULL}
+			{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}
 		};
 		right_click_menu[0].extra_data=gsi;
 		create_menus(gsi->pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);

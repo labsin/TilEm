@@ -85,12 +85,20 @@
 * ---17/03/10---
 * - Create the rom_choose_popup function to replace choose_rom_type.It use GtkDialog instead of GtkWindow.
 * - rom_choose_popup _freeze_ the system... and get wich radio button is selected. So it will be easy to create the good emu.calc (and choose the default skin).
-* ---18/03/10 ---
+* ---18/03/10---
 * - Resize the (printed) lcd area (gsi->emu->lcdwin) to fit(perfectly) into the skin.
 * - Replace a lot of printf by DEBUGGING****_L*_A* to easily switch what debug infos were printed.
 * - Try to make a nice debugging output (frames in ASCII ^^) :p
 * - WahooOO , load a skin works perfectly.You can easily change skin _while running_, no error, no warning.
 * - Could load automatically the good skin and run the good core using the choose_rom_popup() function and choose_skin_filename() function.
+* ---30/03/10---
+* - Create skin for following models : 73, 81, 82, 83+ and 84+.
+* - Fix bug in tool.c .Modification of tool.c to create radio button more properly.
+* ---31/03/10---
+* - Create skin for following model : 83 . Based on my own calc (take a foto with my iphone 3GS :D)
+* ---01/04/10---
+* - New feature : Save calc state and load state. State are stored in a separate dir called sav/ .
+* - New feature : Change view to see only the lcd. I finally choose to add it into a GtkLayout. So you can maximize it, but there was problem with add_event.
 */
 
 
@@ -121,8 +129,9 @@ int main(int argc, char **argv)
 	/* end */
 	
 	/* Create the savname */
-	savname = g_malloc(strlen(romname) + 5);
-	strcpy(savname, romname);
+	savname = g_malloc(4 + strlen(romname) + 5); /* sav/ (4 char) + romname + .sav (4 char) + \0 (1 char) */
+	strcpy(savname,"sav/");
+	strcat(savname, romname);
 	
 	if ((p = strrchr(savname, '.'))) 
 	{
@@ -155,21 +164,29 @@ int main(int argc, char **argv)
 	GLOBAL_SKIN_INFOS *gsi;
 	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
 	gsi->si=malloc(sizeof(SKIN_INFOS));
-	gsi->romfile=romfile;
-	gsi->romname=(char*)malloc(sizeof(strlen(romname)));
-	strcpy(gsi->romname,romname);
-	
 	
 	
 	/* The program must wait user choice before continuing */
-	if((calc_id=choose_rom_popup())=='0') {
-		calc_id=tilem_guess_rom_type(romfile);
-		DEBUGGINGGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
+	if((calc_id=choose_rom_popup())=='0') {	/* Query for the model */
+			DEBUGGINGGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
+			if (!(calc_id=tilem_guess_rom_type(romfile))) {	
+				fprintf(stderr, "%s: unknown calculator type\n", romname);
+				fclose(romfile);
+				return 1;
+			} 
 	}
+	
 	gsi->emu=malloc(sizeof(TilemCalcEmulator));
 	gsi->emu->calc = tilem_calc_new(calc_id);
 	
 	tilem_calc_load_state(gsi->emu->calc, romfile, savfile);
+	
+	if (savfile)
+		fclose(savfile);
+		
+
+	
+
 	gsi->emu->run_mutex = g_mutex_new();
 	gsi->emu->calc_mutex = g_mutex_new();
 	gsi->emu->lcd_mutex = g_mutex_new();
@@ -188,9 +205,23 @@ int main(int argc, char **argv)
 	choose_skin_filename(gsi->emu->calc,gsi);
 		
 	gsi->pWindow=draw_screen(gsi);
-		       
+	
+	
+	
 	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
 	gtk_main();
+	
+	/* Save the state */
+	DEBUGGINGGLOBAL_L2_A1("Save state ? %d\n",SAVE_STATE);
+	if(SAVE_STATE==1) {
+		romfile = g_fopen(romname, "wb");
+		savfile = g_fopen(savname, "wt");
+		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
+	}
+	if (romfile)
+			fclose(romfile);
+	if (savfile)
+		fclose(savfile);
 	
 
 

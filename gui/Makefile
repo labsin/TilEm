@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -W -Wall -DG_ERRORCHECK_MUTEXES -DDEBUGGINGGLOBAL_L0 -DDEBUGGINGGLOBAL_L2 -DDEBUGGINGSKIN_L0 -DDEBUGGINGCLICK_L0 #-DDEBUGGINGCLICK_L2 -DDEBUGGINGLCD_L0 #-DDEBUGGINGLCD_L2
+CFLAGS = -g -W  -Wall -DG_ERRORCHECK_MUTEXES -DDEBUGGINGGLOBAL_L0 -DDEBUGGINGGLOBAL_L2 -DDEBUGGINGSKIN_L0 -DDEBUGGINGCLICK_L0 #-DDEBUGGINGCLICK_L2 -DDEBUGGINGLCD_L0 #-DDEBUGGINGLCD_L2
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 
@@ -25,7 +25,6 @@ compile = $(CC) -I$(top_builddir) -I$(srcdir) -I$(srcdir)/../core $(CFLAGS) $(CP
 all: testemu2
 
 #Main emulator GUI
-
 testemu2: $(objects) ../core/libtilemcore.a gui.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu2 $(objects) $(libs)
 	
@@ -44,13 +43,16 @@ screen.o: screen.c ../core/tilem.h gui.h
 # Handle an GDKevent
 event.o: event.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/event.c
-	
+
+# Open skin
 skinops.o: skinops.c ../core/tilem.h skinops.h 
 	$(compile) -c $(srcdir)/skinops.c
-	
+
+# Manage skins
 skin.o: skin.c ../core/tilem.h gui.h 
 	$(compile) -c $(srcdir)/skin.c
-	
+
+# Popups and other stuff
 tool.o: tool.c ../core/tilem.h gui.h 
 	$(compile) -c $(srcdir)/tool.c
 
