@@ -64,6 +64,13 @@ QList<int> KeyMap::keys(quintptr id) const
 	return m_map.value(id);
 }
 
+void KeyMap::clear()
+{
+	m_map.clear();
+	m_keyDown.clear();
+	m_curMatch.clear();
+}
+
 void KeyMap::setKeys(const QList<int>& keys, quintptr id)
 {
 	m_map[id] = keys;

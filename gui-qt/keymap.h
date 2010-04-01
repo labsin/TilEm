@@ -51,6 +51,7 @@ class KeyMap : public QObject
 		QList<int> keys(quintptr id) const;
 		
 	public slots:
+		virtual void clear();
 		virtual void setKeys(const QList<int>& keys, quintptr id);
 		
 	signals:

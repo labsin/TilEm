@@ -68,6 +68,8 @@ class CalcView : public QFrame
 		void quit();
 		
 		void selectSkin();
+		void selectKeymap();
+		
 		void setScale(float s);
 		
 		void takeScreenshot();
@@ -115,7 +117,8 @@ class CalcView : public QFrame
 		void setupSkin();
 		void loadSkin(Settings& s);
 		
-		void setupKeyboardLayout();
+		void setupKeymap();
+		void loadKeymap(const QString& s);
 		
 		void updateLCD();
 		
@@ -125,6 +128,9 @@ class CalcView : public QFrame
 		
 		int keyIndex(const QPoint& p) const;
 		QPolygon keyBoundaries(const QPoint& p) const;
+		
+		QString getSkinFileName();
+		QString getKeymapFileName();
 		
 	private:
 		QString m_model;

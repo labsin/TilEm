@@ -67,7 +67,7 @@ class CalcViewKeyMap : public KeyMap, public KeyLoadCallback
 		{
 			KeyMap::activate(id);
 			
-			if ( id >= m_combos.count() )
+			if ( id >= (unsigned)m_combos.count() )
 				return;
 			
 			QList<int> keys = m_combos.at(id);
@@ -87,7 +87,7 @@ class CalcViewKeyMap : public KeyMap, public KeyLoadCallback
 		{
 			KeyMap::deactivate(id);
 			
-			if ( id >= m_combos.count() )
+			if ( id >= (unsigned)m_combos.count() )
 				return;
 			
 			QList<int> keys = m_combos.at(id);
@@ -239,6 +239,7 @@ CalcView::CalcView(const QString& file, QWidget *p)
 	a->connect(this, SIGNAL( externalLinkGrabbed(bool) ), SLOT( setDisabled(bool) ) );
 	m_cxt->addSeparator();
 	m_cxt->addAction(tr("Change skin..."), this, SLOT( selectSkin() ));
+	m_cxt->addAction(tr("Change keymap..."), this, SLOT( selectKeymap() ));
 	m_cxt->addSeparator();
 	m_dock = m_cxt->addAction(tr("Float"), this, SIGNAL( toggleDocking() ) );
 	m_cxt->addAction(tr("Close"), this, SLOT( close() ));
@@ -431,7 +432,7 @@ void CalcView::load(const QString& file)
 	
 	// setup skin and keyboard layout
 	setupSkin();
-	setupKeyboardLayout();
+	setupKeymap();
 	
 	/// 3) restart phase
 	
@@ -454,19 +455,42 @@ void CalcView::quit()
 	QApplication::quit();
 }
 
-void CalcView::selectSkin()
+QString CalcView::getSkinFileName()
 {
-	Settings s;
-	
-	QString fn = QFileDialog::getOpenFileName(
+	return QFileDialog::getOpenFileName(
 									this,
 									tr("Select skin for %1").arg(m_model),
 									QApplication::applicationDirPath() + "/skins",
 									"Skin files (*.skin)"
 								);
+}
+
+QString CalcView::getKeymapFileName()
+{
+	return QFileDialog::getOpenFileName(
+									this,
+									tr("Select keymap for %1").arg(m_model),
+									QApplication::applicationDirPath() + "/skins",
+									"Keymap files (*.map)"
+								);
+}
+
+void CalcView::selectSkin()
+{
+	Settings s;
 	
-	if ( s.load(fn) )
+	if ( s.load(getSkinFileName()) )
 		loadSkin(s);
+}
+
+void CalcView::selectKeymap()
+{
+	QFile f(getKeymapFileName());
+	
+	m_keymap->clear();
+	
+	if ( f.open(QFile::ReadOnly | QFile::Text) )
+		KeyMapLoader(&pc_space, &ti_space).load(f.readAll(), *m_keymap);
 }
 
 void CalcView::setupSkin()
@@ -476,24 +500,12 @@ void CalcView::setupSkin()
 	delete m_skin;
 	delete m_screen;
 	
-	QDir d("skins");
-	QString fn = d.filePath(m_model + ".skin");
+	QString fn = QDir("skins").filePath(m_model + ".skin");
 	
 	Settings s;
 	
-	if ( !s.load(fn) )
-	{
-		do
-		{
-			fn = QFileDialog::getOpenFileName(
-									this,
-									tr("Select skin for %1").arg(m_model),
-									QApplication::applicationDirPath() + "/skins",
-									"Skin files (*.skin)"
-								);
-			
-		} while ( !s.load(fn) );
-	}
+	while ( !s.load(fn) )
+		fn = getSkinFileName();
 	
 	loadSkin(s);
 }
@@ -552,54 +564,19 @@ void CalcView::loadSkin(Settings& s)
 	}
 }
 
-void CalcView::setupKeyboardLayout()
+void CalcView::setupKeymap()
 {
-	// keyboard -> keypad mapping
-	// TODO : move to external file (slightly kbd layout-dependent)
-	
-	// new way
-	
-	QDir d("skins");
-	QString fn = d.filePath(m_model + ".map");
+	QString fn = QDir("skins").filePath(m_model + ".map");
 	
 	QFile f(fn);
 	
+	m_keymap->clear();
+	
 	while ( !f.open(QFile::ReadOnly | QFile::Text) )
-	{
-		fn = QFileDialog::getOpenFileName(
-									this,
-									tr("Select keymap for %1").arg(m_model),
-									QApplication::applicationDirPath() + "/skins",
-									"Keymap files (*.map)"
-								);
-		
-		f.setFileName(fn);
-	}
+		f.setFileName(getKeymapFileName());
 	
 	KeyMapLoader loader(&pc_space, &ti_space);
 	loader.load(f.readAll(), *m_keymap);
-	
-	// intermediate
-// 	m_keymap->setKeys(KM << Qt::Key_Enter, TILEM_KEY_ENTER);
-// 	m_keymap->setKeys(KM << Qt::Key_Return, TILEM_KEY_ENTER);
-// 	
-// 	m_keymap->setKeys(KM << Qt::Key_Left, TILEM_KEY_LEFT);
-// 	m_keymap->setKeys(KM << Qt::Key_Right, TILEM_KEY_RIGHT);
-// 	m_keymap->setKeys(KM << Qt::Key_Up, TILEM_KEY_UP);
-// 	m_keymap->setKeys(KM << Qt::Key_Down, TILEM_KEY_DOWN);
-	
-// 	m_kbdMap[Qt::Key_Backspace] = TILEM_KEY_DEL;
-// 	m_kbdMap[Qt::Key_Delete] = TILEM_KEY_CLEAR;
-// 	
-// 	m_kbdMap[Qt::Key_Alt] = TILEM_KEY_ON;
-// 	m_kbdMap[Qt::Key_Control] = TILEM_KEY_2ND;
-// 	m_kbdMap[Qt::Key_Shift] = TILEM_KEY_ALPHA;
-// 	m_kbdMap[Qt::Key_Escape] = TILEM_KEY_MODE;
-// 	
-// 	m_kbdMap[Qt::Key_Period] = TILEM_KEY_DECPNT;
-// 	m_kbdMap[Qt::Key_Colon] = TILEM_KEY_DECPNT;
-// 	
-// 	m_kbdMap[Qt::Key_QuoteDbl] = TILEM_KEY_ADD;
 }
 
 QSize CalcView::sizeHint() const
