@@ -59,20 +59,25 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 
 void SkinSelection(GLOBAL_SKIN_INFOS *gsi) {
 
+	if(gsi->view==1) 
+	{
+		DEBUGGINGGLOBAL_L2_A0("Use >>Switch view<< before !\n");
+		popup("Use >>Switch view<< before !\n", gsi);
+	} else {
+		GtkFileSelection * file_selection;
+		file_selection=(GtkFileSelection*)gtk_file_selection_new("SkinLoad");
+		gtk_widget_show(GTK_WIDGET(file_selection));
+		printf("\nSKINSELECTION\n");
+		gsi->FileSelected=file_selection;
 
-	GtkFileSelection * file_selection;
-	file_selection=(GtkFileSelection*)gtk_file_selection_new("SkinLoad");
-	gtk_widget_show(GTK_WIDGET(file_selection));
-	printf("\nSKINSELECTION\n");
-	gsi->FileSelected=file_selection;
-
-	/* ######## SIGNALS ######## */
-	/* Connect the signal to get the filename (when OK button is clicked) */
-	gtk_signal_connect_object(GTK_OBJECT(file_selection->ok_button),"clicked",G_CALLBACK(GetSkinSelected),(gpointer)gsi);
-	/* Connect the signal to close the widget when OK is clicked (gtk_widget_destroy is already define in the Gtk library)*/
-	gtk_signal_connect_object(GTK_OBJECT(file_selection->ok_button),"clicked",G_CALLBACK(gtk_widget_destroy),file_selection);
-	/* Connect the signal to close the window when CANCEL is clicked */
-	gtk_signal_connect_object(GTK_OBJECT(file_selection->cancel_button),"clicked",G_CALLBACK(gtk_widget_destroy),file_selection);
+		/* ######## SIGNALS ######## */
+		/* Connect the signal to get the filename (when OK button is clicked) */
+		gtk_signal_connect_object(GTK_OBJECT(file_selection->ok_button),"clicked",G_CALLBACK(GetSkinSelected),(gpointer)gsi);
+		/* Connect the signal to close the widget when OK is clicked (gtk_widget_destroy is already define in the Gtk library)*/
+		gtk_signal_connect_object(GTK_OBJECT(file_selection->ok_button),"clicked",G_CALLBACK(gtk_widget_destroy),file_selection);
+		/* Connect the signal to close the window when CANCEL is clicked */
+		gtk_signal_connect_object(GTK_OBJECT(file_selection->cancel_button),"clicked",G_CALLBACK(gtk_widget_destroy),file_selection);
+	}
 }
 
 void GetSkinSelected(GLOBAL_SKIN_INFOS *gsi) {

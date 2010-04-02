@@ -99,6 +99,9 @@
 * ---01/04/10---
 * - New feature : Save calc state and load state. State are stored in a separate dir called sav/ .
 * - New feature : Change view to see only the lcd. I finally choose to add it into a GtkLayout. So you can maximize it, but there was problem with add_event.
+* ---02/04/10---
+* - Add popup function to just print error message.You must give the message and gsi as parameter, and it run a modal dialog.
+* - Some cleaning.
 */
 
 
@@ -218,9 +221,9 @@ int main(int argc, char **argv)
 		savfile = g_fopen(savname, "wt");
 		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
 	}
-	if (romfile)
-			fclose(romfile);
-	if (savfile)
+	if(romfile!=NULL)
+		fclose(romfile);
+	if(savfile!=NULL)
 		fclose(savfile);
 	
 

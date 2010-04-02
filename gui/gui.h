@@ -46,6 +46,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	SKIN_INFOS *si;
 	GtkWidget *pWindow;
 	GtkWidget *pLayout;
+	GtkWidget *pFrame;
 	GtkWidget *pAf;
 	gchar* SkinFileName;
 	GtkFileSelection *FileSelected;
@@ -269,10 +270,17 @@ static const struct KEY_LIST x4_keylist[] = {
 	
 	};
 	
-
+/* core's forcebreak value */
+static volatile int sforcebreak = 0;
 	
+
+/* ###### event.c ##### */
+
 /* Detect and handle a "destroy" event */
 void on_destroy(); /* close the pWindow */
+
+/* The window about in the right_click_menu */
+void on_about(GtkWidget *pBtn);
 
 /* Detect a keyboard press event */
 void keyboard_event();	
@@ -281,18 +289,22 @@ void keyboard_event();
 gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi);
 gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi) ;
 	
+
+
+/* ###### skin.c ##### */
 	
-/* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
-void toto(GtkWidget* pWindow,GdkEvent *event,GtkWidget * tata);
-
-/* The window about in the right_click_menu */
-void on_about(GtkWidget *pBtn, gpointer data);
-
 /* Create the SKIN file selector */
 void SkinSelection(GLOBAL_SKIN_INFOS *gsi);
 
 /* Get the skin file selected */
 void GetSkinSelected(GLOBAL_SKIN_INFOS *gsi);
+
+/* Choose automatically wich skin tilem must load */
+void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi);
+
+
+
+/* ###### screen.c ##### */
 
 /* Create Screen (skin and lcd) */
 GtkWidget* draw_screen(GLOBAL_SKIN_INFOS * gsi) ;
@@ -302,15 +314,6 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) ;
 
 /* Switch view to lcd only or skin + lcd */
 void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
-
-/* Choose automatically wich skin tilem must load */
-void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi);
-
-/* core's forcebreak value */
-static volatile int sforcebreak = 0;
-
-/* Display reg state */
-void printstate(TilemCalcEmulator* emu);
 
 /* Create the lcd area */
 GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
@@ -329,7 +332,15 @@ void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, 
 /* Adapt the style */
 void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
 
+/* Resize screen */
 void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi);
+
+
+
+/* ##### tool.c ##### */
+
+/* Generic popup (could be use for all kind of msg) */
+void popup(char* msg, GLOBAL_SKIN_INFOS * gsi);
 
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
 char choose_rom_popup();

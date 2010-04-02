@@ -119,7 +119,7 @@ void switch_view_buggy(GLOBAL_SKIN_INFOS * gsi)
 		GtkWidget *pAf;
 		
 		/* Remove the pImage from the pWindow */ 
-		gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
+		gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pAf);
 		
 		int screenwidth=gsi->si->lcd_pos.right-gsi->si->lcd_pos.left;	
 		int screenheight=gsi->si->lcd_pos.bottom-gsi->si->lcd_pos.top;

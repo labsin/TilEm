@@ -32,12 +32,12 @@ void quit_with_save()
 
 
 
-void on_about(GtkWidget *pBtn, gpointer data)
+void on_about(GtkWidget *pBtn)
 {
 	GtkWidget *pAbout;
 	pBtn=pBtn;
 
-	pAbout = gtk_message_dialog_new (GTK_WINDOW(data),
+	pAbout = gtk_message_dialog_new (NULL,
         GTK_DIALOG_MODAL,
         GTK_MESSAGE_INFO,
         GTK_BUTTONS_OK,
