@@ -62,7 +62,7 @@ void SkinSelection(GLOBAL_SKIN_INFOS *gsi) {
 	if(gsi->view==1) 
 	{
 		DEBUGGINGGLOBAL_L2_A0("Use >>Switch view<< before !\n");
-		popup("Use >>Switch view<< before !\n", gsi);
+		popup_error("Use >>Switch view<< before !\n", gsi);
 	} else {
 		GtkFileSelection * file_selection;
 		file_selection=(GtkFileSelection*)gtk_file_selection_new("SkinLoad");

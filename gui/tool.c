@@ -8,7 +8,7 @@ static const char * list[] = { "TI-73", "TI-76", "TI-81", "TI-82","TI-83", "TI-8
 /*static const char id_list[] = {'6', '5 */
 static const int NB_RADIO_BUTTON=11;
 
-void popup(char* msg, GLOBAL_SKIN_INFOS * gsi)
+void popup_error(char* msg, GLOBAL_SKIN_INFOS * gsi)
 {
 	GtkWidget *pPopup;
 
@@ -20,6 +20,7 @@ void popup(char* msg, GLOBAL_SKIN_INFOS * gsi)
 	/* Destroy the popup */
 	gtk_widget_destroy(pPopup);
 }
+
 char choose_rom_popup()
 {
 	GtkDialog *pPopup;

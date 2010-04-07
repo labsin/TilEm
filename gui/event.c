@@ -30,7 +30,23 @@ void quit_with_save()
 	gtk_main_quit();
 }
 
+void show_about()
+{
 
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("pix/tilem.png", NULL);
+
+  GtkWidget *dialog = gtk_about_dialog_new();
+  gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), "TilEm");
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
+  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D");
+  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://lpg.ticalc.org/prj_tilem/");
+  gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dialog), pixbuf);
+  g_object_unref(pixbuf), pixbuf = NULL;
+  gtk_dialog_run(GTK_DIALOG (dialog));
+  gtk_widget_destroy(dialog);
+
+}
 
 void on_about(GtkWidget *pBtn)
 {
@@ -103,7 +119,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		static GtkItemFactoryEntry right_click_menu[] = {
 			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
-			{"/About", "<control>Q",on_about, 0, NULL, NULL},
+			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
 			{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}

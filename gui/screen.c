@@ -11,7 +11,7 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi)
 	if(gsi->view==1) 
 	{
 		DEBUGGINGGLOBAL_L2_A0("Use >>Switch view<< before !\n");
-		popup("Use >>Switch view<< before !\n", gsi);
+		popup_error("Use >>Switch view<< before !\n", gsi);
 	} else {
 	DEBUGGINGLCD_L2_A0("Entering : redraw_screen...\n");
 	GtkWidget *pImage;

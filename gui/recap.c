@@ -30,6 +30,35 @@ main -> g_timeout_add -> screenupdate -> gtk_widget_queue_draw [redessine le lcd
 tilem_z80_run_time(emu->calc, 10000, NULL); /* Absolument necessaire */
 (Dans la fonction core_thread)... Demarrage du core?
 
+Pour que l'interface arrive à discuter avec le core, il faut utiliser les click comme le release.
+Avec quelques milisec d'ecart.
+
+
+
+void show_about(GtkWidget *widget, gpointer data)
+{
+
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("tilem.png", NULL);
+
+  GtkWidget *dialog = gtk_about_dialog_new();
+  gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), "TilEm");
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), 
+      "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
+  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), 
+     "TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D");
+  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), 
+      "http://lpg.ticalc.org/prj_tilem/");
+  gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dialog), pixbuf);
+  g_object_unref(pixbuf), pixbuf = NULL;
+  gtk_dialog_run(GTK_DIALOG (dialog));
+  gtk_widget_destroy(dialog);
+
+}
+
+
+
+
 
 /* Model IDs */
 enum {
