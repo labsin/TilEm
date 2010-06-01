@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -W  -Wall -DG_ERRORCHECK_MUTEXES -DDEBUGGINGGLOBAL_L0 -DDEBUGGINGGLOBAL_L2 -DDEBUGGINGSKIN_L0 -DDEBUGGINGCLICK_L0 #-DDEBUGGINGCLICK_L2 -DDEBUGGINGLCD_L0 #-DDEBUGGINGLCD_L2
+CFLAGS = -g -W  -Wall -DG_ERRORCHECK_MUTEXES -DDEBUGGINGGLOBAL_L0 -DDEBUGGINGGLOBAL_L2 -DDEBUGGINGSKIN_L0 -DDEBUGGINGCLICK_L0 -DDEBUGGINGDEBUGGER_L0 -DDEBUGGINGCONFIG_FILE_L0#-DDEBUGGINGCLICK_L2 -DDEBUGGINGLCD_L0 #-DDEBUGGINGLCD_L2
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 
@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o
+objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -31,6 +31,9 @@ testemu2: $(objects) ../core/libtilemcore.a gui.h
 testemu2.o: testemu2.c ../core/tilem.h gui.h
 	$(compile) -c $(srcdir)/testemu2.c
 
+#Debugger
+debugger.o: debugger.c ../core/tilem.h gui.h
+	$(compile) -c $(srcdir)/debugger.c
 
 # Memory management and messages
 memory.o: memory.c ../core/tilem.h gui.h
@@ -55,6 +58,10 @@ skin.o: skin.c ../core/tilem.h gui.h
 # Popups and other stuff
 tool.o: tool.c ../core/tilem.h gui.h 
 	$(compile) -c $(srcdir)/tool.c
+	
+# Popups and other stuff
+config.o: config.c ../core/tilem.h gui.h 
+	$(compile) -c $(srcdir)/config.c
 
 	
 clean:

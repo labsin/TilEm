@@ -273,6 +273,7 @@ static gpointer core_thread(gpointer data)
 		/* sans ça, le carré se met à clignoter très vite ! */
 		g_usleep(10000);
 	}
+	return 0;
 }
 
 
@@ -380,6 +381,11 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gtk_window_set_title(GTK_WINDOW(pWindow),"tilem");	// define title of the window 
 	gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); // GTK_WIN_POS_CENTER : define how the window is displayed 
 	gtk_window_set_default_size(GTK_WINDOW(pWindow),gsi->si->width,gsi->si->height);	// define size of the window
+	
+	/* TODO : Allow to use the borderless tilem. By getting an command line parameter.Uncomment this line is working. */
+	//gtk_window_set_decorated(GTK_WINDOW(pWindow) , FALSE);
+	/* TODO end */
+
 	pImage=gtk_image_new_from_pixbuf(gsi->si->image);
 	
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(on_destroy),NULL); 

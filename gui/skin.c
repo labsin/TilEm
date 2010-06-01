@@ -82,7 +82,7 @@ void SkinSelection(GLOBAL_SKIN_INFOS *gsi) {
 
 void GetSkinSelected(GLOBAL_SKIN_INFOS *gsi) {
 
-	/* just get the file wich was selected */
+	/* Just get the file wich was selected */
 	gsi->SkinFileName=(gchar*)gtk_file_selection_get_filename(gsi->FileSelected);
 	printf("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
 	printf("file to load : %s\n",gsi->SkinFileName);

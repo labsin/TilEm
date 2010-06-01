@@ -142,3 +142,67 @@
 #define DEBUGGINGSKIN_L2_A5(x,y,z,t,u,v)
 #endif
 
+/* Here is the part for the config.dat information (creation, reading, writing ...) */
+#ifdef DEBUGGINGCONFIG_FILE_L0
+#define DEBUGGINGCONFIG_FILE_L0_A0(x)  printf(x)
+#define DEBUGGINGCONFIG_FILE_L0_A1(x,y)  printf(x,y)
+#define DEBUGGINGCONFIG_FILE_L0_A2(x,y,z)  printf(x,y,z)
+#define DEBUGGINGCONFIG_FILE_L0_A3(x,y,z,t)  printf(x,y,z,t)
+#define DEBUGGINGCONFIG_FILE_L0_A4(x,y,z,t,u)  printf(x,y,z,t,u)
+#define DEBUGGINGCONFIG_FILE_L0_A5(x,y,z,t,u,v)  printf(x,y,z,t,u,v)
+#else
+#define DEBUGGINGCONFIG_FILE_L0_A0(x)
+#define DEBUGGINGCONFIG_FILE_L0_A1(x,y)
+#define DEBUGGINGCONFIG_FILE_L0_A2(x,y,z)
+#define DEBUGGINGCONFIG_FILE_L0_A3(x,y,z,t)
+#define DEBUGGINGCONFIG_FILE_L0_A4(x,y,z,t,u)
+#define DEBUGGINGCONFIG_FILE_L0_A5(x,y,z,t,u,v)
+#endif
+
+#ifdef DEBUGGINGCONFIG_FILE_L2
+#define DEBUGGINGCONFIG_FILE_L2_A0(x)  printf(x)
+#define DEBUGGINGCONFIG_FILE_L2_A1(x,y)  printf(x,y)
+#define DEBUGGINGCONFIG_FILE_L2_A2(x,y,z)  printf(x,y,z)
+#define DEBUGGINGCONFIG_FILE_L2_A3(x,y,z,t)  printf(x,y,z,t)
+#define DEBUGGINGCONFIG_FILE_L2_A4(x,y,z,t,u)  printf(x,y,z,t,u)
+#define DEBUGGINGCONFIG_FILE_L2_A5(x,y,z,t,u,v)  printf(x,y,z,t,u,v)
+#else
+#define DEBUGGINGCONFIG_FILE_L2_A0(x)
+#define DEBUGGINGCONFIG_FILE_L2_A1(x,y)
+#define DEBUGGINGCONFIG_FILE_L2_A2(x,y,z)
+#define DEBUGGINGCONFIG_FILE_L2_A3(x,y,z,t)
+#define DEBUGGINGCONFIG_FILE_L2_A4(x,y,z,t,u)
+#define DEBUGGINGCONFIG_FILE_L2_A5(x,y,z,t,u,v)
+#endif
+
+#ifdef DEBUGGINGDEBUGGER_L0
+#define DEBUGGINGDEBUGGER_L0_A0(x)  printf(x)
+#define DEBUGGINGDEBUGGER_L0_A1(x,y)  printf(x,y)
+#define DEBUGGINGDEBUGGER_L0_A2(x,y,z)  printf(x,y,z)
+#define DEBUGGINGDEBUGGER_L0_A3(x,y,z,t)  printf(x,y,z,t)
+#define DEBUGGINGDEBUGGER_L0_A4(x,y,z,t,u)  printf(x,y,z,t,u)
+#define DEBUGGINGDEBUGGER_L0_A5(x,y,z,t,u,v)  printf(x,y,z,t,u,v)
+#else
+#define DEBUGGINGDEBUGGER_L0_A0(x)
+#define DEBUGGINGDEBUGGER_L0_A1(x,y)
+#define DEBUGGINGDEBUGGER_L0_A2(x,y,z)
+#define DEBUGGINGDEBUGGER_L0_A3(x,y,z,t)
+#define DEBUGGINGDEBUGGER_L0_A4(x,y,z,t,u)
+#define DEBUGGINGDEBUGGER_L0_A5(x,y,z,t,u,v)
+#endif
+#ifdef DEBUGGINGDEBUGGER_L2
+#define DEBUGGINGDEBUGGER_L2_A0(x)  printf(x)
+#define DEBUGGINGDEBUGGER_L2_A1(x,y)  printf(x,y)
+#define DEBUGGINGDEBUGGER_L2_A2(x,y,z)  printf(x,y,z)
+#define DEBUGGINGDEBUGGER_L2_A3(x,y,z,t)  printf(x,y,z,t)
+#define DEBUGGINGDEBUGGER_L2_A4(x,y,z,t,u)  printf(x,y,z,t,u)
+#define DEBUGGINGDEBUGGER_L2_A5(x,y,z,t,u,v)  printf(x,y,z,t,u,v)
+#else
+#define DEBUGGINGDEBUGGER_L2_A0(x)
+#define DEBUGGINGDEBUGGER_L2_A1(x,y)
+#define DEBUGGINGDEBUGGER_L2_A2(x,y,z)
+#define DEBUGGINGDEBUGGER_L2_A3(x,y,z,t)
+#define DEBUGGINGDEBUGGER_L2_A4(x,y,z,t,u)
+#define DEBUGGINGDEBUGGER_L2_A5(x,y,z,t,u,v)
+#endif
+

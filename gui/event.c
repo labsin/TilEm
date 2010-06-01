@@ -118,7 +118,9 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		DEBUGGINGCLICK_L0_A0("*  right click !                                       *\n");
 		static GtkItemFactoryEntry right_click_menu[] = {
 			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
+			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
+			{"/Use this skin as default for this rom model",NULL,write_default_skin_for_specific_rom,1,NULL,NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
@@ -137,8 +139,8 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		tilem_keypad_release_key(emu->calc, code);
 		g_mutex_unlock(emu->calc_mutex);
 	}
-	
-	
+	if(gsi->isDebuggerRunning)
+		refresh_register(gsi);	
 	return FALSE;
 }
 

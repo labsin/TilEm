@@ -16,6 +16,11 @@
 /* A global boolean to say "save the state" */
 int SAVE_STATE;
 
+typedef struct _TilemDebuggerRegister {
+	GtkWidget* reg[12];
+	
+} TilemDebuggerRegister;
+
 typedef struct _TilemCalcEmulator {
 	GMutex* run_mutex;
 	gboolean exiting;
@@ -53,8 +58,11 @@ typedef struct GLOBAL_SKIN_INFOS {
 	GtkWidget *pRadio;
 	int view;
 	char calc_id;
+	char *RomName;
 	char RomType;
 	TilemCalcEmulator *emu;
+	TilemDebuggerRegister *reg_entry;
+	gboolean isDebuggerRunning;
 }GLOBAL_SKIN_INFOS;
 
 static const char rcstr[] =
@@ -348,7 +356,24 @@ char choose_rom_popup();
 /* like on_destroy but save state */
 void quit_with_save();
 
+/* Dialog mesg */
 void show_about();
+
+/* ##### config.c ##### */
+
+/* Create the config.dat file  (normally only the first launch */
+void create_config_dat();
+
+void write_default_skin_for_specific_rom();
+
+gboolean search_string(char* string,GLOBAL_SKIN_INFOS *gsi);
+
+gboolean cmp_string(char* string, GLOBAL_SKIN_INFOS *gsi);
+
+/* ##### debugger.C ##### */
+void launch_debugger(GLOBAL_SKIN_INFOS *gsi);
+
+void refresh_register(GLOBAL_SKIN_INFOS* gsi);
 
 
 

@@ -97,11 +97,17 @@
 * ---31/03/10---
 * - Create skin for following model : 83 . Based on my own calc (take a foto with my iphone 3GS :D)
 * ---01/04/10---
-* - New feature : Save calc state and load state. State are stored in a separate dir called sav/ .
+* - New feature : Save calc state and load state. State are stored in a separate dir called sav/ . (using benjamin 's function)
 * - New feature : Change view to see only the lcd. I finally choose to add it into a GtkLayout. So you can maximize it, but there was problem with add_event.
 * ---02/04/10---
 * - Add popup function to just print error message.You must give the message and gsi as parameter, and it run a modal dialog.
 * - Some cleaning.
+* ---23/04/10---
+* - Add config.c file to manage config.dat (create, read, modif etc...).
+* ---31/05/10---
+* - Start from scratch a totally new debugger :D.Just draw button with nice GtkImages.Actually in essai2 directory.
+* ---01/06/10---
+* - Add the debugger to tilem. Load registers values.
 */
 
 
@@ -113,21 +119,38 @@ int main(int argc, char **argv)
 	const char* romname="xp.rom";
 	char* savname;
 	char* p;
-	FILE *romfile,*savfile;
+	FILE *romfile,*savfile, *config_file;
 	char calc_id;
 	
-
+	GLOBAL_SKIN_INFOS *gsi;
+	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
+	gsi->si=malloc(sizeof(SKIN_INFOS));
+	
 	
 	/* Init GTK+ */
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
-	gtk_rc_parse_string(rcstr);
+	gtk_rc_parse_string(rcstr);/* change style */
 	printf("Running tilem ^^ \n");
+	
+	/* Init isDebuggerRunning */
+	gsi->isDebuggerRunning=FALSE;
+	
+	/* Init tilem config file */
+	config_file = g_fopen("config.dat", "rt");
+	if (!config_file) 
+	{
+		printf("config.dat not exists \n");
+		create_config_dat();
+	}
+	/* end */
 	
 	/* Get the romname */
 	if (argc >= 2)  /* If they are 2 parameters or more, the romfile is the second. */
 	{
 		romname = argv[1];
+		gsi->RomName=(char*) malloc(strlen(romname)+1); /* save for config.c */
+		strcpy(gsi->RomName,romname);
 	}
 	/* end */
 	
@@ -142,9 +165,7 @@ int main(int argc, char **argv)
 		DEBUGGINGGLOBAL_L0_A0("**************** fct : main ****************************\n");
 		DEBUGGINGGLOBAL_L0_A2("*  romname=%s savname=%s           *\n",romname,savname);	
 		DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
-	}
-	else 
-	{
+	} else {
 		strcat(savname, ".sav");
 	}
 	/* end */
@@ -162,19 +183,13 @@ int main(int argc, char **argv)
 	savfile = g_fopen(savname, "rt");
 	
 	
-	
-	
-	GLOBAL_SKIN_INFOS *gsi;
-	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
-	gsi->si=malloc(sizeof(SKIN_INFOS));
-	
-	
 	/* The program must wait user choice before continuing */
 	if((calc_id=choose_rom_popup())=='0') {	/* Query for the model */
 			DEBUGGINGGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
 			if (!(calc_id=tilem_guess_rom_type(romfile))) {	
 				fprintf(stderr, "%s: unknown calculator type\n", romname);
-				fclose(romfile);
+				if(romfile!=NULL)
+					fclose(romfile);
 				return 1;
 			} 
 	}
@@ -221,10 +236,6 @@ int main(int argc, char **argv)
 		savfile = g_fopen(savname, "wt");
 		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
 	}
-	if(romfile!=NULL)
-		fclose(romfile);
-	if(savfile!=NULL)
-		fclose(savfile);
 	
 
 
