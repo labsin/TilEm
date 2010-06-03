@@ -87,7 +87,7 @@
 * - rom_choose_popup _freeze_ the system... and get wich radio button is selected. So it will be easy to create the good emu.calc (and choose the default skin).
 * ---18/03/10---
 * - Resize the (printed) lcd area (gsi->emu->lcdwin) to fit(perfectly) into the skin.
-* - Replace a lot of printf by DEBUGGING****_L*_A* to easily switch what debug infos were printed.
+* - Replace a lot of printf by D****_L*_A* to easily switch what debug infos were printed.
 * - Try to make a nice debugging output (frames in ASCII ^^) :p
 * - WahooOO , load a skin works perfectly.You can easily change skin _while running_, no error, no warning.
 * - Could load automatically the good skin and run the good core using the choose_rom_popup() function and choose_skin_filename() function.
@@ -106,8 +106,12 @@
 * - Add config.c file to manage config.dat (create, read, modif etc...).
 * ---31/05/10---
 * - Start from scratch a totally new debugger :D.Just draw button with nice GtkImages.Actually in essai2 directory.
+* - Get and resize pixmaps (png) to 36 * 36 pixels for the debugger.
 * ---01/06/10---
 * - Add the debugger to tilem. Load registers values.
+* - Add a new feature : switch the top level window "borderless".It can be switch by clicking on right click menu entry.
+* ---02/06/10---
+* - Create the GtkTreeView (debugger).
 */
 
 
@@ -162,9 +166,9 @@ int main(int argc, char **argv)
 	if ((p = strrchr(savname, '.'))) 
 	{
 		strcpy(p, ".sav");
-		DEBUGGINGGLOBAL_L0_A0("**************** fct : main ****************************\n");
-		DEBUGGINGGLOBAL_L0_A2("*  romname=%s savname=%s           *\n",romname,savname);	
-		DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
+		DGLOBAL_L0_A0("**************** fct : main ****************************\n");
+		DGLOBAL_L0_A2("*  romname=%s savname=%s           *\n",romname,savname);	
+		DGLOBAL_L0_A0("********************************************************\n");
 	} else {
 		strcat(savname, ".sav");
 	}
@@ -185,7 +189,7 @@ int main(int argc, char **argv)
 	
 	/* The program must wait user choice before continuing */
 	if((calc_id=choose_rom_popup())=='0') {	/* Query for the model */
-			DEBUGGINGGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
+			DGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
 			if (!(calc_id=tilem_guess_rom_type(romfile))) {	
 				fprintf(stderr, "%s: unknown calculator type\n", romname);
 				if(romfile!=NULL)
@@ -213,12 +217,12 @@ int main(int argc, char **argv)
 	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
 	gsi->emu->calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
 	
-	DEBUGGINGGLOBAL_L0_A0("**************** fct : main ****************************\n");
-	DEBUGGINGGLOBAL_L0_A1("*  calc_id= %c                                            *\n",calc_id);
-	DEBUGGINGGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",gsi->emu->calc->hw.model_id);	
-	DEBUGGINGGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",gsi->emu->calc->hw.name);		
-	DEBUGGINGGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",gsi->emu->calc->hw.name[3]);
-	DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
+	DGLOBAL_L0_A0("**************** fct : main ****************************\n");
+	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",calc_id);
+	DGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",gsi->emu->calc->hw.model_id);	
+	DGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",gsi->emu->calc->hw.name);		
+	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",gsi->emu->calc->hw.name[3]);
+	DGLOBAL_L0_A0("********************************************************\n");
 	
 	choose_skin_filename(gsi->emu->calc,gsi);
 		
@@ -230,7 +234,7 @@ int main(int argc, char **argv)
 	gtk_main();
 	
 	/* Save the state */
-	DEBUGGINGGLOBAL_L2_A1("Save state ? %d\n",SAVE_STATE);
+	DGLOBAL_L2_A1("Save state ? %d\n",SAVE_STATE);
 	if(SAVE_STATE==1) {
 		romfile = g_fopen(romname, "wb");
 		savfile = g_fopen(savname, "wt");

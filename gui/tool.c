@@ -56,8 +56,8 @@ char choose_rom_popup()
 
 	/* Run it and freeze gtk loop */
 	result = gtk_dialog_run(GTK_DIALOG(pPopup));
-	DEBUGGINGGLOBAL_L0_A0("**************** fct : choose_rom_popup ****************\n");
-	DEBUGGINGGLOBAL_L0_A1("*  Choosen button number : %d                           *\n", result);
+	DGLOBAL_L0_A0("**************** fct : choose_rom_popup ****************\n");
+	DGLOBAL_L0_A1("*  Choosen button number : %d                           *\n", result);
 	
 	GSList *pList;
 	const gchar *sLabel=NULL;
@@ -85,8 +85,8 @@ char choose_rom_popup()
 		}
 	}
 	
-	DEBUGGINGGLOBAL_L0_A1("*  Choosen model : %s                               *\n", sLabel);
-	DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
+	DGLOBAL_L0_A1("*  Choosen model : %s                               *\n", sLabel);
+	DGLOBAL_L0_A0("********************************************************\n");
 
 
 	/* Apply the patch of Mischa POSLAWSKY <shiar@shiar.org> */

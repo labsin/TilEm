@@ -1,18 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <glib/gstdio.h>
-#include <gui.h>
-/*#define DEBUG */
+#include "skin.h"
 
-/*
-*
-choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts 
-*
-*/
 
+/* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
 void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
-	DEBUGGINGSKIN_L0_A0("**************** fct : choose_skin_filename ************\n");
+	DSKIN_L0_A0("**************** fct : choose_skin_filename ************\n");
 	
 	if(strcmp(calc->hw.name,"ti73")==0) {
 		  gsi->SkinFileName=(gchar*)malloc(15);
@@ -52,20 +43,24 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 		strcpy(gsi->SkinFileName,"./skn/ti83plus.skn");
 	}
 		
-	DEBUGGINGSKIN_L0_A1("*  calc->hw.name == %s                             *\n",calc->hw.name);
-	DEBUGGINGSKIN_L0_A0("********************************************************\n");
+	DSKIN_L0_A1("*  calc->hw.name == %s                             *\n",calc->hw.name);
+	DSKIN_L0_A0("********************************************************\n");
 	//gsi->kl=x3_keylist;
 }
 
+/* GtkFileSelection */
+/* TODO : Replace deprecated GtkFileSelection by GtkFileChooser */
 void SkinSelection(GLOBAL_SKIN_INFOS *gsi) {
 
 	if(gsi->view==1) 
 	{
-		DEBUGGINGGLOBAL_L2_A0("Use >>Switch view<< before !\n");
+		DGLOBAL_L2_A0("Use >>Switch view<< before !\n");
 		popup_error("Use >>Switch view<< before !\n", gsi);
 	} else {
 		GtkFileSelection * file_selection;
 		file_selection=(GtkFileSelection*)gtk_file_selection_new("SkinLoad");
+		gtk_file_selection_set_filename(GTK_FILE_SELECTION(file_selection), "./skn/");
+		gtk_window_set_default_size(GTK_WINDOW(file_selection), 500, 405);
 		gtk_widget_show(GTK_WIDGET(file_selection));
 		printf("\nSKINSELECTION\n");
 		gsi->FileSelected=file_selection;

@@ -3,7 +3,7 @@
 #include <skinops.h>
 #include <scancodes.h>
 #include <debuginfo.h>
-
+//#include <tilemdb.h>
 #define TI73   "TI73"
 #define TI82   "TI82"
 #define TI83   "TI83"
@@ -12,7 +12,7 @@
 #define TI86   "TI86"
 #define X_FRINGE 2
 #define Y_FRINGE 1
-
+ 
 /* A global boolean to say "save the state" */
 int SAVE_STATE;
 
@@ -320,19 +320,25 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS * gsi) ;
 /* Redraw_screen when modify the skin */
 GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) ;
 
-/* Switch view to lcd only or skin + lcd */
-void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
-
 /* Create the lcd area */
 GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
-
-/* update the screen */
-gboolean screen_update(gpointer data);
 
 /* Repaint another skin */
 gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
 
+/* update the screen.Repaint the drawing_area widget */
+gboolean screen_update(gpointer data);
+
+/* refresh the lcd content */
 void update_lcdimage(TilemCalcEmulator *emu);
+
+/* ##### event.c ##### */
+
+/* Switch view to lcd only or skin + lcd */
+void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
+
+/* Switch borderless. */
+void switch_borderless(GLOBAL_SKIN_INFOS* gsi); 
 
 /* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
@@ -370,7 +376,7 @@ gboolean search_string(char* string,GLOBAL_SKIN_INFOS *gsi);
 
 gboolean cmp_string(char* string, GLOBAL_SKIN_INFOS *gsi);
 
-/* ##### debugger.C ##### */
+/* ##### debugger.c ##### */
 void launch_debugger(GLOBAL_SKIN_INFOS *gsi);
 
 void refresh_register(GLOBAL_SKIN_INFOS* gsi);

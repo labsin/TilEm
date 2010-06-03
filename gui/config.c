@@ -13,9 +13,9 @@ void create_config_dat()
 		{
 			unsigned char magic[11]="TilEm v2.00";
 			fwrite(magic,11,1,config_file);
-			DEBUGGINGCONFIG_FILE_L0_A0("****************** CREATE config.dat *******************\n");
-			DEBUGGINGCONFIG_FILE_L0_A0("*  config.dat successfully created                     *\n");
-			DEBUGGINGCONFIG_FILE_L0_A0("********************************************************\n\n");
+			DCONFIG_FILE_L0_A0("****************** CREATE config.dat *******************\n");
+			DCONFIG_FILE_L0_A0("*  config.dat successfully created                     *\n");
+			DCONFIG_FILE_L0_A0("********************************************************\n\n");
 			fclose(config_file);
 		}
 	
@@ -33,9 +33,9 @@ void write_default_skin_for_specific_rom(GLOBAL_SKIN_INFOS *gsi)
 			fwrite(gsi->RomName,strlen(gsi->RomName),1,config_file);
 			fwrite("=",1,1,config_file);
 			fwrite(gsi->SkinFileName,strlen(gsi->SkinFileName),1,config_file);
-			DEBUGGINGCONFIG_FILE_L0_A0("****************** WRITE config.dat *******************\n");
-			DEBUGGINGCONFIG_FILE_L0_A0("*  config.dat successfully modified                     *\n");
-			DEBUGGINGCONFIG_FILE_L0_A0("********************************************************\n\n");
+			DCONFIG_FILE_L0_A0("****************** WRITE config.dat *******************\n");
+			DCONFIG_FILE_L0_A0("*  config.dat successfully modified                     *\n");
+			DCONFIG_FILE_L0_A0("********************************************************\n\n");
 			fclose(config_file);
 		}
 	
@@ -63,10 +63,11 @@ gboolean search_string(char* string,GLOBAL_SKIN_INFOS *gsi)
 	char c;
 	FILE *config_file;
 	config_file = g_fopen("config.dat", "r");
-	while((c=fgetc(config_file))!=NULL) {
+	while((c=fgetc(config_file))!=EOF) {
 		if(c=='*')
 			result=cmp_string(string,gsi);
 	}
+
 	return result;
 	
 }	
@@ -75,6 +76,7 @@ gboolean cmp_string(char* string, GLOBAL_SKIN_INFOS *gsi) {
 	int i=0;
 	char c;
 	FILE *config_file;
+	string=string;
 	config_file = g_fopen("config.dat", "r");
 	while((c=fgetc(config_file))!='=') {
 		if(c!=gsi->RomName[i])

@@ -102,12 +102,12 @@ void switch_view_buggy(GLOBAL_SKIN_INFOS * gsi)
 	if(gsi->view==1) 
 	{
 		gsi->view=0;
-		DEBUGGINGLCD_L2_A0("Entering : draw_not_only_lcd...\n");
+		DLCD_L2_A0("Entering : draw_not_only_lcd...\n");
 		GtkWidget *pImage;
 		GtkWidget *pAf;
 		GtkWidget * pLayout;
 
-		DEBUGGINGLCD_L2_A1("draw_not_only_lcd name : %s\n",gsi->si->name);
+		DLCD_L2_A1("draw_not_only_lcd name : %s\n",gsi->si->name);
 		skin_unload(gsi->si);
 		skin_load(gsi->si,gsi->SkinFileName);
 		
@@ -140,11 +140,11 @@ void switch_view_buggy(GLOBAL_SKIN_INFOS * gsi)
 		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
 		//g_timeout_add(50, screen_update, gsi->emu);
 
-		DEBUGGINGLCD_L2_A0("Exiting : draw_not_only_lcd...\n");
+		DLCD_L2_A0("Exiting : draw_not_only_lcd...\n");
 	} else {
 		/* Draw ONLY the lcd area */
 		gsi->view=1; /* keep in memory we just print lcd */
-		DEBUGGINGLCD_L2_A0("Entering : draw_only_lcd...\n");
+		DLCD_L2_A0("Entering : draw_only_lcd...\n");
 		GtkWidget *pAf;
 		
 		/* Remove the pImage from the pWindow */ 
@@ -176,7 +176,7 @@ void switch_view_buggy(GLOBAL_SKIN_INFOS * gsi)
 		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
 		//g_timeout_add(50, screen_update, gsi->emu);
 		
-		DEBUGGINGLCD_L2_A0("Exiting : draw_only_lcd...\n");
+		DLCD_L2_A0("Exiting : draw_only_lcd...\n");
 	}
 
 }
@@ -828,12 +828,12 @@ int main(int argc, char** argv)
 GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) 
 {
 	
-	DEBUGGING ("Entering : redraw_screen...\n");
+	D ("Entering : redraw_screen...\n");
 	GtkWidget *pImage;
 	GtkWidget *pAf;
 	GtkWidget * pLayout;
 	/*gtk_stop();*/
-	DEBUGGING2("REDRAW_SCREEN name : %s\n",gsi->si->name);
+	D2("REDRAW_SCREEN name : %s\n",gsi->si->name);
 		skin_unload(gsi->si);
 		skin_load(gsi->si,gsi->SkinFileName);
 	
@@ -861,7 +861,7 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi)
 	gtk_signal_connect(GTK_OBJECT(pWindow), "button_press_event", G_CALLBACK(mouse_event),gsi);
 	gtk_widget_show_all(pWindow);	/*display the window and all that it contains.*/
 	
-	DEBUGGING ("Exiting : redraw_screen...\n");
+	D ("Exiting : redraw_screen...\n");
 	return gsi;
 
 }

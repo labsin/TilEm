@@ -10,16 +10,16 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi)
 {
 	if(gsi->view==1) 
 	{
-		DEBUGGINGGLOBAL_L2_A0("Use >>Switch view<< before !\n");
+		DGLOBAL_L2_A0("Use >>Switch view<< before !\n");
 		popup_error("Use >>Switch view<< before !\n", gsi);
 	} else {
-	DEBUGGINGLCD_L2_A0("Entering : redraw_screen...\n");
+	DLCD_L2_A0("Entering : redraw_screen...\n");
 	GtkWidget *pImage;
 	GtkWidget *pAf;
 	GtkWidget * pLayout;
 
 	gsi->view=0;
-	DEBUGGINGLCD_L2_A1("REDRAW_SCREEN name : %s\n",gsi->si->name);
+	DLCD_L2_A1("REDRAW_SCREEN name : %s\n",gsi->si->name);
 	skin_unload(gsi->si);
 	skin_load(gsi->si,gsi->SkinFileName);
 	
@@ -53,7 +53,7 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi)
 	gtk_widget_show_all(pWindow);	/*display the window and all that it contains.*/
 	g_timeout_add(50, screen_update, gsi->emu);
 	
-	DEBUGGINGLCD_L2_A0("Exiting : redraw_screen...\n");
+	DLCD_L2_A0("Exiting : redraw_screen...\n");
 	}
 	return gsi;
 
@@ -64,14 +64,14 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi)
 	if(gsi->view==1) 
 	{
 		gsi->view=0;
-		DEBUGGINGLCD_L2_A0("Entering : normal_view...\n");
+		DLCD_L2_A0("Entering : normal_view...\n");
 		GtkWidget *pImage, *pAf, *pLayout;
 
 		/* Reload skin */
 		skin_unload(gsi->si);
 		skin_load(gsi->si,gsi->SkinFileName);
 		
-		DEBUGGINGLCD_L2_A1("Skin name : %s\n",gsi->si->name);
+		DLCD_L2_A1("Skin name : %s\n",gsi->si->name);
 		
 		/* Remove the pImage from the pWindow */ 
 		gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
@@ -99,11 +99,11 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi)
 		gtk_widget_show(pAf);
 		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
 
-		DEBUGGINGLCD_L2_A0("Exiting : normal_view...\n");
+		DLCD_L2_A0("Exiting : normal_view...\n");
 	} else {
 		/* Draw ONLY the lcd area */
 		gsi->view=1; /* keep in memory we just print lcd */
-		DEBUGGINGLCD_L2_A0("Entering : draw_only_lcd...\n");
+		DLCD_L2_A0("Entering : draw_only_lcd...\n");
 		GtkWidget *pAf, *pLayout;
 
 		
@@ -142,7 +142,7 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi)
 		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
 
 		
-		DEBUGGINGLCD_L2_A0("Exiting : draw_only_lcd...\n");
+		DLCD_L2_A0("Exiting : draw_only_lcd...\n");
 	}
 
 }
@@ -157,7 +157,7 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi)
 /* La moindre modif entraine un bug graphique sur une partie de l'écran */
 void update_lcdimage(TilemCalcEmulator* emu)  /* Absolument necessaire */
 {
-	DEBUGGINGLCD_L2_A0(">update_lcdimage\n");
+	DLCD_L2_A0(">update_lcdimage\n");
 	int x, y, i, level;
 	int br, bg, bb, dr, dg, db;
 	guchar* p;
@@ -210,7 +210,7 @@ void update_lcdimage(TilemCalcEmulator* emu)  /* Absolument necessaire */
 		p[2] = bb / 256;
 		p += 3;
 	}
-	DEBUGGINGLCD_L2_A0("<update_lcdimage\n");
+	DLCD_L2_A0("<update_lcdimage\n");
 }
 
 
@@ -279,26 +279,26 @@ static gpointer core_thread(gpointer data)
 
 void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi) /* Absolument necessaire */
 {
-	DEBUGGINGLCD_L2_A0(">screen_resize\n");
+	DLCD_L2_A0(">screen_resize\n");
 	TilemCalcEmulator* emu = gsi->emu;
 	g_object_unref(emu->lcdscaledpb);
 	emu->lcdscaledpb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8,alloc->width, alloc->height);
-	DEBUGGINGLCD_L2_A0("<screen_resize\n");
+	DLCD_L2_A0("<screen_resize\n");
 }
 
 void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi)
 {
-	DEBUGGINGLCD_L2_A0(">screen_restyle\n");
+	DLCD_L2_A0(">screen_restyle\n");
 	TilemCalcEmulator* emu = gsi->emu;
 	emu->lcdfg = w->style->fg[GTK_STATE_NORMAL];
 	emu->lcdbg = w->style->bg[GTK_STATE_NORMAL];
 	gtk_widget_queue_draw(emu->lcdwin);
-	DEBUGGINGLCD_L2_A0("<screen_restyle\n");
+	DLCD_L2_A0("<screen_restyle\n");
 }
 
 gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi)
 {
-	DEBUGGINGLCD_L2_A0(">screen_repaint\n");
+	DLCD_L2_A0(">screen_repaint\n");
 	TilemCalcEmulator* emu = gsi->emu;
 	double fx, fy;
 
@@ -311,16 +311,16 @@ gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNU
 	g_mutex_unlock(emu->lcd_mutex);
 
 	gdk_draw_pixbuf(w->window, w->style->fg_gc[w->state],emu->lcdscaledpb, 0, 0, 0, 0,w->allocation.width, w->allocation.height,GDK_RGB_DITHER_NONE, 0, 0);
-	DEBUGGINGLCD_L2_A0("<screen_repaint\n");
+	DLCD_L2_A0("<screen_repaint\n");
 	return TRUE;
 }
 
 gboolean screen_update(gpointer data)
 {
-	DEBUGGINGLCD_L2_A0(">screen_update\n");
+	DLCD_L2_A0(">screen_update\n");
 	TilemCalcEmulator* emu = data;
 	gtk_widget_queue_draw(emu->lcdwin);
-	DEBUGGINGLCD_L2_A0("<screen_update\n");
+	DLCD_L2_A0("<screen_update\n");
 	return TRUE;
 }
 
@@ -329,7 +329,7 @@ gboolean screen_update(gpointer data)
 void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_items, int thisitems, const char *menuname,gpointer* gsi)
 {
 	
-	DEBUGGINGLCD_L2_A0("Entering : create_menus...\n");
+	DLCD_L2_A0("Entering : create_menus...\n");
 	GtkAccelGroup *accel_group;
 	GtkItemFactory *factory;
 	GtkWidget *menu;
@@ -345,7 +345,7 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_
 	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
 	gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
-	DEBUGGINGLCD_L2_A0("Exiting create_menus...\n");
+	DLCD_L2_A0("Exiting create_menus...\n");
 
 }
 
@@ -355,14 +355,14 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 {
 	//g_thread_init(NULL);
 	
-	DEBUGGINGLCD_L0_A0("**************** fct : draw_screen *********************\n");
-	DEBUGGINGLCD_L0_A0("*  - load skin                                         *\n");
-	DEBUGGINGLCD_L0_A0("*  - create GtkLayout                                  *\n");
-	DEBUGGINGLCD_L0_A0("*  - add skin, add lcd area                            *\n");
-	DEBUGGINGLCD_L0_A0("*  - connect events (callback)                         *\n");
-	DEBUGGINGLCD_L0_A0("*  - print top level window                            *\n");
-	DEBUGGINGLCD_L0_A0("*  - launch thread                                     *\n");
-	DEBUGGINGLCD_L0_A0("********************************************************\n");
+	DLCD_L0_A0("**************** fct : draw_screen *********************\n");
+	DLCD_L0_A0("*  - load skin                                         *\n");
+	DLCD_L0_A0("*  - create GtkLayout                                  *\n");
+	DLCD_L0_A0("*  - add skin, add lcd area                            *\n");
+	DLCD_L0_A0("*  - connect events (callback)                         *\n");
+	DLCD_L0_A0("*  - print top level window                            *\n");
+	DLCD_L0_A0("*  - launch thread                                     *\n");
+	DLCD_L0_A0("********************************************************\n");
 	int screenwidth ;
 	int screenheight;
 	GtkWidget *pAf;
@@ -378,13 +378,10 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	/* Create the window */
 	GtkWidget *pWindow,  *pImage, *pLayout;
 	pWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);	// GTK_WINDOW_LEVEL : define how is the window 
-	gtk_window_set_title(GTK_WINDOW(pWindow),"tilem");	// define title of the window 
+	gtk_window_set_title(GTK_WINDOW(pWindow),"TilEm");	// define title of the window 
 	gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); // GTK_WIN_POS_CENTER : define how the window is displayed 
 	gtk_window_set_default_size(GTK_WINDOW(pWindow),gsi->si->width,gsi->si->height);	// define size of the window
 	
-	/* TODO : Allow to use the borderless tilem. By getting an command line parameter.Uncomment this line is working. */
-	//gtk_window_set_decorated(GTK_WINDOW(pWindow) , FALSE);
-	/* TODO end */
 
 	pImage=gtk_image_new_from_pixbuf(gsi->si->image);
 	
@@ -447,10 +444,10 @@ GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi)
 	int screenheight=gsi->si->lcd_pos.bottom-gsi->si->lcd_pos.top; 
 	
 	
-	DEBUGGINGLCD_L0_A0("**************** fct : create_draw_area ****************\n");
-	DEBUGGINGLCD_L0_A1("*  screenwidth = %d                                   *\n",screenwidth);
-	DEBUGGINGLCD_L0_A1("*  screenheight = %d                                  *\n",screenheight);
-	DEBUGGINGLCD_L0_A0("********************************************************\n");
+	DLCD_L0_A0("**************** fct : create_draw_area ****************\n");
+	DLCD_L0_A1("*  screenwidth = %d                                   *\n",screenwidth);
+	DLCD_L0_A1("*  screenheight = %d                                  *\n",screenheight);
+	DLCD_L0_A0("********************************************************\n");
 	pAf = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);	
                          gtk_frame_set_shadow_type(GTK_FRAME(pAf),GTK_SHADOW_NONE);
                          {

@@ -4,13 +4,11 @@
 #include <glib/gstdio.h>
 #include <gui.h>
 
-
+/* Show the "On about" window */
 void on_about(GtkWidget *pBtn, gpointer data);
 
-/* Create the SKIN file selector */
-void SkinSelection(GLOBAL_SKIN_INFOS *gsi);
+/* Search wich key is clicked */
+static int scan_click(int MAX, double x, double y, GLOBAL_SKIN_INFOS * gsi);
 
-/* Get the skin file selected */
-void GetSkinSelected(GLOBAL_SKIN_INFOS *gsi);
-
-void on_valid(GtkWidget *pBtn, GLOBAL_SKIN_INFOS *gsi);
+/* Reset calc */
+void on_reset(GLOBAL_SKIN_INFOS * gsi);

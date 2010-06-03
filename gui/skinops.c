@@ -190,7 +190,7 @@ int skin_read_header(SKIN_INFOS *si, const char *filename)
 */
 int skin_read_image(SKIN_INFOS *si, const char *filename)
 {
-	DEBUGGINGSKIN_L2_A0("* -> fct : skin_read_image                             *\n");
+	DSKIN_L2_A0("* -> fct : skin_read_image                             *\n");
     FILE *fp = NULL;	
 	int i;
 	int sw, sh;
@@ -276,9 +276,9 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 	r = (rw < rh) ? rw : rh;
 	si->s = s = ceil(10 * r) / 10.0;
 
-	DEBUGGINGSKIN_L0_A2("*  image :<%i x %i>                                  *\n", sw, sh);
-	DEBUGGINGSKIN_L0_A2("*  lcd : <%i x %i>                                   *\n", lw, lh);
-	DEBUGGINGSKIN_L0_A3("*  ratios : <%2.2f x %2.2f> => %2.1f                       *\n", rw, rh, s);
+	DSKIN_L0_A2("*  image :<%i x %i>                                  *\n", sw, sh);
+	DSKIN_L0_A2("*  lcd : <%i x %i>                                   *\n", lw, lh);
+	DSKIN_L0_A3("*  ratios : <%2.2f x %2.2f> => %2.1f                       *\n", rw, rh, s);
     
 	//if(si->image)
 		//g_object_unref(si->image);
@@ -309,7 +309,7 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 int skin_load(SKIN_INFOS *si, const char *filename)
 {
   	int ret = 0;
-	DEBUGGINGSKIN_L0_A0("**************** fct : skin_load ***********************\n");
+	DSKIN_L0_A0("**************** fct : skin_load ***********************\n");
   	ret = skin_read_header(si, filename);
 	if(ret)
 		return ret;
@@ -321,7 +321,7 @@ int skin_load(SKIN_INFOS *si, const char *filename)
 	if(!ret)
    		printf("*  loading skin:  (%d x %d)                          *\n", si->width, si->height);
 	
-	DEBUGGINGGLOBAL_L0_A0("********************************************************\n");
+	DGLOBAL_L0_A0("********************************************************\n");
   
   	return ret;
 }
