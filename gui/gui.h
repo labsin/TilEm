@@ -4,6 +4,10 @@
 #include <scancodes.h>
 #include <debuginfo.h>
 //#include <tilemdb.h>
+
+#include <ticalcs.h>
+#include <ticables.h>
+#include <tifiles.h>
 #define TI73   "TI73"
 #define TI82   "TI82"
 #define TI83   "TI83"
@@ -63,6 +67,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	TilemCalcEmulator *emu;
 	TilemDebuggerRegister *reg_entry;
 	gboolean isDebuggerRunning;
+	GtkWidget* stack_treeview;	
 }GLOBAL_SKIN_INFOS;
 
 static const char rcstr[] =
@@ -381,8 +386,9 @@ void launch_debugger(GLOBAL_SKIN_INFOS *gsi);
 
 void refresh_register(GLOBAL_SKIN_INFOS* gsi);
 
+void refresh_stack(GLOBAL_SKIN_INFOS* gsi);
 
-
+void send_file(GLOBAL_SKIN_INFOS *gsi);
 
 
 
