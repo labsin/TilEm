@@ -147,14 +147,14 @@ void create_debug_window(GLOBAL_SKIN_INFOS* gsi)
 	
 	/* Create the central dasm scrolled widget */
 	GtkWidget* debug_dasmscroll= gtk_scrolled_window_new(NULL, NULL);	
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_dasmscroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_dasmscroll), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 	create_dasm_list(debug_dasmscroll, gsi);	
 		
 	/* Create the stack list scrolled widget */
 	GtkWidget* debug_stackframe= gtk_frame_new("Stack");
 	gtk_frame_set_label_align(GTK_FRAME(debug_stackframe), 1.0, 0.5);
 	GtkWidget* debug_stackscroll= gtk_scrolled_window_new(NULL, NULL);	
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_stackscroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_stackscroll), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 	create_stack_list(debug_stackscroll, gsi);
 	gtk_container_add(GTK_CONTAINER(debug_stackframe), debug_stackscroll);
 	
@@ -162,19 +162,19 @@ void create_debug_window(GLOBAL_SKIN_INFOS* gsi)
 	/* Create the memory list scrolled widget */
 	GtkWidget* debug_memoryframe= gtk_frame_new("Memory");
 	gtk_frame_set_label_align(GTK_FRAME(debug_memoryframe), 0.5, 0.5);
-	gtk_widget_set_size_request(GTK_WIDGET(debug_memoryframe) , 400, 160);	
+	//gtk_widget_set_size_request(GTK_WIDGET(debug_memoryframe) , 400, 160);	
 	GtkWidget* debug_memoryscroll= gtk_scrolled_window_new(NULL, NULL);	
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_memoryscroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_memoryscroll), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 	create_memory_list(debug_memoryscroll, gsi);
 	gtk_container_add(GTK_CONTAINER(debug_memoryframe), debug_memoryscroll);
 	
 	GtkWidget* debug_label= gtk_label_new("Tilem-dbg (c) Duponchelle Thibault, Moody Benjamin, Bruant Luc");
 	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_label, 0, 7, 13, 14);
-	//GtkWidget* debug_image= gtk_image_new_from_file("./pix/dbgtilem4.png");
+	//GtkWidget* debug_image= gtk_image_new_from_file("./pix/tilem_matrix2.png");
 	//gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_image, 0, 7, 14, 15);
 	gtk_table_attach_defaults(GTK_TABLE(debug_table),debug_dasmscroll, 1 , 6, 1, 7); 
 	gtk_table_attach_defaults(GTK_TABLE(debug_table),debug_stackframe, 6 , 7, 0, 7); 
-	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_memoryframe, 0, 7, 7, 8);
+	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_memoryframe, 0, 7, 7, 13);
 	gtk_container_add(GTK_CONTAINER(debug_win), debug_table);
 	gtk_signal_connect(GTK_OBJECT(debug_win), "delete-event", G_CALLBACK(on_debug_destroy), gsi);
 	gtk_widget_show_all(debug_win);
@@ -296,20 +296,20 @@ void create_dasm_list(GtkWidget* debug_dasmscroll, GLOBAL_SKIN_INFOS* gsi) {
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 14);
-	column = gtk_tree_view_column_new_with_attributes("OFFSET" ,renderer, "text", COL_OFFSET_DASM, NULL);
+	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
+	column = gtk_tree_view_column_new_with_attributes("ADDR" ,renderer, "text", COL_OFFSET_DASM, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 	
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 14);
+	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
 	column = gtk_tree_view_column_new_with_attributes("OP" ,renderer, "text", COL_OP_DASM, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 
 	
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 14);
+	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
 	column = gtk_tree_view_column_new_with_attributes("ARGS" ,renderer, "text", COL_ARGS_DASM, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
@@ -375,13 +375,14 @@ void create_stack_list(GtkWidget* debug_stackscroll, GLOBAL_SKIN_INFOS* gsi) {
 	
 	/* Create the stack list tree view and set title invisible */
 	debug_treeview= gtk_tree_view_new();
+	gsi->stack_treeview= debug_treeview;
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(debug_treeview), TRUE);	
 	gtk_tree_view_set_search_column(GTK_TREE_VIEW(debug_treeview), COL_OP_DASM);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
 	gtk_cell_renderer_set_fixed_size(renderer, -1, 14);
-	column = gtk_tree_view_column_new_with_attributes("OFF" ,renderer, "text", COL_OFFSET_STK, NULL);
+	column = gtk_tree_view_column_new_with_attributes("ADDR" ,renderer, "text", COL_OFFSET_STK, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 	
@@ -407,6 +408,20 @@ void create_stack_list(GtkWidget* debug_stackscroll, GLOBAL_SKIN_INFOS* gsi) {
 
 }
 
+void refresh_stack(GLOBAL_SKIN_INFOS * gsi)
+{
+	char* sp;
+	sp= malloc(sizeof(char*));
+	getreg(gsi, 10, sp);
+	DDEBUGGER_L0_A0("******************** fct: refresh_stack ****************\n");
+	DDEBUGGER_L0_A1("*  SP : %s                                           *\n", sp);
+	DDEBUGGER_L0_A0("********************************************************\n");
+	GtkTreeModel * model;
+	model = fill_stk_list(gsi);
+	gtk_tree_view_set_model (GTK_TREE_VIEW (gsi->stack_treeview), model);
+}
+
+
 /* Create GtkListStore and attach it */
 static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi)
 {
@@ -426,7 +441,7 @@ static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi)
 
 		/* Append a row and fill in some data (here is just for debugging) */
 		gtk_list_store_append (store, &iter);
-		gtk_list_store_set (store, &iter, COL_OFFSET_STK, "0000", COL_VALUE_STK, "A2", -1);
+		gtk_list_store_set (store, &iter, COL_OFFSET_STK, stack_offset, COL_VALUE_STK, "----", -1);
  
                 i += 0x0002;
       }
@@ -451,7 +466,7 @@ void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
 	gtk_cell_renderer_set_fixed_size(renderer, 70, 14);
-	column = gtk_tree_view_column_new_with_attributes("OFFSET",renderer, "text", COL_OFFSET_MEM, NULL);
+	column = gtk_tree_view_column_new_with_attributes("ADDR",renderer, "text", COL_OFFSET_MEM, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 

@@ -112,6 +112,10 @@
 * - Add a new feature : switch the top level window "borderless".It can be switch by clicking on right click menu entry.
 * ---02/06/10---
 * - Create the GtkTreeView (debugger).
+* - Refresh register on click.
+* ---05/08/10---
+* - More than one month without working on tilem...Only commit old modif, and skn/README file.
+* - Refresh stack on click (number of entry is correct but value not)				      
 */
 
 

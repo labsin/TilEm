@@ -122,6 +122,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		DCLICK_L0_A0("*  right click !                                       *\n");
 		static GtkItemFactoryEntry right_click_menu[] = {
 			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
+			{"/Send file...", "F11", send_file, 1, NULL, NULL},
 			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
 			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
@@ -145,8 +146,10 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		tilem_keypad_release_key(emu->calc, code);
 		g_mutex_unlock(emu->calc_mutex);
 	}
-	if(gsi->isDebuggerRunning)
-		refresh_register(gsi);	
+	if(gsi->isDebuggerRunning) {
+		refresh_register(gsi);
+		refresh_stack(gsi);
+	}
 	return FALSE;
 }
 
@@ -183,6 +186,74 @@ void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 	}
 }
 
+static int is_ready(CalcHandle* h)
+{
+         int err;
+ 
+         err = ticalcs_calc_isready(h);
+         printf("Hand-held is %sready !\n", err ? "not " : "");
+ 
+         return 0;
+}
+
+static void print_lc_error(int errnum)
+{
+	char *msg;
+
+        ticables_error_get(errnum, &msg);
+	fprintf(stderr, "Link cable error (code %i)...\n<<%s>>\n",
+        errnum, msg);
+        free(msg);
+}
+
+
+void send_file(GLOBAL_SKIN_INFOS *gsi) {
+	CableHandle* cable;
+	CalcHandle* calc;
+	FileContent *filec;
+	int err;
+
+	// init libs
+	ticables_library_init();
+	ticalcs_library_init();
+	tifiles_library_init();
+
+	// set cable
+	cable = ticables_handle_new(CABLE_ILP, PORT_0);
+	if(cable==NULL) 
+		printf("cable == null\n");
+
+
+	// set calc
+	calc = ticalcs_handle_new(CALC_TI83);
+
+	if(calc==NULL) 
+		printf("calc == null\n");
+
+	//calc = gsi->emu->calc;
+	// attach cable to calc (and open cable)
+	err = ticalcs_cable_attach(calc, cable);
+	ticables_handle_show(cable);
+
+	//err = ticalcs_calc_isready(calc);
+	is_ready(calc);
+	if(err)
+	        print_lc_error(err);
+	//cable->priv = gsi->emu->calc;	
+	filec = tifiles_content_create_regular(calc->model);
+	err = tifiles_file_read_regular("test.83p", filec);
+	ticalcs_calc_send_var(calc, MODE_NORMAL, filec);
+	//err= ticalcs_calc_send_var(cable, 
+	//printf("Hand-held is %sready !\n", err ? "not " : "");
+
+	// detach cable (made by handle_del, too)
+	err = ticalcs_cable_detach(calc);
+
+	// remove calc & cable
+	ticalcs_handle_del(calc);
+	ticables_handle_del(cable);
+
+}
 
 
 
