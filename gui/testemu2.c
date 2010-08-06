@@ -238,6 +238,7 @@ int main(int argc, char **argv)
 	config_load(gsi->ci);
 	//if(is_this_rom_in_config_infos(gsi->RomName, gsi))
 	{
+		/* TODO : CORRECT THE SEG FAULT (not systematically) */
 		search_defaultskin_in_config_infos(gsi->RomName, gsi);
 		printf("Main : gsi->SkinFileName= %s",gsi->SkinFileName);
 	//} else {
