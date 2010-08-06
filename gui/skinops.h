@@ -1,12 +1,12 @@
 /* 
-From Roms(?) :
+From Romn Lievins(?) :
    Most of these definitions and code comes from the JB's SkinEdit
    which is based on TiEmu skin code. TiEmu skin code is also based on
    VTi's skin code.
    
 contra-sh :
-   This file is a perfect copy of the tiemu skinops.h file ...
-   Thank's to rom's and JB for this wonderful work.
+   This file is a (quasi ?) perfect copy of the tiemu skinops.h file ...
+   Thank's to Romain Lievins and Julien Blache for this wonderful work.
 
 */
 

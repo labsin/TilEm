@@ -59,7 +59,7 @@ void SkinSelection(GLOBAL_SKIN_INFOS *gsi) {
 	} else {
 		GtkFileSelection * file_selection;
 		file_selection=(GtkFileSelection*)gtk_file_selection_new("SkinLoad");
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(file_selection), "./skn/");
+		gtk_file_selection_set_filename(GTK_FILE_SELECTION(file_selection), "~/.skn/");
 		gtk_window_set_default_size(GTK_WINDOW(file_selection), 500, 405);
 		gtk_widget_show(GTK_WIDGET(file_selection));
 		printf("\nSKINSELECTION\n");

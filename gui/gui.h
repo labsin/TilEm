@@ -1,9 +1,10 @@
 #include <tilem.h>
 #include <z80.h>
 #include <skinops.h>
+#include <config.h>
 #include <scancodes.h>
 #include <debuginfo.h>
-//#include <tilemdb.h>
+#include <tilemdb.h>
 
 #include <ticalcs.h>
 #include <ticables.h>
@@ -53,6 +54,7 @@ typedef struct KEY_LIST {
 typedef struct GLOBAL_SKIN_INFOS {
 	KEY_LIST kl;
 	SKIN_INFOS *si;
+	CONFIG_INFOS *ci;
 	GtkWidget *pWindow;
 	GtkWidget *pLayout;
 	GtkWidget *pFrame;
@@ -373,23 +375,41 @@ void show_about();
 /* ##### config.c ##### */
 
 /* Create the config.dat file  (normally only the first launch */
-void create_config_dat();
+void create_config_dat(GLOBAL_SKIN_INFOS* gsi);
 
-void write_default_skin_for_specific_rom();
+/* Just load the config_file by reading it and save into CONFIG_INFOS */
+void config_load(CONFIG_INFOS *infos);
 
-gboolean search_string(char* string,GLOBAL_SKIN_INFOS *gsi);
+/* Called by event.c in the right click menu */
+void write_default_skin_for_this_rom();
 
-gboolean cmp_string(char* string, GLOBAL_SKIN_INFOS *gsi);
+/* Write the config.dat (modification only) */
+void write_config_file(GLOBAL_SKIN_INFOS *gsi);
+
+/* Search for the romname in the CONFIG_INFOS struct and answer by true or false */
+gboolean is_this_rom_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
+
+/* Get the name of the skin to use with this rom */
+void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
+
+/* search, write, and save config on right click menu */
+int add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
+
 
 /* ##### debugger.c ##### */
+
+/* Main function for the debugger. */
 void launch_debugger(GLOBAL_SKIN_INFOS *gsi);
 
+/* Refresh on click the register in the debugger */
 void refresh_register(GLOBAL_SKIN_INFOS* gsi);
 
+/* Refresh on click the stack in the debugger */
 void refresh_stack(GLOBAL_SKIN_INFOS* gsi);
 
-void send_file(GLOBAL_SKIN_INFOS *gsi);
 
+/* test sending file */
+void send_file(GLOBAL_SKIN_INFOS *gsi);
 
 
 

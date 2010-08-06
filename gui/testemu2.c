@@ -116,6 +116,8 @@
 * ---05/08/10---
 * - More than one month without working on tilem...Only commit old modif, and skn/README file.
 * - Refresh stack on click (number of entry is correct but value not)				      
+* ---06/08/10---
+* - Working on a new system of configuration file.The config.dat is now a binary file (as .skn but totally differennt). At start, a CONFIG_INFOS struct is filling, then when clicking on right menu, this struct is modified, then when you stop tilem, config.dat is writed on disc. 
 */
 
 
@@ -129,34 +131,30 @@ int main(int argc, char **argv)
 	char* p;
 	FILE *romfile,*savfile, *config_file;
 	char calc_id;
-	
+
+
+	/* Some allocation to do not crash */	
 	GLOBAL_SKIN_INFOS *gsi;
 	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
 	gsi->si=malloc(sizeof(SKIN_INFOS));
+	gsi->ci=malloc(sizeof(CONFIG_INFOS));
 	
 	
 	/* Init GTK+ */
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
 	gtk_rc_parse_string(rcstr);/* change style */
-	printf("Running tilem ^^ \n");
 	
 	/* Init isDebuggerRunning */
 	gsi->isDebuggerRunning=FALSE;
-	
-	/* Init tilem config file */
-	config_file = g_fopen("config.dat", "rt");
-	if (!config_file) 
-	{
-		printf("config.dat not exists \n");
-		create_config_dat();
-	}
-	/* end */
 	
 	/* Get the romname */
 	if (argc >= 2)  /* If they are 2 parameters or more, the romfile is the second. */
 	{
 		romname = argv[1];
+		DGLOBAL_L0_A0("**************** fct : main ****************************\n");
+		DGLOBAL_L0_A1("*  argv[1]=%s                                *\n",argv[1]);	
+		DGLOBAL_L0_A0("********************************************************\n");
 		gsi->RomName=(char*) malloc(strlen(romname)+1); /* save for config.c */
 		strcpy(gsi->RomName,romname);
 	}
@@ -178,6 +176,14 @@ int main(int argc, char **argv)
 	}
 	/* end */
 	
+	/* Init tilem config file */
+	config_file = g_fopen("config.dat", "rt");
+	if (!config_file) 
+	{
+		printf("config.dat does not exist \n");
+		create_config_dat(gsi);
+	}
+	/* end */
 	
 	/* Open the romfile */
 	romfile = g_fopen(romname, "rb");
@@ -212,7 +218,7 @@ int main(int argc, char **argv)
 		
 
 	
-
+	/* Init emulator */
 	gsi->emu->run_mutex = g_mutex_new();
 	gsi->emu->calc_mutex = g_mutex_new();
 	gsi->emu->lcd_mutex = g_mutex_new();
@@ -220,7 +226,8 @@ int main(int argc, char **argv)
 	gsi->emu->forcebreak = FALSE;
 	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
 	gsi->emu->calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
-	
+	/* end */
+
 	DGLOBAL_L0_A0("**************** fct : main ****************************\n");
 	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",calc_id);
 	DGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",gsi->emu->calc->hw.model_id);	
@@ -228,8 +235,17 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",gsi->emu->calc->hw.name[3]);
 	DGLOBAL_L0_A0("********************************************************\n");
 	
-	choose_skin_filename(gsi->emu->calc,gsi);
-		
+	config_load(gsi->ci);
+	//if(is_this_rom_in_config_infos(gsi->RomName, gsi))
+	{
+		search_defaultskin_in_config_infos(gsi->RomName, gsi);
+		printf("Main : gsi->SkinFileName= %s",gsi->SkinFileName);
+	//} else {
+		/* User does not have choosen another skin for this model, choose officials :) */
+		choose_skin_filename(gsi->emu->calc,gsi);
+	}
+	
+	/* Draw skin */	
 	gsi->pWindow=draw_screen(gsi);
 	
 	
@@ -238,7 +254,6 @@ int main(int argc, char **argv)
 	gtk_main();
 	
 	/* Save the state */
-	DGLOBAL_L2_A1("Save state ? %d\n",SAVE_STATE);
 	if(SAVE_STATE==1) {
 		romfile = g_fopen(romname, "wb");
 		savfile = g_fopen(savname, "wt");

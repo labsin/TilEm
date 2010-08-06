@@ -373,6 +373,7 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	SKIN_INFOS *si;
 	si=malloc(sizeof(SKIN_INFOS));
 	gsi->si=(SKIN_INFOS*)si;
+	printf("gsi->SkinFileName = %s \n", gsi->SkinFileName);
 	skin_load(gsi->si,gsi->SkinFileName);
 	
 	/* Create the window */

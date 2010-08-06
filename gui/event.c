@@ -126,7 +126,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
 			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
-			{"/Use this skin as default for this rom model",NULL,write_default_skin_for_specific_rom,1,NULL,NULL},
+			{"/Use this skin as default for this rom model",NULL,add_or_modify_defaultskin, 1, NULL, NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
