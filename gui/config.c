@@ -47,11 +47,11 @@ int config_read(CONFIG_INFOS *ci, const char *filename)
 	
 	  	if (length > 0)
 	    	{
-	      		ci->sa[i].romname = (char *)malloc(length + 1);
+	      		ci->sa[i].romname = (char *)malloc(length);
 		    	if (ci->sa[i].romname == NULL)
 				return -1;
 	
-			memset(ci->sa[i].romname, 0, length + 1);
+			memset(ci->sa[i].romname, 0, length);
 		    	fread(ci->sa[i].romname, length, 1, fp);
 		}
 	
@@ -62,11 +62,11 @@ int config_read(CONFIG_INFOS *ci, const char *filename)
 	
 	  	if (length > 0)
 	   	{
-	      		ci->sa[i].defaultskinname = (char *)malloc(length + 1);
+	      		ci->sa[i].defaultskinname = (char *)malloc(length);
 	      		if (ci->sa[i].defaultskinname == NULL)
 				return -1;
 	
-	      		memset(ci->sa[i].defaultskinname, 0, length + 1);
+	      		memset(ci->sa[i].defaultskinname, 0, length);
 	      		fread(ci->sa[i].defaultskinname, length, 1, fp);
 	    	}
 	}	
@@ -228,16 +228,17 @@ void write_config_file(GLOBAL_SKIN_INFOS *gsi) {
 				length_romname = 0;	
 				length_defaultskinname = 0;	
 			} else {
-				length_romname = strlen(gsi->ci->sa[i].romname);
-				length_defaultskinname = strlen(gsi->ci->sa[i].defaultskinname);
+				length_romname = strlen(gsi->ci->sa[i].romname) +1;
+				length_defaultskinname = strlen(gsi->ci->sa[i].defaultskinname)+1;
 			}
-		fwrite(&length_romname, 4, 1, config_file);
-		fwrite(gsi->ci->sa[i].romname, length_romname, 1, config_file);
-		fwrite(&length_defaultskinname, 4, 1, config_file);
-		fwrite(gsi->ci->sa[i].defaultskinname, length_defaultskinname, 1, config_file);
+				
+			fwrite(&length_romname, 4, 1, config_file);
+			fwrite(gsi->ci->sa[i].romname, length_romname, 1, config_file);
+			fwrite(&length_defaultskinname, 4, 1, config_file);
+			fwrite(gsi->ci->sa[i].defaultskinname, length_defaultskinname, 1, config_file);
 
 		}
-		fwrite(gsi->ci,sizeof(CONFIG_INFOS),1,config_file);
+		//fwrite(gsi->ci,sizeof(CONFIG_INFOS),1,config_file);
 
 
 		DCONFIG_FILE_L0_A0("****************** WRITE config.dat *******************\n");
@@ -275,10 +276,8 @@ void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi)
 			{
 				//gsi->SkinFileName=(gchar*)malloc(sizeof("/home/tib/ti84plus.skn")+1);
 				//strcpy(gsi->SkinFileName,"/home/tib/ti84plus.skn");
-				printf("gsi->SkinFileName : %s \n",gsi->SkinFileName);
-				//char* p;
 				
-				gsi->SkinFileName=(gchar*)malloc(sizeof(gsi->ci->sa[i].defaultskinname)+1);		
+				gsi->SkinFileName=(char*)malloc(strlen(gsi->ci->sa[i].defaultskinname)+1);		
 				strcpy(gsi->SkinFileName,gsi->ci->sa[i].defaultskinname);
 				printf("gsi->SkinFileName : %s \n",gsi->SkinFileName);
 				//strrchr(gsi->SkinFileName,".");

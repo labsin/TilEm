@@ -137,6 +137,7 @@ int main(int argc, char **argv)
 	GLOBAL_SKIN_INFOS *gsi;
 	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
 	gsi->si=malloc(sizeof(SKIN_INFOS));
+	gsi->pWindow = NULL;
 	gsi->ci=malloc(sizeof(CONFIG_INFOS));
 	
 	
@@ -236,12 +237,12 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A0("********************************************************\n");
 	
 	config_load(gsi->ci);
-	//if(is_this_rom_in_config_infos(gsi->RomName, gsi))
+	if(is_this_rom_in_config_infos(gsi->RomName, gsi))
 	{
 		/* TODO : CORRECT THE SEG FAULT (not systematically) */
 		search_defaultskin_in_config_infos(gsi->RomName, gsi);
 		printf("Main : gsi->SkinFileName= %s",gsi->SkinFileName);
-	//} else {
+	} else {
 		/* User does not have choosen another skin for this model, choose officials :) */
 		choose_skin_filename(gsi->emu->calc,gsi);
 	}

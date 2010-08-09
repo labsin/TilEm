@@ -18,7 +18,7 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 		  gsi->SkinFileName=(gchar*)malloc(15);
 		  strcpy(gsi->SkinFileName,"./skn/ti82.skn");
 	}else if(strcmp(calc->hw.name,"ti83")==0) {
-		gsi->SkinFileName=(gchar*)malloc(16);
+		gsi->SkinFileName=(gchar*)malloc(41);
 		strcpy(gsi->SkinFileName,"./skn/ti83.skn");
 	}else if(strcmp(calc->hw.name,"ti83p")==0) {
 		gsi->SkinFileName=(gchar*)malloc(16);
