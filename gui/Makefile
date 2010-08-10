@@ -1,6 +1,6 @@
 AR = ar
 CC = gcc
-CFLAGS = -g -W  -Wall -DG_ERRORCHECK_MUTEXES -DDGLOBAL_L0 -DDGLOBAL_L2 -DDSKIN_L0 -DDCLICK_L0 -DDDEBUGGER_L0 -DDCONFIG_FILE_L0 #-DDCLICK_L2 -DDLCD_L0 #-DDLCD_L2
+CFLAGS = -g -W -Wall -DD1
 DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 
@@ -20,7 +20,7 @@ objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
 
-compile = $(CC) -I$(top_builddir) -I$(srcdir) -I$(srcdir)/../core -I$(srcdir)/../db $(CFLAGS) $(CPPFLAGS) $(DEFS) $(GTK_CFLAGS) $(TICONV_CFLAGS)
+compile = $(CC) -I$(srcdir) -I$(srcdir)/../core -I$(srcdir)/../db $(CFLAGS) $(DEFS) $(GTK_CFLAGS) 
 
 all: testemu2
 
@@ -39,15 +39,15 @@ debugger.o: debugger.c debugger.h gui.h
 memory.o: memory.c 
 	$(compile) -c $(srcdir)/memory.c
 
-# Build the Skin set and define the key coord and the key list
+# Print the skin and add the events. 
 screen.o: screen.c gui.h 
 	$(compile) -c $(srcdir)/screen.c
 
-# Handle an GDKevent
+# Handle events
 event.o: event.c event.h 
 	$(compile) -c $(srcdir)/event.c
 
-# Open skin
+# Open skin (skn format file) originally created by Julien Blache and Romain Lievins
 skinops.o: skinops.c skinops.h 
 	$(compile) -c $(srcdir)/skinops.c
 

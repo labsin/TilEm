@@ -4,6 +4,14 @@
 /* Add level 2 for complete info ;D but it will print a LOT of message (refresh lcd by example will send you 10 msg by sec) */
 /* D****_L*_A*    ----> **** for the kind of info ,   L* for the level , A*  for the number of arguments */
 
+#ifdef D1
+#define DGLOBAL_L0 
+#define DGLOBAL_L2 
+#define DSKIN_L0 
+#define DCLICK_L0 
+#define DDEBUGGER_L0 DCONFIG_FILE_L0 
+#endif
+
 #ifdef DEBUG
 #define DEBUGGING(x)  printf(x)
 #define DEBUGGING2(x,y)  printf(x,y)
