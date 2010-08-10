@@ -118,6 +118,11 @@
 * - Refresh stack on click (number of entry is correct but value not)				      
 * ---06/08/10---
 * - Working on a new system of configuration file.The config.dat is now a binary file (as .skn but totally differennt). At start, a CONFIG_INFOS struct is filling, then when clicking on right menu, this struct is modified, then when you stop tilem, config.dat is writed on disc. 
+* ---09/08/10---
+* - Correction of the SEG_FAULT (never use sizeof(char*) inside malloc, strlen(char*) is better :P).
+* ---10/08/10---
+* - Working on a new config file called romconfig.dat (inspired from config.dat) using to do not ask for model each time tilem is started.							      
+* - It works :D
 */
 
 
@@ -129,8 +134,8 @@ int main(int argc, char **argv)
 	const char* romname="xp.rom";
 	char* savname;
 	char* p;
-	FILE *romfile,*savfile, *config_file;
-	char calc_id;
+	FILE *romfile,*savfile, *config_file, *romconfig_file;
+	//char calc_id;
 
 
 	/* Some allocation to do not crash */	
@@ -139,6 +144,7 @@ int main(int argc, char **argv)
 	gsi->si=malloc(sizeof(SKIN_INFOS));
 	gsi->pWindow = NULL;
 	gsi->ci=malloc(sizeof(CONFIG_INFOS));
+	gsi->rci=malloc(sizeof(ROMCONFIG_INFOS));
 	
 	
 	/* Init GTK+ */
@@ -177,12 +183,18 @@ int main(int argc, char **argv)
 	}
 	/* end */
 	
-	/* Init tilem config file */
+	/* Init tilem config.dat and rom_config_file.dat */
 	config_file = g_fopen("config.dat", "rt");
 	if (!config_file) 
 	{
 		printf("config.dat does not exist \n");
 		create_config_dat(gsi);
+	}
+	romconfig_file = g_fopen("romconfig.dat", "rt");
+	if (!romconfig_file) 
+	{
+		printf("romconfig.dat does not exist \n");
+		create_romconfig_dat(gsi);
 	}
 	/* end */
 	
@@ -196,21 +208,30 @@ int main(int argc, char **argv)
 	/* end */
 	
 	savfile = g_fopen(savname, "rt");
-	
-	
+
+	romconfig_load(gsi->rci);
+	if(is_this_rom_in_romconfig_infos(gsi->RomName, gsi))
+	{
+		search_defaultmodel_in_romconfig_infos(gsi->RomName, gsi);
+		DCONFIG_FILE_L0_A1("Saved model id : %c\n", gsi->calc_id);
+	} else {
 	/* The program must wait user choice before continuing */
-	if((calc_id=choose_rom_popup())=='0') {	/* Query for the model */
-			DGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
-			if (!(calc_id=tilem_guess_rom_type(romfile))) {	
-				fprintf(stderr, "%s: unknown calculator type\n", romname);
-				if(romfile!=NULL)
-					fclose(romfile);
-				return 1;
-			} 
+		gsi->calc_id=choose_rom_popup();	/* Query for the model */
+			 
 	}
 	
+	/* User let tilem choose for him or romconfig.dat doesn't contain a valid choice */  
+	if(gsi->calc_id=='0') {
+		DGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
+		if (!(gsi->calc_id=tilem_guess_rom_type(romfile))) {	
+			fprintf(stderr, "%s: unknown calculator type\n", romname);
+		if(romfile!=NULL)
+			fclose(romfile);
+		return 1;
+		}
+	}
 	gsi->emu=malloc(sizeof(TilemCalcEmulator));
-	gsi->emu->calc = tilem_calc_new(calc_id);
+	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
 	
 	tilem_calc_load_state(gsi->emu->calc, romfile, savfile);
 	
@@ -230,7 +251,7 @@ int main(int argc, char **argv)
 	/* end */
 
 	DGLOBAL_L0_A0("**************** fct : main ****************************\n");
-	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",calc_id);
+	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",gsi->calc_id);
 	DGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",gsi->emu->calc->hw.model_id);	
 	DGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",gsi->emu->calc->hw.name);		
 	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",gsi->emu->calc->hw.name[3]);
@@ -239,9 +260,7 @@ int main(int argc, char **argv)
 	config_load(gsi->ci);
 	if(is_this_rom_in_config_infos(gsi->RomName, gsi))
 	{
-		/* TODO : CORRECT THE SEG FAULT (not systematically) */
 		search_defaultskin_in_config_infos(gsi->RomName, gsi);
-		printf("Main : gsi->SkinFileName= %s",gsi->SkinFileName);
 	} else {
 		/* User does not have choosen another skin for this model, choose officials :) */
 		choose_skin_filename(gsi->emu->calc,gsi);

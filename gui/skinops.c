@@ -87,7 +87,7 @@ int skin_read_header(SKIN_INFOS *si, const char *filename)
  
 	/* signature & offsets */
 	fread(str, 16, 1, fp);
-  	if (strncmp(str, "TilEm v2.00", 16))
+  	if ((strncmp(str, "TilEm v2.00", 16))&&(strncmp(str, "TiEmu v2.00", 16)))
   	{
   		fprintf(stderr, "Bad TiEmu skin format\n");
       	return -1;

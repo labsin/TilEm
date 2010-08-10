@@ -274,14 +274,12 @@ void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi)
 		if(gsi->ci->sa[i].romname!=NULL)
 			if(strcmp(romname, gsi->ci->sa[i].romname)==0)
 			{
-				//gsi->SkinFileName=(gchar*)malloc(sizeof("/home/tib/ti84plus.skn")+1);
-				//strcpy(gsi->SkinFileName,"/home/tib/ti84plus.skn");
-				
 				gsi->SkinFileName=(char*)malloc(strlen(gsi->ci->sa[i].defaultskinname)+1);		
 				strcpy(gsi->SkinFileName,gsi->ci->sa[i].defaultskinname);
-				printf("gsi->SkinFileName : %s \n",gsi->SkinFileName);
-				//strrchr(gsi->SkinFileName,".");
-				//printf("### P ###  : %s \n",p);
+				DCONFIG_FILE_L0_A0("** fct: search_defaultskin_in_config_infos (config.dat)**\n");
+				DCONFIG_FILE_L0_A1("*  gsi->ci->sa[i].defaultskinname = %s *\n", gsi->ci->sa[i].defaultskinname);
+				DCONFIG_FILE_L0_A1("*  gsi->SkinFileName = %s                *\n", gsi->SkinFileName);
+				DCONFIG_FILE_L0_A0("********************************************************\n\n");
 			}
 	}	
 }	
@@ -290,8 +288,8 @@ int add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi)
 {
 	int i;
 	DCONFIG_FILE_L0_A0("********** fct : add_or_modify_defaultskin ***********\n");
-	printf("*  RomName : %s   ", gsi->RomName);
-	printf("SkinFileName : %s            \n", gsi->SkinFileName);
+	DCONFIG_FILE_L0_A1("*  RomName : %s   ", gsi->RomName);
+	DCONFIG_FILE_L0_A1("SkinFileName : %s            \n", gsi->SkinFileName);
 	DCONFIG_FILE_L0_A0("********************************************************\n\n");
 	
 	if(is_this_rom_in_config_infos(gsi->RomName, gsi))
