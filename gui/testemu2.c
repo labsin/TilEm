@@ -168,8 +168,7 @@ int main(int argc, char **argv)
 	/* end */
 	
 	/* Create the savname */
-	savname = g_malloc(4 + strlen(romname) + 5); /* sav/ (4 char) + romname + .sav (4 char) + \0 (1 char) */
-	strcpy(savname,"sav/");
+	savname = g_malloc(strlen(romname) + 5); /* sav/ (4 char) + romname + .sav (4 char) + \0 (1 char) */
 	strcat(savname, romname);
 	
 	if ((p = strrchr(savname, '.'))) 

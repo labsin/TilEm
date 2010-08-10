@@ -213,6 +213,7 @@ void send_file(GLOBAL_SKIN_INFOS *gsi) {
 	CalcHandle* calc;
 	FileContent *filec;
 	int err;
+	gsi=gsi;
 
 	// init libs
 	ticables_library_init();
