@@ -9,7 +9,8 @@
 #define DGLOBAL_L2 
 #define DSKIN_L0 
 #define DCLICK_L0 
-#define DDEBUGGER_L0 DCONFIG_FILE_L0 
+#define DDEBUGGER_L0 
+#define DCONFIG_FILE_L0 
 #endif
 
 #ifdef DEBUG

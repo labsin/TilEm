@@ -196,7 +196,7 @@ void search_defaultmodel_in_romconfig_infos(char* romname,GLOBAL_SKIN_INFOS *gsi
 	}	
 }	
 
-int add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi) 
+void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi) 
 {
 	int i;
 	DCONFIG_FILE_L0_A0("********** fct : add_or_modify_defaultskin ***********\n");
@@ -212,7 +212,7 @@ int add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi)
 		       	{
 				gsi->rci->ma[i].defaultmodel= gsi->calc_id;
 				write_romconfig_file(gsi);
-				return 0;
+				break;
 			}
 	} else {
 		for(i=0; i<60; i++)
@@ -222,9 +222,8 @@ int add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi)
 				gsi->rci->ma[i].defaultmodel= gsi->calc_id;
 				write_romconfig_file(gsi);
 				romconfig_read(gsi->rci, "romconfig.dat");
-				return 0;
+				break;
 			}
 	}
 	romconfig_read(gsi->rci, "romconfig.dat");
-	return 0;
 }

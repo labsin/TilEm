@@ -122,7 +122,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		DCLICK_L0_A0("*  right click !                                       *\n");
 		static GtkItemFactoryEntry right_click_menu[] = {
 			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
-			{"/Send file...", "F11", send_file, 1, NULL, NULL},
+			{"/Send file...", "F11", send_file2, 1, NULL, NULL},
 			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
 			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
@@ -207,8 +207,7 @@ static void print_lc_error(int errnum)
         free(msg);
 }
 
-
-void send_file(GLOBAL_SKIN_INFOS *gsi) {
+void send_file_test(GLOBAL_SKIN_INFOS *gsi) {
 	CableHandle* cable;
 	CalcHandle* calc;
 	FileContent *filec;
@@ -217,14 +216,14 @@ void send_file(GLOBAL_SKIN_INFOS *gsi) {
 
 	// init libs
 	ticables_library_init();
-	ticalcs_library_init();
 	tifiles_library_init();
+	ticalcs_library_init();
 
 	// set cable
-	cable = ticables_handle_new(CABLE_ILP, PORT_0);
+	cable = ticables_handle_new(CABLE_ILP, PORT_0); 
+	
 	if(cable==NULL) 
 		printf("cable == null\n");
-
 
 	// set calc
 	calc = ticalcs_handle_new(CALC_TI83);
@@ -243,8 +242,11 @@ void send_file(GLOBAL_SKIN_INFOS *gsi) {
 	        print_lc_error(err);
 	//cable->priv = gsi->emu->calc;	
 	filec = tifiles_content_create_regular(calc->model);
-	err = tifiles_file_read_regular("test.83p", filec);
-	ticalcs_calc_send_var(calc, MODE_NORMAL, filec);
+	err = tifiles_file_read_regular("/home/tib/test/DBZ83.83G", filec);
+	//ticalcs_calc_send_var(calc, MODE_NORMAL, filec);
+	//ticalcs_calc_recv_var(calc, MODE_NORMAL, filec, &ve);
+	//ticalcs_calc_recv_var2(calc, MODE_NORMAL, "/home/tib/test/DBZ83.83G", &ve);
+	ticalcs_calc_send_var2(calc, MODE_NORMAL, "/home/tib/test/DBZ83.83G");
 	//err= ticalcs_calc_send_var(cable, 
 	//printf("Hand-held is %sready !\n", err ? "not " : "");
 
@@ -256,6 +258,41 @@ void send_file(GLOBAL_SKIN_INFOS *gsi) {
 	ticables_handle_del(cable);
 
 }
+
+
+void send_file2(GLOBAL_SKIN_INFOS *gsi) {
+		CableHandle* cbl;
+		CalcHandle* ch;
+
+		ticables_library_init();
+		tifiles_library_init();
+		ticalcs_library_init();
+
+		cbl = internal_link_handle_new(gsi->emu);
+		if (!cbl) {
+			fprintf(stderr, "Cannot create ilp handle\n");
+		} else {
+			printf("CABLE ok\n");
+		}
+
+		ch = ticalcs_handle_new(CALC_TI83);
+		if (!ch) {
+			fprintf(stderr, "Cannot create calc handle\n");
+		} else {
+			printf("CALC ok\n");
+		}
+
+		ticalcs_cable_attach(ch, cbl);
+		send_file(gsi->emu, ch,  gsi->FileToLoad);
+
+		ticalcs_cable_detach(ch);
+		ticalcs_handle_del(ch);
+		ticables_handle_del(cbl);
+
+		ticalcs_library_exit();
+		tifiles_library_exit();
+		ticables_library_exit();
+}	
 
 
 

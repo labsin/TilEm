@@ -68,6 +68,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	char calc_id;
 	char *RomName;
 	char RomType;
+	char *FileToLoad;
 	TilemCalcEmulator *emu;
 	TilemDebuggerRegister *reg_entry;
 	gboolean isDebuggerRunning;
@@ -397,7 +398,7 @@ gboolean is_this_rom_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
 void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
 
 /* search, write, and save config on right click menu */
-int add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
+void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
 
 
 
@@ -419,7 +420,7 @@ gboolean is_this_rom_in_romconfig_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
 void search_defaultmodel_in_romconfig_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
 
 /* search, write, and save config on right click menu */
-int add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi);
+void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi);
 
 
 
@@ -437,8 +438,14 @@ void refresh_stack(GLOBAL_SKIN_INFOS* gsi);
 
 
 /* test sending file */
-void send_file(GLOBAL_SKIN_INFOS *gsi);
+//void send_file(GLOBAL_SKIN_INFOS *gsi);
+
+//void send_file_test(GLOBAL_SKIN_INFOS *gsi);
+
+/* Another test */
+void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename);
+void send_file2(GLOBAL_SKIN_INFOS *gsi);
 
 
-
+CableHandle* internal_link_handle_new(TilemCalcEmulator* emu);
 

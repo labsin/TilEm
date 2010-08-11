@@ -211,7 +211,7 @@ void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi)
 	}	
 }	
 
-int add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) 
+void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) 
 {
 	int i;
 	DCONFIG_FILE_L0_A0("********** fct : add_or_modify_defaultskin ***********\n");
@@ -227,7 +227,7 @@ int add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi)
 		       	{
 				gsi->ci->sa[i].defaultskinname= gsi->SkinFileName;
 				write_config_file(gsi);
-				return 0;
+				break;
 			}
 	} else {
 		for(i=0; i<60; i++)
@@ -237,9 +237,8 @@ int add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi)
 				gsi->ci->sa[i].defaultskinname= gsi->SkinFileName;
 				write_config_file(gsi);
 				config_read(gsi->ci, "config.dat");
-				return 0;
+				break;
 			}
 	}
 	config_read(gsi->ci, "config.dat");
-	return 0;
 }

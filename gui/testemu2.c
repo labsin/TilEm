@@ -164,6 +164,16 @@ int main(int argc, char **argv)
 		DGLOBAL_L0_A0("********************************************************\n");
 		gsi->RomName=(char*) malloc(strlen(romname)+1); /* save for config.c */
 		strcpy(gsi->RomName,romname);
+
+		/* More than 2 parameters ? There's a file to load ! */
+		if(argc>2) {
+			gsi->FileToLoad = (char*)malloc(strlen(argv[2])*sizeof(char)+1);
+			if(gsi->FileToLoad != NULL){
+				strcpy(gsi->FileToLoad, argv[2]);
+				printf("gsi->FileToLoad = %s", gsi->FileToLoad);
+			}
+		}
+
 	}
 	/* end */
 	
@@ -206,7 +216,6 @@ int main(int argc, char **argv)
 	}
 	/* end */
 	
-	savfile = g_fopen(savname, "rt");
 
 	romconfig_load(gsi->rci);
 	if(is_this_rom_in_romconfig_infos(gsi->RomName, gsi))
@@ -232,6 +241,7 @@ int main(int argc, char **argv)
 	gsi->emu=malloc(sizeof(TilemCalcEmulator));
 	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
 	
+	savfile = g_fopen(savname, "rt");
 	tilem_calc_load_state(gsi->emu->calc, romfile, savfile);
 	
 	if (savfile)
@@ -267,8 +277,8 @@ int main(int argc, char **argv)
 	
 	/* Draw skin */	
 	gsi->pWindow=draw_screen(gsi);
-	
-	
+
+		
 	
 	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
 	gtk_main();
