@@ -61,8 +61,10 @@ typedef struct GLOBAL_SKIN_INFOS {
 	GtkWidget *pLayout;
 	GtkWidget *pFrame;
 	GtkWidget *pAf;
+	gchar* FileSelected;
+	GtkFileChooser *pFileChooser;
+	gint FileChooserResult;
 	gchar* SkinFileName;
-	GtkFileSelection *FileSelected;
 	GtkWidget *pRadio;
 	int view;
 	char calc_id;
@@ -303,19 +305,20 @@ void on_about(GtkWidget *pBtn);
 /* Detect a keyboard press event */
 void keyboard_event();	
 
-/* Detect a mouse event and Get the 'x' and 'y' values (Calc_Key_Map is given as parameter) */
+/* Detect a mousei "click" event and Get the 'x' and 'y' values */
 gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi);
+
+/* Detect a mouse "release" event, scan click, refresh register */
 gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi) ;
-	
+
+/* Load a file from PC to TI */
+void load_file(GLOBAL_SKIN_INFOS *gsi);
 
 
 /* ###### skin.c ##### */
 	
 /* Create the SKIN file selector */
-void SkinSelection(GLOBAL_SKIN_INFOS *gsi);
-
-/* Get the skin file selected */
-void GetSkinSelected(GLOBAL_SKIN_INFOS *gsi);
+void skin_selection(GLOBAL_SKIN_INFOS *gsi);
 
 /* Choose automatically wich skin tilem must load */
 void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi);
@@ -374,6 +377,16 @@ void quit_with_save();
 
 /* Dialog mesg */
 void show_about();
+
+/* File chooser */
+char * select_file(GLOBAL_SKIN_INFOS *gsi);
+
+/* File chooser with a different folder */
+void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir);
+
+/* Get the skin file selected */
+void get_selected_file(GLOBAL_SKIN_INFOS *gsi);
+
 
 
 
@@ -437,15 +450,14 @@ void refresh_register(GLOBAL_SKIN_INFOS* gsi);
 void refresh_stack(GLOBAL_SKIN_INFOS* gsi);
 
 
-/* test sending file */
-//void send_file(GLOBAL_SKIN_INFOS *gsi);
 
-//void send_file_test(GLOBAL_SKIN_INFOS *gsi);
 
-/* Another test */
+
+/* ##### link.c ##### */
+
+/* Init libtis, create ch/cbl, attach cable, and send file to TI */
 void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename);
-void send_file2(GLOBAL_SKIN_INFOS *gsi);
 
-
+/* Init libtis, create ch/cbl, attach cable */ 
 CableHandle* internal_link_handle_new(TilemCalcEmulator* emu);
 

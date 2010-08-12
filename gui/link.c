@@ -49,12 +49,10 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 		}
 
 		for (i = 0; i < cbl->timeout; i++)
-			if (tilem_linkport_graylink_ready(emu->calc)
-			    || tilem_z80_run_time(emu->calc, 100000, NULL))
+			if (tilem_linkport_graylink_ready(emu->calc)|| tilem_z80_run_time(emu->calc, 100000, NULL))
 				break;
 
-		if (i == cbl->timeout
-		    || (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR)) {
+		if (i == cbl->timeout || (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR)) {
 			tilem_linkport_graylink_reset(emu->calc);
 			status = ERROR_WRITE_TIMEOUT;
 			break;
@@ -239,7 +237,6 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 		tilem_z80_remove_timer(emu->calc, tmr);
 		tilem_keypad_release_key(emu->calc, k);
 
-			prepare_for_link(emu->calc);
 		break;
 
 	case TIFILE_FLASH:

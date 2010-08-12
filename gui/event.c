@@ -121,8 +121,8 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 	if(event->button.button==3)  {	/*detect a right click to build menu */
 		DCLICK_L0_A0("*  right click !                                       *\n");
 		static GtkItemFactoryEntry right_click_menu[] = {
-			{"/Load skin...", "F12", SkinSelection, 1, NULL,NULL},
-			{"/Send file...", "F11", send_file2, 1, NULL, NULL},
+			{"/Load skin...", "F12", skin_selection, 1, NULL,NULL},
+			{"/Send file...", "F11", load_file, 1, NULL, NULL},
 			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
 			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
@@ -187,6 +187,7 @@ void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 	}
 }
 
+/* Test if the calc is ready */
 static int is_ready(CalcHandle* h)
 {
          int err;
@@ -197,6 +198,7 @@ static int is_ready(CalcHandle* h)
          return 0;
 }
 
+/* Print the error (libtis error) */
 static void print_lc_error(int errnum)
 {
 	char *msg;
@@ -259,36 +261,42 @@ void send_file_test(GLOBAL_SKIN_INFOS *gsi) {
 
 }
 
-
-void send_file2(GLOBAL_SKIN_INFOS *gsi) {
+/* Load a file */
+void load_file(GLOBAL_SKIN_INFOS *gsi) {
 		CableHandle* cbl;
 		CalcHandle* ch;
-
+	
+		/* Init the libtis */
 		ticables_library_init();
 		tifiles_library_init();
 		ticalcs_library_init();
-
+		
+		/* Create cable (here an internal an dvirtual cabla) */
 		cbl = internal_link_handle_new(gsi->emu);
-		if (!cbl) {
+		if (!cbl) 
 			fprintf(stderr, "Cannot create ilp handle\n");
-		} else {
-			printf("CABLE ok\n");
-		}
-
+		
+		/* Create calc */
 		ch = ticalcs_handle_new(CALC_TI83);
-		if (!ch) {
+		if (!ch) 
 			fprintf(stderr, "Cannot create calc handle\n");
-		} else {
-			printf("CALC ok\n");
-		}
-
+		
+		/* Attach cable to the emulated calc */
 		ticalcs_cable_attach(ch, cbl);
-		send_file(gsi->emu, ch,  gsi->FileToLoad);
-
+		
+		select_file_with_basedir(gsi, "/home/tib/test");		
+		if((gsi->FileChooserResult == GTK_RESPONSE_ACCEPT) &&(gsi->FileSelected !=NULL)) {
+			gsi->FileChooserResult= -100;
+			
+			send_file(gsi->emu, ch,  gsi->FileSelected); /* See link.c for send_file function */
+			free(gsi->FileSelected);
+		}
+		
 		ticalcs_cable_detach(ch);
 		ticalcs_handle_del(ch);
 		ticables_handle_del(cbl);
 
+		/* Exit the libtis */
 		ticalcs_library_exit();
 		tifiles_library_exit();
 		ticables_library_exit();

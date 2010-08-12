@@ -49,43 +49,31 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 }
 
 /* GtkFileSelection */
-/* TODO : Replace deprecated GtkFileSelection by GtkFileChooser */
-void SkinSelection(GLOBAL_SKIN_INFOS *gsi) {
+void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
 
+		DSKIN_L0_A0("\nSKINSELECTION\n");
+	
 	if(gsi->view==1) 
 	{
-		DGLOBAL_L2_A0("Use >>Switch view<< before !\n");
+		DGLOBAL_L0_A0("Use >>Switch view<< before !\n");
 		popup_error("Use >>Switch view<< before !\n", gsi);
 	} else {
-		GtkFileSelection * file_selection;
-		file_selection=(GtkFileSelection*)gtk_file_selection_new("SkinLoad");
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(file_selection), "./skn/");
-		gtk_window_set_default_size(GTK_WINDOW(file_selection), 500, 405);
-		gtk_widget_show(GTK_WIDGET(file_selection));
-		printf("\nSKINSELECTION\n");
-		gsi->FileSelected=file_selection;
-
-		/* ######## SIGNALS ######## */
-		/* Connect the signal to get the filename (when OK button is clicked) */
-		gtk_signal_connect_object(GTK_OBJECT(file_selection->ok_button),"clicked",G_CALLBACK(GetSkinSelected),(gpointer)gsi);
-		/* Connect the signal to close the widget when OK is clicked (gtk_widget_destroy is already define in the Gtk library)*/
-		gtk_signal_connect_object(GTK_OBJECT(file_selection->ok_button),"clicked",G_CALLBACK(gtk_widget_destroy),file_selection);
-		/* Connect the signal to close the window when CANCEL is clicked */
-		gtk_signal_connect_object(GTK_OBJECT(file_selection->cancel_button),"clicked",G_CALLBACK(gtk_widget_destroy),file_selection);
+		
+		/* Show a nice chooser dialog, and get the filename selected */	
+		select_file_with_basedir(gsi, "./skn/");
+		if((gsi->FileChooserResult == GTK_RESPONSE_ACCEPT) &&(gsi->FileSelected !=NULL)) {
+			DSKIN_L0_A2("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
+			DSKIN_L0_A1("file to load : %s\n",gsi->FileSelected);
+		
+			gsi->SkinFileName= (char*) malloc(strlen(gsi->FileSelected) * sizeof(char));
+			strcpy(gsi->SkinFileName,gsi->FileSelected);
+			printf("Just before loading skin : gsi->SkinFileName : %s ", gsi->SkinFileName);
+			free(gsi->FileSelected);
+			gsi->FileChooserResult= -100;
+			
+			/* redraw the skin into the Window (here gsi->pWindow) */
+			redraw_screen(gsi->pWindow,gsi);
+		}
 	}
 }
 
-void GetSkinSelected(GLOBAL_SKIN_INFOS *gsi) {
-
-	/* Just get the file wich was selected */
-	gsi->SkinFileName=(gchar*)gtk_file_selection_get_filename(gsi->FileSelected);
-	printf("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
-	printf("file to load : %s\n",gsi->SkinFileName);
-	/* redraw the skin into the Window (here gsi->pWindow) */
-	
-	
-	/* Only while test */
-	
-	redraw_screen(gsi->pWindow,gsi);
-	
-}
