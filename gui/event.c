@@ -124,6 +124,8 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Load skin...", "F12", skin_selection, 1, NULL,NULL},
 			{"/Send file...", "F11", load_file, 1, NULL, NULL},
 			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
+			{"/---", NULL, NULL, 0, "<Separator>", NULL},
+			{"/Screenshot !",NULL, screenshot, 1, NULL, NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
 			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
 			{"/Use this model as default for this rom",NULL,add_or_modify_defaultmodel, 1, NULL, NULL},
@@ -181,33 +183,11 @@ void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 	if(gtk_window_get_decorated(GTK_WINDOW(gsi->pWindow)))
 	{
 		gtk_window_set_decorated(GTK_WINDOW(gsi->pWindow) , FALSE);
-	}else 
-	{
+	} else {
 		gtk_window_set_decorated(GTK_WINDOW(gsi->pWindow) , TRUE);
 	}
 }
 
-/* Test if the calc is ready */
-static int is_ready(CalcHandle* h)
-{
-         int err;
- 
-         err = ticalcs_calc_isready(h);
-         printf("Hand-held is %sready !\n", err ? "not " : "");
- 
-         return 0;
-}
-
-/* Print the error (libtis error) */
-static void print_lc_error(int errnum)
-{
-	char *msg;
-
-        ticables_error_get(errnum, &msg);
-	fprintf(stderr, "Link cable error (code %i)...\n<<%s>>\n",
-        errnum, msg);
-        free(msg);
-}
 
 void send_file_test(GLOBAL_SKIN_INFOS *gsi) {
 	CableHandle* cable;
@@ -228,7 +208,7 @@ void send_file_test(GLOBAL_SKIN_INFOS *gsi) {
 		printf("cable == null\n");
 
 	// set calc
-	calc = ticalcs_handle_new(CALC_TI83);
+	calc = ticalcs_handle_new(CALC_TI82);
 
 	if(calc==NULL) 
 		printf("calc == null\n");
@@ -303,4 +283,31 @@ void load_file(GLOBAL_SKIN_INFOS *gsi) {
 }	
 
 
+void screenshot(GLOBAL_SKIN_INFOS *gsi) {
+	int i;
+	FILE * fp;
+	char *buffer;
+	char * filename;
+	filename = (char*) malloc((strlen("screenshot")+8)*sizeof(char));
+	strcpy(filename, "screenshot");
+	
+	for(i=0; i<500; i++) {
+		buffer = (char*) malloc(3);
+		sprintf(buffer,"%03d", i);
+		strcpy(filename, "screenshot");
+		strcat(filename, buffer);
+		strcat(filename, ".png");
+		//printf("filename : %s\n", filename);
+
+		if((fp = g_fopen(filename,"r"))) {
+			fclose(fp);
+		} else { 
+			gdk_pixbuf_save(gsi->emu->lcdscaledpb, filename, "png", NULL, NULL);
+			printf("SCREENSHOT ! --> filename : %s\n", filename);
+			break;
+		}
+	}
+
+		
+}
 

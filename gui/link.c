@@ -11,6 +11,30 @@
 #include <ticalcs.h>
 #include <gui.h>
 
+
+
+/* Test if the calc is ready */
+int is_ready(CalcHandle* h)
+{
+         int err;
+	  
+         err = ticalcs_calc_isready(h);
+         printf("Hand-held is %sready !\n", err ? "not " : "");
+		    
+         return err;
+}
+
+/* Print the error (libtis error) */
+void print_lc_error(int errnum)
+{
+	char *msg;
+
+        ticables_error_get(errnum, &msg);
+	fprintf(stderr, "Link cable error (code %i)...\n<<%s>>\n", errnum, msg);
+        free(msg);
+}
+
+
 /* Internal link emulation */
 
 static int ilp_reset(CableHandle* cbl)
@@ -34,9 +58,7 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
 	prevmask = emu->calc->z80.stop_mask;
-	emu->calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE
-				      | TILEM_STOP_LINK_WRITE_BYTE
-				      | TILEM_STOP_LINK_ERROR);
+	emu->calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE | TILEM_STOP_LINK_WRITE_BYTE | TILEM_STOP_LINK_ERROR);
 
 	tilem_z80_run_time(emu->calc, 1000, NULL);
 
@@ -210,7 +232,8 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 {
 	CalcScreenCoord sc;
 	uint8_t *bitmap = NULL;
-	int tmr, k;
+	int tmr, k, err;
+	FileContent* filec;
 
 		prepare_for_link(emu->calc);
 
@@ -218,8 +241,22 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 	case TIFILE_SINGLE:
 	case TIFILE_GROUP:
 	case TIFILE_REGULAR:
-		print_tilibs_error(ticalcs_calc_send_var2(ch, MODE_SEND_LAST_VAR , filename));
-		break;
+		filec = tifiles_content_create_regular(ch->model);
+		err = tifiles_file_read_regular(filename, filec);
+		if ( err )
+		{
+			print_tilibs_error(err);
+			tifiles_content_delete_regular(filec);
+		}
+		//mode = MODE_SEND_LAST_VAR;
+		//mode = MODE_NORMAL;
+
+		err = ticalcs_calc_send_var(ch, MODE_NORMAL, filec);
+		tifiles_content_delete_regular(filec);
+		break;	
+		
+		//print_tilibs_error(ticalcs_calc_send_var2(ch, MODE_NORMAL , filename));
+		//break;
 
 	case TIFILE_BACKUP:
 		/* press enter to accept backup */
@@ -231,8 +268,8 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 			k = TILEM_KEY_ENTER;
 		}
 
-		tmr = tilem_z80_add_timer(emu->calc, 1000000, 0, 1, tmr_press_key, TILEM_DWORD_TO_PTR(k));
-
+		tmr = tilem_z80_add_timer(emu->calc, 100, 0, 1, tmr_press_key, TILEM_DWORD_TO_PTR(k));
+		//while(is_ready(ch)){ }
 		print_tilibs_error(ticalcs_calc_send_backup2(ch, filename));
 		tilem_z80_remove_timer(emu->calc, tmr);
 		tilem_keypad_release_key(emu->calc, k);
@@ -253,9 +290,9 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 		break;
 
 	default:
-		if (1)
+		if (1) {
 			print_tilibs_error(ticalcs_calc_send_key(ch, 0xA0));
-		else {
+		} else {
 			print_tilibs_error(ticalcs_calc_recv_screen(ch, &sc, &bitmap));
 			g_free(bitmap);
 		}

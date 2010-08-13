@@ -283,6 +283,8 @@ int main(int argc, char **argv)
 	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
 	gtk_main();
 	
+	
+	
 	/* Save the state */
 	if(SAVE_STATE==1) {
 		romfile = g_fopen(romname, "wb");

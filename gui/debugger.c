@@ -141,6 +141,7 @@ void create_debug_window(GLOBAL_SKIN_INFOS* gsi)
 	
 	GtkWidget* debug_win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	//gtk_window_set_modal(GTK_WINDOW(debug_win), TRUE);
+	gtk_widget_set_size_request(GTK_WIDGET(debug_win) , 600, 400);	
 	gtk_window_set_resizable(GTK_WINDOW(debug_win), TRUE);	
 	gtk_window_set_title(GTK_WINDOW(debug_win), "TilEm debugger");
 	GtkWidget* debug_table= create_debug_table(gsi);

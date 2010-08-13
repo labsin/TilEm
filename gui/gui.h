@@ -314,6 +314,8 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 /* Load a file from PC to TI */
 void load_file(GLOBAL_SKIN_INFOS *gsi);
 
+/* Take a screenshot i*/
+void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
 /* ###### skin.c ##### */
 	
@@ -460,4 +462,14 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename);
 
 /* Init libtis, create ch/cbl, attach cable */ 
 CableHandle* internal_link_handle_new(TilemCalcEmulator* emu);
+
+/* test if the calc is ready */
+int is_ready(CalcHandle* h);
+
+/* Simply print the error */
+void print_lc_error(int errnum);
+
+/* Get calc model from calc_id */
+int get_calc_model(TilemCalc* calc);
+
 
