@@ -123,6 +123,13 @@
 * ---10/08/10---
 * - Working on a new config file called romconfig.dat (inspired from config.dat) using to do not ask for model each time tilem is started.							      
 * - It works :D
+* ---12/08/10---
+*- NEW feature : Can load a file using libticalcs2 (inspired from the wokr of Benjamin Moody). Basically it works, but it's not OK. (many bugs)
+* ---13/08/10---
+* - NEW feature : Add the screenshot feature.
+* ---17/08/10---
+* Change the ti84plus.skn (old was really ugly).
+* Add doc/ directory : add romconfig_file_format.txt and skinconfig_file_format.txt.
 */
 
 

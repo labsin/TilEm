@@ -1,0 +1,59 @@
+TilEm v2.xx skinconfig format
+               ********************************
+
+Firstly : THIS FILE AND THIS FORMAT ARE INSPIRED FROM THE WORK OF JULIEN BLACHE AND ROMAIN LIEVIN. THANKS TO THEM !!
+
+Author : Thibault Duponchelle <t.duponchelle@gmail.com>
+
+
+I. Summary
+**********
+
+
+This file is used by tilem 2 to determine which skin is choosed (by the user) to be associated to a rom (USER CHOICE only).
+If you don't use this file, the default skin wil be loaded automatically. 
+
+If you emulate a TI82stats, maybe you will prefer the (official or not) ti82stats.skn skin.
+If you save it into tilem 2, this skin will be loaded systematically with this rom, but you can change as you want (no limitation).
+
+If you don't use this save file, you must load ti82stats skin at each start...
+
+You can share (with another tilem user) or maybe erase skinconfig.dat (and lost user prefs) -> it will be created automatically.
+ 
+
+  This consists of 3 types of data :
+   - strings (S)
+   - integers (I)
+   - char (C)
+
+  Here's how the file is decomposed (address in hex) :
+
+  0x000 - 0x00F (S) (16 bytes): "TilEm v2.00" (NULL-padded)
+        This is the "magic number" used to be sure it's designed for tilem 2. 
+  0x010 - 0x013 (I) (4 bytes) : endianness flag
+        This integer is used to determine whether the file was
+        produced on a machine using the same endianness as the host
+        we're running on.
+        When writing the file, this integer has the value 0xFEEDBABE ;
+        when reading the file, if the value does not match 0xFEEDBABE,
+        then you need to byteswap all the 32-bits integers.
+(1)0x014 - 0x017 (I) (4 bytes) : rom name length
+        Length of the following string.
+(2)0x018 - 0x**** (S) (?? bytes) : 
+	Name of the rom.
+(3)0x014 - 0x017 (I) (4 bytes) : Skin name length
+	Length of the following string.
+(4)0x*** - 0x**** (S) (?? bytes) : model id
+        Name of the skin to use.
+
+  0x*** - 0x*** : (1) (2) (3) (4) 
+	Repeats (1) (2) (3) 59 times (60 times if you count the first).
+ 
+
+
+
+V. Contact
+***********
+
+  This skinconfig format was created by Thibault Duponchelle. 
+Please mail <t.duponchelle@gmail.com> for any question.
