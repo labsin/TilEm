@@ -14,6 +14,8 @@ void start_record_macro(GLOBAL_SKIN_INFOS* gsi) {
 /* Turn off recording macro */
 void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) {
 	gsi->isMacroRecording = 0;
+	fclose(gsi->macro_file);
+	gsi->macro_file= NULL;
 }
 	
 /* Create the macro file */
@@ -67,7 +69,7 @@ void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filen
 	}
 	/* Write the key value */
 	fwrite("file=", 1, 5, gsi->macro_file);
-	sprintf(lengthchar, "%d",length);
+	sprintf(lengthchar, "%04d",length);
 	fwrite(lengthchar, 1, sizeof(int), gsi->macro_file);
 	fwrite("-", 1, 1, gsi->macro_file);
 	fwrite(filename, 1, length, gsi->macro_file);
@@ -107,7 +109,8 @@ void play_macro(GLOBAL_SKIN_INFOS* gsi) {
 			c = fgetc(gsi->macro_file); /* Drop the "-"*/
 			length= atoi(lengthchar);
 			DMACRO_L0_A2("* lengthchar = %s,    length = %d         *\n", lengthchar, length);
-			filename= (char*) malloc(length * sizeof(char));
+			filename= (char*) malloc(length * sizeof(char)+1);
+			memset(filename, 0, length);
 			fread(filename, 1, length, gsi->macro_file);
 			load_file_from_file(gsi, filename);
 			DMACRO_L0_A1("* send file = %s               *\n", filename);
