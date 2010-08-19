@@ -112,6 +112,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 	DCLICK_L0_A0("**************** fct : mouse_release_event *************\n");
 	TilemCalcEmulator* emu = gsi->emu;
 	int code=0;
+	char* codechar;
 	pWindow=pWindow;
 	GdkEventButton *bevent = (GdkEventButton *) event;
 	/* DCLICK_L0_A2("%G %G",bevent->x,bevent->y); */
@@ -132,6 +133,10 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Use this skin as default for this rom ",NULL,add_or_modify_defaultskin, 1, NULL, NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
+			{"/Start recording...", "<control>Q",start_record_macro, 0, NULL, NULL},
+			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
+			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
+			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
 			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
 			{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}
@@ -143,7 +148,14 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		DCLICK_L0_A0("********************************************************\n\n");
 /* #################### Left Click (test wich key is it)#################### */
 	} else {
-		code =scan_click(50, bevent->x, bevent->y, gsi),
+		code =scan_click(50, bevent->x, bevent->y, gsi);
+		
+		if(gsi->isMacroRecording) {     
+			codechar= (char*) malloc(sizeof(int));
+			sprintf(codechar, "%04d", code);
+			add_event_in_macro_file(gsi, codechar);     
+		}
+		
 		/* Send the signal to libtilemcore */
 		g_mutex_lock(emu->calc_mutex);
 		tilem_keypad_release_key(emu->calc, code);
@@ -269,9 +281,13 @@ void load_file(GLOBAL_SKIN_INFOS *gsi) {
 			gsi->FileChooserResult= -100;
 			
 			send_file(gsi->emu, ch,  gsi->FileSelected); /* See link.c for send_file function */
+			if(gsi->isMacroRecording) 
+				add_load_file_in_macro_file(gsi, strlen(gsi->FileSelected), gsi->FileSelected) ;
+			
 			free(gsi->FileSelected);
 		}
-		
+			
+
 		ticalcs_cable_detach(ch);
 		ticalcs_handle_del(ch);
 		ticables_handle_del(cbl);
@@ -282,6 +298,40 @@ void load_file(GLOBAL_SKIN_INFOS *gsi) {
 		ticables_library_exit();
 }	
 
+/* Load a file without file_selector */
+void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) {
+		CableHandle* cbl;
+		CalcHandle* ch;
+	
+		/* Init the libtis */
+		ticables_library_init();
+		tifiles_library_init();
+		ticalcs_library_init();
+		
+		/* Create cable (here an internal an dvirtual cabla) */
+		cbl = internal_link_handle_new(gsi->emu);
+		if (!cbl) 
+			fprintf(stderr, "Cannot create ilp handle\n");
+		
+		/* Create calc */
+		ch = ticalcs_handle_new(CALC_TI83);
+		if (!ch) 
+			fprintf(stderr, "Cannot create calc handle\n");
+		
+		/* Attach cable to the emulated calc */
+		ticalcs_cable_attach(ch, cbl);
+		
+		send_file(gsi->emu, ch,  filename); /* See link.c for send_file function */
+		
+		ticalcs_cable_detach(ch);
+		ticalcs_handle_del(ch);
+		ticables_handle_del(cbl);
+
+		/* Exit the libtis */
+		ticalcs_library_exit();
+		tifiles_library_exit();
+		ticables_library_exit();
+}	
 
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	int i;

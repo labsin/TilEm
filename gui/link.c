@@ -191,7 +191,7 @@ static int print_tilibs_error(int errcode)
 	return errcode;
 }
 
-static void run_with_key(TilemCalc* calc, int key)
+void run_with_key(TilemCalc* calc, int key)
 {
 	tilem_z80_run_time(calc, 500000, NULL);
 	tilem_keypad_press_key(calc, key);
@@ -234,8 +234,10 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 	uint8_t *bitmap = NULL;
 	int tmr, k, err;
 	FileContent* filec;
-
-		prepare_for_link(emu->calc);
+		
+	g_mutex_lock(emu->calc_mutex);
+	prepare_for_link(emu->calc);
+	g_mutex_unlock(emu->calc_mutex);
 
 	switch (tifiles_file_get_class(filename)) {
 	case TIFILE_SINGLE:

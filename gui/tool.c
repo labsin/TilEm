@@ -199,3 +199,7 @@ void get_selected_file(GLOBAL_SKIN_INFOS *gsi) {
 	}	
 	gtk_widget_destroy(GTK_WIDGET(gsi->pFileChooser));
 }
+
+
+
+

@@ -131,6 +131,11 @@
 * ---17/08/10---
 * - Change the ti84plus.skn (old was really ugly).
 * - Add doc/ directory : add romconfig_file_format.txt and skinconfig_file_format.txt.
+* ---18/08/10---
+* - Correct the bug in link.c (unlock mutex ...)
+* - Start working on macro handling : Always do the same things to load and launch a file into an emulator become quickly noisy for the programmer (1 time, 10 times, 30 times, 50 times...argh!). Simply record a sequence and play it to test a program, this is one solution. (feature request from Guillaume Hoffman gh@gmail.com).
+* ---19/08/10---
+* - The macro feature works including loading file (very important). The implementation is very basic (record and read a text file) so many bug could (should?) appear. But I wait to see how it will be use.
 */
 
 
@@ -214,7 +219,7 @@ int main(int argc, char **argv)
 		create_romconfig_dat(gsi);
 	}
 	/* end */
-	
+
 	/* Open the romfile */
 	romfile = g_fopen(romname, "rb");
 	if (!romfile) 
@@ -299,6 +304,10 @@ int main(int argc, char **argv)
 		savfile = g_fopen(savname, "wt");
 		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
 	}
+	
+	/* Close macro_file */
+	if(gsi->macro_file != NULL) 
+		fclose(gsi->macro_file);
 	
 
 

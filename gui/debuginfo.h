@@ -11,6 +11,7 @@
 #define DCLICK_L0 
 #define DDEBUGGER_L0 
 #define DCONFIG_FILE_L0 
+#define DMACRO_L0
 #endif
 
 #ifdef DEBUG
@@ -215,3 +216,35 @@
 #define DDEBUGGER_L2_A5(x,y,z,t,u,v)
 #endif
 
+
+
+#ifdef DMACRO_L0
+#define DMACRO_L0_A0(x)  printf(x)
+#define DMACRO_L0_A1(x,y)  printf(x,y)
+#define DMACRO_L0_A2(x,y,z)  printf(x,y,z)
+#define DMACRO_L0_A3(x,y,z,t)  printf(x,y,z,t)
+#define DMACRO_L0_A4(x,y,z,t,u)  printf(x,y,z,t,u)
+#define DMACRO_L0_A5(x,y,z,t,u,v)  printf(x,y,z,t,u,v)
+#else
+#define DMACRO_L0_A0(x)
+#define DMACRO_L0_A1(x,y)
+#define DMACRO_L0_A2(x,y,z)
+#define DMACRO_L0_A3(x,y,z,t)
+#define DMACRO_L0_A4(x,y,z,t,u)
+#define DMACRO_L0_A5(x,y,z,t,u,v)
+#endif
+#ifdef DMACRO_L2
+#define DMACRO_L2_A0(x)  printf(x)
+#define DMACRO_L2_A1(x,y)  printf(x,y)
+#define DMACRO_L2_A2(x,y,z)  printf(x,y,z)
+#define DMACRO_L2_A3(x,y,z,t)  printf(x,y,z,t)
+#define DMACRO_L2_A4(x,y,z,t,u)  printf(x,y,z,t,u)
+#define DMACRO_L2_A5(x,y,z,t,u,v)  printf(x,y,z,t,u,v)
+#else
+#define DMACRO_L2_A0(x)
+#define DMACRO_L2_A1(x,y)
+#define DMACRO_L2_A2(x,y,z)
+#define DMACRO_L2_A3(x,y,z,t)
+#define DMACRO_L2_A4(x,y,z,t,u)
+#define DMACRO_L2_A5(x,y,z,t,u,v)
+#endif

@@ -75,6 +75,9 @@ typedef struct GLOBAL_SKIN_INFOS {
 	TilemDebuggerRegister *reg_entry;
 	gboolean isDebuggerRunning;
 	GtkWidget* stack_treeview;	
+	FILE * macro_file;
+	gboolean isMacroRecording;
+	gboolean isMacroPlaying;
 }GLOBAL_SKIN_INFOS;
 
 static const char rcstr[] =
@@ -103,7 +106,7 @@ static const struct KEY_LIST x4_keylist[] = {
 	{ 0x38, "DEL" },
 	
 	{ 0x02, "LEFT" },
-	{0x03, "RIGHT" },
+	{ 0x03, "RIGHT" },
 	{ 0x04, "TOP" },
 	{ 0x01, "BOTTOM" },
 	
@@ -314,8 +317,15 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 /* Load a file from PC to TI */
 void load_file(GLOBAL_SKIN_INFOS *gsi);
 
+/* Load the file designed by filename */
+void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) ;
+
 /* Take a screenshot i*/
 void screenshot(GLOBAL_SKIN_INFOS *gsi);
+
+
+
+
 
 /* ###### skin.c ##### */
 	
@@ -472,4 +482,33 @@ void print_lc_error(int errnum);
 /* Get calc model from calc_id */
 int get_calc_model(TilemCalc* calc);
 
+/* Simply emulate a click on key (use to prepare link -> come into receive mode) */
+void run_with_key(TilemCalc* calc, int key);
 
+
+
+/* ##### macro.c ##### */
+
+/* Create the macro_file */
+void create_or_replace_macro_file(GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Recording macro */
+void add_event_in_macro_file(GLOBAL_SKIN_INFOS* gsi, char* string) ;
+
+/* Add a load file */
+void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filename) ;
+
+/* Not used ...? */
+void save_macro_file(GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Play it ! And play it again ! */
+void play_macro(GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Turn on the recording */
+void start_record_macro(GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Turn off the recording */
+void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Run slowly to play macro */
+void run_with_key_slowly(TilemCalc* calc, int key);
