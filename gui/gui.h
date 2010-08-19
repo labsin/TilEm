@@ -504,6 +504,9 @@ void save_macro_file(GLOBAL_SKIN_INFOS* gsi) ;
 /* Play it ! And play it again ! */
 void play_macro(GLOBAL_SKIN_INFOS* gsi) ;
 
+/* Play it ! And play it again ! */
+int play_macro_default(GLOBAL_SKIN_INFOS* gsi) ;
+
 /* Turn on the recording */
 void start_record_macro(GLOBAL_SKIN_INFOS* gsi) ;
 

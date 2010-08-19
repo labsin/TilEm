@@ -305,9 +305,6 @@ int main(int argc, char **argv)
 		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
 	}
 	
-	/* Close macro_file */
-	if(gsi->macro_file != NULL) 
-		fclose(gsi->macro_file);
 	
 
 

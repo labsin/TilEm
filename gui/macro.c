@@ -67,11 +67,13 @@ void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filen
 	} else {
 		fwrite(",", 1, 1, gsi->macro_file);
 	}
-	/* Write the key value */
+	/* Write  title */
 	fwrite("file=", 1, 5, gsi->macro_file);
 	sprintf(lengthchar, "%04d",length);
+	/* Write length */
 	fwrite(lengthchar, 1, sizeof(int), gsi->macro_file);
 	fwrite("-", 1, 1, gsi->macro_file);
+	/* Write path */
 	fwrite(filename, 1, length, gsi->macro_file);
 	
 	DMACRO_L0_A0("***************************************************\n");	
@@ -79,22 +81,35 @@ void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filen
 }
 
 /* Open the file for reading value to play */
-void open_macro_file(GLOBAL_SKIN_INFOS* gsi) {
+int open_macro_file(GLOBAL_SKIN_INFOS* gsi) {
 	FILE * macro_file;
-	macro_file= g_fopen("play.txt", "r");
-	gsi->macro_file= macro_file;
+	if((macro_file = g_fopen("play.txt", "r"))!=NULL) {
+		gsi->macro_file= macro_file;
+	} else {
+		return 1;
+	}
+	return 0;
 
 }
 
-/* Play the partition (macro) */
+/* Callback signal (rightclick menu) */
 void play_macro(GLOBAL_SKIN_INFOS* gsi) {
+	play_macro_default(gsi);
+}
+
+/* Play the partition (macro) */
+int play_macro_default(GLOBAL_SKIN_INFOS* gsi) {
 	int code;
 	char* codechar;
 	char c;
 	char* lengthchar;
 	int length;
 	char* filename;
-	open_macro_file(gsi);
+
+	/* Test if play.txt exists ? */
+	if(open_macro_file(gsi)==1) 
+		return 1;
+
 	DMACRO_L0_A0("************** fct : play_macro *******************\n");	
 	while(c != EOF) {	
 		codechar= (char*) malloc(4 * sizeof(char) + 1);
@@ -126,17 +141,20 @@ void play_macro(GLOBAL_SKIN_INFOS* gsi) {
 		c = fgetc(gsi->macro_file);
 	}
 	DMACRO_L0_A0("***************************************\n");	
+	fclose(gsi->macro_file);
+	
+	return 0;
 
 }
 
 
 
-/* Run slowly to play macro */
+/* Run slowly to play macro (used instead run_with_key() function) */
 void run_with_key_slowly(TilemCalc* calc, int key)
 {
-	tilem_z80_run_time(calc, 500000, NULL);
-	tilem_keypad_press_key(calc, key);
-	tilem_z80_run_time(calc, 10000, NULL);
-	tilem_keypad_release_key(calc, key);
-	tilem_z80_run_time(calc, 5000000, NULL);
+	tilem_z80_run_time(calc, 5000000, NULL); /* Wait */
+	tilem_keypad_press_key(calc, key); /* Press */
+	tilem_z80_run_time(calc, 10000, NULL); /* Wait (don't forget to wait) */
+	tilem_keypad_release_key(calc, key); /* Release */
+	tilem_z80_run_time(calc, 50, NULL); /* Wait */
 }

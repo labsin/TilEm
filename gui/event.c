@@ -66,9 +66,15 @@ void on_about(GtkWidget *pBtn)
 	gtk_widget_destroy(pAbout);
 }
 
+/* Reset the calc */
 void on_reset(GLOBAL_SKIN_INFOS * gsi)
 {
 	tilem_calc_reset(gsi->emu->calc);
+	
+	/* Press and release Key "ON" */
+	g_mutex_lock(gsi->emu->calc_mutex);
+	run_with_key(gsi->emu->calc, TILEM_KEY_ON);			
+	g_mutex_unlock(gsi->emu->calc_mutex);
 	printf(">>>>>>>>>RESET \n");
 }
 
