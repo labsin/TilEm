@@ -20,6 +20,20 @@ void on_destroy()
 	gtk_main_quit();
 }
 
+void save_state(GLOBAL_SKIN_INFOS * gsi)
+{
+	FILE* romfile, *savfile;
+	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
+	DGLOBAL_L2_A1("*  YES (%d)                                             *\n",SAVE_STATE);
+	DGLOBAL_L2_A0("********************************************************\n\n");
+	romfile = g_fopen(gsi->RomName, "wb");
+	savfile = g_fopen(gsi->SavName, "wt");
+	g_mutex_lock(gsi->emu->calc_mutex);
+	tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
+	g_mutex_unlock(gsi->emu->calc_mutex);
+}
+
+/* Save tilem and save state */
 void quit_with_save()
 {
 	printf("\nThank you for using tilem...\n");
@@ -30,6 +44,7 @@ void quit_with_save()
 	gtk_main_quit();
 }
 
+/* Show a nice GtkAboutDialog */
 void show_about()
 {
 
@@ -137,6 +152,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
 			{"/Use this model as default for this rom",NULL,add_or_modify_defaultmodel, 1, NULL, NULL},
 			{"/Use this skin as default for this rom ",NULL,add_or_modify_defaultskin, 1, NULL, NULL},
+			{"/Save state... ",NULL,save_state, 1, NULL, NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Start recording...", "<control>Q",start_record_macro, 0, NULL, NULL},
@@ -198,6 +214,7 @@ int scan_click(int MAX, double x, double y,  GLOBAL_SKIN_INFOS * gsi)
 
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */
 void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
+	
 	if(gtk_window_get_decorated(GTK_WINDOW(gsi->pWindow)))
 	{
 		gtk_window_set_decorated(GTK_WINDOW(gsi->pWindow) , FALSE);
@@ -207,57 +224,6 @@ void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 }
 
 
-void send_file_test(GLOBAL_SKIN_INFOS *gsi) {
-	CableHandle* cable;
-	CalcHandle* calc;
-	FileContent *filec;
-	int err;
-	gsi=gsi;
-
-	// init libs
-	ticables_library_init();
-	tifiles_library_init();
-	ticalcs_library_init();
-
-	// set cable
-	cable = ticables_handle_new(CABLE_ILP, PORT_0); 
-	
-	if(cable==NULL) 
-		printf("cable == null\n");
-
-	// set calc
-	calc = ticalcs_handle_new(CALC_TI82);
-
-	if(calc==NULL) 
-		printf("calc == null\n");
-
-	//calc = gsi->emu->calc;
-	// attach cable to calc (and open cable)
-	err = ticalcs_cable_attach(calc, cable);
-	ticables_handle_show(cable);
-
-	//err = ticalcs_calc_isready(calc);
-	is_ready(calc);
-	if(err)
-	        print_lc_error(err);
-	//cable->priv = gsi->emu->calc;	
-	filec = tifiles_content_create_regular(calc->model);
-	err = tifiles_file_read_regular("/home/tib/test/DBZ83.83G", filec);
-	//ticalcs_calc_send_var(calc, MODE_NORMAL, filec);
-	//ticalcs_calc_recv_var(calc, MODE_NORMAL, filec, &ve);
-	//ticalcs_calc_recv_var2(calc, MODE_NORMAL, "/home/tib/test/DBZ83.83G", &ve);
-	ticalcs_calc_send_var2(calc, MODE_NORMAL, "/home/tib/test/DBZ83.83G");
-	//err= ticalcs_calc_send_var(cable, 
-	//printf("Hand-held is %sready !\n", err ? "not " : "");
-
-	// detach cable (made by handle_del, too)
-	err = ticalcs_cable_detach(calc);
-
-	// remove calc & cable
-	ticalcs_handle_del(calc);
-	ticables_handle_del(cable);
-
-}
 
 /* Load a file */
 void load_file(GLOBAL_SKIN_INFOS *gsi) {

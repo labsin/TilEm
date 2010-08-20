@@ -206,6 +206,8 @@ int main(int argc, char **argv)
 	} else {
 		strcat(savname, ".sav");
 	}
+	gsi->SavName=(char*) malloc(strlen(savname)+1); /* save for config.c */
+	strcpy(gsi->SavName, savname);
 	/* end */
 	
 	/* Init tilem config.dat and rom_config_file.dat */

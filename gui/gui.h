@@ -69,6 +69,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	int view;
 	char calc_id;
 	char *RomName;
+	char *SavName;
 	char RomType;
 	char *FileToLoad;
 	TilemCalcEmulator *emu;
@@ -301,6 +302,9 @@ static volatile int sforcebreak = 0;
 
 /* Detect and handle a "destroy" event */
 void on_destroy(); /* close the pWindow */
+
+/* Save state of current rom */
+void save_state(GLOBAL_SKIN_INFOS * gsi);
 
 /* The window about in the right_click_menu */
 void on_about(GtkWidget *pBtn);
