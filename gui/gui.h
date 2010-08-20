@@ -391,7 +391,7 @@ void quit_with_save();
 void show_about();
 
 /* File chooser */
-char * select_file(GLOBAL_SKIN_INFOS *gsi);
+char * select_file(GLOBAL_SKIN_INFOS *gsi, char* basedir);
 
 /* File chooser with a different folder */
 void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir);
@@ -505,7 +505,10 @@ void save_macro_file(GLOBAL_SKIN_INFOS* gsi) ;
 void play_macro(GLOBAL_SKIN_INFOS* gsi) ;
 
 /* Play it ! And play it again ! */
-int play_macro_default(GLOBAL_SKIN_INFOS* gsi) ;
+void play_macro_from_file(GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Play it ! And play it again ! */
+int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) ;
 
 /* Turn on the recording */
 void start_record_macro(GLOBAL_SKIN_INFOS* gsi) ;

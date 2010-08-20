@@ -136,6 +136,9 @@
 * - Start working on macro handling : Always do the same things to load and launch a file into an emulator become quickly noisy for the programmer (1 time, 10 times, 30 times, 50 times...argh!). Simply record a sequence and play it to test a program, this is one solution. (feature request from Guillaume Hoffman gh@gmail.com).
 * ---19/08/10---
 * - The macro feature works including loading file (very important). The implementation is very basic (record and read a text file) so many bug could (should?) appear. But I wait to see how it will be use.
+* ---20/08/10--
+* - Better implementation of GtkFileChooser (to be cleaner).
+* - Some work on macro (no seg fault now ^^).
 */
 
 

@@ -263,6 +263,7 @@ void send_file_test(GLOBAL_SKIN_INFOS *gsi) {
 void load_file(GLOBAL_SKIN_INFOS *gsi) {
 		CableHandle* cbl;
 		CalcHandle* ch;
+		char* filename;
 	
 		/* Init the libtis */
 		ticables_library_init();
@@ -281,17 +282,20 @@ void load_file(GLOBAL_SKIN_INFOS *gsi) {
 		
 		/* Attach cable to the emulated calc */
 		ticalcs_cable_attach(ch, cbl);
+	
+		/* Launch and get the result of a GtkFileChooserDialog. Cancelled -> filename == NULL */
+		filename = select_file(gsi, "/home/tib/test");		
 		
-		select_file_with_basedir(gsi, "/home/tib/test");		
-		if((gsi->FileChooserResult == GTK_RESPONSE_ACCEPT) &&(gsi->FileSelected !=NULL)) {
-			gsi->FileChooserResult= -100;
+		/* Test if FileChooser cancelled ... */
+		if(filename != NULL) {
+			printf("filename = %s", filename);
 			
-			send_file(gsi->emu, ch,  gsi->FileSelected); /* See link.c for send_file function */
+			send_file(gsi->emu, ch,  filename); /* See link.c for send_file function */
 			if(gsi->isMacroRecording) 
-				add_load_file_in_macro_file(gsi, strlen(gsi->FileSelected), gsi->FileSelected) ;
-			
-			free(gsi->FileSelected);
+				add_load_file_in_macro_file(gsi, strlen(filename), filename) ;
+			free(filename);
 		}
+				
 			
 
 		ticalcs_cable_detach(ch);

@@ -9,13 +9,17 @@
 /* Turn on recording macro */
 void start_record_macro(GLOBAL_SKIN_INFOS* gsi) {
 	gsi->isMacroRecording = 1;
+	gsi->macro_file = NULL;
 }
 
 /* Turn off recording macro */
 void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) {
-	gsi->isMacroRecording = 0;
-	fclose(gsi->macro_file);
-	gsi->macro_file= NULL;
+	
+	if(gsi->isMacroRecording == 1) {
+		gsi->isMacroRecording = 0;
+		if(gsi->macro_file != NULL)
+			fclose(gsi->macro_file);
+	}
 }
 	
 /* Create the macro file */
@@ -23,13 +27,11 @@ void create_or_replace_macro_file(GLOBAL_SKIN_INFOS* gsi) {
 	FILE * macro_file;		
 	
 	/* if a macro already exists */
-	if((macro_file= g_fopen("play.txt", "r"))!= NULL) {
+	macro_file = g_fopen("play.txt", "w");
+	if(macro_file != NULL) {
 		fclose(macro_file);
-		macro_file = g_fopen("play.txt", "w");
-		if(macro_file != NULL)
-			fclose(macro_file);
 	}
-
+	
 
 	macro_file = g_fopen("play.txt", "a+");
 	gsi->macro_file= macro_file;
@@ -44,8 +46,8 @@ void add_event_in_macro_file(GLOBAL_SKIN_INFOS* gsi, char * string) {
 	} else {
 		fwrite(",", 1, 1, gsi->macro_file);
 	}
-	/* Write the key value */
 	fwrite(string, 1, sizeof(int), gsi->macro_file);
+	/* Write the key value */
 	
 	/* Write the comma to seperate */
 }
@@ -81,9 +83,16 @@ void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filen
 }
 
 /* Open the file for reading value to play */
-int open_macro_file(GLOBAL_SKIN_INFOS* gsi) {
+int open_macro_file(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 	FILE * macro_file;
-	if((macro_file = g_fopen("play.txt", "r"))!=NULL) {
+
+	if(macro_name == NULL) {
+		macro_name = (char*) malloc(8 * sizeof(char) + 1),
+		memset(macro_name, 0, 9);
+		strcpy(macro_name, "play.txt");
+	} 
+
+	if((macro_file = g_fopen(macro_name, "r")) != NULL) {
 		gsi->macro_file= macro_file;
 	} else {
 		return 1;
@@ -94,11 +103,19 @@ int open_macro_file(GLOBAL_SKIN_INFOS* gsi) {
 
 /* Callback signal (rightclick menu) */
 void play_macro(GLOBAL_SKIN_INFOS* gsi) {
-	play_macro_default(gsi);
+	play_macro_default(gsi, NULL);
+	if(gsi->macro_file != NULL)
+		fclose(gsi->macro_file);
+	//	gsi->macro_file = NULL;
+}
+
+/* Callback signal (rightclick menu) */
+void play_macro_from_file(GLOBAL_SKIN_INFOS* gsi) {
+	play_macro_default(gsi, select_file(gsi, "./macros/"));
 }
 
 /* Play the partition (macro) */
-int play_macro_default(GLOBAL_SKIN_INFOS* gsi) {
+int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 	int code;
 	char* codechar;
 	char c;
@@ -107,7 +124,7 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi) {
 	char* filename;
 
 	/* Test if play.txt exists ? */
-	if(open_macro_file(gsi)==1) 
+	if(open_macro_file(gsi, macro_name)==1) 
 		return 1;
 
 	DMACRO_L0_A0("************** fct : play_macro *******************\n");	
@@ -125,11 +142,10 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi) {
 			length= atoi(lengthchar);
 			DMACRO_L0_A2("* lengthchar = %s,    length = %d         *\n", lengthchar, length);
 			filename= (char*) malloc(length * sizeof(char)+1);
-			memset(filename, 0, length);
+			memset(filename, 0, length + 1);
 			fread(filename, 1, length, gsi->macro_file);
 			load_file_from_file(gsi, filename);
 			DMACRO_L0_A1("* send file = %s               *\n", filename);
-			free(filename);
 		} else {
 			code = atoi(codechar);
 			DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", codechar, code);
@@ -141,7 +157,6 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi) {
 		c = fgetc(gsi->macro_file);
 	}
 	DMACRO_L0_A0("***************************************\n");	
-	fclose(gsi->macro_file);
 	
 	return 0;
 

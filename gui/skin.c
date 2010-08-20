@@ -50,8 +50,9 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 
 /* GtkFileSelection */
 void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
-
-		DSKIN_L0_A0("\nSKINSELECTION\n");
+	
+	char* file_selected;
+	DSKIN_L0_A0("\nSKINSELECTION\n");
 	
 	if(gsi->view==1) 
 	{
@@ -60,16 +61,15 @@ void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
 	} else {
 		
 		/* Show a nice chooser dialog, and get the filename selected */	
-		select_file_with_basedir(gsi, "./skn/");
-		if((gsi->FileChooserResult == GTK_RESPONSE_ACCEPT) &&(gsi->FileSelected !=NULL)) {
+		file_selected = select_file(gsi, "./skn/");
+		if(file_selected !=NULL) {
 			DSKIN_L0_A2("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
-			DSKIN_L0_A1("file to load : %s\n",gsi->FileSelected);
+			DSKIN_L0_A1("file to load : %s\n", file_selected);
 		
-			gsi->SkinFileName= (char*) malloc(strlen(gsi->FileSelected) * sizeof(char));
-			strcpy(gsi->SkinFileName,gsi->FileSelected);
+			gsi->SkinFileName= (char*) malloc(strlen(file_selected) * sizeof(char));
+			strcpy(gsi->SkinFileName, file_selected);
 			printf("Just before loading skin : gsi->SkinFileName : %s ", gsi->SkinFileName);
-			free(gsi->FileSelected);
-			gsi->FileChooserResult= -100;
+			free(file_selected);
 			
 			/* redraw the skin into the Window (here gsi->pWindow) */
 			redraw_screen(gsi->pWindow,gsi);
