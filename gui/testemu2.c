@@ -139,6 +139,10 @@
 * ---20/08/10--
 * - Better implementation of GtkFileChooser (to be cleaner).
 * - Some work on macro (no seg fault now ^^).
+* - Add a Save state... entry in right click menu (no need to stop tilem to save state)
+* - Add a Play macro with GtkFileChooser (to play another macro than play.txt).
+* - Fix minor bug in GtkFileChooser (forget to init a char* to NULL).
+
 */
 
 

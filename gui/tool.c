@@ -155,7 +155,7 @@ char* select_file(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 
 GtkWidget *dialog;
 GtkFileChooser *pFileChooser;
-char* filename;
+char* filename = NULL;
 gint result;
 
 dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(gsi->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
@@ -172,9 +172,9 @@ result = gtk_dialog_run (GTK_DIALOG (dialog));
 //gtk_signal_connect(GTK_OBJECT(dialog),"response",G_CALLBACK(gtk_widget_destroy),(gpointer)gsi);
 
 	if(result == GTK_RESPONSE_ACCEPT)
-	{
+	{	
 		filename=(gchar*)gtk_file_chooser_get_filename(pFileChooser);
-		printf("get_selected_file:  FileSelected : %s\n", filename);
+		printf("Selected file : %s\n", filename);
 	} else {
 		printf("Cancelled ...\n");
 	}	

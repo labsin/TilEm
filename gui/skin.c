@@ -51,7 +51,7 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
 /* GtkFileSelection */
 void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
 	
-	char* file_selected;
+	char* file_selected = NULL ;
 	DSKIN_L0_A0("\nSKINSELECTION\n");
 	
 	if(gsi->view==1) 
@@ -61,8 +61,9 @@ void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
 	} else {
 		
 		/* Show a nice chooser dialog, and get the filename selected */	
-		file_selected = select_file(gsi, "./skn/");
-		if(file_selected !=NULL) {
+
+		file_selected,select_file(gsi, "./skn/");
+		if(file_selected != NULL) {
 			DSKIN_L0_A2("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
 			DSKIN_L0_A1("file to load : %s\n", file_selected);
 		
