@@ -158,6 +158,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Start recording...", "<control>Q",start_record_macro, 0, NULL, NULL},
 			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
 			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
+			{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
 			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
