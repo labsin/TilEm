@@ -44,12 +44,12 @@ void add_event_in_macro_file(GLOBAL_SKIN_INFOS* gsi, char * string) {
 	if(gsi->macro_file == NULL) {
 		create_or_replace_macro_file(gsi);
 	} else {
+		/* Write the comma to seperate */
 		fwrite(",", 1, 1, gsi->macro_file);
 	}
+	/* Write the event */
 	fwrite(string, 1, sizeof(int), gsi->macro_file);
-	/* Write the key value */
 	
-	/* Write the comma to seperate */
 }
 
 /* Recording */
@@ -60,7 +60,7 @@ void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filen
 	memset(lengthchar, 0 ,4);	
 	
 		
-	DMACRO_L0_A0("************** fct : play_macro *******************\n");	
+	DMACRO_L0_A0("************** fct : add_load_file_in_macro_file *****\n");	
 	DMACRO_L0_A2("* filename = %s, length = %d                *\n", filename, length);	
 	
 	/* First time ? So create the file */
@@ -122,6 +122,9 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 	char* lengthchar;
 	int length;
 	char* filename;
+	
+	/* Turn on the macro playing state */
+	gsi->isMacroPlaying = 1;
 
 	/* Test if play.txt exists ? */
 	if(open_macro_file(gsi, macro_name)==1) 
@@ -154,8 +157,13 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 			g_mutex_unlock(gsi->emu->calc_mutex);
 		
 		}
+
+
 		c = fgetc(gsi->macro_file);
 	}
+	/* Turn off the macro playing state */
+	gsi->isMacroPlaying = 0;
+	
 	DMACRO_L0_A0("***************************************\n");	
 	
 	return 0;

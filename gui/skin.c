@@ -62,7 +62,7 @@ void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
 		
 		/* Show a nice chooser dialog, and get the filename selected */	
 
-		file_selected,select_file(gsi, "./skn/");
+		file_selected = select_file(gsi, "./skn/");
 		if(file_selected != NULL) {
 			DSKIN_L0_A2("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
 			DSKIN_L0_A1("file to load : %s\n", file_selected);

@@ -251,7 +251,7 @@ void load_file(GLOBAL_SKIN_INFOS *gsi) {
 		ticalcs_cable_attach(ch, cbl);
 	
 		/* Launch and get the result of a GtkFileChooserDialog. Cancelled -> filename == NULL */
-		filename = select_file(gsi, "/home/tib/test");		
+		filename = select_file(gsi, NULL);		
 		
 		/* Test if FileChooser cancelled ... */
 		if(filename != NULL) {
@@ -332,7 +332,5 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 			break;
 		}
 	}
-
-		
 }
 

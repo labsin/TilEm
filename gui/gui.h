@@ -71,7 +71,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	char *RomName;
 	char *SavName;
 	char RomType;
-	char *FileToLoad;
+	char *FileToLoad; 
 	TilemCalcEmulator *emu;
 	TilemDebuggerRegister *reg_entry;
 	gboolean isDebuggerRunning;
