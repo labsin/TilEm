@@ -151,9 +151,6 @@
 int main(int argc, char **argv)
 {
 	
-	const char* romname="xp.rom";
-	char* savname;
-	char* p;
 	FILE *romfile,*savfile, *config_file, *romconfig_file;
 	//char calc_id;
 
@@ -176,44 +173,13 @@ int main(int argc, char **argv)
 	gsi->isDebuggerRunning=FALSE;
 	
 	/* Get the romname */
-	if (argc >= 2)  /* If they are 2 parameters or more, the romfile is the second. */
-	{
-		romname = argv[1];
-		DGLOBAL_L0_A0("**************** fct : main ****************************\n");
-		DGLOBAL_L0_A1("*  argv[1]=%s                                *\n",argv[1]);	
-		DGLOBAL_L0_A0("********************************************************\n");
-		gsi->RomName=(char*) malloc(strlen(romname)+1); /* save for config.c */
-		strcpy(gsi->RomName,romname);
+	getargs(argc, argv, gsi);
+	/* End */	
+	
+	/* Create the SavName */
+	create_savname(gsi);
+	/* End */
 
-		/* More than 2 parameters ? There's a file to load ! */
-		if(argc>2) {
-			gsi->FileToLoad = (char*)malloc(strlen(argv[2])*sizeof(char)+1);
-			if(gsi->FileToLoad != NULL){
-				strcpy(gsi->FileToLoad, argv[2]);
-				printf("gsi->FileToLoad = %s", gsi->FileToLoad);
-			}
-		}
-
-	}
-	/* end */
-	
-	/* Create the savname */
-	savname = g_malloc(strlen(romname) + 5); /* sav/ (4 char) + romname + .sav (4 char) + \0 (1 char) */
-	strcat(savname, romname);
-	
-	if ((p = strrchr(savname, '.'))) 
-	{
-		strcpy(p, ".sav");
-		DGLOBAL_L0_A0("**************** fct : main ****************************\n");
-		DGLOBAL_L0_A2("*  romname=%s savname=%s           *\n",romname,savname);	
-		DGLOBAL_L0_A0("********************************************************\n");
-	} else {
-		strcat(savname, ".sav");
-	}
-	gsi->SavName=(char*) malloc(strlen(savname)+1); /* save for config.c */
-	strcpy(gsi->SavName, savname);
-	/* end */
-	
 	/* Init tilem config.dat and rom_config_file.dat */
 	config_file = g_fopen("config.dat", "rt");
 	if (!config_file) 
@@ -230,10 +196,10 @@ int main(int argc, char **argv)
 	/* end */
 
 	/* Open the romfile */
-	romfile = g_fopen(romname, "rb");
+	romfile = g_fopen(gsi->RomName, "rb");
 	if (!romfile) 
 	{
-		perror(romname);
+		perror(gsi->RomName);
 		return 1;
 	}
 	/* end */
@@ -254,18 +220,23 @@ int main(int argc, char **argv)
 	if(gsi->calc_id=='0') {
 		DGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
 		if (!(gsi->calc_id=tilem_guess_rom_type(romfile))) {	
-			fprintf(stderr, "%s: unknown calculator type\n", romname);
+			fprintf(stderr, "%s: unknown calculator type\n", gsi->RomName);
 		if(romfile!=NULL)
 			fclose(romfile);
 		return 1;
 		}
 	}
+	
+	/* Create the calc */
 	gsi->emu=malloc(sizeof(TilemCalcEmulator));
 	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
-	
-	savfile = g_fopen(savname, "rt");
+	/* End */
+
+	/* Load save state */
+	savfile = g_fopen(gsi->SavName, "rt");
 	tilem_calc_load_state(gsi->emu->calc, romfile, savfile);
-	
+	/* End */
+
 	if (savfile)
 		fclose(savfile);
 		
@@ -299,7 +270,9 @@ int main(int argc, char **argv)
 	
 	/* Draw skin */	
 	gsi->pWindow=draw_screen(gsi);
-
+	
+	if(gsi->FileToLoad != NULL)
+		load_file_from_file(gsi, gsi->FileToLoad);
 		
 	
 	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
@@ -309,8 +282,8 @@ int main(int argc, char **argv)
 	
 	/* Save the state */
 	if(SAVE_STATE==1) {
-		romfile = g_fopen(romname, "wb");
-		savfile = g_fopen(savname, "wt");
+		romfile = g_fopen(gsi->RomName, "wb");
+		savfile = g_fopen(gsi->SavName, "wt");
 		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
 	}
 	

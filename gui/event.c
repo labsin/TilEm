@@ -243,7 +243,7 @@ void load_file(GLOBAL_SKIN_INFOS *gsi) {
 			fprintf(stderr, "Cannot create ilp handle\n");
 		
 		/* Create calc */
-		ch = ticalcs_handle_new(CALC_TI83);
+		ch = ticalcs_handle_new(get_calc_model(gsi->emu->calc));
 		if (!ch) 
 			fprintf(stderr, "Cannot create calc handle\n");
 		
@@ -289,7 +289,7 @@ void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) {
 			fprintf(stderr, "Cannot create ilp handle\n");
 		
 		/* Create calc */
-		ch = ticalcs_handle_new(CALC_TI83);
+		ch = ticalcs_handle_new(get_calc_model(gsi->emu->calc));
 		if (!ch) 
 			fprintf(stderr, "Cannot create calc handle\n");
 		

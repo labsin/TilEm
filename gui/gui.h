@@ -522,3 +522,17 @@ void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) ;
 
 /* Run slowly to play macro */
 void run_with_key_slowly(TilemCalc* calc, int key);
+
+
+
+/* ##### args.c ##### */
+
+
+/* Help (usage: how to use in command line) */
+void help(char *name, int ret) ;
+
+/* Command line argument handling */
+int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Create the SavName */
+void create_savname(GLOBAL_SKIN_INFOS* gsi) ;
