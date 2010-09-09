@@ -8,12 +8,17 @@
 
 void help(char *name, int ret) 
 {
-        fprintf(stdout,"Usage: %s [OPTIONS]\n"
-                        "\n\t--== TI Linux EMulator 2.00 ==--\n\n"
+        fprintf(stdout,"Usage: %s -r <rom> [OPTIONS]\n"
+                        "\n\t--== TI Linux EMulator 2.00 ==--\n"
+                        "\t    Tilem Is a Linux EMulator\n"
                         "\t--help\t\tshow this message\n"
                         "\t-r <rom>\trom to run\n"
                         "\t-f <file>\tfile to load\n"
-                        "\t-s <save>\tsave state to load\n", name);
+                        "\t-k <skin>\tskin to display\n"
+                        "\t-m <macro>\tmacro to run\n"
+                        "\t-s <save>\tsave state to load\n"
+                        "\t-l \t\tstart in skinless mode\n", name);
+
         exit(ret);
 }
 
@@ -27,7 +32,7 @@ int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) {
         else if (strcmp(argv[1], "--help") == 0)
                 help(argv[0],0);
 
-        while((options = getopt(argc,argv, "s:f:r:")) != -1)
+        while((options = getopt(argc,argv, "s:f:r:k:m:l")) != -1)
         {
                 switch(options) //options -X de la ligne
                 {		//de commande
@@ -46,6 +51,21 @@ int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) {
 			gsi->FileToLoad = optarg;
                         printf("gsi->FileToLoad = %s\n", gsi->FileToLoad);
                         break;
+                        case 'k':
+                        printf("arg : k, optarg = %s\n", optarg);
+			gsi->SkinFileName = optarg;
+                        printf("gsi->SkinFileName = %s\n", gsi->SkinFileName);
+                        break;
+                        case 'm':
+                        printf("arg : m, optarg = %s\n", optarg);
+			gsi->MacroName = optarg;
+                        printf("gsi->MacroName = %s\n", gsi->MacroName);
+                        break;
+			case 'l':
+                        printf("arg : l\n");
+			gsi->isStartingSkinless = TRUE;
+                        break;
+			
                         default :
                         fprintf(stderr,"Erreur d'option\n"); 
                         help(argv[0],-1);

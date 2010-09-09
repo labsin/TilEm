@@ -9,6 +9,7 @@
 static void catchint(int sig G_GNUC_UNUSED)
 {
 	sforcebreak = 1;
+	//on_destroy();
 }
 
 /* Used when you load another skin */
@@ -65,6 +66,7 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi)
 
 }
 
+/* This view is the "skinless mode" (only show the lcd area).You can't change skin while using this mode (a nice dialog will say it to user) */
 void switch_view(GLOBAL_SKIN_INFOS * gsi) 
 {
 	if(gsi->view==1) 
@@ -219,11 +221,71 @@ void update_lcdimage(TilemCalcEmulator* emu)  /* Absolument necessaire */
 	DLCD_L2_A0("<update_lcdimage\n");
 }
 
+/* Display the lcd image into the terminal */
+void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi)  /* Absolument necessaire */
+{
+	
+	int width, height;
+	guchar* lcddata;
+	int x, y;
+	char c;
+	width = gsi->emu->calc->hw.lcdwidth;
+	height = gsi->emu->calc->hw.lcdheight;
+	FILE* lcd_content_file;
+	/* Alloc mmem */
+	lcddata = g_new(guchar, (width / 8) * height);
+		
+	/* Get the lcd content using the function 's pointer from Benjamin's core */
+	(*gsi->emu->calc->hw.get_lcd)(gsi->emu->calc, lcddata);
+		
+	/* Print a little demo just for fun;) */
+	printf("\n\n\n");	
+	printf("	 r     rr    r  rrrrr  rrr  r     rrrrr r   r  rr    r    rr     r                      \n");
+	printf("  r     r     r     r     r     r   r     r     rr rr    r    r     r     r     r     r     r   \n");
+	printf("   r   r      r    r      r     r   r     r     r r r   r      r    r      r     r     r     r  \n");
+	printf("rrrrr r      r     r      r     r   r     rrrr  r r r  r       r     r      r rrrrr rrrrr rrrrr \n");
+	printf("   r   r      r    r      r     r   r     r     r   r  rrr     r    r      r     r     r     r  \n");
+	printf("  r     r     r     r     r     r   r     r     r   r         r     r     r     r     r     r   \n");
+	printf("	 r     rr    r    r    rrr  rrrrr rrrrr r   r        r    rr     r                      \n");
+	printf("\n(Here is just a sample...)\n\n");	
+	
+	/* Request user to know which char user wants */	
+	
+	printf("Which char to display FOR BLACK?\n");
+	scanf("%c", &c); /* Choose wich char for the black */	
+	
+	//printf("Which char to display FOR GRAY ?\n");
+	//scanf("%c", &b); /* Choose wich char for the black */	
+	
+	lcd_content_file = g_fopen("lcd_content.txt", "w");
+
+	printf("\n\n\n### LCD CONTENT ###\n\n\n\n");
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+			/*printf("%d ", lcddata[y * width + x]); */	
+			if (lcddata[(y * width + x) / 8] & (0x80 >> (x % 8))) {
+				printf("%c", c);
+				if(lcd_content_file != NULL)	
+					fprintf(lcd_content_file,"%c", c);
+			} else {
+				printf("%c", ' ');
+				if(lcd_content_file != NULL)	
+					fprintf(lcd_content_file,"%c", ' ');
+			}
+		}
+		printf("\n");
+		if(lcd_content_file != NULL)	
+			fprintf(lcd_content_file,"%c", '\n');
+	}	
+	if(lcd_content_file != NULL) {	
+		fclose(lcd_content_file);
+		printf("\n### END ###\n\nSaved into lcd_content.txt (You're really geek!)");
+	}	
+
+}
 
 
-
-
-
+/* Thread for the gui */
 static gpointer core_thread(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -251,10 +313,11 @@ static gpointer core_thread(gpointer data)
 
 		if (emu->forcebreak || sforcebreak) {
 			printf("Interrupted at %04X\n", emu->calc->z80.clock);
-			//printstate(emu);
+			printstate(emu);
 			//debugmode = 1;
 			emu->forcebreak = FALSE;
 			sforcebreak = 0;
+			on_destroy();
 		}
 		g_mutex_unlock(emu->calc_mutex);
 		
@@ -337,6 +400,7 @@ gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNU
 	return TRUE;
 }
 
+/* Update the lcd */
 gboolean screen_update(gpointer data)
 {
 	DLCD_L2_A0(">screen_update\n");

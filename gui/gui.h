@@ -72,6 +72,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	char *SavName;
 	char RomType;
 	char *FileToLoad; 
+	char *MacroName;
 	TilemCalcEmulator *emu;
 	TilemDebuggerRegister *reg_entry;
 	gboolean isDebuggerRunning;
@@ -79,6 +80,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	FILE * macro_file;
 	gboolean isMacroRecording;
 	gboolean isMacroPlaying;
+	gboolean isStartingSkinless;
 }GLOBAL_SKIN_INFOS;
 
 static const char rcstr[] =
@@ -192,9 +194,9 @@ static const struct KEY_LIST x4_keylist[] = {
 	{ 0x29, "(-)" }, 
 	{ 0x09, "ENTER" },
 	
-	};
+};
 	
-	static const struct KEY_LIST x3_keylist[] = {
+static const struct KEY_LIST x3_keylist[] = {
 	
 	{ 0x35, "Y=" },
 	{ 0x34, "WINDOW" },
@@ -292,7 +294,7 @@ static const struct KEY_LIST x4_keylist[] = {
 	{ 0x29, "(-)" }, 
 	{ 0x09, "ENTER" },
 	
-	};
+};
 	
 /* core's forcebreak value */
 static volatile int sforcebreak = 0;
@@ -330,7 +332,6 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
 
 
-
 /* ###### skin.c ##### */
 	
 /* Create the SKIN file selector */
@@ -338,6 +339,7 @@ void skin_selection(GLOBAL_SKIN_INFOS *gsi);
 
 /* Choose automatically wich skin tilem must load */
 void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi);
+
 
 
 
@@ -361,6 +363,11 @@ gboolean screen_update(gpointer data);
 /* refresh the lcd content */
 void update_lcdimage(TilemCalcEmulator *emu);
 
+/* Display the lcd image into the terminal */
+void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi);
+
+
+
 /* ##### event.c ##### */
 
 /* Switch view to lcd only or skin + lcd */
@@ -377,6 +384,7 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_I
 
 /* Resize screen */
 void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi);
+
 
 
 
@@ -431,6 +439,7 @@ void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
 
 
 
+
 /* ##### romconfig.c ##### */
 
 /* Create the config.dat file  (normally only the first launch */
@@ -465,6 +474,8 @@ void refresh_register(GLOBAL_SKIN_INFOS* gsi);
 /* Refresh on click the stack in the debugger */
 void refresh_stack(GLOBAL_SKIN_INFOS* gsi);
 
+/* Print state register in terminal */
+void printstate(TilemCalcEmulator* emu);
 
 
 

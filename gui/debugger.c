@@ -22,7 +22,7 @@ void on_debug_destroy(GtkWidget* debug_win, GdkEvent* Event, GLOBAL_SKIN_INFOS* 
 }
 
 /* Print register value in terminal (copy paste of Benjamin Moody's work) */
-static void printstate(TilemCalcEmulator* emu)
+void printstate(TilemCalcEmulator* emu)
 {
        printf("*  PC=%02X:%04X AF=%04X BC=%04X DE=%04X                  *\n"
 		"*  HL=%04X IX=%04X IY=%04X SP=%04X                     *\n",
@@ -382,13 +382,13 @@ void create_stack_list(GtkWidget* debug_stackscroll, GLOBAL_SKIN_INFOS* gsi) {
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 14);
+	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
 	column = gtk_tree_view_column_new_with_attributes("ADDR" ,renderer, "text", COL_OFFSET_STK, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 	
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 14);
+	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
 	column = gtk_tree_view_column_new_with_attributes("VAL" ,renderer, "text", COL_VALUE_STK, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
@@ -466,7 +466,7 @@ void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, 70, 14);
+	gtk_cell_renderer_set_fixed_size(renderer, 70, 16);
 	column = gtk_tree_view_column_new_with_attributes("ADDR",renderer, "text", COL_OFFSET_MEM, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
@@ -475,14 +475,14 @@ void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
 	for(i=0; i<8; i++)
 	{
 		renderer = gtk_cell_renderer_text_new ();
-		gtk_cell_renderer_set_fixed_size(renderer, -1, 14);
+		gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
 		column = gtk_tree_view_column_new_with_attributes(NULL ,renderer, "text", COL_HEXA_MEM+i, NULL);
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 	}	
 
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, 60, 14);
+	gtk_cell_renderer_set_fixed_size(renderer, 60, 16);
 	column = gtk_tree_view_column_new_with_attributes("ASCII",renderer, "text", COL_ASCII_MEM, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);

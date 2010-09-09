@@ -67,9 +67,6 @@ static void getreg(GLOBAL_SKIN_INFOS* gsi , int i, char* string);
 /* Get the register values decimal) */
 gushort getreg_int(GLOBAL_SKIN_INFOS* gsi , int i);
 
-/* Print the register values in terminal */
-static void printstate(TilemCalcEmulator* emu);
-
 /* Create the dasm list */
 static void create_dasm_list(GtkWidget* debug_dasmscroll, GLOBAL_SKIN_INFOS* gsi); 
 

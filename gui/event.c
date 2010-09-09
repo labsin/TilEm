@@ -148,18 +148,19 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Screenshot !",NULL, screenshot, 1, NULL, NULL},
+			{"/Display lcd into console !",NULL, display_lcdimage_into_terminal, 1, NULL, NULL},
 			{"/Switch view",NULL,switch_view,1,NULL,NULL},
 			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
 			{"/Use this model as default for this rom",NULL,add_or_modify_defaultmodel, 1, NULL, NULL},
 			{"/Use this skin as default for this rom ",NULL,add_or_modify_defaultskin, 1, NULL, NULL},
 			{"/Save state... ",NULL,save_state, 1, NULL, NULL},
-			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/Start recording...", "<control>Q",start_record_macro, 0, NULL, NULL},
 			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
 			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
 			{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
+			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
 			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
 			{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}
@@ -317,6 +318,7 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	strcpy(filename, "screenshot");
 	
 	for(i=0; i<500; i++) {
+		/* Complicated method just to find a free filename (don not save more than 500 screenshots ! I know this is stupid) */
 		buffer = (char*) malloc(3);
 		sprintf(buffer,"%03d", i);
 		strcpy(filename, "screenshot");
@@ -327,6 +329,7 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 		if((fp = g_fopen(filename,"r"))) {
 			fclose(fp);
 		} else { 
+			/* Simply copy the pixbuf using GTK+ functions designed for this job ;) */
 			gdk_pixbuf_save(gsi->emu->lcdscaledpb, filename, "png", NULL, NULL);
 			printf("SCREENSHOT ! --> filename : %s\n", filename);
 			break;

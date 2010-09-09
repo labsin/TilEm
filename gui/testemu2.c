@@ -121,7 +121,7 @@
 * ---09/08/10---
 * - Correction of the SEG_FAULT (never use sizeof(char*) inside malloc, strlen(char*) is better :P).
 * ---10/08/10---
-* - Working on a new config file called romconfig.dat (inspired from config.dat) using to do not ask for model each time tilem is started.							      
+* - Working on a new config file called romconfig.dat (inspired from config.dat) using to do not ask for model each time tilem is started.
 * - It works :D
 * ---12/08/10---
 * - NEW feature : Can load a file using libticalcs2 (inspired from the wokr of Benjamin Moody). Basically it works, but it's not OK. (many bugs)
@@ -142,7 +142,14 @@
 * - Add a Save state... entry in right click menu (no need to stop tilem to save state)
 * - Add a Play macro with GtkFileChooser (to play another macro than play.txt).
 * - Fix minor bug in GtkFileChooser (forget to init a char* to NULL).
-
+* ---23/08/10---
+* - Add a new args handler using getop library (add -m for macro and -k for skin).
+* ---06/09/10---
+* - NEW feature : could print the lcd content into the terminal. So useless but so funny ;) (feature request from Guillaume Hoffman).
+* - The output is saved into a file called lcd_content.txt.
+* ---08/09/10---
+* - Could choose wich char to display. This not really works as I want, but this is not a really important feature (works 1/2)
+* - Add an option at startup (-l). Could now start in skinless mode.
 */
 
 
@@ -260,20 +267,27 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A0("********************************************************\n");
 	
 	config_load(gsi->ci);
-	if(is_this_rom_in_config_infos(gsi->RomName, gsi))
-	{
-		search_defaultskin_in_config_infos(gsi->RomName, gsi);
-	} else {
-		/* User does not have choosen another skin for this model, choose officials :) */
-		choose_skin_filename(gsi->emu->calc,gsi);
-	}
-	
+
+	if(gsi->SkinFileName == NULL) { /* Given as parameter ? */
+		if(is_this_rom_in_config_infos(gsi->RomName, gsi))
+		{
+			search_defaultskin_in_config_infos(gsi->RomName, gsi);
+		} else {
+			/* User does not have choosen another skin for this model, choose officials :) */
+			choose_skin_filename(gsi->emu->calc,gsi);
+		}
+	}	
+
 	/* Draw skin */	
 	gsi->pWindow=draw_screen(gsi);
-	
-	if(gsi->FileToLoad != NULL)
-		load_file_from_file(gsi, gsi->FileToLoad);
 		
+	if(gsi->FileToLoad != NULL) /* Given as parameter ? */
+		load_file_from_file(gsi, gsi->FileToLoad);
+	if(gsi->MacroName != NULL) /* Given as parameter ? */
+		play_macro_default(gsi, gsi->MacroName); 		
+	if(gsi->isStartingSkinless) /* Given as parameter ? */
+		switch_view(gsi); /* Start without skin */
+	
 	
 	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
 	gtk_main();
