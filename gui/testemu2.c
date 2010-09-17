@@ -169,6 +169,8 @@ int main(int argc, char **argv)
 	gsi->pWindow = NULL;
 	gsi->ci=malloc(sizeof(CONFIG_INFOS));
 	gsi->rci=malloc(sizeof(ROMCONFIG_INFOS));
+	gsi->FileToLoad = NULL;
+	gsi->MacroName = NULL;
 	
 	
 	/* Init GTK+ */
