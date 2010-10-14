@@ -189,6 +189,9 @@ int main(int argc, char **argv)
 	
 	/* Init isDebuggerRunning */
 	gsi->isDebuggerRunning=FALSE;
+
+	/* Default start with skin */
+	gsi->isStartingSkinless = FALSE;
 	
 	/* Get the romname */
 	getargs(argc, argv, gsi);
