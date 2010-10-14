@@ -3,7 +3,6 @@ contra-sh :
 	This file is based on skinops.h which is based on Julien Blache and Romain Lievins 's work.
 */
 
-
 #include <stdint.h>
 
 /***************/

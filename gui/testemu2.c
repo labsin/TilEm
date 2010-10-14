@@ -150,6 +150,15 @@
 * ---08/09/10---
 * - Could choose wich char to display. This not really works as I want, but this is not a really important feature (works 1/2)
 * - Add an option at startup (-l). Could now start in skinless mode.
+* ---04/10/10---
+* - Start working on animated gif. Some research on GIF file format. Oops it will be hard, file is encoded (!).
+* ---09/10/10---
+* - Creation of 1 little static gif file seems working, but always no LZW encoding.
+* ---12/10/10---
+* - Finally I decided to use external source to encode the pix data.I use a file called "gifencode.c" by Hans Dinsen-Hansen and Michael A. Mayer. And it works !!!
+* ---14/10/10---
+* - It works ! It works !!! Tilem2 is now able to generate animated gif, functions are currently working (but totally buggy) and it successfully create animated gif :)
+* - Need to be integrated (and lot of debug).I commit it just to save it...Wait another commit to really use this feature :P
 */
 
 

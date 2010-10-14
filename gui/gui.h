@@ -78,6 +78,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	gboolean isDebuggerRunning;
 	GtkWidget* stack_treeview;	
 	FILE * macro_file;
+	FILE * animation_file;
 	gboolean isMacroRecording;
 	gboolean isMacroPlaying;
 	gboolean isStartingSkinless;
@@ -547,3 +548,22 @@ int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) ;
 
 /* Create the SavName */
 void create_savname(GLOBAL_SKIN_INFOS* gsi) ;
+
+
+
+/* ##### animatedgif.c ##### */
+
+
+/* Create a animated screenshot */
+void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) ;
+
+/* Add a frame to animation */
+void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) ;
+
+
+
+/* ##### gifencod.c ##### */
+
+
+/* Encode gif data */
+void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
