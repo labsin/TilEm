@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009, 2010 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -599,6 +599,7 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 	dword t;
 	int j;
 	const char* tname;
+	unsigned int rowstride;
 
 	if (romfile) {
 		if (fwrite(calc->mem, 1, calc->hw.romsize, romfile)
@@ -773,6 +774,11 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 		fprintf(savfile, "\n## RAM contents ##\n");
 		fprintf(savfile, "RAM = {\n");
 		for (i = 0; i < calc->hw.ramsize; i++) {
+			if (i % 256 == 0) {
+				fprintf(savfile, "# %02X:%04X\n",
+					(i >> 14), (i & 0x3fff));
+			}
+
 			fprintf(savfile, "%02X",
 				calc->mem[i + calc->hw.romsize]);
 			if (i % 32 == 31)
@@ -783,9 +789,13 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 		if (calc->hw.lcdmemsize) {
 			fprintf(savfile, "\n## LCD contents ##\n");
 			fprintf(savfile, "LCD = {\n");
+			rowstride = calc->lcd.rowstride;
+			if (rowstride == 0)
+				rowstride = 32;
+
 			for (i = 0; i < calc->hw.lcdmemsize; i++) {
 				fprintf(savfile, "%02X", calc->lcdmem[i]);
-				if (i % 32 == 31)
+				if (i % rowstride == (rowstride - 1))
 					fprintf(savfile, "\n");
 			}
 			fprintf(savfile, "}\n## End of LCD contents ##\n");
