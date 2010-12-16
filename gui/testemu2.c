@@ -249,7 +249,7 @@ int main(int argc, char **argv)
 	}
 	
 	/* Create the calc */
-	gsi->emu=malloc(sizeof(TilemCalcEmulator));
+	gsi->emu = g_new0(TilemCalcEmulator, 1);
 	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
 	/* End */
 
@@ -272,6 +272,8 @@ int main(int argc, char **argv)
 	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
 	gsi->emu->calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
 	/* end */
+
+	gsi->emu->glcd = tilem_gray_lcd_new(gsi->emu->calc, 8, 200);
 
 	DGLOBAL_L0_A0("**************** fct : main ****************************\n");
 	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",gsi->calc_id);

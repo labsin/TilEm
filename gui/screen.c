@@ -48,7 +48,6 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi)
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(on_destroy),NULL); 
 	
 	/* Connection signal keyboard key press */
-	g_signal_connect(gsi->emu->lcdwin, "size-allocate",G_CALLBACK(screen_resize), gsi);
 	g_signal_connect(gsi->emu->lcdwin, "style-set", G_CALLBACK(screen_restyle), gsi); 
 	gtk_widget_add_events(pLayout, GDK_KEY_RELEASE_MASK); /* Get the event on the window (leftclick, rightclick) */
 	gtk_signal_connect(GTK_OBJECT(pLayout), "key_press_event", G_CALLBACK(keyboard_event), NULL);
@@ -57,9 +56,13 @@ GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi)
 	gtk_widget_add_events(pLayout, GDK_BUTTON_RELEASE_MASK);	
 	gtk_signal_connect(GTK_OBJECT(pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
 	g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
+
+	/* Set up color palette */
+	screen_restyle(gsi->emu->lcdwin, NULL, gsi);
+
 	gtk_widget_show_all(pWindow);	/*display the window and all that it contains.*/
 	g_timeout_add(50, screen_update, gsi->emu);
-	
+
 	DLCD_L2_A0("Exiting : redraw_screen...\n");
 	}
 	return gsi;
@@ -133,7 +136,6 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi)
 		gtk_widget_add_events(gsi->pLayout,GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK );
 		
 		/* Event on lcd */
-		g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "size-allocate",G_CALLBACK(screen_resize), gsi);
 		g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "style-set", G_CALLBACK(screen_restyle), gsi); 
 		g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
 
@@ -153,72 +155,8 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi)
 		DLCD_L2_A0("Exiting : draw_only_lcd...\n");
 	}
 
-}
-
-
-
-
-
-
-
-/* update_lcdimage */
-/* La moindre modif entraine un bug graphique sur une partie de l'écran */
-void update_lcdimage(TilemCalcEmulator* emu)  /* Absolument necessaire */
-{
-	DLCD_L2_A0(">update_lcdimage\n");
-	int x, y, i, level;
-	int br, bg, bb, dr, dg, db;
-	guchar* p;
-
-	br = emu->lcdbg.red;
-	bg = emu->lcdbg.green;
-	bb = emu->lcdbg.blue;
-	dr = emu->lcdfg.red - br;
-	dg = emu->lcdfg.green - bg;
-	db = emu->lcdfg.blue - bb;
-
-	p = emu->lcdimage;
-
-	for (i = 0; i < Y_FRINGE * (emu->calc->hw.lcdwidth + 2 * X_FRINGE);
-	     i++) {
-		p[0] = br / 256;
-		p[1] = bg / 256;
-		p[2] = bb / 256;
-		p += 3;
-	}
-
-	for (y = 0; y < emu->calc->hw.lcdheight; y++) {
-		for (i = 0; i < X_FRINGE; i++) {
-			p[0] = br / 256;
-			p[1] = bg / 256;
-			p[2] = bb / 256;
-			p += 3;
-		}
-
-		for (x = 0; x < emu->calc->hw.lcdwidth; x++) {
-			level = emu->lcdlevel[y * emu->calc->hw.lcdwidth + x];
-			p[0] = (br * 128 + dr * level + 16384) / 32768;
-			p[1] = (bg * 128 + dg * level + 16384) / 32768;
-			p[2] = (bb * 128 + db * level + 16384) / 32768;
-			p += 3;
-		}
-
-		for (i = 0; i < X_FRINGE; i++) {
-			p[0] = br / 256;
-			p[1] = bg / 256;
-			p[2] = bb / 256;
-			p += 3;
-		}
-	}
-
-	for (i = 0; i < Y_FRINGE * (emu->calc->hw.lcdwidth + 2 * X_FRINGE);
-	     i++) {
-		p[0] = br / 256;
-		p[1] = bg / 256;
-		p[2] = bb / 256;
-		p += 3;
-	}
-	DLCD_L2_A0("<update_lcdimage\n");
+	/* Set up color palette */
+	screen_restyle(gsi->emu->lcdwin, NULL, gsi);
 }
 
 /* Display the lcd image into the terminal */
@@ -289,16 +227,6 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi)  /* Absolument neces
 static gpointer core_thread(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
-	int width, height;
-	guchar* lcddata;
-	int x, y;
-	int low, high, v, old;
-
-	width = emu->calc->hw.lcdwidth;
-	height = emu->calc->hw.lcdheight;
-	lcddata = g_new(guchar, (width / 8) * height);
-
-
 	
 	signal(SIGINT, &catchint);
 	
@@ -307,7 +235,6 @@ static gpointer core_thread(gpointer data)
 		g_mutex_lock(emu->calc_mutex);
 		if (emu->exiting) {
 			g_mutex_unlock(emu->run_mutex);
-			g_free(lcddata);
 			return NULL;
 		}
 
@@ -323,80 +250,97 @@ static gpointer core_thread(gpointer data)
 		
 		g_mutex_lock(emu->calc_mutex);
 		tilem_z80_run_time(emu->calc, 10000, NULL);
-		/* Get the lcd_content */
-		(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
-		
-		/* Ne pas enlever ça sinon l'écran fonctionne mais il est de toutes les couleurs (entre blanc et noir)*/
-		if (emu->calc->lcd.contrast < 32) {
-			low = 0;
-			high = emu->calc->lcd.contrast * 4;
-		}
-		else {
-			low = (emu->calc->lcd.contrast - 32) * 4;
-			high = 128;
-		}
-
-		
 		g_mutex_unlock(emu->calc_mutex);
-		g_mutex_lock(emu->lcd_mutex);
-		
-		for (y = 0; y < height; y++) {
-			for (x = 0; x < width; x++) {
-				if (lcddata[(y * width + x) / 8]
-				    & (0x80 >> (x % 8)))
-					v = high;
-				else
-					v = low;
 
-				old = emu->lcdlevel[y * width + x];
-				emu->lcdlevel[y * width + x]
-					= v + ((old - v) * 3) / 4;
-			}
-		}
-		
+		g_mutex_lock(emu->lcd_mutex);
+		tilem_gray_lcd_next_frame(emu->glcd, 0);
 		g_mutex_unlock(emu->lcd_mutex);
+
 		/* sans ça, le carré se met à clignoter très vite ! */
 		g_usleep(10000);
 	}
 	return 0;
 }
 
-
-void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi) /* Absolument necessaire */
+/* Set the color palette for drawing the emulated LCD. */
+void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
+		    GLOBAL_SKIN_INFOS* gsi)
 {
-	DLCD_L2_A0(">screen_resize\n");
 	TilemCalcEmulator* emu = gsi->emu;
-	g_object_unref(emu->lcdscaledpb);
-	emu->lcdscaledpb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8,alloc->width, alloc->height);
-	DLCD_L2_A0("<screen_resize\n");
-}
+	dword* palette;
+	int r_dark, g_dark, b_dark;
+	int r_light, g_light, b_light;
+	double gamma = 2.2;
 
-void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi)
-{
-	DLCD_L2_A0(">screen_restyle\n");
-	TilemCalcEmulator* emu = gsi->emu;
-	emu->lcdfg = w->style->fg[GTK_STATE_NORMAL];
-	emu->lcdbg = w->style->bg[GTK_STATE_NORMAL];
+	if (gsi->view == 1 || !gsi->si) {
+		/* no skin -> use standard GTK colors */
+
+		r_dark = w->style->text[GTK_STATE_NORMAL].red / 257;
+		g_dark = w->style->text[GTK_STATE_NORMAL].green / 257;
+		b_dark = w->style->text[GTK_STATE_NORMAL].blue / 257;
+
+		r_light = w->style->base[GTK_STATE_NORMAL].red / 257;
+		g_light = w->style->base[GTK_STATE_NORMAL].green / 257;
+		b_light = w->style->base[GTK_STATE_NORMAL].blue / 257;
+	}
+	else {
+		/* use skin colors */
+
+		r_dark = ((gsi->si->lcd_black >> 16) & 0xff);
+		g_dark = ((gsi->si->lcd_black >> 8) & 0xff);
+		b_dark = (gsi->si->lcd_black & 0xff);
+
+		r_light = ((gsi->si->lcd_white >> 16) & 0xff);
+		g_light = ((gsi->si->lcd_white >> 8) & 0xff);
+		b_light = (gsi->si->lcd_white & 0xff);
+	}
+
+	/* Generate a new palette, and convert it into GDK format */
+
+	if (emu->lcd_cmap)
+		gdk_rgb_cmap_free(emu->lcd_cmap);
+
+	palette = tilem_color_palette_new(r_light, g_light, b_light,
+					  r_dark, g_dark, b_dark, gamma);
+	emu->lcd_cmap = gdk_rgb_cmap_new(palette, 256);
+	tilem_free(palette);
+
 	gtk_widget_queue_draw(emu->lcdwin);
-	DLCD_L2_A0("<screen_restyle\n");
 }
 
-gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi)
+gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
+			GLOBAL_SKIN_INFOS *gsi)
 {
-	DLCD_L2_A0(">screen_repaint\n");
 	TilemCalcEmulator* emu = gsi->emu;
-	double fx, fy;
+	int width, height;
 
-	fx = ((double) w->allocation.width/ (emu->calc->hw.lcdwidth + 2 * X_FRINGE));
-	fy = ((double) w->allocation.height/ (emu->calc->hw.lcdheight + 2 * Y_FRINGE));
+	width = w->allocation.width;
+	height = w->allocation.height;
+
+	/* If image buffer is not the correct size, allocate a new one */
+
+	if (!emu->lcd_image_buf
+	    || width != emu->lcd_image_width
+	    || height != emu->lcd_image_height) {
+		emu->lcd_image_width = width;
+		emu->lcd_image_height = height;
+		g_free(emu->lcd_image_buf);
+		emu->lcd_image_buf = g_new(byte, width * height);
+	}
+
+	/* Draw LCD contents into the image buffer */
 
 	g_mutex_lock(emu->lcd_mutex);
-	update_lcdimage(emu);
-	gdk_pixbuf_scale(emu->lcdpb, emu->lcdscaledpb,0, 0, w->allocation.width, w->allocation.height,0.0, 0.0, fx, fy, GDK_INTERP_TILES);
+	tilem_gray_lcd_draw_image_indexed(emu->glcd, emu->lcd_image_buf,
+					  width, height, width,
+					  TILEM_SCALE_SMOOTH);
 	g_mutex_unlock(emu->lcd_mutex);
 
-	gdk_draw_pixbuf(w->window, w->style->fg_gc[w->state],emu->lcdscaledpb, 0, 0, 0, 0,w->allocation.width, w->allocation.height,GDK_RGB_DITHER_NONE, 0, 0);
-	DLCD_L2_A0("<screen_repaint\n");
+	/* Render buffer to the screen */
+
+	gdk_draw_indexed_image(w->window, w->style->fg_gc[w->state],
+			       0, 0, width, height, GDK_RGB_DITHER_NONE,
+			       emu->lcd_image_buf, width, emu->lcd_cmap);
 	return TRUE;
 }
 
@@ -449,8 +393,6 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	DLCD_L0_A0("*  - print top level window                            *\n");
 	DLCD_L0_A0("*  - launch thread                                     *\n");
 	DLCD_L0_A0("********************************************************\n");
-	int screenwidth ;
-	int screenheight;
 	GtkWidget *pAf;
 	GThread *th;
 
@@ -487,7 +429,6 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gtk_layout_put(GTK_LAYOUT(pLayout),pImage,0,0);
 	gtk_layout_put(GTK_LAYOUT(pLayout),pAf,gsi->si->lcd_pos.left,gsi->si->lcd_pos.top);
 	
-	g_signal_connect(gsi->emu->lcdwin, "size-allocate",G_CALLBACK(screen_resize), gsi);
 	g_signal_connect(gsi->emu->lcdwin, "style-set", G_CALLBACK(screen_restyle), gsi); 
 	gtk_widget_add_events(pLayout, GDK_BUTTON_PRESS_MASK);	
 	gtk_signal_connect(GTK_OBJECT(pLayout), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
@@ -495,18 +436,10 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gtk_signal_connect(GTK_OBJECT(pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
 	g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
 	gtk_container_add(GTK_CONTAINER(pWindow),pLayout);
-	
-	
-	
-	gsi->emu->lcdlevel = g_new0(guchar, (gsi->emu->calc->hw.lcdwidth * gsi->emu->calc->hw.lcdheight));
-	screenwidth = gsi->emu->calc->hw.lcdwidth + 2 * X_FRINGE;
-	screenheight = gsi->emu->calc->hw.lcdheight + 2 * Y_FRINGE ;
-	gsi->emu->lcdimage = g_new0(guchar, 3 * screenwidth * screenheight);
-	
-	gsi->emu->lcdpb = gdk_pixbuf_new_from_data(gsi->emu->lcdimage,GDK_COLORSPACE_RGB, FALSE, 8,screenwidth, screenheight,screenwidth * 3,NULL, NULL);
-	gsi->emu->lcdscaledpb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8,screenwidth, screenheight);
-	
 
+	/* Set up color palette */
+	screen_restyle(gsi->emu->lcdwin, NULL, gsi);
+	
 	gtk_widget_show_all(pWindow);	/* display the window and all that it contains. */
 	
 	/* THREAD */

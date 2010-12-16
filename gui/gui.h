@@ -36,11 +36,13 @@ typedef struct _TilemCalcEmulator {
 	TilemCalc* calc;
 
 	GMutex* lcd_mutex;
-	guchar* lcdlevel;
-	guchar* lcdimage;
-	GdkColor lcdfg, lcdbg;
-	GdkPixbuf* lcdpb;
-	GdkPixbuf* lcdscaledpb;
+	TilemGrayLCD* glcd;
+
+	byte* lcd_image_buf;
+	int lcd_image_width;
+	int lcd_image_height;
+	GdkRgbCmap* lcd_cmap;
+
 	GtkWidget* lcdwin;
 } TilemCalcEmulator;
 

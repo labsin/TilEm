@@ -45,8 +45,6 @@ void screenshot_anim_create(GLOBAL_SKIN_INFOS* gsi) {
 	//fwrite(example, 19, 1, fp);
 	long i= 0;
 	
-	unsigned char* r;
-	r = (unsigned char*)gsi->emu->lcdpb;
 	unsigned char q[(96*64)];
 
 
@@ -118,8 +116,6 @@ void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) {
 	//fwrite(example, 19, 1, fp);
 	long i= 0;
 	
-	unsigned char* r;
-	r = (unsigned char*)gsi->emu->lcdpb;
 	unsigned char q[(96*64)];
 
 
@@ -184,8 +180,6 @@ void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
 	//fwrite(example, 19, 1, fp);
 	long i= 0;
 	
-	unsigned char* r;
-	r = (unsigned char*)gsi->emu->lcdpb;
 	unsigned char q[(96*64)];
 
 
