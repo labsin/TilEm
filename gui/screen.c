@@ -222,20 +222,28 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi)  /* Absolument neces
 
 }
 
+#define MICROSEC_PER_FRAME 10000
 
 /* Thread for the gui */
 static gpointer core_thread(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
-	
+	GTimer* tmr;
+	gulong tnext, tcur;
+
 	signal(SIGINT, &catchint);
-	
+
+	tmr = g_timer_new();
+	g_timer_start(tmr);
+
+	g_timer_elapsed(tmr, &tnext);
+
 	while (1) {
 		
 		g_mutex_lock(emu->calc_mutex);
 		if (emu->exiting) {
 			g_mutex_unlock(emu->run_mutex);
-			return NULL;
+			break;
 		}
 
 		if (emu->forcebreak || sforcebreak) {
@@ -249,16 +257,22 @@ static gpointer core_thread(gpointer data)
 		g_mutex_unlock(emu->calc_mutex);
 		
 		g_mutex_lock(emu->calc_mutex);
-		tilem_z80_run_time(emu->calc, 10000, NULL);
+		tilem_z80_run_time(emu->calc, MICROSEC_PER_FRAME, NULL);
 		g_mutex_unlock(emu->calc_mutex);
 
 		g_mutex_lock(emu->lcd_mutex);
 		tilem_gray_lcd_next_frame(emu->glcd, 0);
 		g_mutex_unlock(emu->lcd_mutex);
 
-		/* sans ça, le carré se met à clignoter très vite ! */
-		g_usleep(10000);
+		g_timer_elapsed(tmr, &tcur);
+		tnext += MICROSEC_PER_FRAME;
+		if (tnext - tcur < MICROSEC_PER_FRAME)
+			g_usleep(tnext - tcur);
+		else
+			tnext = tcur;
 	}
+
+	g_timer_destroy(tmr);
 	return 0;
 }
 
