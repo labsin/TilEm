@@ -5,13 +5,6 @@
 #include <gui.h>
 #include <signal.h>
 
-
-static void catchint(int sig G_GNUC_UNUSED)
-{
-	sforcebreak = 1;
-	//on_destroy();
-}
-
 /* Used when you load another skin */
 GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) 
 {
@@ -231,30 +224,18 @@ static gpointer core_thread(gpointer data)
 	GTimer* tmr;
 	gulong tnext, tcur;
 
-	signal(SIGINT, &catchint);
-
 	tmr = g_timer_new();
 	g_timer_start(tmr);
 
 	g_timer_elapsed(tmr, &tnext);
 
 	while (1) {
-		
-		g_mutex_lock(emu->calc_mutex);
+		g_mutex_lock(emu->run_mutex);
 		if (emu->exiting) {
 			g_mutex_unlock(emu->run_mutex);
 			break;
 		}
-
-		if (emu->forcebreak || sforcebreak) {
-			printf("Interrupted at %04X\n", emu->calc->z80.clock);
-			printstate(emu);
-			//debugmode = 1;
-			emu->forcebreak = FALSE;
-			sforcebreak = 0;
-			on_destroy();
-		}
-		g_mutex_unlock(emu->calc_mutex);
+		g_mutex_unlock(emu->run_mutex);
 		
 		g_mutex_lock(emu->calc_mutex);
 		tilem_z80_run_time(emu->calc, MICROSEC_PER_FRAME, NULL);
@@ -457,7 +438,6 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gtk_widget_show_all(pWindow);	/* display the window and all that it contains. */
 	
 	/* THREAD */
-	signal(SIGINT, &catchint);
 	th = g_thread_create(&core_thread, gsi->emu, TRUE, NULL);
 	g_timeout_add(50, screen_update, gsi->emu);
 	

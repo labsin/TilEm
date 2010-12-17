@@ -268,7 +268,6 @@ int main(int argc, char **argv)
 	gsi->emu->calc_mutex = g_mutex_new();
 	gsi->emu->lcd_mutex = g_mutex_new();
 	gsi->emu->exiting = FALSE;
-	gsi->emu->forcebreak = FALSE;
 	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
 	gsi->emu->calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
 	/* end */

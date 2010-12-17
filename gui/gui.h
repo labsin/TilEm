@@ -30,7 +30,6 @@ typedef struct _TilemDebuggerRegister {
 typedef struct _TilemCalcEmulator {
 	GMutex* run_mutex;
 	gboolean exiting;
-	gboolean forcebreak;
 
 	GMutex* calc_mutex;
 	TilemCalc* calc;
