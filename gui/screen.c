@@ -3,7 +3,6 @@
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <gui.h>
-#include <signal.h>
 
 /* Used when you load another skin */
 GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) 
