@@ -52,7 +52,7 @@ skinops.o: skinops.c skinops.h
 	$(compile) -c $(srcdir)/skinops.c
 
 # Manage skins
-skin.o: skin.c skin.h
+skin.o: skin.c skin.h gui.h
 	$(compile) -c $(srcdir)/skin.c 
 
 # Popups and other stuff

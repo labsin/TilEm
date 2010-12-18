@@ -73,7 +73,7 @@ void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
 			free(file_selected);
 			
 			/* redraw the skin into the Window (here gsi->pWindow) */
-			redraw_screen(gsi->pWindow,gsi);
+			redraw_screen(gsi);
 		}
 	}
 }

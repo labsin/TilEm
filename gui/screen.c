@@ -2,153 +2,65 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
-#include <gui.h>
+#include "gui.h"
 
 /* Used when you load another skin */
-GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) 
+void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 {
-	if(gsi->view==1) 
-	{
-		DGLOBAL_L2_A0("Use >>Switch view<< before !\n");
-		popup_error("Use >>Switch view<< before !\n", gsi);
-	} else {
-	DLCD_L2_A0("Entering : redraw_screen...\n");
 	GtkWidget *pImage;
-	GtkWidget *pAf;
-	GtkWidget * pLayout;
 
-	gsi->view=0;
-	DLCD_L2_A1("REDRAW_SCREEN name : %s\n",gsi->si->name);
 	skin_unload(gsi->si);
-	skin_load(gsi->si,gsi->SkinFileName);
-	
-	/* Remove the pImage from the pWindow */ 
-	gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
-	
-	/* Create widget */
-	pImage=gtk_image_new_from_pixbuf(gsi->si->image);
-	pAf=create_draw_area(gsi);
-		       
-	pLayout=gtk_layout_new(NULL,NULL);
-	
-	gsi->pLayout=pLayout;
-	gtk_widget_show(pAf);
-	gtk_layout_put(GTK_LAYOUT(pLayout),pImage,0,0);
-	gtk_layout_put(GTK_LAYOUT(pLayout),pAf,gsi->si->lcd_pos.left,gsi->si->lcd_pos.top);
-	gtk_container_add(GTK_CONTAINER(pWindow),pLayout);
-	gtk_window_resize(GTK_WINDOW(pWindow),gsi->si->width,gsi->si->height);
-	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(on_destroy),NULL); 
-	
-	/* Connection signal keyboard key press */
-	g_signal_connect(gsi->emu->lcdwin, "style-set", G_CALLBACK(screen_restyle), gsi); 
-	gtk_widget_add_events(pLayout, GDK_KEY_RELEASE_MASK); /* Get the event on the window (leftclick, rightclick) */
-	gtk_signal_connect(GTK_OBJECT(pLayout), "key_press_event", G_CALLBACK(keyboard_event), NULL);
-	gtk_widget_add_events(pLayout,GDK_BUTTON_PRESS_MASK );
-	gtk_signal_connect(GTK_OBJECT(pLayout), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
-	gtk_widget_add_events(pLayout, GDK_BUTTON_RELEASE_MASK);	
-	gtk_signal_connect(GTK_OBJECT(pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
-	g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
+	skin_load(gsi->si, gsi->SkinFileName);
 
-	/* Set up color palette */
-	screen_restyle(gsi->emu->lcdwin, NULL, gsi);
+	if (gsi->pAf)
+		gtk_widget_destroy(gsi->pAf);
+	if (gsi->pLayout)
+		gtk_widget_destroy(gsi->pLayout);
 
-	gtk_widget_show_all(pWindow);	/*display the window and all that it contains.*/
-	g_timeout_add(50, screen_update, gsi->emu);
+	gsi->pAf = create_draw_area(gsi);
+	gsi->pLayout = gtk_layout_new(NULL, NULL);
 
-	DLCD_L2_A0("Exiting : redraw_screen...\n");
+	if (gsi->view == 0) {
+		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
+		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), pImage, 0, 0);
+
+		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->pAf,
+		               gsi->si->lcd_pos.left,
+		               gsi->si->lcd_pos.top);
+
+		gtk_window_resize(GTK_WINDOW(gsi->pWindow), gsi->si->width,
+		                  gsi->si->height);
 	}
-	return gsi;
+	else {
+		int screenwidth = gsi->si->lcd_pos.right - gsi->si->lcd_pos.left;
+		int screenheight = gsi->si->lcd_pos.bottom - gsi->si->lcd_pos.top;
 
+		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->pAf, 0, 0);
+
+		gtk_window_resize(GTK_WINDOW(gsi->pWindow), screenwidth, screenheight);
+	}
+
+	gtk_widget_add_events(gsi->pLayout, (GDK_KEY_RELEASE_MASK
+	                                    | GDK_BUTTON_PRESS_MASK
+	                                    | GDK_BUTTON_RELEASE_MASK));
+
+	g_signal_connect(gsi->pLayout, "key-press-event",
+	                 G_CALLBACK(keyboard_event), gsi);
+	g_signal_connect(gsi->pLayout, "button-press-event",
+	                 G_CALLBACK(mouse_press_event), gsi);
+	g_signal_connect(gsi->pLayout, "button-release-event",
+	                 G_CALLBACK(mouse_release_event), gsi);
+
+	gtk_container_add(GTK_CONTAINER(gsi->pWindow), gsi->pLayout);
+
+	gtk_widget_show_all(gsi->pWindow);
 }
 
-/* This view is the "skinless mode" (only show the lcd area).You can't change skin while using this mode (a nice dialog will say it to user) */
-void switch_view(GLOBAL_SKIN_INFOS * gsi) 
+/* Switch between skin and LCD-only mode */
+void switch_view(GLOBAL_SKIN_INFOS * gsi)
 {
-	if(gsi->view==1) 
-	{
-		gsi->view=0;
-		DLCD_L2_A0("Entering : normal_view...\n");
-		GtkWidget *pImage, *pAf, *pLayout;
-
-		/* Reload skin */
-		skin_unload(gsi->si);
-		skin_load(gsi->si,gsi->SkinFileName);
-		
-		DLCD_L2_A1("Skin name : %s\n",gsi->si->name);
-		
-		/* Remove the pImage from the pWindow */ 
-		gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
-		
-		/* Create widget */
-		pImage=gtk_image_new_from_pixbuf(gsi->si->image);
-		pAf=create_draw_area(gsi);
-		gsi->pAf=pAf;
-		pLayout=gtk_layout_new(NULL,NULL);
-		gsi->pLayout=pLayout;
-		
-		gtk_window_resize(GTK_WINDOW(gsi->pWindow),gsi->si->width,gsi->si->height);
-		
-		/* Connection signal keyboard key press */
-		gtk_widget_add_events(pLayout,GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK );
-		
-		/* Event on pLayout */
-		gtk_signal_connect(GTK_OBJECT(pLayout), "key_press_event", G_CALLBACK(keyboard_event), NULL);
-		gtk_signal_connect(GTK_OBJECT(pLayout), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
-		gtk_signal_connect(GTK_OBJECT(pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
-		
-		gtk_layout_put(GTK_LAYOUT(pLayout),pImage,0,0);
-		gtk_layout_put(GTK_LAYOUT(pLayout),pAf,gsi->si->lcd_pos.left,gsi->si->lcd_pos.top);
-		gtk_container_add(GTK_CONTAINER(gsi->pWindow),pLayout);
-		gtk_widget_show(pAf);
-		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
-
-		DLCD_L2_A0("Exiting : normal_view...\n");
-	} else {
-		/* Draw ONLY the lcd area */
-		gsi->view=1; /* keep in memory we just print lcd */
-		DLCD_L2_A0("Entering : draw_only_lcd...\n");
-		GtkWidget *pAf, *pLayout;
-
-		
-		/* Remove the pImage from the pWindow */ 
-		gtk_container_remove(GTK_CONTAINER(gsi->pWindow),gsi->pLayout);
-		
-		/* Resize the window to the lcd size */
-		int screenwidth=gsi->si->lcd_pos.right-gsi->si->lcd_pos.left;	
-		int screenheight=gsi->si->lcd_pos.bottom-gsi->si->lcd_pos.top;
-		gtk_window_resize(GTK_WINDOW(gsi->pWindow),screenwidth, screenheight);
-		
-		pAf=create_draw_area(gsi);
-		gsi->pAf=pAf;
-		
-		pLayout=gtk_layout_new(NULL,NULL);
-		gsi->pLayout=pLayout;
-		
-		/* Connection signal keyboard key press */
-		gtk_widget_add_events(gsi->pLayout,GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK );
-		
-		/* Event on lcd */
-		g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "style-set", G_CALLBACK(screen_restyle), gsi); 
-		g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
-
-		/* Event on pLayout */
-		gtk_signal_connect(GTK_OBJECT(gsi->pLayout), "key_press_event", G_CALLBACK(keyboard_event), NULL);
-		gtk_signal_connect(GTK_OBJECT(gsi->pLayout), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
-		gtk_signal_connect(GTK_OBJECT(gsi->pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
-
-		/* Show ! */
-		gtk_widget_show(pAf);
-		gtk_container_add(GTK_CONTAINER(gsi->pLayout),pAf);
-		gtk_widget_show(pLayout);
-		gtk_container_add(GTK_CONTAINER(gsi->pWindow),pLayout);
-		gtk_widget_show_all(gsi->pWindow);	/*display the window and all that it contains.*/
-
-		
-		DLCD_L2_A0("Exiting : draw_only_lcd...\n");
-	}
-
-	/* Set up color palette */
-	screen_restyle(gsi->emu->lcdwin, NULL, gsi);
+	gsi->view = !gsi->view;
+	redraw_screen(gsi);
 }
 
 /* Display the lcd image into the terminal */
@@ -399,7 +311,7 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	
 	/* Create the window */
 	GtkWidget *pWindow,  *pImage, *pLayout;
-	pWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);	// GTK_WINDOW_LEVEL : define how is the window 
+	gsi->pWindow = pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);	// GTK_WINDOW_LEVEL : define how is the window 
 	gtk_window_set_title(GTK_WINDOW(pWindow),"TilEm");	// define title of the window 
 	gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); // GTK_WIN_POS_CENTER : define how the window is displayed 
 	gtk_window_set_default_size(GTK_WINDOW(pWindow),gsi->si->width,gsi->si->height);	// define size of the window
@@ -470,7 +382,10 @@ GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi)
                                  gtk_container_add(GTK_CONTAINER(pAf),gsi->emu->lcdwin);
                                  gtk_widget_show(gsi->emu->lcdwin);
                        }
-	g_signal_connect(gsi->emu->lcdwin, "expose-event",G_CALLBACK(screen_repaint), (gpointer)gsi);
+	g_signal_connect(gsi->emu->lcdwin, "expose-event",
+	                 G_CALLBACK(screen_repaint), gsi);
+	g_signal_connect(gsi->emu->lcdwin, "style-set",
+	                 G_CALLBACK(screen_restyle), gsi);
 
 	return pAf;
 }

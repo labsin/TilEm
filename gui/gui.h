@@ -351,7 +351,7 @@ void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi);
 GtkWidget* draw_screen(GLOBAL_SKIN_INFOS * gsi) ;
 
 /* Redraw_screen when modify the skin */
-GLOBAL_SKIN_INFOS* redraw_screen(GtkWidget *pWindow,GLOBAL_SKIN_INFOS * gsi) ;
+void redraw_screen(GLOBAL_SKIN_INFOS *gsi);
 
 /* Create the lcd area */
 GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
