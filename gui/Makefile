@@ -10,7 +10,7 @@ top_builddir = ../..
 
 GTK_CFLAGS = `pkg-config --cflags gtk+-2.0 gthread-2.0 ticalcs2`
 GTK_LIBS = `pkg-config --libs gtk+-2.0 gthread-2.0 ticalcs2`
-	
+
 TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
@@ -25,26 +25,26 @@ compile = $(CC) -I$(srcdir) -I$(srcdir)/../core -I$(srcdir)/../db $(CFLAGS) $(DE
 all: testemu2
 
 #Main emulator GUI
-testemu2: $(objects) ../core/libtilemcore.a gui.h
+testemu2: $(objects) ../core/libtilemcore.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu2 $(objects) $(libs)
-	
-testemu2.o: testemu2.c 
+
+testemu2.o: testemu2.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/testemu2.c
 
 #Debugger
-debugger.o: debugger.c debugger.h gui.h 
+debugger.o: debugger.c debugger.h gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/debugger.c 
 
 # Memory management and messages
-memory.o: memory.c 
+memory.o: memory.c ../core/tilem.h
 	$(compile) -c $(srcdir)/memory.c
 
 # Print the skin and add the events. 
-screen.o: screen.c gui.h 
+screen.o: screen.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/screen.c
 
 # Handle events
-event.o: event.c event.h 
+event.o: event.c event.h gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/event.c
 
 # Open skin (skn format file) originally created by Julien Blache and Romain Lievins
@@ -52,39 +52,39 @@ skinops.o: skinops.c skinops.h
 	$(compile) -c $(srcdir)/skinops.c
 
 # Manage skins
-skin.o: skin.c skin.h gui.h
+skin.o: skin.c skin.h gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/skin.c 
 
 # Popups and other stuff
-tool.o: tool.c gui.h  
+tool.o: tool.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/tool.c
-	
+
 # Manage skinconfig.dat
-config.o: config.c gui.h 
+config.o: config.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/config.c
 
 # Manage romconfig.dat
-romconfig.o: romconfig.c gui.h 
+romconfig.o: romconfig.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/romconfig.c
 
 # Handle internal link
-link.o: link.c gui.h 
+link.o: link.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/link.c
-	
+
 # Handle macro
-macro.o: macro.c gui.h 
+macro.o: macro.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/macro.c
 
 # Handle args
-args.o: args.c gui.h 
+args.o: args.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/args.c
 
 # Create and modify animated gif
-gifencod.o: gifencod.c gui.h
+gifencod.o: gifencod.c gifencod.h
 	$(compile) -c $(srcdir)/gifencod.c
 
 # Handle screenshot anim (animated gif)
-animatedgif.o: animatedgif.c gui.h
+animatedgif.o: animatedgif.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/animatedgif.c
 
 install: testemu2
