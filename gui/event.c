@@ -311,6 +311,47 @@ void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) {
 		ticables_library_exit();
 }	
 
+static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
+                                const char *format)
+{
+	int width = gsi->emu->calc->hw.lcdwidth * 2;
+	int height = gsi->emu->calc->hw.lcdheight * 2;
+	guchar *buffer;
+	dword *palette;
+	GdkPixbuf *pb;
+	gboolean status;
+	GError *err = NULL;
+
+	buffer = g_new(guchar, width * height * 3);
+
+	/* FIXME: this palette should be cached for future use.  Also
+	   might want the option to save images in skinned colors. */
+	palette = tilem_color_palette_new(255, 255, 255, 0, 0, 0, 2.2);
+
+	g_mutex_lock(gsi->emu->lcd_mutex);
+	tilem_gray_lcd_draw_image_rgb(gsi->emu->glcd, buffer,
+	                              width, height, width * 3, 3,
+	                              palette, TILEM_SCALE_SMOOTH);
+	g_mutex_unlock(gsi->emu->lcd_mutex);
+
+	tilem_free(palette);
+
+	pb = gdk_pixbuf_new_from_data(buffer, GDK_COLORSPACE_RGB, FALSE, 8,
+	                              width, height, width * 3, NULL, NULL);
+
+	status = gdk_pixbuf_save(pb, filename, format, &err, NULL);
+
+	g_object_unref(pb);
+	g_free(buffer);
+
+	if (!status) {
+		fprintf(stderr, "*** unable to save screenshot: %s\n", err->message);
+		g_error_free(err);
+	}
+
+	return status;
+}
+
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	int i;
 	FILE * fp;
@@ -331,9 +372,7 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 		if((fp = g_fopen(filename,"r"))) {
 			fclose(fp);
 		} else { 
-			/* Simply copy the pixbuf using GTK+ functions designed for this job ;) */
-			gdk_pixbuf_save(gsi->emu->lcdscaledpb, filename, "png", NULL, NULL);
-			printf("SCREENSHOT ! --> filename : %s\n", filename);
+			save_screenshot(gsi, filename, "png");
 			break;
 		}
 	}
