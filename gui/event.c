@@ -163,6 +163,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
 			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
 			{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
+			{"/Load keypad !", "<control>Q", load_keypad, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
@@ -176,7 +177,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		DCLICK_L0_A0("********************************************************\n\n");
 /* #################### Left Click (test wich key is it)#################### */
 	} else {
-		code =scan_click(50, bevent->x, bevent->y, gsi);
+		code =scan_click(gsi->kp->nb_of_buttons, bevent->x, bevent->y, gsi);
 		
 		if(gsi->isMacroRecording) {     
 			codechar= (char*) malloc(sizeof(int));
@@ -205,17 +206,17 @@ int scan_click(int MAX, double x, double y,  GLOBAL_SKIN_INFOS * gsi)
 		{
 			
 			DCLICK_L2_A5("%d............testing........ %d %d %d %d.........\n",i,gsi->si->keys_pos[i].left,gsi->si->keys_pos[i].top,gsi->si->keys_pos[i].right,gsi->si->keys_pos[i].bottom);
-			if ((x > gsi->si->keys_pos[i].left) && (x < gsi->si->keys_pos[i].right) &&(y > gsi->si->keys_pos[i].top) && (y < gsi->si->keys_pos[i].bottom))
-			break;
-			
+			if ((x > gsi->si->keys_pos[i].left) && (x < gsi->si->keys_pos[i].right) &&(y > gsi->si->keys_pos[i].top) && (y < gsi->si->keys_pos[i].bottom)) {
+				DCLICK_L0_A1("*  Key number : %d                                     *\n",i);
+				DCLICK_L0_A1("*  Key name : %s     ",                  gsi->kp->kl[i].label);
+				DCLICK_L0_A1("Key code : %d                     *\n",gsi->kp->kl[i].code);
+				DCLICK_L0_A2("*  Click coordinates :     ----> x=%G    y=%G <----   *\n",x,y);
+				DCLICK_L0_A0("********************************************************\n\n");
+				return gsi->kp->kl[i].code;
+			}
 		}	
-		DCLICK_L0_A1("*  Key number : %d                                     *\n",i);
-		DCLICK_L0_A1("*  Key name : %s     ",                  gsi->kp->kl[i].label);
-		DCLICK_L0_A1("Key code : %d                     *\n",gsi->kp->kl[i].code);
-		DCLICK_L0_A2("*  Click coordinates :     ----> x=%G    y=%G <----   *\n",x,y);
-		DCLICK_L0_A0("********************************************************\n\n");
 		
-		return gsi->kp->kl[i].code;
+		return 0;
 		//return x3_keylist[i].code;
 }
 

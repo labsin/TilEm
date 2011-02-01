@@ -52,7 +52,7 @@ typedef struct KEY_LIST {
 	const char* label;
 }KEY_LIST;
 
-/* A keyboard */
+/* A keypad (a set of keylist) */
 typedef struct KEYPAD {
 	int nb_of_buttons;
 	struct KEY_LIST kl[60];
@@ -108,6 +108,9 @@ static const char rcstr[] =
 /* core's forcebreak value */
 static volatile int sforcebreak = 0;
 	
+
+
+
 
 /* ###### event.c ##### */
 

@@ -8,7 +8,7 @@
 #include <gui.h>
 
 /* load the keyboard from file ... */
-void load_keypad_from_file(KEYPAD * kp, char* config_file) ;
+void load_keypad_from_file(GLOBAL_SKIN_INFOS * gsi, char* config_file) ;
 
 /* Print the keypad */
 void print_keypad(KEYPAD* kp) ;

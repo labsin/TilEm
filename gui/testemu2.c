@@ -162,6 +162,7 @@
 * ---01/02/11---
 * - Starting to work on a new config file using glibc to do not hard code keypad values.
 * - And it works !!!! (but only load one keypad model currently)
+* - Add the other models into keylist.ini (but the content is completely false). Change scan_click method (correct a bug) to use kp->nb_of_buttons. Only need to give correct value into the keylist.ini file. For the rest it's seems ok.
 */
 
 
@@ -252,12 +253,14 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	load_keypad(gsi);
 	
 	/* Create the calc */
 	gsi->emu = g_new0(TilemCalcEmulator, 1);
 	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
 	/* End */
+	
+	/* Load the keypad (list of keys) */	
+	load_keypad(gsi);
 
 	/* Load save state */
 	savfile = g_fopen(gsi->SavName, "rt");
