@@ -163,7 +163,6 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
 			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
 			{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
-			{"/Load keylist", "<control>Q", load_keypad, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
@@ -211,12 +210,13 @@ int scan_click(int MAX, double x, double y,  GLOBAL_SKIN_INFOS * gsi)
 			
 		}	
 		DCLICK_L0_A1("*  Key number : %d                                     *\n",i);
-		DCLICK_L0_A1("*  Key name : %s     ",x3_keylist[i].label);
-		DCLICK_L0_A1("Key code : %02X                     *\n",x3_keylist[i].code);
+		DCLICK_L0_A1("*  Key name : %s     ",                  gsi->kp->kl[i].label);
+		DCLICK_L0_A1("Key code : %d                     *\n",gsi->kp->kl[i].code);
 		DCLICK_L0_A2("*  Click coordinates :     ----> x=%G    y=%G <----   *\n",x,y);
 		DCLICK_L0_A0("********************************************************\n\n");
 		
-		return x3_keylist[i].code;
+		return gsi->kp->kl[i].code;
+		//return x3_keylist[i].code;
 }
 
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */

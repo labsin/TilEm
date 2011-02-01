@@ -45,10 +45,10 @@ void load_keypad_from_file(KEYPAD * kp, char* config_file) {
 /* Load keyboard */
 void load_keypad(GLOBAL_SKIN_INFOS* gsi) {
 
-	KEYPAD *kp = malloc(sizeof(KEYPAD)); 	
+	gsi->kp = malloc(sizeof(KEYPAD)); 	
 	//kp->kl = malloc(sizeof(KEY_LIST) * 60);
-	kp->nb_of_buttons = 0;
-	load_keypad_from_file(kp, "keylist.ini"); 
+	gsi->kp->nb_of_buttons = 0;
+	load_keypad_from_file(gsi->kp, "keylist.ini"); 
 }
 
 /* Print the KEYPAD */

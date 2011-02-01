@@ -161,6 +161,7 @@
 * - Need to be integrated (and lot of debug).I commit it just to save it...Wait another commit to really use this feature :P
 * ---01/02/11---
 * - Starting to work on a new config file using glibc to do not hard code keypad values.
+* - And it works !!!! (but only load one keypad model currently)
 */
 
 
@@ -251,6 +252,8 @@ int main(int argc, char **argv)
 		}
 	}
 	
+	load_keypad(gsi);
+	
 	/* Create the calc */
 	gsi->emu = g_new0(TilemCalcEmulator, 1);
 	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
@@ -318,11 +321,6 @@ int main(int argc, char **argv)
 		savfile = g_fopen(gsi->SavName, "wt");
 		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
 	}
-	
-	
-
-
-	
 	
     return EXIT_SUCCESS;
 }
