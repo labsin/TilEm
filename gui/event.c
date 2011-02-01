@@ -20,6 +20,7 @@ void on_destroy()
 	gtk_main_quit();
 }
 
+/* Save state */
 void save_state(GLOBAL_SKIN_INFOS * gsi)
 {
 	FILE* romfile, *savfile;
@@ -63,6 +64,7 @@ void show_about()
 
 }
 
+/* Show about dialog box */
 void on_about(GtkWidget *pBtn)
 {
 	GtkWidget *pAbout;
@@ -126,7 +128,7 @@ gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS 
 	return FALSE;
 }
 
-
+/* Handle release event */
 gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi) {
 	
 	DCLICK_L0_A0(">>>>>>>\"RELEASE\"<<<<<<<\n");
@@ -161,6 +163,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
 			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
 			{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
+			{"/Load keylist", "<control>Q", load_keypad, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
@@ -311,6 +314,7 @@ void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) {
 		ticables_library_exit();
 }	
 
+/* Screenshot saver */
 static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
                                 const char *format)
 {
@@ -352,6 +356,7 @@ static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
 	return status;
 }
 
+/* This method is called from release event (event.c) */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	int i;
 	FILE * fp;

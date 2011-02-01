@@ -159,6 +159,8 @@
 * ---14/10/10---
 * - It works ! It works !!! Tilem2 is now able to generate animated gif, functions are currently working (but totally buggy) and it successfully create animated gif :)
 * - Need to be integrated (and lot of debug).I commit it just to save it...Wait another commit to really use this feature :P
+* ---01/02/11---
+* - Starting to work on a new config file using glibc to do not hard code keypad values.
 */
 
 
@@ -180,6 +182,7 @@ int main(int argc, char **argv)
 	gsi->rci=malloc(sizeof(ROMCONFIG_INFOS));
 	gsi->FileToLoad = NULL;
 	gsi->MacroName = NULL;
+	//gsi->kp = malloc(sizeof(KEYPAD)); 	
 	
 	
 	/* Init GTK+ */

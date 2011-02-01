@@ -211,6 +211,7 @@ void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi)
 	}	
 }	
 
+/* Add this default skin into config file */
 void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) 
 {
 	int i;

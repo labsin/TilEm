@@ -48,4 +48,3 @@ int romconfig_read(ROMCONFIG_INFOS *infos, const char* filename);
 
 
 
-

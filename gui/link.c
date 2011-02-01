@@ -36,7 +36,6 @@ void print_lc_error(int errnum)
 
 
 /* Internal link emulation */
-
 static int ilp_reset(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
@@ -47,6 +46,7 @@ static int ilp_reset(CableHandle* cbl)
 	return 0;
 }
 
+/* Send */
 static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	TilemCalcEmulator* emu = cbl->priv;

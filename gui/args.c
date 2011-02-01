@@ -6,6 +6,7 @@
 
 #include <getopt.h>
 
+/* Print help */
 void help(char *name, int ret) 
 {
         fprintf(stdout,"Usage: %s -r <rom> [OPTIONS]\n"
@@ -22,7 +23,7 @@ void help(char *name, int ret)
         exit(ret);
 }
 
-
+/* Get args using getopt */
 int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) {
        	
        	char options;
@@ -99,5 +100,4 @@ void create_savname(GLOBAL_SKIN_INFOS* gsi) {
 				strcat(gsi->SavName, ".sav");
 		}
 	}
-	/* end */
 }

@@ -1,6 +1,6 @@
 #include "animatedgif.h"
 
-
+/* Tilem do not use this function */
 void screenshot_anim_create(GLOBAL_SKIN_INFOS* gsi) {
 	
 
@@ -67,7 +67,8 @@ void screenshot_anim_create(GLOBAL_SKIN_INFOS* gsi) {
 	fwrite(end, 1, 1,fp);
 	//fclose(fp);
 }
-    
+
+/* Create the first frame of an animated screenshot */
 void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) {
 	
 	char gif_header[13] = {'G', 'I', 'F', '8', '9', 'a', 96, 0, 64, 0, 0x80, 0x0f, 0};
@@ -140,7 +141,7 @@ void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) {
 }
     
 
-
+/* Add a frame to the animated screenshot */
 void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
 	
 
@@ -178,7 +179,7 @@ void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
     	fwrite(gif_img, 18, 1, fp);
     	
 	//fwrite(example, 19, 1, fp);
-	long i= 0;
+	int i= 0;
 	
 	unsigned char q[(96*64)];
 
@@ -195,11 +196,16 @@ void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
 			}
 		}
 	}	
+	/*
+	//g_free(lcddata);
+	//free(q);
 	
 	
-
-	GifEncode(fp, q , 1, (96*64));
+	*/
+	GifEncode(fp, q , 1, 61); 
 	fwrite(end, 1, 1,fp);
+	printf("Taille de q : %d\n", i);
+	
 	//fclose(fp);
 }
     

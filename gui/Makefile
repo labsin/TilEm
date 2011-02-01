@@ -8,14 +8,14 @@ srcdir = .
 top_srcdir = ../..
 top_builddir = ../..
 
-GTK_CFLAGS = `pkg-config --cflags gtk+-2.0 gthread-2.0 ticalcs2`
-GTK_LIBS = `pkg-config --libs gtk+-2.0 gthread-2.0 ticalcs2`
+GTK_CFLAGS = `pkg-config --cflags gtk+-2.0 gthread-2.0 glib-2.0 ticalcs2`
+GTK_LIBS = `pkg-config --libs gtk+-2.0 gthread-2.0 glib-2.0 ticalcs2`
 
 TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o romconfig.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o
+objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o romconfig.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o keylist.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -86,6 +86,9 @@ gifencod.o: gifencod.c gifencod.h
 # Handle screenshot anim (animated gif)
 animatedgif.o: animatedgif.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/animatedgif.c
+
+keylist.o: keylist.c gui.h *.h ../core/tilem.h
+	$(compile) -c $(srcdir)/keylist.c
 
 install: testemu2
 	chmod +x install.sh

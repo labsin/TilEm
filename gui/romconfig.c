@@ -67,6 +67,7 @@ int romconfig_read(ROMCONFIG_INFOS *rci, const char *filename)
     return 0;
 }
 
+/* Load a config */
 void romconfig_load(ROMCONFIG_INFOS *rci)
 {
 	romconfig_read(rci, "romconfig.dat");
@@ -120,7 +121,7 @@ void create_romconfig_dat(GLOBAL_SKIN_INFOS *gsi)
 	
 }
 /* This function is executed when stopping the emulator 
- * It simply mave which skin must be useb with wich rom 
+ * It simply save which skin must be useb with wich rom 
  */
 void write_romconfig_file(GLOBAL_SKIN_INFOS *gsi) {
 
@@ -163,8 +164,6 @@ void write_romconfig_file(GLOBAL_SKIN_INFOS *gsi) {
 }
 
 
-
-
 /* Search in the ROMCONFIG_INFOS to see if the skin is saved */
 gboolean is_this_rom_in_romconfig_infos(char* romname,GLOBAL_SKIN_INFOS *gsi)
 {	
@@ -196,6 +195,7 @@ void search_defaultmodel_in_romconfig_infos(char* romname,GLOBAL_SKIN_INFOS *gsi
 	}	
 }	
 
+/* Update config file */
 void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi) 
 {
 	int i;

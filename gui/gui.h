@@ -52,7 +52,13 @@ typedef struct KEY_LIST {
 	const char* label;
 }KEY_LIST;
 
-/* List of the keys (a code and a label) */
+/* A keyboard */
+typedef struct KEYPAD {
+	int nb_of_buttons;
+	struct KEY_LIST kl[60];
+} KEYPAD;
+
+/* Internal data structure for gui */
 typedef struct GLOBAL_SKIN_INFOS {
 	KEY_LIST kl;
 	SKIN_INFOS *si;
@@ -85,6 +91,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	gboolean isStartingSkinless;
 }GLOBAL_SKIN_INFOS;
 
+/* Simply the gtk style */
 static const char rcstr[] =
 	"style \"tilem-key-default\" {\n"
 	"  font_name = \"Sans 7\"\n"
@@ -98,6 +105,7 @@ static const char rcstr[] =
 	"}\n"
 	"widget \"*.tilem-lcd\" style \"tilem-lcd-default\"\n";
 
+/* The standard ti84 key list */
 static const struct KEY_LIST x4_keylist[] = {
 	
 	{ 0x35, "Y=" },
@@ -197,7 +205,8 @@ static const struct KEY_LIST x4_keylist[] = {
 	{ 0x09, "ENTER" },
 	
 };
-	
+
+/* The standard ti83 key list */
 static const struct KEY_LIST x3_keylist[] = {
 	
 	{ 0x35, "Y=" },
@@ -540,7 +549,6 @@ void run_with_key_slowly(TilemCalc* calc, int key);
 
 /* ##### args.c ##### */
 
-
 /* Help (usage: how to use in command line) */
 void help(char *name, int ret) ;
 
@@ -554,7 +562,6 @@ void create_savname(GLOBAL_SKIN_INFOS* gsi) ;
 
 /* ##### animatedgif.c ##### */
 
-
 /* Create a animated screenshot */
 void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) ;
 
@@ -565,6 +572,13 @@ void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) ;
 
 /* ##### gifencod.c ##### */
 
-
 /* Encode gif data */
 void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
+
+
+
+/* ##### keylist.c ##### */
+
+/* Load a keyboard */
+void load_keypad(GLOBAL_SKIN_INFOS* gsi) ;
+
