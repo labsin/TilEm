@@ -383,3 +383,9 @@ void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
 /* Load a keyboard */
 void load_keypad(GLOBAL_SKIN_INFOS* gsi) ;
 
+
+
+/* ##### screenshot.c ##### */
+
+/* create the screenshot popup */
+void create_screenshot_window();

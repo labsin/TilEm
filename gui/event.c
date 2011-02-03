@@ -149,7 +149,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Send file...", "F11", load_file, 1, NULL, NULL},
 			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/Screenshot !",NULL, screenshot, 1, NULL, NULL},
+			{"/Screenshot !",NULL, create_screenshot_window, 1, NULL, NULL},
 			{"/Animated screenshot !",NULL, screenshot_anim_create_nostatic, 1, NULL, NULL},
 			{"/Animated screenshot add frame !",NULL, screenshot_anim_addframe, 1, NULL, NULL},
 			{"/Display lcd into console !",NULL, display_lcdimage_into_terminal, 1, NULL, NULL},
