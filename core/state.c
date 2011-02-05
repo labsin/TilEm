@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009, 2010 Benjamin Moody
+ * Copyright (C) 2009-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -273,10 +273,63 @@ static int load_old_sav_file(TilemCalc* calc, FILE* savfile)
 	return 0;
 }
 
+static int read_sav_line(FILE* savfile, char **buf)
+{
+	int c, n, na;
+
+	tilem_free(*buf);
+
+	na = 100;
+	*buf = tilem_malloc_atomic(na);
+	n = 0;
+
+	while ((c = fgetc(savfile)) != EOF) {
+		if (c == '\r' || c == '\n')
+			break;
+
+		n++;
+		if (n >= na) {
+			na = n * 2;
+			*buf = tilem_realloc(*buf, na);
+		}
+
+		if (c == '#')
+			c = 0;
+		(*buf)[n - 1] = c;
+	}
+
+	if (n == 0 && c == EOF) {
+		tilem_free(*buf);
+		*buf = NULL;
+		return 0;
+	}
+	else {
+		(*buf)[n] = 0;
+		return 1;
+	}
+}
+
+static int parse_sav_definition(char* line, char** value)
+{
+	char *p;
+
+	p = strchr(line, '=');
+	if (!p)
+		return 0;
+
+	while (p != line && p[-1] == ' ')
+		p--;
+	*p = 0;
+	p++;
+	while (*p == ' ' || *p == '=')
+		p++;
+	*value = p;
+	return 1;
+}
 
 static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 {
-	char buf[256];
+	char *buf = NULL;
 	char *p, *q;
 	dword value, length;
 	byte *data;
@@ -286,21 +339,9 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 	dword period;
 	int rt;
 
-	while (fgets(buf, sizeof(buf), savfile)) {
-		p = strchr(buf, '#');
-		if (p)
-			*p = 0;
-
-		p = strchr(buf, '=');
-		if (!p)
+	while (read_sav_line(savfile, &buf)) {
+		if (!parse_sav_definition(buf, &p))
 			continue;
-
-		while (p != buf && p[-1] == ' ')
-			p--;
-		*p = 0;
-		p++;
-		while (*p == ' ' || *p == '=')
-			p++;
 
 		if (*p == '{') {
 			p++;
@@ -322,7 +363,7 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 
 			while (*p != '}') {
 				if (*p == 0 || *p == '#') {
-					if (!fgets(buf, sizeof(buf), savfile))
+					if (!read_sav_line(savfile, &buf))
 						return 1;
 					p = buf;
 					continue;
@@ -368,8 +409,10 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 			while (*q >= ' ')
 				q++;
 			*q = 0;
-			if (strcmp(p, calc->hw.name))
+			if (strcmp(p, calc->hw.name)) {
+				tilem_free(buf);
 				return 1;
+			}
 			ok = 1;
 			continue;
 		}
@@ -548,6 +591,8 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 			set_hw_reg(calc, buf, value);
 	}
 
+	tilem_free(buf);
+
 	return !ok;
 }
 
@@ -591,6 +636,43 @@ int tilem_calc_load_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 		(*calc->hw.stateloaded)(calc, savtype);
 
 	return 0;
+}
+
+char tilem_get_sav_type(FILE* savfile)
+{
+	int b;
+	char *buf = NULL, *p, *q;
+	const TilemHardware **models;
+	int nmodels, i;
+	char id = 0;
+
+	tilem_get_supported_hardware(&models, &nmodels);
+
+	/* first byte of old save files is always zero */
+	b = fgetc(savfile);
+	fseek(savfile, 0L, SEEK_SET);
+	if (b == 0)
+		return 0; /* old files give no way to detect model */
+
+	while (read_sav_line(savfile, &buf)) {
+		if (parse_sav_definition(buf, &p)
+		    && !strcmp(buf, "MODEL")) {
+			q = p;
+			while (*q >= ' ')
+				q++;
+			*q = 0;
+
+			for (i = 0; i < nmodels; i++)
+				if (!strcmp(p, models[i]->name))
+					id = models[i]->model_id;
+
+			break;
+		}
+	}
+
+	fseek(savfile, 0L, SEEK_SET);
+	tilem_free(buf);
+	return id;
 }
 
 int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)

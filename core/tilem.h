@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -881,6 +881,9 @@ dword* tilem_color_palette_new(int rlight, int glight, int blight,
 
 /* Guess calculator type for a ROM file */
 char tilem_guess_rom_type(FILE* romfile);
+
+/* Get calculator type for a SAV file */
+char tilem_get_sav_type(FILE* savfile);
 
 /* Check validity of calculator certificate; repair if necessary */
 void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert);
