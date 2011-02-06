@@ -8,6 +8,9 @@
 #include <gui.h>
 //#include <skinops.h>
 
+/***** TESTING *****/
+#include <gdk/gdkkeysyms.h>
+#include <scancodes.h>
 
 /*  contra-sh : 
 * ---18/08/09---
@@ -186,6 +189,31 @@ int main(int argc, char **argv)
 	gsi->MacroName = NULL;
 	//gsi->kp = malloc(sizeof(KEYPAD)); 	
 	gsi->mouse_key = 0;
+
+	gsi->key_queue = NULL;
+	gsi->key_queue_len = 0;
+	gsi->key_queue_timer = 0;
+
+	/***** TESTING *****/
+
+	gsi->nkeybindings = 3;
+	gsi->keybindings = g_new(TilemKeyBinding, 3);
+	gsi->keybindings[0].keysym = GDK_A;
+	gsi->keybindings[0].nscancodes = 2;
+	gsi->keybindings[0].scancodes = g_new(byte, 2);
+	gsi->keybindings[0].scancodes[0] = TILEM_KEY_ALPHA;
+	gsi->keybindings[0].scancodes[1] = TILEM_KEY_MATH;
+	gsi->keybindings[1].keysym = GDK_B;
+	gsi->keybindings[1].nscancodes = 2;
+	gsi->keybindings[1].scancodes = g_new(byte, 2);
+	gsi->keybindings[1].scancodes[0] = TILEM_KEY_ALPHA;
+	gsi->keybindings[1].scancodes[1] = TILEM_KEY_MATRIX;
+	gsi->keybindings[2].keysym = GDK_1;
+	gsi->keybindings[2].nscancodes = 1;
+	gsi->keybindings[2].scancodes = g_new(byte, 1);
+	gsi->keybindings[2].scancodes[0] = TILEM_KEY_1;
+
+	/*****/
 	
 	/* Init GTK+ */
 	g_thread_init(NULL);

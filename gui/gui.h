@@ -27,6 +27,12 @@ typedef struct _TilemDebuggerRegister {
 	
 } TilemDebuggerRegister;
 
+typedef struct _TilemKeyBinding {
+	unsigned int keysym;     /* host keysym value */
+	int nscancodes;          /* number of calculator scancodes */
+	byte *scancodes;         /* calculator scancodes */
+} TilemKeyBinding;
+
 typedef struct _TilemCalcEmulator {
 	GMutex* run_mutex;
 	gboolean exiting;
@@ -77,6 +83,21 @@ typedef struct GLOBAL_SKIN_INFOS {
 	gboolean isStartingSkinless;
 
 	int mouse_key;		/* Key currently pressed by mouse button */
+
+	/* List of key bindings */
+	TilemKeyBinding *keybindings;
+	int nkeybindings;
+
+	/* Host keycode used to activate each key, if any */
+	int keypress_keycodes[64];
+
+	/* Sequence of keys to be pressed
+	   (used by core thread; guarded by calc_mutex) */
+	byte *key_queue;
+	int key_queue_len;
+	int key_queue_timer;
+	int key_queue_pressed;
+
 }GLOBAL_SKIN_INFOS;
 
 
@@ -91,9 +112,6 @@ void save_state(GLOBAL_SKIN_INFOS * gsi);
 /* The window about in the right_click_menu */
 void on_about(GtkWidget *pBtn);
 
-/* Detect a keyboard press event */
-void keyboard_event();	
-
 /* Button-press event */
 gboolean mouse_press_event(GtkWidget* w, GdkEventButton *event, gpointer data);
 
@@ -102,6 +120,12 @@ gboolean pointer_motion_event(GtkWidget* w, GdkEventMotion *event, gpointer data
 
 /* Button-release event */
 gboolean mouse_release_event(GtkWidget* w, GdkEventButton *event, gpointer data);
+
+/* Key-press event */
+gboolean key_press_event(GtkWidget* w, GdkEventKey *event, gpointer data);
+
+/* Key-release event */
+gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 
 /* Load a file from PC to TI */
 void load_file(GLOBAL_SKIN_INFOS *gsi);

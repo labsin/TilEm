@@ -356,6 +356,108 @@ gboolean mouse_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 	return FALSE;
 }
 
+/* Timer callback for key sequences */
+static void tmr_key_queue(TilemCalc* calc, void* data)
+{
+	GLOBAL_SKIN_INFOS *gsi = data;
+	int nextkey = gsi->key_queue[gsi->key_queue_len - 1];
+
+	if (gsi->key_queue_pressed) {
+		tilem_keypad_release_key(calc, nextkey);
+		gsi->key_queue_len--;
+		if (gsi->key_queue_len == 0) {
+			tilem_z80_remove_timer(calc, gsi->key_queue_timer);
+			gsi->key_queue_timer = 0;
+		}
+	}
+	else {
+		tilem_keypad_press_key(calc, nextkey);
+	}
+
+	gsi->key_queue_pressed = !gsi->key_queue_pressed;
+}
+
+/* Key-press event */
+gboolean key_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
+                         gpointer data)
+{
+	GLOBAL_SKIN_INFOS *gsi = data;
+	TilemKeyBinding *kb;
+	byte *q;
+	int i, key;
+
+	for (i = 0; i < gsi->nkeybindings; i++)
+		if (event->keyval == gsi->keybindings[i].keysym)
+			break;
+
+	if (i >= gsi->nkeybindings)
+		return FALSE;
+
+	kb = &gsi->keybindings[i];
+
+	g_mutex_lock(gsi->emu->calc_mutex);
+
+	if (gsi->key_queue_len == 0 && kb->nscancodes == 1) {
+		/* press single key */
+		key = kb->scancodes[0];
+		tilem_keypad_press_key(gsi->emu->calc, key);
+		gsi->keypress_keycodes[key] = event->hardware_keycode;
+		record_key(gsi, key);
+	}
+	else {
+		/* add key sequence to queue */
+		q = g_new(byte, kb->nscancodes + gsi->key_queue_len);
+
+		for (i = 0; i < kb->nscancodes; i++) {
+			q[kb->nscancodes - i - 1] = kb->scancodes[i];
+			record_key(gsi, kb->scancodes[i]);
+		}
+
+		if (gsi->key_queue_len)
+			memcpy(q + kb->nscancodes, gsi->key_queue,
+			       gsi->key_queue_len);
+
+		g_free(gsi->key_queue);
+		gsi->key_queue = q;
+		gsi->key_queue_len += kb->nscancodes;
+
+		if (!gsi->key_queue_timer) {
+			gsi->key_queue_timer
+				= tilem_z80_add_timer(gsi->emu->calc,
+				                      1, 50000, 1,
+				                      &tmr_key_queue, gsi);
+			gsi->key_queue_pressed = 0;
+		}
+	}
+
+	g_mutex_unlock(gsi->emu->calc_mutex);
+
+	return TRUE;
+}
+
+/* Key-release event */
+gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
+                           gpointer data)
+{
+	GLOBAL_SKIN_INFOS *gsi = data;
+	int i;
+
+	/* Check if the key that was just released was one that
+	   activated a calculator keypress.  (Do not try to look up
+	   event->keyval; modifiers may have changed since the key was
+	   pressed.) */
+	for (i = 0; i < 64; i++) {
+		if (gsi->keypress_keycodes[i] == event->hardware_keycode) {
+			g_mutex_lock(gsi->emu->calc_mutex);
+			tilem_keypad_release_key(gsi->emu->calc, i);
+			g_mutex_unlock(gsi->emu->calc_mutex);
+			gsi->keypress_keycodes[i] = 0;
+		}
+	}
+
+	return FALSE;
+}
+
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */
 void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 	

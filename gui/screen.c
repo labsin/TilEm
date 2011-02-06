@@ -40,14 +40,11 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 		gtk_window_resize(GTK_WINDOW(gsi->pWindow), screenwidth, screenheight);
 	}
 
-	gtk_widget_add_events(gsi->pLayout, (GDK_KEY_RELEASE_MASK
-	                                     | GDK_BUTTON_PRESS_MASK
+	gtk_widget_add_events(gsi->pLayout, (GDK_BUTTON_PRESS_MASK
 	                                     | GDK_BUTTON_RELEASE_MASK
 	                                     | GDK_BUTTON1_MOTION_MASK
 	                                     | GDK_POINTER_MOTION_HINT_MASK));
 
-	g_signal_connect(gsi->pLayout, "key-press-event",
-	                 G_CALLBACK(keyboard_event), gsi);
 	g_signal_connect(gsi->pLayout, "button-press-event",
 	                 G_CALLBACK(mouse_press_event), gsi);
 	g_signal_connect(gsi->pLayout, "motion-notify-event",
@@ -324,10 +321,12 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	pImage=gtk_image_new_from_pixbuf(gsi->si->image);
 	
 	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(on_destroy),NULL); 
-	gtk_widget_add_events(pWindow, GDK_KEY_RELEASE_MASK); 	
-	gtk_signal_connect(GTK_OBJECT(pWindow), "key_press_event", G_CALLBACK(keyboard_event), NULL);
-	
-
+	gtk_widget_add_events(pWindow, (GDK_KEY_PRESS_MASK
+	                                | GDK_KEY_RELEASE_MASK));
+	g_signal_connect(pWindow, "key-press-event",
+	                 G_CALLBACK(key_press_event), gsi);
+	g_signal_connect(pWindow, "key-release-event",
+	                 G_CALLBACK(key_release_event), gsi);
 	
 	/* Create the draw area */
 	pAf=create_draw_area(gsi);
