@@ -206,7 +206,8 @@ void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_
 void popup_error(char* msg, GLOBAL_SKIN_INFOS * gsi);
 
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
-char choose_rom_popup();
+char choose_rom_popup(GtkWidget *parent_window, const char *filename,
+                      char default_model);
 
 /* like on_destroy but save state */
 void quit_with_save();

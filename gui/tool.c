@@ -4,9 +4,28 @@
 #include <glib/gstdio.h>
 #include <gui.h>
 
-static const char * list[] = { "TI-73", "TI-76", "TI-81", "TI-82","TI-83", "TI-83+", "TI-83+(SE)", "TI-84+", "TI-84+(SE)", "TI-84+(nSpire)", "TI-85", "TI-86" };
-/*static const char id_list[] = {'6', '5 */
-static const int NB_RADIO_BUTTON=11;
+static GtkWidget* new_gnome_style_frame(const gchar* label, GtkWidget* contents)
+{
+	GtkWidget *frame, *align;
+	char *str;
+
+	str = g_strconcat("<b>", label, "</b>", NULL);
+	frame = gtk_frame_new(str);
+	g_free(str);
+
+	g_object_set(gtk_frame_get_label_widget(GTK_FRAME(frame)),
+	             "use-markup", TRUE, NULL);
+	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
+
+	align = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, 12, 0);
+	gtk_widget_show(align);
+	gtk_container_add(GTK_CONTAINER(frame), align);
+	gtk_container_add(GTK_CONTAINER(align), contents);
+	gtk_widget_show(frame);
+
+	return frame;
+}
 
 void popup_error(char* msg, GLOBAL_SKIN_INFOS * gsi)
 {
@@ -21,108 +40,104 @@ void popup_error(char* msg, GLOBAL_SKIN_INFOS * gsi)
 	gtk_widget_destroy(pPopup);
 }
 
-char choose_rom_popup()
+char choose_rom_popup(GtkWidget *parent_window, const char *filename,
+                      char default_model)
 {
-	GtkDialog *pPopup;
-	GtkWidget *pLabel;
-	GtkWidget *pRadio1, *pRadio ;/*, *pRadio3, *pRadio4, *pRadio5, *pRadio6, *pRadio7,*pRadio8, *pRadio9, *pRadio10, *pRadio11, *pRadio12, *pRadio13;*/
-	int i=0; /* counter for the radio button creation */
-	gint result; /* to get the choice */
-	char * choosen_model;
+	const TilemHardware **models;
+	GtkWidget *dlg, *vbox, *frame, *btn;
+	GtkToggleButton **btns;
+	char *ids, id = 0;
+	int nmodels, noptions, i, j, defoption, response;
+	dword romsize;
+	char *fn, *msg;
 
-	
-	/* Create the dialog */
-	pPopup = (GtkDialog*)gtk_dialog_new();
-	
-	/* Create the button */
-	gtk_dialog_add_button(GTK_DIALOG(pPopup),"Valid", 1);
-	
-	/* Create the label */
-	pLabel = gtk_label_new("Type of rom :\n");
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPopup)->vbox),pLabel,FALSE,FALSE,0);
-	
-	/* First radio button */
-	pRadio1=gtk_radio_button_new_with_label(NULL,"Let TilEm guess");
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPopup)->vbox),pRadio1,FALSE,FALSE,0);
-	
-	/* Create the other radio button with the pRadio1 group */
-	for(i=0; i<NB_RADIO_BUTTON;i++) {
-	pRadio = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (pRadio1), list[i]);
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPopup)->vbox),pRadio,FALSE,FALSE,0);
+	tilem_get_supported_hardware(&models, &nmodels);
+
+	/* determine ROM size for default model */
+	for (i = 0; i < nmodels; i++)
+		if (models[i]->model_id == default_model)
+			break;
+
+	g_return_val_if_fail(i < nmodels, 0);
+
+	romsize = models[i]->romsize;
+
+	/* all other models with same ROM size are candidates */
+	noptions = 0;
+	for (i = 0; i < nmodels; i++) {
+		if (models[i]->model_id == default_model)
+			defoption = noptions;
+		if (models[i]->romsize == romsize)
+			noptions++;
 	}
-	
-	/* Show the msg box */
-	gtk_widget_show_all(GTK_DIALOG(pPopup)->vbox);
 
-	/* Run it and freeze gtk loop */
-	result = gtk_dialog_run(GTK_DIALOG(pPopup));
-	DGLOBAL_L0_A0("**************** fct : choose_rom_popup ****************\n");
-	DGLOBAL_L0_A1("*  Choosen button number : %d                           *\n", result);
-	
-	GSList *pList;
-	const gchar *sLabel=NULL;
-	int count=0;
-	
-	/* ######### SEARCH wich radio was selected ######### */
-	/* Get the Button's list */
-	pList = gtk_radio_button_get_group(GTK_RADIO_BUTTON(pRadio1));
-	
-	while(pList)
-	{
-		/* Is this button selected? */
-		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pList->data)))
-		{
-		    /* YES */
-		    sLabel = gtk_button_get_label(GTK_BUTTON(pList->data));
-		    /* To break the while */
-		    pList = NULL;
+	if (noptions < 2) /* no choice */
+		return default_model;
+
+	dlg = gtk_dialog_new_with_buttons("Select Calculator Type",
+	                                  GTK_WINDOW(parent_window),
+	                                  GTK_DIALOG_MODAL,
+	                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	                                  GTK_STOCK_OK, GTK_RESPONSE_OK,
+	                                  NULL);
+	gtk_dialog_set_alternative_button_order(GTK_DIALOG(dlg),
+	                                        GTK_RESPONSE_OK,
+	                                        GTK_RESPONSE_CANCEL,
+	                                        -1);
+	gtk_dialog_set_default_response(GTK_DIALOG(dlg),
+	                                GTK_RESPONSE_OK);
+
+	vbox = gtk_vbox_new(TRUE, 0);
+
+	/* create radio buttons */
+
+	btns = g_new(GtkToggleButton*, noptions);
+	ids = g_new(char, noptions);
+	btn = NULL;
+	for (i = j = 0; i < nmodels; i++) {
+		if (models[i]->romsize == romsize) {
+			btn = gtk_radio_button_new_with_label_from_widget
+				(GTK_RADIO_BUTTON(btn), models[i]->desc);
+			btns[j] = GTK_TOGGLE_BUTTON(btn);
+			ids[j] = models[i]->model_id;
+			gtk_box_pack_start(GTK_BOX(vbox), btn, TRUE, TRUE, 3);
+			j++;
 		}
-		else
-		{
-		    /* NO */
-		    pList = g_slist_next(pList);
-		    count++;  /* <--- don't remove this */
+	}
+
+	gtk_toggle_button_set_active(btns[defoption], TRUE);
+
+	fn = g_filename_display_basename(filename);
+	msg = g_strdup_printf("Calculator type for %s:", fn);
+	frame = new_gnome_style_frame(msg, vbox);
+	g_free(fn);
+	g_free(msg);
+
+	gtk_container_set_border_width(GTK_CONTAINER(frame), 6);
+	gtk_widget_show_all(frame);
+
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dlg)->vbox), frame,
+	                   FALSE, FALSE, 0);
+
+	response = gtk_dialog_run(GTK_DIALOG(dlg));
+
+	if (response == GTK_RESPONSE_OK) {
+		for (i = 0; i < noptions; i++) {
+			if (gtk_toggle_button_get_active(btns[i])) {
+				id = ids[i];
+				break;
+			}
 		}
 	}
-	
-	DGLOBAL_L0_A1("*  Choosen model : %s                               *\n", sLabel);
-	DGLOBAL_L0_A0("********************************************************\n");
-
-
-	/* Apply the patch of Mischa POSLAWSKY <shiar@shiar.org> */
-	choosen_model = strdup(sLabel); /* <--- Why another variable ?  Because sLabel is buggy after destroyed the window ... */
-	/* end patch */
-	
-	/* Destroy the msg box */
-	gtk_widget_destroy(GTK_WIDGET(pPopup));
-
-	
-	if(strcmp(choosen_model,"TI-86")==0) {
-		return TILEM_CALC_TI86; /* '6' */
-	}else if(strcmp(choosen_model,"TI-85")==0) {
-		return TILEM_CALC_TI85; /* '5' */
-	}else if(strcmp(choosen_model,"TI-84+(nSpire)")==0) {
-		return TILEM_CALC_TI84P_NSPIRE; /* 'n' */
-	}else if(strcmp(choosen_model,"TI-84+(SE)")==0) {
-		return TILEM_CALC_TI84P_SE; /* 'z' */
-	}else if(strcmp(choosen_model,"TI-84+")==0) {
-		return TILEM_CALC_TI84P; /* '4' */
-	}else if(strcmp(choosen_model,"TI-83+(SE)")==0) {
-		return TILEM_CALC_TI83P_SE; /* 's' */
-	}else if(strcmp(choosen_model,"TI-83+")==0) {
-		return TILEM_CALC_TI83P; /* 'p' */
-	}else if(strcmp(choosen_model,"TI-83")==0) {
-		return TILEM_CALC_TI83; /* '3' */
-	}else if(strcmp(choosen_model,"TI-82")==0) {
-		return TILEM_CALC_TI82; /* '2 */
-	}else if(strcmp(choosen_model,"TI-81")==0) {
-		return TILEM_CALC_TI81; /* '1' */
-	}else if(strcmp(choosen_model,"TI-76")==0) {
-		return TILEM_CALC_TI76;  /* 'f' */
-	}else if(strcmp(choosen_model,"TI-73")==0) {
-		return TILEM_CALC_TI73;  /* '7' */
+	else {
+		id = 0;
 	}
-	return '0';
+
+	gtk_widget_destroy(dlg);
+	g_free(btns);
+	g_free(ids);
+
+	return id;
 }
 
 #if 0

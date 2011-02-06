@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 {
 	
 	FILE *romfile,*savfile, *config_file, *romconfig_file;
-	//char calc_id;
+	char default_model;
 
 
 	/* Some allocation to do not crash */	
@@ -237,22 +237,15 @@ int main(int argc, char **argv)
 		search_defaultmodel_in_romconfig_infos(gsi->RomName, gsi);
 		DCONFIG_FILE_L0_A1("Saved model id : %c\n", gsi->calc_id);
 	} else {
-	/* The program must wait user choice before continuing */
-		gsi->calc_id=choose_rom_popup();	/* Query for the model */
-			 
+		/* prompt user for calculator model */
+		default_model = tilem_guess_rom_type(romfile);
+		gsi->calc_id = choose_rom_popup(NULL, gsi->RomName, default_model);
 	}
-	
-	/* User let tilem choose for him or romconfig.dat doesn't contain a valid choice */  
-	if(gsi->calc_id=='0') {
-		DGLOBAL_L0_A0(" ---------> Let Tilem guess for you ! <---------\n");
-		if (!(gsi->calc_id=tilem_guess_rom_type(romfile))) {	
-			fprintf(stderr, "%s: unknown calculator type\n", gsi->RomName);
-		if(romfile!=NULL)
-			fclose(romfile);
-		return 1;
-		}
+
+	if (!gsi->calc_id) {
+		fclose(romfile);
+		return 0;
 	}
-	
 	
 	/* Create the calc */
 	gsi->emu = g_new0(TilemCalcEmulator, 1);
@@ -269,9 +262,9 @@ int main(int argc, char **argv)
 
 	if (savfile)
 		fclose(savfile);
-		
 
-	
+	fclose(romfile);
+
 	/* Init emulator */
 	gsi->emu->run_mutex = g_mutex_new();
 	gsi->emu->calc_mutex = g_mutex_new();
