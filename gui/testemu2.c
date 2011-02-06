@@ -190,7 +190,6 @@ int main(int argc, char **argv)
 	/* Init GTK+ */
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
-	gtk_rc_parse_string(rcstr);/* change style */
 	
 	/* Init isDebuggerRunning */
 	gsi->isDebuggerRunning=FALSE;

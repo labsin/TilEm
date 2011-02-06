@@ -79,26 +79,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 	int mouse_key;		/* Key currently pressed by mouse button */
 }GLOBAL_SKIN_INFOS;
 
-/* Simply the gtk style */
-static const char rcstr[] =
-	"style \"tilem-key-default\" {\n"
-	"  font_name = \"Sans 7\"\n"
-	"  GtkButton::inner-border = { 0, 0, 0, 0 }\n"
-	"  GtkButton::focus-padding = 0\n"
-	"}\n"
-	"widget \"*.tilem-key\" style \"tilem-key-default\"\n"
-	"style \"tilem-lcd-default\" {\n"
-	"  bg[NORMAL] = { 0.74, 0.74, 0.70 }\n"
-	"  fg[NORMAL] = { 0.0, 0.0, 0.0 }\n"
-	"}\n"
-	"widget \"*.tilem-lcd\" style \"tilem-lcd-default\"\n";
-
-/* core's forcebreak value */
-static volatile int sforcebreak = 0;
-	
-
-
-
 
 /* ###### event.c ##### */
 
