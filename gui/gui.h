@@ -75,6 +75,8 @@ typedef struct GLOBAL_SKIN_INFOS {
 	gboolean isMacroRecording;
 	gboolean isMacroPlaying;
 	gboolean isStartingSkinless;
+
+	int mouse_key;		/* Key currently pressed by mouse button */
 }GLOBAL_SKIN_INFOS;
 
 /* Simply the gtk style */
@@ -112,11 +114,14 @@ void on_about(GtkWidget *pBtn);
 /* Detect a keyboard press event */
 void keyboard_event();	
 
-/* Detect a mousei "click" event and Get the 'x' and 'y' values */
-gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi);
+/* Button-press event */
+gboolean mouse_press_event(GtkWidget* w, GdkEventButton *event, gpointer data);
 
-/* Detect a mouse "release" event, scan click, refresh register */
-gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi) ;
+/* Pointer-motion event */
+gboolean pointer_motion_event(GtkWidget* w, GdkEventMotion *event, gpointer data);
+
+/* Button-release event */
+gboolean mouse_release_event(GtkWidget* w, GdkEventButton *event, gpointer data);
 
 /* Load a file from PC to TI */
 void load_file(GLOBAL_SKIN_INFOS *gsi);

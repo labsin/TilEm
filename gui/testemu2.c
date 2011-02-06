@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 	gsi->FileToLoad = NULL;
 	gsi->MacroName = NULL;
 	//gsi->kp = malloc(sizeof(KEYPAD)); 	
-	
+	gsi->mouse_key = 0;
 	
 	/* Init GTK+ */
 	g_thread_init(NULL);

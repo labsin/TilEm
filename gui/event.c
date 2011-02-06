@@ -104,6 +104,26 @@ static int scan_click(const SKIN_INFOS* skin, double x, double y)
 	return nearest;
 }
 
+/* Retrieve pointer coordinates for an input device. */
+static void get_device_pointer(GdkWindow *win, GdkDevice *dev,
+                               gdouble *x, gdouble *y, GdkModifierType *mask)
+{
+	gdouble *axes;
+	int i;
+
+	axes = g_new(gdouble, dev->num_axes);
+	gdk_device_get_state(dev, win, axes, mask);
+
+	for (i = 0; i < dev->num_axes; i++) {
+		if (x && dev->axes[i].use == GDK_AXIS_X)
+			*x = axes[i];
+		else if (y && dev->axes[i].use == GDK_AXIS_Y)
+			*y = axes[i];
+	}
+
+	g_free(axes);
+}
+
 /* Just close the window (freeing allocated memory maybe in the futur?)*/
 void on_destroy()
 {
@@ -196,98 +216,143 @@ void keyboard_event()
 	printf("You press a key : keyboard_event\n");	/* debug */
 }
 
+/* Pop up context menu */
+static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
+{
+	static GtkItemFactoryEntry right_click_menu[] = {
+		{"/Load skin...", "F12", skin_selection, 1, NULL,NULL},
+		{"/Send file...", "F11", load_file, 1, NULL, NULL},
+		{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
+		{"/---", NULL, NULL, 0, "<Separator>", NULL},
+		{"/Screenshot !",NULL, create_screenshot_window, 1, NULL, NULL},
+		{"/Animated screenshot !",NULL, screenshot_anim_create_nostatic, 1, NULL, NULL},
+		{"/Animated screenshot add frame !",NULL, screenshot_anim_addframe, 1, NULL, NULL},
+		{"/Display lcd into console !",NULL, display_lcdimage_into_terminal, 1, NULL, NULL},
+		{"/Switch view",NULL,switch_view,1,NULL,NULL},
+		{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
+		{"/Use this model as default for this rom",NULL,add_or_modify_defaultmodel, 1, NULL, NULL},
+		{"/Use this skin as default for this rom ",NULL,add_or_modify_defaultskin, 1, NULL, NULL},
+		{"/Save state... ",NULL,save_state, 1, NULL, NULL},
+		{"/---", NULL, NULL, 0, "<Separator>", NULL},
+		{"/Start recording...", "<control>Q",start_record_macro, 0, NULL, NULL},
+		{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
+		{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
+		{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
+		{"/---", NULL, NULL, 0, "<Separator>", NULL},
+		{"/About", "<control>Q",show_about, 0, NULL, NULL},
+		{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
+		{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
+		{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}
+	};
+	right_click_menu[0].extra_data=gsi;
+	create_menus(gsi->pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
+}
 
+/* If currently recording a macro, record a keypress */
+static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
+{
+	/* FIXME: this is seriously broken; what's going on here? */
 
-/* This event is executed when click with mouse (the Calc_Key_Map is given as parameter) */
-/* Guess what key was clicked... ;D */
-gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS *gsi) 	// void mouse_event(GdkEvent *event) doesn't work !!Necessite first parameter (I've lost 3hours for this).
-{  	
-	DCLICK_L0_A0(">>>>>>>\"PRESS\"<<<<<<<\n");
-	DCLICK_L0_A0("**************** fct : mouse_press_event ***************\n");
-	int code=0;
-	TilemCalcEmulator* emu = gsi->emu;
-	pWindow=pWindow;
-	GdkEventButton *bevent = (GdkEventButton *) event;
+	char* codechar;
 
-	if(event->button.button==3)  
-	{	
-	/* Right click ?  then do ... nothing ! (just press not release !)*/
-	} else {
-		
-		code = scan_click(gsi->si, bevent->x, bevent->y),
-		
-		g_mutex_lock(emu->calc_mutex);
-		tilem_keypad_press_key(emu->calc, code);
-		g_mutex_unlock(emu->calc_mutex);
+	if(gsi->isMacroRecording) {     
+		codechar= (char*) malloc(sizeof(int));
+		sprintf(codechar, "%04d", code);
+		add_event_in_macro_file(gsi, codechar);     
+		free(codechar);
 	}
+}
+
+/* Press a key, ensuring that at most one key is "pressed" at a time
+   due to this function (if pointer moves or is released, we don't
+   want the old key held down.)
+
+   FIXME: on multi-pointer displays, allow each input device to act
+   separately */
+static void press_mouse_key(GLOBAL_SKIN_INFOS* gsi, int key)
+{
+	if (gsi->mouse_key == key)
+		return;
+
+	g_mutex_lock(gsi->emu->calc_mutex);
+
+	if (gsi->mouse_key)
+		tilem_keypad_release_key(gsi->emu->calc, gsi->mouse_key);
+
+	if (key)
+		tilem_keypad_press_key(gsi->emu->calc, key);
+
+	g_mutex_unlock(gsi->emu->calc_mutex);
+
+	if (key)
+		record_key(gsi, key);
+
+	gsi->mouse_key = key;
+}
+
+/* Mouse button pressed */
+gboolean mouse_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
+                           gpointer data)
+{  	
+	GLOBAL_SKIN_INFOS* gsi = data;
+	int key;
+
+	key = scan_click(gsi->si, event->x, event->y);
+
+	if (event->button == 1) {
+		/* button 1: press key until button is released or pointer moves away */
+		press_mouse_key(gsi, key);
+		return TRUE;
+	}
+	else if (event->button == 2) {
+		/* button 2: hold key down permanently */
+		if (key) {
+			g_mutex_lock(gsi->emu->calc_mutex);
+			tilem_keypad_press_key(gsi->emu->calc, key);
+			g_mutex_unlock(gsi->emu->calc_mutex);
+			record_key(gsi, key);
+		}
+		return TRUE;
+	}
+	else if (event->button == 3) {
+		/* button 3: popup menu */
+		show_popup_menu(gsi, (GdkEvent*) event);
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+/* Mouse pointer moved */
+gboolean pointer_motion_event(G_GNUC_UNUSED GtkWidget* w, GdkEventMotion *event,
+                              gpointer data)
+{
+	GLOBAL_SKIN_INFOS* gsi = data;
+	int key;
+
+	if (event->is_hint)
+		get_device_pointer(event->window, event->device,
+		                   &event->x, &event->y, &event->state);
+
+	if (event->state & GDK_BUTTON1_MASK)
+		key = scan_click(gsi->si, event->x, event->y);
+	else
+		key = 0;
+
+	press_mouse_key(gsi, key);
+
 	return FALSE;
 }
 
-/* Handle release event */
-gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS * gsi) {
-	
-	DCLICK_L0_A0(">>>>>>>\"RELEASE\"<<<<<<<\n");
-	DCLICK_L0_A0("**************** fct : mouse_release_event *************\n");
-	TilemCalcEmulator* emu = gsi->emu;
-	int code=0;
-	char* codechar;
-	pWindow=pWindow;
-	GdkEventButton *bevent = (GdkEventButton *) event;
-	/* DCLICK_L0_A2("%G %G",bevent->x,bevent->y); */
-	
+/* Mouse button released */
+gboolean mouse_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
+                             gpointer data)
+{
+	GLOBAL_SKIN_INFOS* gsi = data;
 
-/* #################### Right Click Menu	#################### */
-	if(event->button.button==3)  {	/*detect a right click to build menu */
-		DCLICK_L0_A0("*  right click !                                       *\n");
-		static GtkItemFactoryEntry right_click_menu[] = {
-			{"/Load skin...", "F12", skin_selection, 1, NULL,NULL},
-			{"/Send file...", "F11", load_file, 1, NULL, NULL},
-			{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
-			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/Screenshot !",NULL, create_screenshot_window, 1, NULL, NULL},
-			{"/Animated screenshot !",NULL, screenshot_anim_create_nostatic, 1, NULL, NULL},
-			{"/Animated screenshot add frame !",NULL, screenshot_anim_addframe, 1, NULL, NULL},
-			{"/Display lcd into console !",NULL, display_lcdimage_into_terminal, 1, NULL, NULL},
-			{"/Switch view",NULL,switch_view,1,NULL,NULL},
-			{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
-			{"/Use this model as default for this rom",NULL,add_or_modify_defaultmodel, 1, NULL, NULL},
-			{"/Use this skin as default for this rom ",NULL,add_or_modify_defaultskin, 1, NULL, NULL},
-			{"/Save state... ",NULL,save_state, 1, NULL, NULL},
-			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/Start recording...", "<control>Q",start_record_macro, 0, NULL, NULL},
-			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
-			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
-			{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
-			{"/---", NULL, NULL, 0, "<Separator>", NULL},
-			{"/About", "<control>Q",show_about, 0, NULL, NULL},
-			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
-			{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
-			{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}
-		};
-		right_click_menu[0].extra_data=gsi;
-		create_menus(gsi->pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
-		
+	if (event->button == 1)
+		press_mouse_key(gsi, 0);
 
-		DCLICK_L0_A0("********************************************************\n\n");
-/* #################### Left Click (test wich key is it)#################### */
-	} else {
-		code = scan_click(gsi->si, bevent->x, bevent->y);
-		
-		if(gsi->isMacroRecording) {     
-			codechar= (char*) malloc(sizeof(int));
-			sprintf(codechar, "%04d", code);
-			add_event_in_macro_file(gsi, codechar);     
-		}
-		
-		/* Send the signal to libtilemcore */
-		g_mutex_lock(emu->calc_mutex);
-		tilem_keypad_release_key(emu->calc, code);
-		g_mutex_unlock(emu->calc_mutex);
-	}
-	if(gsi->isDebuggerRunning) {
-		refresh_register(gsi);
-		refresh_stack(gsi);
-	}
 	return FALSE;
 }
 

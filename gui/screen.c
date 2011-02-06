@@ -41,13 +41,17 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	}
 
 	gtk_widget_add_events(gsi->pLayout, (GDK_KEY_RELEASE_MASK
-	                                    | GDK_BUTTON_PRESS_MASK
-	                                    | GDK_BUTTON_RELEASE_MASK));
+	                                     | GDK_BUTTON_PRESS_MASK
+	                                     | GDK_BUTTON_RELEASE_MASK
+	                                     | GDK_BUTTON1_MOTION_MASK
+	                                     | GDK_POINTER_MOTION_HINT_MASK));
 
 	g_signal_connect(gsi->pLayout, "key-press-event",
 	                 G_CALLBACK(keyboard_event), gsi);
 	g_signal_connect(gsi->pLayout, "button-press-event",
 	                 G_CALLBACK(mouse_press_event), gsi);
+	g_signal_connect(gsi->pLayout, "motion-notify-event",
+	                 G_CALLBACK(pointer_motion_event), gsi);
 	g_signal_connect(gsi->pLayout, "button-release-event",
 	                 G_CALLBACK(mouse_release_event), gsi);
 
@@ -338,6 +342,9 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	g_signal_connect(gsi->emu->lcdwin, "style-set", G_CALLBACK(screen_restyle), gsi); 
 	gtk_widget_add_events(pLayout, GDK_BUTTON_PRESS_MASK);	
 	gtk_signal_connect(GTK_OBJECT(pLayout), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
+	gtk_widget_add_events(pLayout, (GDK_BUTTON1_MOTION_MASK
+	                                | GDK_POINTER_MOTION_HINT_MASK));
+	gtk_signal_connect(GTK_OBJECT(pLayout), "motion-notify-event", G_CALLBACK(pointer_motion_event),gsi);
 	gtk_widget_add_events(pLayout, GDK_BUTTON_RELEASE_MASK);	
 	gtk_signal_connect(GTK_OBJECT(pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
 	g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
