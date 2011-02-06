@@ -252,9 +252,6 @@ int main(int argc, char **argv)
 	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
 	/* End */
 	
-	/* Load the keypad (list of keys) */	
-	load_keypad(gsi);
-
 	/* Load save state */
 	savfile = g_fopen(gsi->SavName, "rt");
 	tilem_calc_load_state(gsi->emu->calc, romfile, savfile);

@@ -258,7 +258,6 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 			{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
 			{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
 			{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
-			{"/Load keypad !", "<control>Q", load_keypad, 0, NULL, NULL},
 			{"/---", NULL, NULL, 0, "<Separator>", NULL},
 			{"/About", "<control>Q",show_about, 0, NULL, NULL},
 			{"/Reset", "<control>R", on_reset, 0, NULL, NULL},

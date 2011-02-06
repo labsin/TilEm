@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o romconfig.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o keylist.o screenshot.o
+objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o romconfig.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -86,10 +86,6 @@ gifencod.o: gifencod.c gifencod.h
 # Handle screenshot anim (animated gif)
 animatedgif.o: animatedgif.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/animatedgif.c
-
-# Load external keylist.ini config 
-keylist.o: keylist.c gui.h *.h ../core/tilem.h
-	$(compile) -c $(srcdir)/keylist.c
 
 screenshot.o: screenshot.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/screenshot.c
