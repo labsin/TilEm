@@ -4,10 +4,105 @@
 #include <glib/gstdio.h>
 
 #include <tilem.h>
+#include <scancodes.h>
 #include <gui.h>
 
+/* Table for translating skin-file key number (based on actual
+   position, and defined by the VTI/TiEmu file formats) into a
+   scancode.  Note that the TILEM_KEY_* constants are named according
+   to the TI-83 keypad layout; other models use different names for
+   the keys, but the same scancodes. */
+static const int keycode_map[] =
+	{ TILEM_KEY_YEQU,
+	  TILEM_KEY_WINDOW,
+	  TILEM_KEY_ZOOM,
+	  TILEM_KEY_TRACE,
+	  TILEM_KEY_GRAPH,
 
-static int scan_click(int MAX, double x, double y, GLOBAL_SKIN_INFOS * gsi);
+	  TILEM_KEY_2ND,
+	  TILEM_KEY_MODE,
+	  TILEM_KEY_DEL,
+	  TILEM_KEY_LEFT,
+	  TILEM_KEY_RIGHT,
+	  TILEM_KEY_UP,
+	  TILEM_KEY_DOWN,
+	  TILEM_KEY_ALPHA,
+	  TILEM_KEY_GRAPHVAR,
+	  TILEM_KEY_STAT,
+
+	  TILEM_KEY_MATH,
+	  TILEM_KEY_MATRIX,
+	  TILEM_KEY_PRGM,
+	  TILEM_KEY_VARS,
+	  TILEM_KEY_CLEAR,
+
+	  TILEM_KEY_RECIP,
+	  TILEM_KEY_SIN,
+	  TILEM_KEY_COS,
+	  TILEM_KEY_TAN,
+	  TILEM_KEY_POWER,
+
+	  TILEM_KEY_SQUARE,
+	  TILEM_KEY_COMMA,
+	  TILEM_KEY_LPAREN,
+	  TILEM_KEY_RPAREN,
+	  TILEM_KEY_DIV,
+
+	  TILEM_KEY_LOG,
+	  TILEM_KEY_7,
+	  TILEM_KEY_8,
+	  TILEM_KEY_9,
+	  TILEM_KEY_MUL,
+
+	  TILEM_KEY_LN,
+	  TILEM_KEY_4,
+	  TILEM_KEY_5,
+	  TILEM_KEY_6,
+	  TILEM_KEY_SUB,
+
+	  TILEM_KEY_STORE,
+	  TILEM_KEY_1,
+	  TILEM_KEY_2,
+	  TILEM_KEY_3,
+	  TILEM_KEY_ADD,
+
+	  TILEM_KEY_ON,
+	  TILEM_KEY_0,
+	  TILEM_KEY_DECPNT,
+	  TILEM_KEY_CHS,
+	  TILEM_KEY_ENTER };
+
+/* Find the keycode for the key (if any) at the given position.  If
+   the keys overlap, choose the "nearest" (according to Manhattan
+   distance to the midpoint.) */
+static int scan_click(const SKIN_INFOS* skin, double x, double y)
+{
+	guint ix, iy, nearest = 0, i;
+	int dx, dy, d, best_d = G_MAXINT;
+
+	ix = (x + 0.5);
+	iy = (y + 0.5);
+
+	for (i = 0; i < G_N_ELEMENTS(keycode_map); i++) {
+		if (ix >= skin->keys_pos[i].left
+		    && ix < skin->keys_pos[i].right
+		    && iy >= skin->keys_pos[i].top
+		    && iy < skin->keys_pos[i].bottom) {
+			dx = (skin->keys_pos[i].left + skin->keys_pos[i].right
+			      - 2 * ix);
+			dy = (skin->keys_pos[i].top + skin->keys_pos[i].bottom
+			      - 2 * iy);
+			d = ABS(dx) + ABS(dy);
+
+			if (d < best_d) {
+				best_d = d;
+				nearest = keycode_map[i];
+			}
+		}
+	}
+
+	return nearest;
+}
 
 /* Just close the window (freeing allocated memory maybe in the futur?)*/
 void on_destroy()
@@ -119,7 +214,7 @@ gboolean mouse_press_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFOS 
 	/* Right click ?  then do ... nothing ! (just press not release !)*/
 	} else {
 		
-		code =scan_click(50, bevent->x, bevent->y, gsi),
+		code = scan_click(gsi->si, bevent->x, bevent->y),
 		
 		g_mutex_lock(emu->calc_mutex);
 		tilem_keypad_press_key(emu->calc, code);
@@ -177,7 +272,7 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		DCLICK_L0_A0("********************************************************\n\n");
 /* #################### Left Click (test wich key is it)#################### */
 	} else {
-		code =scan_click(gsi->kp->nb_of_buttons, bevent->x, bevent->y, gsi);
+		code = scan_click(gsi->si, bevent->x, bevent->y);
 		
 		if(gsi->isMacroRecording) {     
 			codechar= (char*) malloc(sizeof(int));
@@ -195,29 +290,6 @@ gboolean mouse_release_event(GtkWidget* pWindow,GdkEvent *event,GLOBAL_SKIN_INFO
 		refresh_stack(gsi);
 	}
 	return FALSE;
-}
-
-/* return the key code.This code is used to send a signal to libtilemcore */
-int scan_click(int MAX, double x, double y,  GLOBAL_SKIN_INFOS * gsi)
- {
-	 int i=0;
-	 DCLICK_L2_A0("..............................x   y   z   t ......... \n");
-		for (i = 0; i < MAX; i++)
-		{
-			
-			DCLICK_L2_A5("%d............testing........ %d %d %d %d.........\n",i,gsi->si->keys_pos[i].left,gsi->si->keys_pos[i].top,gsi->si->keys_pos[i].right,gsi->si->keys_pos[i].bottom);
-			if ((x > gsi->si->keys_pos[i].left) && (x < gsi->si->keys_pos[i].right) &&(y > gsi->si->keys_pos[i].top) && (y < gsi->si->keys_pos[i].bottom)) {
-				DCLICK_L0_A1("*  Key number : %d                                     *\n",i);
-				DCLICK_L0_A1("*  Key name : %s     ",                  gsi->kp->kl[i].label);
-				DCLICK_L0_A1("Key code : %d                     *\n",gsi->kp->kl[i].code);
-				DCLICK_L0_A2("*  Click coordinates :     ----> x=%G    y=%G <----   *\n",x,y);
-				DCLICK_L0_A0("********************************************************\n\n");
-				return gsi->kp->kl[i].code;
-			}
-		}	
-		
-		return 0;
-		//return x3_keylist[i].code;
 }
 
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */

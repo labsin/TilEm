@@ -19,7 +19,7 @@ void load_keypad_from_file(GLOBAL_SKIN_INFOS * gsi, char* config_file) {
 	/* Get keys from group called "ti82" or "ti83" or another name. It require core must be launched firstly */	
 	keys = g_key_file_get_keys(gkf, gsi->emu->calc->hw.name, NULL, NULL);
 	
-	for(i = 0; keys[i]; i++) {
+	for(i = 0; keys && keys[i]; i++) {
 		char* code;
 		code = g_key_file_get_string(gkf, gsi->emu->calc->hw.name, keys[i], NULL);
 		
