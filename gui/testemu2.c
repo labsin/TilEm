@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 	/* Some allocation to do not crash */	
 	GLOBAL_SKIN_INFOS *gsi;
 	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
-	gsi->si=malloc(sizeof(SKIN_INFOS));
+	gsi->si=NULL;
 	gsi->pWindow = NULL;
 	gsi->ci=malloc(sizeof(CONFIG_INFOS));
 	gsi->rci=malloc(sizeof(ROMCONFIG_INFOS));

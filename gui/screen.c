@@ -9,7 +9,12 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 {
 	GtkWidget *pImage;
 
-	skin_unload(gsi->si);
+	if (gsi->si) {
+		skin_unload(gsi->si);
+		g_free(gsi->si);
+	}
+
+	gsi->si = g_new0(SKIN_INFOS, 1);
 	skin_load(gsi->si, gsi->SkinFileName);
 
 	if (gsi->pAf)
@@ -290,77 +295,30 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_
 
 GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)  
 {
-	//g_thread_init(NULL);
-	
-	DLCD_L0_A0("**************** fct : draw_screen *********************\n");
-	DLCD_L0_A0("*  - load skin                                         *\n");
-	DLCD_L0_A0("*  - create GtkLayout                                  *\n");
-	DLCD_L0_A0("*  - add skin, add lcd area                            *\n");
-	DLCD_L0_A0("*  - connect events (callback)                         *\n");
-	DLCD_L0_A0("*  - print top level window                            *\n");
-	DLCD_L0_A0("*  - launch thread                                     *\n");
-	DLCD_L0_A0("********************************************************\n");
-	GtkWidget *pAf;
 	GThread *th;
 
-	gsi->view=0;
-	/* LOAD A SKIN */
-	SKIN_INFOS *si;
-	si=malloc(sizeof(SKIN_INFOS));
-	gsi->si=(SKIN_INFOS*)si;
-	skin_load(gsi->si,gsi->SkinFileName);
-	
+	gsi->view = 0;
+
 	/* Create the window */
-	GtkWidget *pWindow,  *pImage, *pLayout;
-	gsi->pWindow = pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);	// GTK_WINDOW_LEVEL : define how is the window 
-	gtk_window_set_title(GTK_WINDOW(pWindow),"TilEm");	// define title of the window 
-	gtk_window_set_position(GTK_WINDOW(pWindow),GTK_WIN_POS_CENTER); // GTK_WIN_POS_CENTER : define how the window is displayed 
-	gtk_window_set_default_size(GTK_WINDOW(pWindow),gsi->si->width,gsi->si->height);	// define size of the window
+	gsi->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	
+	g_signal_connect(gsi->pWindow, "destroy", G_CALLBACK(on_destroy), gsi);
 
-	pImage=gtk_image_new_from_pixbuf(gsi->si->image);
-	
-	g_signal_connect(G_OBJECT(pWindow),"destroy",G_CALLBACK(on_destroy),NULL); 
-	gtk_widget_add_events(pWindow, (GDK_KEY_PRESS_MASK
+	gtk_widget_add_events(gsi->pWindow, (GDK_KEY_PRESS_MASK
 	                                | GDK_KEY_RELEASE_MASK));
-	g_signal_connect(pWindow, "key-press-event",
-	                 G_CALLBACK(key_press_event), gsi);
-	g_signal_connect(pWindow, "key-release-event",
-	                 G_CALLBACK(key_release_event), gsi);
-	
-	/* Create the draw area */
-	pAf=create_draw_area(gsi);
-	
-	/* Add the lcd to the pWindow using a GtkLayout */
-	pLayout=gtk_layout_new(NULL,NULL);
-	gsi->pLayout=pLayout;
-	gtk_widget_show(pAf);
-	gtk_layout_put(GTK_LAYOUT(pLayout),pImage,0,0);
-	gtk_layout_put(GTK_LAYOUT(pLayout),pAf,gsi->si->lcd_pos.left,gsi->si->lcd_pos.top);
-	
-	g_signal_connect(gsi->emu->lcdwin, "style-set", G_CALLBACK(screen_restyle), gsi); 
-	gtk_widget_add_events(pLayout, GDK_BUTTON_PRESS_MASK);	
-	gtk_signal_connect(GTK_OBJECT(pLayout), "button-press-event", G_CALLBACK(mouse_press_event),gsi);
-	gtk_widget_add_events(pLayout, (GDK_BUTTON1_MOTION_MASK
-	                                | GDK_POINTER_MOTION_HINT_MASK));
-	gtk_signal_connect(GTK_OBJECT(pLayout), "motion-notify-event", G_CALLBACK(pointer_motion_event),gsi);
-	gtk_widget_add_events(pLayout, GDK_BUTTON_RELEASE_MASK);	
-	gtk_signal_connect(GTK_OBJECT(pLayout), "button-release-event", G_CALLBACK(mouse_release_event), gsi); 
-	g_signal_connect(GTK_OBJECT(gsi->emu->lcdwin), "expose-event",G_CALLBACK(screen_repaint), gsi);
-	gtk_container_add(GTK_CONTAINER(pWindow),pLayout);
 
-	/* Set up color palette */
-	screen_restyle(gsi->emu->lcdwin, NULL, gsi);
-	
-	gtk_widget_show_all(pWindow);	/* display the window and all that it contains. */
-	
-	/* THREAD */
+	g_signal_connect(gsi->pWindow, "key-press-event",
+	                 G_CALLBACK(key_press_event), gsi);
+	g_signal_connect(gsi->pWindow, "key-release-event",
+	                 G_CALLBACK(key_release_event), gsi);
+
+	/* Create emulator widget */
+	redraw_screen(gsi);
+
 	th = g_thread_create(&core_thread, gsi->emu, TRUE, NULL);
 	g_timeout_add(50, screen_update, gsi->emu);
-	
 
-
-	return pWindow;
+	return gsi->pWindow;
 }
 
 
