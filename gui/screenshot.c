@@ -83,6 +83,7 @@ void on_play() {
 }
 
 void on_screenshot(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
 	screenshot(gsi);
 	g_print("screenshot event\n");
 }
