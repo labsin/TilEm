@@ -8,6 +8,7 @@
 void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 {
 	GtkWidget *pImage;
+	int screenwidth, screenheight;
 
 	if (gsi->si) {
 		skin_unload(gsi->si);
@@ -17,19 +18,27 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gsi->si = g_new0(SKIN_INFOS, 1);
 	skin_load(gsi->si, gsi->SkinFileName);
 
-	if (gsi->pAf)
-		gtk_widget_destroy(gsi->pAf);
+	screenwidth = gsi->si->lcd_pos.right - gsi->si->lcd_pos.left;
+	screenheight = gsi->si->lcd_pos.bottom - gsi->si->lcd_pos.top;
+
+	if (gsi->emu->lcdwin)
+		gtk_widget_destroy(gsi->emu->lcdwin);
 	if (gsi->pLayout)
 		gtk_widget_destroy(gsi->pLayout);
 
-	gsi->pAf = create_draw_area(gsi);
+	/* create LCD widget */
+	gsi->emu->lcdwin = gtk_drawing_area_new();
+	gtk_widget_set_size_request(gsi->emu->lcdwin,
+	                            screenwidth, screenheight);
+
+	/* create background image and layout */
 	gsi->pLayout = gtk_layout_new(NULL, NULL);
 
 	if (gsi->view == 0) {
 		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
 		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), pImage, 0, 0);
 
-		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->pAf,
+		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->emu->lcdwin,
 		               gsi->si->lcd_pos.left,
 		               gsi->si->lcd_pos.top);
 
@@ -37,10 +46,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 		                  gsi->si->height);
 	}
 	else {
-		int screenwidth = gsi->si->lcd_pos.right - gsi->si->lcd_pos.left;
-		int screenheight = gsi->si->lcd_pos.bottom - gsi->si->lcd_pos.top;
-
-		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->pAf, 0, 0);
+		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->emu->lcdwin, 0, 0);
 
 		gtk_window_resize(GTK_WINDOW(gsi->pWindow), screenwidth, screenheight);
 	}
@@ -49,6 +55,11 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	                                     | GDK_BUTTON_RELEASE_MASK
 	                                     | GDK_BUTTON1_MOTION_MASK
 	                                     | GDK_POINTER_MOTION_HINT_MASK));
+
+	g_signal_connect(gsi->emu->lcdwin, "expose-event",
+	                 G_CALLBACK(screen_repaint), gsi);
+	g_signal_connect(gsi->emu->lcdwin, "style-set",
+	                 G_CALLBACK(screen_restyle), gsi);
 
 	g_signal_connect(gsi->pLayout, "button-press-event",
 	                 G_CALLBACK(mouse_press_event), gsi);
@@ -320,42 +331,3 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	return gsi->pWindow;
 }
-
-
-
-GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi) 
-{
-	
-
-	GtkWidget *pAf;
-	/* Get the size of the lcd area in the SKIN_INFOS struct */
-	int screenwidth=gsi->si->lcd_pos.right-gsi->si->lcd_pos.left;	
-	int screenheight=gsi->si->lcd_pos.bottom-gsi->si->lcd_pos.top; 
-	
-	
-	DLCD_L0_A0("**************** fct : create_draw_area ****************\n");
-	DLCD_L0_A1("*  screenwidth = %d                                   *\n",screenwidth);
-	DLCD_L0_A1("*  screenheight = %d                                  *\n",screenheight);
-	DLCD_L0_A0("********************************************************\n");
-	pAf = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);	
-                         gtk_frame_set_shadow_type(GTK_FRAME(pAf),GTK_SHADOW_NONE);
-                         {
-                                 gsi->emu->lcdwin = gtk_drawing_area_new();
-                                 gtk_widget_set_name(gsi->emu->lcdwin, "tilem-lcd");
-                                 gtk_widget_set_size_request(gsi->emu->lcdwin,screenwidth,screenheight);
-                                 gtk_container_add(GTK_CONTAINER(pAf),gsi->emu->lcdwin);
-                                 gtk_widget_show(gsi->emu->lcdwin);
-                       }
-	g_signal_connect(gsi->emu->lcdwin, "expose-event",
-	                 G_CALLBACK(screen_repaint), gsi);
-	g_signal_connect(gsi->emu->lcdwin, "style-set",
-	                 G_CALLBACK(screen_restyle), gsi);
-
-	return pAf;
-}
-
-
-
-
-
-

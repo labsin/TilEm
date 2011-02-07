@@ -59,7 +59,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 	GtkWidget *pWindow;
 	GtkWidget *pLayout;
 	GtkWidget *pFrame;
-	GtkWidget *pAf;
 	gchar* FileSelected;
 	GtkFileChooser *pFileChooser;
 	gint FileChooserResult;
