@@ -1,8 +1,6 @@
 #include <tilem.h>
 #include <z80.h>
 #include <skinops.h>
-#include <config.h>
-#include <romconfig.h>
 #include <scancodes.h>
 #include <debuginfo.h>
 #include <tilemdb.h>
@@ -54,8 +52,6 @@ typedef struct _TilemCalcEmulator {
 /* Internal data structure for gui */
 typedef struct GLOBAL_SKIN_INFOS {
 	SKIN_INFOS *si;
-	CONFIG_INFOS *ci;
-	ROMCONFIG_INFOS *rci;
 	GtkWidget *pWindow;
 	GtkWidget *pLayout;
 	GtkWidget *pFrame;
@@ -223,50 +219,29 @@ void get_selected_file(GLOBAL_SKIN_INFOS *gsi);
 
 /* ##### config.c ##### */
 
-/* Create the config.dat file  (normally only the first launch */
-void create_config_dat(GLOBAL_SKIN_INFOS* gsi);
+/* Search and return the default skin for this model */
+char* get_defaultskin(char* romname);
 
-/* Just load the config_file by reading it and save into CONFIG_INFOS */
-void config_load(CONFIG_INFOS *infos);
+/* Set a default skin, or add it if not exists */
+void set_defaultskin(char* romname, char* skinname);
 
-/* Called by event.c in the right click menu */
-void write_default_skin_for_this_rom();
+/* Search the most recent rom */
+char* get_recentrom(char* romname);
 
-/* Write the config.dat (modification only) */
-void write_config_file(GLOBAL_SKIN_INFOS *gsi);
+/* Set a default skin, or add it if not exists */
+void set_recentrom(char* romname);
 
-/* Search for the romname in the CONFIG_INFOS struct and answer by true or false */
-gboolean is_this_rom_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
+/* get the model */
+char get_modelcalcid(char* romname);
 
-/* Get the name of the skin to use with this rom */
-void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
+/* Set model calc id */
+void set_modelcalcid(char* romname, char id);
 
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
 
-
-
-
-/* ##### romconfig.c ##### */
-
-/* Create the config.dat file  (normally only the first launch */
-void create_romconfig_dat(GLOBAL_SKIN_INFOS* gsi);
-
-/* Just load the config_file by reading it and save into CONFIG_INFOS */
-void romconfig_load(ROMCONFIG_INFOS *infos);
-
-/* Write the config.dat (modification only) */
-void write_romconfig_file(GLOBAL_SKIN_INFOS *gsi);
-
-/* Search for the romname in the CONFIG_INFOS struct and answer by true or false */
-gboolean is_this_rom_in_romconfig_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
-
-/* Get the name of the skin to use with this rom */
-void search_defaultmodel_in_romconfig_infos(char* romname,GLOBAL_SKIN_INFOS *gsi);
-
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi);
-
 
 
 

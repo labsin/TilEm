@@ -166,6 +166,12 @@
 * - Starting to work on a new config file using glibc to do not hard code keypad values.
 * - And it works !!!! (but only load one keypad model currently)
 * - Add the other models into keylist.ini (but the content is completely false). Change scan_click method (correct a bug) to use kp->nb_of_buttons. Only need to give correct value into the keylist.ini file. For the rest it's seems ok.
+* ---07/02/11---
+* - Start to work on config.ini. A new generation config file using GKeyFile library (glib). Add some work in essai4 directory.
+* ---08/02/11---
+* - Remove romconfig.c romconfig.h config.c config.h (handle binary config file). Remove ROM_CONFIG_INFOS and CONFIG_INFOS from gsi.
+* - Add a new config.c and config.h file to handle config (last rom used, default skin to load, etc...). It uses glib GKeyFile library.
+* - Fix the macro bug pointed by Benjamin.
 */
 
 
@@ -174,7 +180,7 @@
 int main(int argc, char **argv)
 {
 	
-	FILE *romfile,*savfile, *config_file, *romconfig_file;
+	FILE *romfile,*savfile;
 	char default_model;
 
 
@@ -183,12 +189,11 @@ int main(int argc, char **argv)
 	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
 	gsi->si=NULL;
 	gsi->pWindow = NULL;
-	gsi->ci=malloc(sizeof(CONFIG_INFOS));
-	gsi->rci=malloc(sizeof(ROMCONFIG_INFOS));
 	gsi->FileToLoad = NULL;
 	gsi->MacroName = NULL;
-	//gsi->kp = malloc(sizeof(KEYPAD)); 	
 	gsi->mouse_key = 0;
+	gsi->macro_file = NULL;
+	gsi->isMacroRecording = 0;
 
 	gsi->key_queue = NULL;
 	gsi->key_queue_len = 0;
@@ -233,21 +238,6 @@ int main(int argc, char **argv)
 	create_savname(gsi);
 	/* End */
 
-	/* Init tilem config.dat and rom_config_file.dat */
-	config_file = g_fopen("config.dat", "rt");
-	if (!config_file) 
-	{
-		printf("config.dat does not exist \n");
-		create_config_dat(gsi);
-	}
-	romconfig_file = g_fopen("romconfig.dat", "rt");
-	if (!romconfig_file) 
-	{
-		printf("romconfig.dat does not exist \n");
-		create_romconfig_dat(gsi);
-	}
-	/* end */
-
 	/* Open the romfile */
 	romfile = g_fopen(gsi->RomName, "rb");
 	if (!romfile) 
@@ -258,10 +248,8 @@ int main(int argc, char **argv)
 	/* end */
 	
 
-	romconfig_load(gsi->rci);
-	if(is_this_rom_in_romconfig_infos(gsi->RomName, gsi))
+	if((gsi->calc_id = get_modelcalcid(gsi->RomName)) != '0')
 	{
-		search_defaultmodel_in_romconfig_infos(gsi->RomName, gsi);
 		DCONFIG_FILE_L0_A1("Saved model id : %c\n", gsi->calc_id);
 	} else {
 		/* prompt user for calculator model */
@@ -307,14 +295,18 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",gsi->emu->calc->hw.name[3]);
 	DGLOBAL_L0_A0("********************************************************\n");
 	
-	config_load(gsi->ci);
 
 	if(gsi->SkinFileName == NULL) { /* Given as parameter ? */
-		if(is_this_rom_in_config_infos(gsi->RomName, gsi))
+		/* Test if exists into config.ini */
+		if(get_defaultskin(gsi->RomName) != NULL) 
 		{
-			search_defaultskin_in_config_infos(gsi->RomName, gsi);
+			/* it exists */
+			gsi->SkinFileName = get_defaultskin(gsi->RomName);
+			printf("Load saved skin : %s\n", gsi->SkinFileName);
+			DCONFIG_FILE_L0_A1("Saved model id : %c\n", gsi->calc_id);
 		} else {
 			/* User does not have choosen another skin for this model, choose officials :) */
+			printf("skin default not found : %s\n", gsi->RomName ); 
 			choose_skin_filename(gsi->emu->calc,gsi);
 		}
 	}	

@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o romconfig.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o
+objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -59,13 +59,9 @@ skin.o: skin.c skin.h gui.h *.h ../core/tilem.h
 tool.o: tool.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/tool.c
 
-# Manage skinconfig.dat
+# Manage config.ini 
 config.o: config.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/config.c
-
-# Manage romconfig.dat
-romconfig.o: romconfig.c gui.h *.h ../core/tilem.h
-	$(compile) -c $(srcdir)/romconfig.c
 
 # Handle internal link
 link.o: link.c gui.h *.h ../core/tilem.h

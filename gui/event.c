@@ -251,7 +251,13 @@ static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 /* If currently recording a macro, record a keypress */
 static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
 {
-	/* FIXME: this is seriously broken; what's going on here? */
+	/* This WAS seriously broken ;)
+	In fact, gsi->macro_file must be set to NULL when you start. And gsi->isMacroRecording to 0
+	Switch isMacroRecording to 1 means : "record my key press/send file etc...
+	Switch to 0 is to stop recording
+	If macro file doesn't exist, tilem create it
+	The key press is represented as an int, separate by a comma, the int could contains 0 before to be like this 0031,0022,0012
+	*/
 
 	char* codechar;
 

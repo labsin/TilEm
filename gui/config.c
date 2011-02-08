@@ -1,245 +1,181 @@
-#include <stdlib.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <glib/gstdio.h>
-#include <gui.h>
+#include "config.h" 
 
 
 
-/*
-	Read TilEm config informations 
-*/
-int config_read(CONFIG_INFOS *ci, const char *filename)
-{
-	FILE *fp;
-  	int i;
-  	uint32_t endian;
-  	uint32_t length;
-	char str[17];
 
-	fp = fopen(filename, "rb");
-  	if (fp == NULL)
-    	{
-      		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
-      		return -1;
-    	}
- 
-	/* signature & offsets */
-	memset(str, 0, sizeof(str));	
-	fread(str, 16, 1, fp);
-  	if (strncmp(str, "TilEm v2.00", 16))
-  	{
-  		fprintf(stderr, "Bad TilEm config format\n");
-      	return -1;
-  	}
-  	fread(&endian, 4, 1, fp);
+/* Search and return the default skin for this model */
+char* get_defaultskin(char* romname) {
 
-	if (endian != ENDIANNESS_FLAG)
-		printf(">>>>> endian!= ENDIANNESS_FLAG");
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
 	
-	/* You can store 60 associations */
-  	for (i = 0; i < 60; i++)
-	{
-		/* Rom name */
-	  	fread(&length, 4, 1, fp);
-		if (endian != ENDIANNESS_FLAG)
-			length = GUINT32_SWAP_LE_BE(length);
-	
-	  	if (length > 0)
-	    	{
-	      		ci->sa[i].romname = (char *)malloc(length);
-		    	if (ci->sa[i].romname == NULL)
-				return -1;
-	
-			memset(ci->sa[i].romname, 0, length);
-		    	fread(ci->sa[i].romname, length, 1, fp);
-		}
-		DCONFIG_FILE_L0_A2("rom_name :%s (lgth=%d)", ci->sa[i].romname, length);
-	
-		/* Default associated skin */
-	  	fread(&length, 4, 1, fp);
-		if (endian != ENDIANNESS_FLAG)
-			length = GUINT32_SWAP_LE_BE(length);
-	
-	  	if (length > 0)
-	   	{
-	      		ci->sa[i].defaultskinname = (char *)malloc(length);
-	      		if (ci->sa[i].defaultskinname == NULL)
-				return -1;
-	
-	      		memset(ci->sa[i].defaultskinname, 0, length);
-	      		fread(ci->sa[i].defaultskinname, length, 1, fp);
-	    	}
-		DCONFIG_FILE_L0_A2(" ---> default_skin : %s (lgth=%d)\n", ci->sa[i].defaultskinname, length);
-	}	
-    	
-    fclose(fp);
-    return 0;
-}
-
-
-/* Load a config_file */
-void config_load(CONFIG_INFOS *ci)
-{
-	config_read(ci, "config.dat");
-	DCONFIG_FILE_L0_A0("********** fct : config_load *******************\n");
-	DCONFIG_FILE_L0_A0("*  config.dat successfully readed                      *\n");
-	DCONFIG_FILE_L0_A0("********************************************************\n\n");
-	
-}
-
-/* Unload skin by freeing allocated memory */
-int config_unload(CONFIG_INFOS *ci)
-{
-	int i=0;
-
-	for(i=0; i< 60; i++)
-	{
-		free(ci->sa[i].romname);
-  		free(ci->sa[i].defaultskinname);
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
 	}
-  	memset(ci, 0, sizeof(CONFIG_INFOS));
-  
-  	return 0;
+
+	char* SkinFileName = g_key_file_get_string(gkf, "skin", romname, NULL);
+	printf("skinfilename : %s\n", SkinFileName);
+	
+	g_key_file_free(gkf);
+	return SkinFileName;
+}
+
+/* Set a default skin, or add it if not exists */
+void set_defaultskin(char* romname, char* skinname) {
+	
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
+	
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
+	}
+	
+	g_key_file_set_string(gkf, "skin", romname, skinname);
+	
+	/* Save the config */
+	FILE *file;
+        char *data;
+
+        if (!(file = fopen (CONFIG_FILE, "w")))
+        {
+            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
+            return;
+        }
+        data = g_key_file_to_data (gkf, NULL, NULL);
+        fputs (data, file);
+        fclose (file);
+	g_key_file_free(gkf);
+        g_free (data); 
+}
+
+/* Search the most recent rom */
+char* get_recentrom(char* romname) {
+
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
+	
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
+	}
+
+	char* recentrom = g_key_file_get_string(gkf, "skin", romname, NULL);
+
+	
+	g_key_file_free(gkf);
+	return recentrom;
 }
 
 
-/* First call of tilem : create the config file */
-void create_config_dat(GLOBAL_SKIN_INFOS *gsi) 
-{
-	//FILE *config_file;
-	//unsigned char id[16] = TILEM_CONFIG_ID;
-	//uint32_t endian= ENDIANNESS_FLAG;
-	//CONFIG_INFOS* ci;
-	//memset(ci, 0, sizeof(CONFIG_INFOS));
-	/*config_file = g_fopen("config.dat", "wb");
-		if (config_file) 
-		{
-			fwrite(id,16,1,config_file);
-			fwrite(&endian,4,1, config_file);
-			//fwrite(ci,sizeof(CONFIG_INFOS),1,config_file);
-			DCONFIG_FILE_L0_A0("****************** CREATE config.dat *******************\n");
-			DCONFIG_FILE_L0_A0("*  config.dat successfully created                     *\n");
-			DCONFIG_FILE_L0_A0("********************************************************\n\n");
-			fclose(config_file);
-		}
-	*/
-	write_config_file(gsi);
-	config_read(gsi->ci, "config.dat");
-	
-}
-/* This function is executed when stopping the emulator 
- * It simply save which skin must be useb with wich rom 
- */
-void write_config_file(GLOBAL_SKIN_INFOS *gsi) {
 
-			
-	
-	FILE *config_file;
-	unsigned char id[16] = TILEM_CONFIG_ID;
-	uint32_t endian= ENDIANNESS_FLAG;
-	uint32_t length_romname; 
-	uint32_t length_defaultskinname; 
-	int i;
 
-	config_file = g_fopen("config.dat", "w");
+/* Set a default skin, or add it if not exists */
+void set_recentrom(char* romname) {
 	
-	if (config_file) 
-	{	
-		fwrite(id,16,1,config_file);
-		fwrite(&endian,4,1, config_file);
+	GKeyFile * gkf;
+	gchar** keys;
+	
+	gkf = g_key_file_new();
+	
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
+	}
+	int i = 0;	
 		
-		for(i=0; i<60;i++) {
-			if((gsi->ci->sa[i].romname==NULL)||(gsi->ci->sa[i].defaultskinname==NULL))
-			{
-				length_romname = 0;	
-				length_defaultskinname = 0;	
-			} else {
-				length_romname = strlen(gsi->ci->sa[i].romname) +1;
-				length_defaultskinname = strlen(gsi->ci->sa[i].defaultskinname)+1;
-			}
-				
-			fwrite(&length_romname, 4, 1, config_file);
-			fwrite(gsi->ci->sa[i].romname, length_romname, 1, config_file);
-			fwrite(&length_defaultskinname, 4, 1, config_file);
-			fwrite(gsi->ci->sa[i].defaultskinname, length_defaultskinname, 1, config_file);
-
-		}
-		//fwrite(gsi->ci,sizeof(CONFIG_INFOS),1,config_file);
-
-
-		DCONFIG_FILE_L0_A0("****************** WRITE config.dat *******************\n");
-		DCONFIG_FILE_L0_A0("*  config.dat successfully modified                     *\n");
-		DCONFIG_FILE_L0_A0("********************************************************\n\n");
-		fclose(config_file);
+	keys = g_key_file_get_keys(gkf, "recent", NULL, NULL);
+	
+	/* Shift from top to bottom */	
+	for(i = 9; i > 0; i--) {	
+		printf("%s\n", g_key_file_get_string(gkf, "recent", keys[(i-1)], NULL));
+		g_key_file_set_string(gkf, "recent", keys[i], g_key_file_get_string(gkf, "recent", keys[(i-1)], NULL));
+		
 	}
+	
+	/* write the most recent rom */
+	g_key_file_set_string(gkf, "recent", keys[0], romname);
+	
+	/* Save the config */
+	FILE *file;
+        char *data;
+
+        if (!(file = fopen (CONFIG_FILE, "w")))
+        {
+            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
+            return;
+        }
+        data = g_key_file_to_data (gkf, NULL, NULL);
+        fputs (data, file);
+        fclose (file);
+	
+	g_strfreev(keys);
+	g_key_file_free(gkf);
+        g_free (data); 
 }
 
-
-
-
-/* Search in the CONFIG_INFOS to see if the skin is saved */
-gboolean is_this_rom_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi)
-{	
-	int i=0;	
-	for(i=0; i<60; i++)
-	{
-		if(gsi->ci->sa[i].romname!=NULL)
-			if(strcmp(romname, gsi->ci->sa[i].romname)==0)
-				return TRUE; 
-	}	
+char get_modelcalcid(char* romname) {
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
 	
-	return FALSE;
-}
-	
-/* Get the skin name for this rom */
-void search_defaultskin_in_config_infos(char* romname,GLOBAL_SKIN_INFOS *gsi)
-{
-	int i=0;	
-	for(i=0; i<60; i++)
-	{	
-		if(gsi->ci->sa[i].romname!=NULL)
-			if(strcmp(romname, gsi->ci->sa[i].romname)==0)
-			{
-				gsi->SkinFileName=(char*)malloc(strlen(gsi->ci->sa[i].defaultskinname)+1);		
-				strcpy(gsi->SkinFileName,gsi->ci->sa[i].defaultskinname);
-				DCONFIG_FILE_L0_A0("** fct: search_defaultskin_in_config_infos (config.dat)**\n");
-				DCONFIG_FILE_L0_A1("*  gsi->ci->sa[i].defaultskinname = %s *\n", gsi->ci->sa[i].defaultskinname);
-				DCONFIG_FILE_L0_A1("*  gsi->SkinFileName = %s                *\n", gsi->SkinFileName);
-				DCONFIG_FILE_L0_A0("********************************************************\n\n");
-			}
-	}	
-}	
-
-/* Add this default skin into config file */
-void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) 
-{
-	int i;
-	DCONFIG_FILE_L0_A0("********** fct : add_or_modify_defaultskin ***********\n");
-	DCONFIG_FILE_L0_A1("*  RomName : %s   ", gsi->RomName);
-	DCONFIG_FILE_L0_A1("SkinFileName : %s            \n", gsi->SkinFileName);
-	DCONFIG_FILE_L0_A0("********************************************************\n\n");
-	
-	if(is_this_rom_in_config_infos(gsi->RomName, gsi))
-	{
-
-		for(i=0; i<60; i++)
-			if(strcmp(gsi->RomName, gsi->ci->sa[i].romname)==0)
-		       	{
-				gsi->ci->sa[i].defaultskinname= gsi->SkinFileName;
-				write_config_file(gsi);
-				break;
-			}
-	} else {
-		for(i=0; i<60; i++)
-			if((gsi->ci->sa[i].romname==NULL)&&(gsi->ci->sa[i].defaultskinname==NULL)) 
-			{
-				gsi->ci->sa[i].romname= gsi->RomName;
-				gsi->ci->sa[i].defaultskinname= gsi->SkinFileName;
-				write_config_file(gsi);
-				config_read(gsi->ci, "config.dat");
-				break;
-			}
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
 	}
-	config_read(gsi->ci, "config.dat");
+
+	char* pcalc_id = g_key_file_get_string(gkf, "model", romname, NULL);
+	if(pcalc_id == NULL) {
+		printf("Not found :\n");
+		return '0';
+	}
+	
+	g_key_file_free(gkf);
+	//printf("calc_id : %s\n", pcalc_id);
+	return pcalc_id[0];
 }
+
+/* Set model calc id */
+void set_modelcalcid(char* romname, char id) {
+	
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
+	
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
+	}
+	
+	char idstr[2];
+	idstr[0] = id;
+	idstr[1] = '\0';
+	g_key_file_set_string(gkf, "model", romname, idstr);
+	
+	/* Save the config */
+	FILE *file;
+        char *data;
+
+        if (!(file = fopen (CONFIG_FILE, "w")))
+        {
+            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
+            return;
+        }
+        data = g_key_file_to_data (gkf, NULL, NULL);
+        fputs (data, file);
+        fclose (file);
+	g_key_file_free(gkf);
+        g_free (data); 
+}
+
+/* search, write, and save config on right click menu */
+void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) {
+
+	set_defaultskin(gsi->RomName, gsi->SkinFileName);
+}
+
+/* search, write, and save config on right click menu */
+void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi) {
+	set_modelcalcid(gsi->RomName, gsi->calc_id);
+
+}
+
