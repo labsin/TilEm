@@ -383,8 +383,38 @@ static void tmr_key_queue(TilemCalc* calc, void* data)
 	gsi->key_queue_pressed = !gsi->key_queue_pressed;
 }
 
+/* Find key binding matching the given event */
+static TilemKeyBinding* find_key_binding(GLOBAL_SKIN_INFOS* gsi,
+                                         GdkEventKey* event)
+{
+	GdkDisplay *dpy;
+	GdkKeymap *km;
+	guint keyval;
+	GdkModifierType consumed, mods;
+	int i;
+
+	dpy = gdk_drawable_get_display(event->window);
+	km = gdk_keymap_get_for_display(dpy);
+
+	/* determine the relevant set of modifiers */
+
+	gdk_keymap_translate_keyboard_state(km, event->hardware_keycode,
+	                                    event->state, event->group,
+	                                    &keyval, NULL, NULL, &consumed);
+
+	mods = (event->state & ~consumed
+	        & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK));
+
+	for (i = 0; i < gsi->nkeybindings; i++)
+		if (keyval == gsi->keybindings[i].keysym
+		    && mods == gsi->keybindings[i].modifiers)
+			return &gsi->keybindings[i];
+
+	return NULL;
+}
+
 /* Key-press event */
-gboolean key_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
+gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
                          gpointer data)
 {
 	GLOBAL_SKIN_INFOS *gsi = data;
@@ -392,14 +422,8 @@ gboolean key_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	byte *q;
 	int i, key;
 
-	for (i = 0; i < gsi->nkeybindings; i++)
-		if (event->keyval == gsi->keybindings[i].keysym)
-			break;
-
-	if (i >= gsi->nkeybindings)
+	if (!(kb = find_key_binding(gsi, event)))
 		return FALSE;
-
-	kb = &gsi->keybindings[i];
 
 	g_mutex_lock(gsi->emu->calc_mutex);
 

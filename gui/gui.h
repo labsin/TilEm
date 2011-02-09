@@ -27,6 +27,7 @@ typedef struct _TilemDebuggerRegister {
 
 typedef struct _TilemKeyBinding {
 	unsigned int keysym;     /* host keysym value */
+	unsigned int modifiers;  /* modifier mask */
 	int nscancodes;          /* number of calculator scancodes */
 	byte *scancodes;         /* calculator scancodes */
 } TilemKeyBinding;
