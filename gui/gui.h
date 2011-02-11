@@ -86,6 +86,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 
 	/* Host keycode used to activate each key, if any */
 	int keypress_keycodes[64];
+	int sequence_keycode;
 
 	/* Sequence of keys to be pressed
 	   (used by core thread; guarded by calc_mutex) */

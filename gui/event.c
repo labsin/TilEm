@@ -422,6 +422,13 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 	byte *q;
 	int i, key;
 
+	/* Ignore repeating keys */
+	for (i = 0; i < 64; i++)
+		if (gsi->keypress_keycodes[i] == event->hardware_keycode)
+			return FALSE;
+	if (gsi->sequence_keycode == event->hardware_keycode)
+		return FALSE;
+
 	if (!(kb = find_key_binding(gsi, event)))
 		return FALSE;
 
@@ -458,6 +465,8 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 				                      &tmr_key_queue, gsi);
 			gsi->key_queue_pressed = 0;
 		}
+
+		gsi->sequence_keycode = event->hardware_keycode;
 	}
 
 	g_mutex_unlock(gsi->emu->calc_mutex);
@@ -484,6 +493,9 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 			gsi->keypress_keycodes[i] = 0;
 		}
 	}
+
+	if (gsi->sequence_keycode == event->hardware_keycode)
+		gsi->sequence_keycode = 0;
 
 	return FALSE;
 }
