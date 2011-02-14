@@ -1,7 +1,9 @@
-/*
+/* Fast GIF encoder 
+ * taken from http://www.msg.net/utility/whirlgif/gifencod.html - go there for the algorithm explanation
+ *
  * gifencode.c
  *
- * Copyright (c) 1997,1998 by Hans Dinsen-Hansen
+ * Copyright (c) 1997,1998,1999 by Hans Dinsen-Hansen
  * The algorithms are inspired by those of gifcode.c
  * Copyright (c) 1995,1996 Michael A. Mayer
  * All rights reserved.
@@ -52,33 +54,60 @@
  * will probably have many LOOKUP nodes.
 */
 
-#ifndef gif_encod_header
-#include "gifencod.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef MEMDBG
+#include <mnemosyne.h>
 #endif
 
 #define BLOKLEN 255
 #define BUFLEN 1000
+#define TERMIN 'T'
+#define LOOKUP 'L'
+#define SEARCH 'S'
+#define noOfArrays 20
+/* defines the amount of memory set aside in the encoding for the
+ * LOOKUP type nodes; for a 256 color GIF, the number of LOOKUP
+ * nodes will be <= noOfArrays, for a 128 color GIF the number of
+ * LOOKUP nodes will be <= 2 * noOfArrays, etc.  */
+
+typedef struct GifTree {
+  char typ;             /* terminating, lookup, or search */
+  int code;             /* the code to be output */
+  unsigned char ix;     /* the color map index */
+  struct GifTree **node, *nxt, *alt;
+} GifTree;
+
+char *AddCodeToBuffer(int, short, char *);
+void ClearTree(int, GifTree *);
+
+extern unsigned int debugFlag;
+extern int count;
+
+int chainlen = 0, maxchainlen = 0, nodecount = 0, lookuptypes = 0, nbits;
+short need = 8;
+GifTree *empty[256], GifRoot = {LOOKUP, 0, 0, empty, NULL, NULL},
+        *topNode, *baseNode, **nodeArray, **lastArray;
 
 
+void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz)
 
-
-void GifEncode(FILE *fout, UBYTE *pixels, int depth, int siz){
-  printf("1\n");
+{
   GifTree *first = &GifRoot, *newNode, *curNode;
-  UBYTE   *end;
-  int     cc, eoi, next, tel=0;
+  unsigned char   *end;
+  int     cc, eoi, next, tel=0, dbw=0;
   short   cLength;
 
   char    *pos, *buffer;
 
   empty[0] = NULL;
   need = 8;
-
   nodeArray = empty;
   memmove(++nodeArray, empty, 255*sizeof(GifTree **));
   if (( buffer = (char *)malloc((BUFLEN+1)*sizeof(char))) == NULL )
+         printf("No memory for writing");
   buffer++;
-
 
   pos = buffer;
   buffer[0] = 0x0;
@@ -88,15 +117,12 @@ void GifEncode(FILE *fout, UBYTE *pixels, int depth, int siz){
   eoi = cc+1;
   next = cc+2;
 
-  cLength = (depth == 1) ? 3 : depth+1;
-  printf("2\n");
-
-  if (( topNode = baseNode = (GifTree *)malloc(sizeof(GifTree)*4094)) == NULL )
-	printf("error");
-	//TheEnd1("No memory for GIF-code tree");
+  cLength = (short) ((depth == 1) ? 3 : depth+1);
+  /*doubled due to 2 color gifs*/
+  if (( topNode = baseNode = (GifTree *)malloc(sizeof(GifTree)*4094*2)) == NULL )
+         printf("No memory for GIF-code tree");
   if (( nodeArray = first->node = (GifTree **)malloc(256*sizeof(GifTree *)*noOfArrays)) == NULL )
-	printf("error");
-	//TheEnd1("No memory for search nodes");
+         printf("No memory for search nodes");
   lastArray = nodeArray + ( 256*noOfArrays - cc);
   ClearTree(cc, first);
 
@@ -115,15 +141,15 @@ void GifEncode(FILE *fout, UBYTE *pixels, int depth, int siz){
     } else if ( curNode->typ == SEARCH ) {
       newNode = curNode->nxt;
       while ( newNode->alt != NULL ) {
-	if ( newNode->ix == *pixels ) break;
-	newNode = newNode->alt;
+        if ( newNode->ix == *pixels ) break;
+        newNode = newNode->alt;
       }
       if (newNode->ix == *pixels ) {
-	tel++;
-	pixels++;
-	chainlen++;
-	curNode = newNode;
-	continue;
+        tel++;
+        pixels++;
+        chainlen++;
+        curNode = newNode;
+        continue;
       }
     }
 
@@ -168,16 +194,17 @@ void GifEncode(FILE *fout, UBYTE *pixels, int depth, int siz){
   newNode->typ = TERMIN;
   newNode->node = empty;
   nodecount++;
-  printf("4\n");
 /*
 * End of node creation
 * ******************************************************
 */
+#ifdef _WHGDBG
   if (debugFlag) {
     if (curNode == newNode) fprintf(stderr, "Wrong choice of node\n");
     if ( curNode->typ == LOOKUP && curNode->node[*pixels] != newNode ) fprintf(stderr, "Wrong pixel coding\n");
     if ( curNode->typ == TERMIN ) fprintf(stderr, "Wrong Type coding; frame no = %d; pixel# = %d; nodecount = %d\n", count, tel, nodecount);
   }
+#endif
     pos = AddCodeToBuffer(curNode->code, cLength, pos);
     if ( chainlen > maxchainlen ) maxchainlen = chainlen;
     chainlen = 0;
@@ -195,20 +222,20 @@ void GifEncode(FILE *fout, UBYTE *pixels, int depth, int siz){
     if(next == (1<<cLength)) cLength++;
     next++;
 
-    if(next == 0xfff) {
+    if(next == 0x1000) {
       ClearTree(cc,first);
       pos = AddCodeToBuffer(cc, cLength, pos);
       if(pos-buffer>BLOKLEN) {
-	buffer[-1] = BLOKLEN;
-	fwrite(buffer-1, 1, BLOKLEN+1, fout);
-	buffer[0] = buffer[BLOKLEN];
-	buffer[1] = buffer[BLOKLEN+1];
-	buffer[2] = buffer[BLOKLEN+2];
-	buffer[3] = buffer[BLOKLEN+3];
-	pos -= BLOKLEN;
+        buffer[-1] = BLOKLEN;
+        fwrite(buffer-1, 1, BLOKLEN+1, fout);
+        buffer[0] = buffer[BLOKLEN];
+        buffer[1] = buffer[BLOKLEN+1];
+        buffer[2] = buffer[BLOKLEN+2];
+        buffer[3] = buffer[BLOKLEN+3];
+        pos -= BLOKLEN;
       }
       next = cc+2;
-      cLength = (depth == 1)?3:depth+1;
+      cLength = (short) ((depth == 1)?3:depth+1);
     }
   }
 
@@ -225,13 +252,14 @@ void GifEncode(FILE *fout, UBYTE *pixels, int depth, int siz){
   }
   pos = AddCodeToBuffer(eoi, cLength, pos);
   pos = AddCodeToBuffer(0x0, -1, pos);
-  buffer[-1] = pos-buffer;
-  printf("5\n");
+  buffer[-1] = (char) (pos-buffer);
 
   fwrite(buffer-1, pos-buffer+1, 1, fout);
-  //free(buffer-1); free(first->node); free(baseNode);
-  printf("6\n");
+  free(buffer-1);  free(first->node); free(baseNode);
+  buffer=NULL;first->node=NULL;baseNode=NULL;
+#ifdef _WHGDBG
   if (debugFlag) fprintf(stderr, "pixel count = %d; nodeCount = %d lookup nodes = %d\n", tel, nodecount, lookuptypes);
+#endif
   return;
 
 }
@@ -241,8 +269,10 @@ void ClearTree(int cc, GifTree *root)
   int i;
   GifTree *newNode, **xx;
 
+#ifdef _WHGDBG
   if (debugFlag>1) fprintf(stderr, "Clear Tree  cc= %d\n", cc);
   if (debugFlag>1) fprintf(stderr, "nodeCount = %d lookup nodes = %d\n", nodecount, lookuptypes);
+#endif
   maxchainlen=0; lookuptypes = 1;
   nodecount = 0;
   nodeArray = root->node;
@@ -257,7 +287,7 @@ void ClearTree(int cc, GifTree *root)
     newNode->nxt = NULL;
     newNode->alt = NULL;
     newNode->code = i;
-    newNode->ix = i;
+    newNode->ix = (unsigned char) i;
     newNode->typ = TERMIN;
     newNode->node = empty;
     nodecount++;
@@ -279,7 +309,7 @@ char *AddCodeToBuffer(int code, short n, char *buf)
 
   while(n>=need) {
     mask = (1<<need)-1;
-    *buf += (mask&code)<<(8-need);
+    *buf += (char) ((mask&code)<<(8-need));
     buf++;
     *buf = 0x0;
     code = code>>need;
@@ -288,8 +318,9 @@ char *AddCodeToBuffer(int code, short n, char *buf)
   }
   if(n) {
     mask = (1<<n)-1;
-    *buf += (mask&code)<<(8-need);
+    *buf += (char) ((mask&code)<<(8-need));
     need -= n;
   }
   return buf;
 }
+
