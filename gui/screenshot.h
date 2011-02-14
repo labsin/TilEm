@@ -9,7 +9,8 @@
 
 /* Callback event */
 void on_screenshot();
-void on_record();
+void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 void on_stop();
 void on_play();
 

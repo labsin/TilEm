@@ -225,8 +225,6 @@ static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 		{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 		{"/---", NULL, NULL, 0, "<Separator>", NULL},
 		{"/Screenshot !",NULL, create_screenshot_window, 1, NULL, NULL},
-		{"/Animated screenshot !",NULL, screenshot_anim_create_nostatic, 1, NULL, NULL},
-		{"/Animated screenshot add frame !",NULL, screenshot_anim_addframe, 1, NULL, NULL},
 		{"/Display lcd into console !",NULL, display_lcdimage_into_terminal, 1, NULL, NULL},
 		{"/Switch view",NULL,switch_view,1,NULL,NULL},
 		{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
@@ -421,6 +419,7 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 	TilemKeyBinding *kb;
 	byte *q;
 	int i, key;
+	w = w;
 
 	/* Ignore repeating keys */
 	for (i = 0; i < 64; i++)

@@ -50,6 +50,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 		
 	GtkWidget* screenshot_button = gtk_button_new_with_label ("Take Screenshot");
 	GtkWidget* record = gtk_button_new_with_label ("Record (anim)");
+	GtkWidget* add_frame = gtk_button_new_with_label ("Add frame (anim)");
 	GtkWidget* stop = gtk_button_new_with_label ("Stop (anim)");
 	GtkWidget* play = gtk_button_new_with_label ("Play (anim)");
 	
@@ -57,21 +58,32 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_widget_show(screenshot_button);
 	gtk_box_pack_start (GTK_BOX (box), record, 2, 3, 4);
 	gtk_widget_show(record);
+	gtk_box_pack_start (GTK_BOX (box), add_frame, 2, 3, 4);
+	gtk_widget_show(add_frame);
 	gtk_box_pack_start (GTK_BOX (box), stop, 2, 3, 4);
 	gtk_widget_show(stop);
 	gtk_box_pack_start (GTK_BOX (box), play, 2, 3, 4);
 	gtk_widget_show(play);
 	
 	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), gsi);
-	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), NULL);
-	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), NULL);
+	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), gsi);
+	g_signal_connect(GTK_OBJECT(add_frame), "clicked", G_CALLBACK(on_add_frame), gsi);
+	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), gsi);
 	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), NULL);
     
 	gtk_widget_show_all(screenshotanim_win);
 }
 
-void on_record() {
+void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
 	g_print("record event\n");
+	screenshot_anim_create_nostatic(gsi);
+}
+
+void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
+	g_print("record event\n");
+	screenshot_anim_addframe(gsi);
 }
 
 void on_stop() {
@@ -87,8 +99,6 @@ void on_screenshot(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	screenshot(gsi);
 	g_print("screenshot event\n");
 }
-
-
 
 
 /* Screenshot saver */
