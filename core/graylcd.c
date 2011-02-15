@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2010 Benjamin Moody
+ * Copyright (C) 2010-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -137,8 +137,8 @@ static void update_levels_mono(TilemGrayLCD* glcd, int min, int max)
 	int i, j;
 	byte *bp, *op;
 
-	(*glcd->calc->hw.get_lcd)(glcd->calc, glcd->oldbits);
-	bp = glcd->oldbits;
+	(*glcd->calc->hw.get_lcd)(glcd->calc, glcd->newbits);
+	bp = glcd->newbits;
 	op = glcd->levelbuf;
 
 	for (i = 0; i < glcd->bwidth * glcd->height; i++) {
@@ -165,8 +165,8 @@ static void update_levels_gray(TilemGrayLCD *glcd, int min, int max)
 	int d = max - min;
 	dword tbase, tlimit;
 
-	(*glcd->calc->hw.get_lcd)(glcd->calc, glcd->oldbits);
-	bp = glcd->oldbits;
+	(*glcd->calc->hw.get_lcd)(glcd->calc, glcd->newbits);
+	bp = glcd->newbits;
 	op = glcd->levelbuf;
 	pix = glcd->curpixels;
 	basepix = glcd->framebasepixels + (glcd->framenum * glcd->height
