@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -145,6 +145,7 @@ void x5_z80_out(TilemCalc* calc, dword port, byte value)
 			calc->lcd.rowstride = 20;
 			break;
 		}
+		calc->z80.lastlcdwrite = calc->z80.clock;
 		break;
 
 	case 0x05:
