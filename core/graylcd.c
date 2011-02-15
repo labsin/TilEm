@@ -31,7 +31,7 @@
 static void tmr_screen_update(TilemCalc *calc, void *data)
 {
 	TilemGrayLCD *glcd = data;
-	byte *np, *op, d;
+	byte *np, *op, nb, ob, d;
 	int i, j, n;
 	dword delta;
 
@@ -50,13 +50,15 @@ static void tmr_screen_update(TilemCalc *calc, void *data)
 	n = 0;
 
 	for (i = 0; i < glcd->bwidth * glcd->height; i++) {
-		d = *np ^ *op;
+		nb = *np;
+		ob = *op;
+		d = nb ^ ob;
 		for (j = 0; j < 8; j++) {
 			if (d & (0x80 >> j)) {
 				delta = glcd->t - glcd->tchange[n];
 				glcd->tchange[n] = glcd->t;
 
-				if (*op & (0x80 >> j)) {
+				if (ob & (0x80 >> j)) {
 					glcd->curpixels[n].ndark += delta;
 					glcd->curpixels[n].ndarkseg++;
 				}
