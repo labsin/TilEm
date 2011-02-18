@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     g_signal_connect(G_OBJECT(fenetre),"destroy",G_CALLBACK(gtk_main_quit), NULL);
  
     //image
-    image = gtk_image_new_from_file("2.gif");
+    image = gtk_image_new_from_file("1.gif");
     gtk_container_add(GTK_CONTAINER(fenetre),image);
  
     //affichage + boucle

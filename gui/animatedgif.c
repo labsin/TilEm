@@ -35,7 +35,7 @@ void screenshot_anim_create(GLOBAL_SKIN_INFOS* gsi) {
 	static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
 	//static unsigned char example[] = { 0x01, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01};
     
-    	char end[1] = { 0xC3};
+    	char end[1] = { 0x00};
         
 	fwrite(magic_number, 6, 1, fp);
     	fwrite(canvas, 7, 1, fp);
@@ -118,7 +118,7 @@ void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) {
     	/* Extension block introduced by 0x21 ('!'), and an img introduced by 0x2c (',') followed by coordinate corner(0,0), canvas 4 bytes, no local color table */
 	static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
     
-    	char end[1] = { 0xC3};
+    	char end[1] = { 0x00};
         
 	fwrite(gif_header, 13, 1, fp);
     	fwrite(palette_start, 3, 1, fp);
@@ -207,8 +207,14 @@ void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
 
 void stop_anim_screenshot(GLOBAL_SKIN_INFOS* gsi) {
 	
-	if(gsi->isAnimScreenshotRecording == 1) 
+	
+    	char trailer[1] = { 0x3b};
+	if(gsi->isAnimScreenshotRecording == 1) {
 		gsi->isAnimScreenshotRecording = 0;
+		FILE* fp;
+		fp = fopen("gifencod.gif", "a");
+		fwrite(trailer, 1, 1,fp);
+	}
 
 }
 
