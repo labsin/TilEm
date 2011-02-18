@@ -200,7 +200,7 @@ int main(int argc, char **argv)
 	gsi->mouse_key = 0;
 	gsi->macro_file = NULL;
 	gsi->isMacroRecording = 0;
-	gsi->isAnimScreenshotRecording = 0;
+	gsi->isAnimScreenshotRecording = FALSE;
 
 	gsi->key_queue = NULL;
 	gsi->key_queue_len = 0;

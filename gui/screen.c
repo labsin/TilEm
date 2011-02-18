@@ -330,7 +330,7 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	th = g_thread_create(&core_thread, gsi->emu, TRUE, NULL);
 	g_timeout_add(50, screen_update, gsi->emu);
-	g_timeout_add(500, record_anim_screenshot,  gsi);
+	g_timeout_add(250, record_anim_screenshot,  gsi);
 
 	return gsi->pWindow;
 }

@@ -153,7 +153,7 @@ void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) {
 	GifEncode(fp, q , 1, (width*height));
 	fwrite(end, 1, 1,fp);	/* Write end of the frame */
 	fclose(fp);
-	gsi->isAnimScreenshotRecording = 1;
+	gsi->isAnimScreenshotRecording = TRUE;
 }
     
 
@@ -209,11 +209,12 @@ void stop_anim_screenshot(GLOBAL_SKIN_INFOS* gsi) {
 	
 	
     	char trailer[1] = { 0x3b};
-	if(gsi->isAnimScreenshotRecording == 1) {
-		gsi->isAnimScreenshotRecording = 0;
+	if(gsi->isAnimScreenshotRecording) {
+		gsi->isAnimScreenshotRecording = FALSE;
 		FILE* fp;
 		fp = fopen("gifencod.gif", "a");
 		fwrite(trailer, 1, 1,fp);
+		fclose(fp);
 	}
 
 }
@@ -221,7 +222,7 @@ void stop_anim_screenshot(GLOBAL_SKIN_INFOS* gsi) {
 gboolean record_anim_screenshot(gpointer data) {
 	GLOBAL_SKIN_INFOS * gsi = (GLOBAL_SKIN_INFOS*) data;
 	
-	if(gsi->isAnimScreenshotRecording == 1) 
+	if(gsi->isAnimScreenshotRecording) 
 		screenshot_anim_addframe(gsi);
 	return TRUE;
 

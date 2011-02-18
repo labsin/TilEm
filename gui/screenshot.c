@@ -48,18 +48,18 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_container_add(GTK_CONTAINER(screenshotanim_win), box);
 
 		
-	GtkWidget* screenshot_button = gtk_button_new_with_label ("Take Screenshot");
-	GtkWidget* record = gtk_button_new_with_label ("Record (anim)");
-	GtkWidget* add_frame = gtk_button_new_with_label ("Add frame (anim)");
-	GtkWidget* stop = gtk_button_new_with_label ("Stop (anim)");
-	GtkWidget* play = gtk_button_new_with_label ("Play (anim)");
+	GtkWidget* screenshot_button = gtk_button_new_with_label ("Shoot!");
+	GtkWidget* record = gtk_button_new_with_label ("Record");
+	//GtkWidget* add_frame = gtk_button_new_with_label ("Add frame (anim)");
+	GtkWidget* stop = gtk_button_new_with_label ("Stop");
+	GtkWidget* play = gtk_button_new_with_label ("Play");
 	
 	gtk_box_pack_start (GTK_BOX (box), screenshot_button, 2, 3, 4);
 	gtk_widget_show(screenshot_button);
 	gtk_box_pack_start (GTK_BOX (box), record, 2, 3, 4);
 	gtk_widget_show(record);
-	gtk_box_pack_start (GTK_BOX (box), add_frame, 2, 3, 4);
-	gtk_widget_show(add_frame);
+	//gtk_box_pack_start (GTK_BOX (box), add_frame, 2, 3, 4);
+	//gtk_widget_show(add_frame);
 	gtk_box_pack_start (GTK_BOX (box), stop, 2, 3, 4);
 	gtk_widget_show(stop);
 	gtk_box_pack_start (GTK_BOX (box), play, 2, 3, 4);
@@ -67,9 +67,9 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	
 	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), gsi);
 	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), gsi);
-	g_signal_connect(GTK_OBJECT(add_frame), "clicked", G_CALLBACK(on_add_frame), gsi);
+	//g_signal_connect(GTK_OBJECT(add_frame), "clicked", G_CALLBACK(on_add_frame), gsi);
 	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), gsi);
-	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), NULL);
+	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), gsi);
     
 	gtk_widget_show_all(screenshotanim_win);
 }
@@ -92,9 +92,6 @@ void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	stop_anim_screenshot(gsi) ;
 }
 
-void on_play() {
-	g_print("play event\n");
-}
 
 void on_screenshot(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
@@ -144,3 +141,28 @@ static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
 
 	return status;
 }
+
+/* Destroy the screenshot box */
+void on_destroy_playview(GtkWidget* playwin)   {
+	
+	gtk_widget_destroy(GTK_WIDGET(playwin));
+}
+
+void on_play(GLOBAL_SKIN_INFOS* gsi) {
+	g_print("play event : %d\n", gsi->isAnimScreenshotRecording);
+
+	printf("play\n");
+	GtkWidget *fenetre = NULL;
+	GtkWidget *image = NULL;
+
+	fenetre = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect(G_OBJECT(fenetre),"destroy",G_CALLBACK(on_destroy_playview), NULL);
+
+	image = gtk_image_new_from_file("gifencod.gif");
+	gtk_container_add(GTK_CONTAINER(fenetre),image);
+
+	gtk_widget_show_all(fenetre);
+
+}
+	 
+
