@@ -66,6 +66,7 @@ void screenshot_anim_create(GLOBAL_SKIN_INFOS* gsi) {
 	GifEncode(fp, q , 1, (96*64));
 	fwrite(end, 1, 1,fp);
 	//fclose(fp);
+	gsi->isAnimScreenshotRecording = 1;
 }
     
 void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) {
@@ -152,13 +153,14 @@ void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) {
 	GifEncode(fp, q , 1, (width*height));
 	fwrite(end, 1, 1,fp);	/* Write end of the frame */
 	fclose(fp);
+	gsi->isAnimScreenshotRecording = 1;
 }
     
 
 /* Add a frame to an existing animated gif */
 void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
 	
-
+	printf("GIFENCODER addframe\n");
 	int width, height;
 	guchar* lcddata;
 	int x, y;
@@ -202,5 +204,20 @@ void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
 	fwrite(end, 1, 1,fp);
 	fclose(fp);
 }
-    
+
+void stop_anim_screenshot(GLOBAL_SKIN_INFOS* gsi) {
+	
+	if(gsi->isAnimScreenshotRecording == 1) 
+		gsi->isAnimScreenshotRecording = 0;
+
+}
+
+gboolean record_anim_screenshot(gpointer data) {
+	GLOBAL_SKIN_INFOS * gsi = (GLOBAL_SKIN_INFOS*) data;
+	
+	if(gsi->isAnimScreenshotRecording == 1) 
+		screenshot_anim_addframe(gsi);
+	return TRUE;
+
+}
 

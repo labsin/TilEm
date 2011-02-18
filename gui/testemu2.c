@@ -172,6 +172,12 @@
 * - Remove romconfig.c romconfig.h config.c config.h (handle binary config file). Remove ROM_CONFIG_INFOS and CONFIG_INFOS from gsi.
 * - Add a new config.c and config.h file to handle config (last rom used, default skin to load, etc...). It uses glib GKeyFile library.
 * - Fix the macro bug pointed by Benjamin.
+* ---15/02/11---
+* - Replace correct copyright/licence informations into skinops.* .Sorry for the inconvenience.
+* ---16/02/11---
+* - Fix an important mistake into the gif creator function (palette should be before gif frame information).
+* ---18/02/11---
+* - Connect a timer to automatically add frame to a animated screenshot (using screenshot box).
 */
 
 
@@ -194,6 +200,7 @@ int main(int argc, char **argv)
 	gsi->mouse_key = 0;
 	gsi->macro_file = NULL;
 	gsi->isMacroRecording = 0;
+	gsi->isAnimScreenshotRecording = 0;
 
 	gsi->key_queue = NULL;
 	gsi->key_queue_len = 0;

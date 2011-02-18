@@ -11,7 +11,7 @@
 void on_screenshot();
 void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-void on_stop();
+void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 void on_play();
 
 void screenshot(GLOBAL_SKIN_INFOS *gsi);

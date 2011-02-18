@@ -58,6 +58,8 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	g_signal_connect(gsi->emu->lcdwin, "expose-event",
 	                 G_CALLBACK(screen_repaint), gsi);
+	//g_signal_connect(gsi->emu->lcdwin, "expose-event",
+	  //               G_CALLBACK(record_anim_screenshot), gsi);
 	g_signal_connect(gsi->emu->lcdwin, "style-set",
 	                 G_CALLBACK(screen_restyle), gsi);
 
@@ -272,7 +274,7 @@ gboolean screen_update(gpointer data)
 {
 	DLCD_L2_A0(">screen_update\n");
 	TilemCalcEmulator* emu = data;
-	gtk_widget_queue_draw(emu->lcdwin);
+	gtk_widget_queue_draw(emu->lcdwin);	
 	DLCD_L2_A0("<screen_update\n");
 	return TRUE;
 }
@@ -328,6 +330,7 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	th = g_thread_create(&core_thread, gsi->emu, TRUE, NULL);
 	g_timeout_add(50, screen_update, gsi->emu);
+	g_timeout_add(500, record_anim_screenshot,  gsi);
 
 	return gsi->pWindow;
 }

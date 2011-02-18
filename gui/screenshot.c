@@ -86,8 +86,10 @@ void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	screenshot_anim_addframe(gsi);
 }
 
-void on_stop() {
+void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
 	g_print("stop event\n");
+	stop_anim_screenshot(gsi) ;
 }
 
 void on_play() {
