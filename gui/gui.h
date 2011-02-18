@@ -342,10 +342,8 @@ void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) ;
 /* Add a frame to animation */
 void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) ;
 
-/* Record the screenshot */
+/* Record the screenshot  (called in screen.c by a timer)*/
 gboolean record_anim_screenshot(gpointer data);
-//void record_anim_screenshot(GLOBAL_SKIN_INFOS* gsi) ;
-//gboolean record_anim_screenshot(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,GLOBAL_SKIN_INFOS *gsi);
 
 /* Stop recording screenshot */
 void stop_anim_screenshot(GLOBAL_SKIN_INFOS* gsi);
