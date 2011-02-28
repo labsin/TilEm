@@ -537,14 +537,25 @@ void load_file(GLOBAL_SKIN_INFOS *gsi) {
 		ticalcs_cable_attach(ch, cbl);
 	
 		/* Launch and get the result of a GtkFileChooserDialog. Cancelled -> filename == NULL */
-		filename = select_file(gsi, NULL);		
+		filename = select_file(gsi, get_sendfile_recentdir());		
 		
 		/* Test if FileChooser cancelled ... */
 		if(filename != NULL) {
 			//printf("filename = %s", filename);
 			send_file(gsi->emu, ch,  filename); /* See link.c for send_file function */
+
+
 			if(gsi->isMacroRecording) 
 				add_load_file_in_macro_file(gsi, strlen(filename), filename) ;
+			
+			
+			/* Search the directory and save it into the config file (for the next open file) */
+			char* p;
+			if ((p = strrchr(filename, '/'))) 
+			{
+				strcpy(p, "\0");
+				set_sendfile_recentdir(filename);	
+			}
 		}
 				
 			

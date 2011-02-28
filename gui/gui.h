@@ -246,6 +246,13 @@ void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi);
 
+/* Search and return the last directory opened to send a file*/
+char* get_sendfile_recentdir();
+
+/* Set the last dir opened to send file */
+void set_sendfile_recentdir(char* recentdir);
+
+
 
 
 /* ##### debugger.c ##### */
