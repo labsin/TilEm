@@ -1,7 +1,7 @@
 #include "config.h" 
 
 
-
+/* TODO : remove some redundant code (write a specific function to write config file) */
 
 /* Search and return the default skin for this model */
 char* get_defaultskin(char* romname) {
@@ -115,6 +115,7 @@ void set_recentrom(char* romname) {
         g_free (data); 
 }
 
+/* Get the saved model for a rom */
 char get_modelcalcid(char* romname) {
 	GKeyFile * gkf;
 	gkf = g_key_file_new();

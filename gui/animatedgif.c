@@ -178,7 +178,7 @@ void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) {
     	
     	/* Extension block introduced by 0x21 ('!'), and an img introduced by 0x2c (',') followed by coordinate corner(0,0), canvas 4 bytes, no local color table */
 	static char gif_img[18] = {0x21, 0xf9, 4, 8, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
-    	char end[1] = { 0xC3};
+    	char end[1] = { 0x00};
         
     	fwrite(gif_img, 18, 1, fp);
 	long i= 0;
