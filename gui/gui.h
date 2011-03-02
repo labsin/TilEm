@@ -49,6 +49,9 @@ typedef struct _TilemCalcEmulator {
 
 	GtkWidget* lcdwin;
 	GtkWidget* background;
+
+	GdkGeometry geomhints;
+	GdkWindowHints geomhintmask;
 } TilemCalcEmulator;
 
 /* Internal data structure for gui */

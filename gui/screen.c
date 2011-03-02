@@ -4,6 +4,28 @@
 #include <glib/gstdio.h>
 #include "gui.h"
 
+/* Set size hints for the toplevel window */
+static void set_size_hints(GtkWidget *widget, gpointer data)
+{
+	GLOBAL_SKIN_INFOS *gsi = data;
+
+	/* Don't use gtk_window_set_geometry_hints() (which would
+	   appear to do what we want) because, in addition to setting
+	   the hints we want, that function causes GTK+ to argue with
+	   the window manager.
+
+	   Instead, we call this function after the check-resize
+	   signal (which is when GTK+ itself would normally set the
+	   hints.)
+
+	   FIXME: check that this works as desired on Win32/Quartz. */
+
+	if (widget->window)
+		gdk_window_set_geometry_hints(widget->window,
+		                              &gsi->emu->geomhints,
+		                              gsi->emu->geomhintmask);
+}
+
 static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
                                gpointer data)
 {
@@ -58,6 +80,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	int lcdwidth, lcdheight;
 	int screenwidth, screenheight;
 	int minwidth, minheight, defwidth, defheight;
+	double sx, sy, s, a1, a2;
 
 	if (gsi->si) {
 		skin_unload(gsi->si);
@@ -104,8 +127,12 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 		defwidth = gsi->si->width;
 		defheight = gsi->si->height;
-		minwidth = ((double) defwidth * lcdwidth) / screenwidth + 0.5;
-		minheight = ((double) defheight * lcdheight) / screenheight + 0.5;
+
+		sx = (double) lcdwidth / screenwidth;
+		sy = (double) lcdheight / screenheight;
+		s = MAX(sx, sy);
+		minwidth = defwidth * s + 0.5;
+		minheight = defheight * s + 0.5;
 	}
 	else {
 		gsi->pLayout = NULL;
@@ -135,6 +162,23 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	                 G_CALLBACK(pointer_motion_event), gsi);
 	g_signal_connect(emuwin, "button-release-event",
 	                 G_CALLBACK(mouse_release_event), gsi);
+
+	/* Hint calculation assumes the emulator is the only thing in
+	   the window; if other widgets are added, this will have to
+	   change accordingly
+	*/
+	gsi->emu->geomhints.min_width = minwidth;
+	gsi->emu->geomhints.min_height = minheight;
+	a1 = (double) minwidth / minheight;
+	a2 = (double) defwidth / defheight;
+	gsi->emu->geomhints.min_aspect = MIN(a1, a2) - 0.0001;
+	gsi->emu->geomhints.max_aspect = MAX(a1, a2) + 0.0001;
+	gsi->emu->geomhintmask = (GDK_HINT_MIN_SIZE | GDK_HINT_ASPECT);
+
+	/* If the window is already realized, set the hints now, so
+	   that the WM will see the new hints before we try to resize
+	   the window */
+	set_size_hints(gsi->pWindow, gsi);
 
 	gtk_widget_set_size_request(emuwin, minwidth, minheight);
 	gtk_container_add(GTK_CONTAINER(gsi->pWindow), emuwin);
@@ -372,8 +416,6 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_
 
 }
 
-
-
 GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)  
 {
 	GThread *th;
@@ -384,6 +426,9 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gsi->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	
 	g_signal_connect(gsi->pWindow, "destroy", G_CALLBACK(on_destroy), gsi);
+
+	g_signal_connect_after(gsi->pWindow, "check-resize",
+	                       G_CALLBACK(set_size_hints), gsi);
 
 	gtk_widget_add_events(gsi->pWindow, (GDK_KEY_PRESS_MASK
 	                                | GDK_KEY_RELEASE_MASK));
