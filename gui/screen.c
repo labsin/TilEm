@@ -4,6 +4,49 @@
 #include <glib/gstdio.h>
 #include "gui.h"
 
+static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
+                               gpointer data)
+{
+	GLOBAL_SKIN_INFOS *gsi = data;
+	int rawwidth, rawheight;
+	int lcdleft, lcdright, lcdtop, lcdbottom;
+
+	g_return_if_fail(gsi->si != NULL);
+
+	if (gsi->si->width == alloc->width && gsi->si->height == alloc->height)
+		return;
+
+	gsi->si->width = alloc->width;
+	gsi->si->height = alloc->height;
+
+	rawwidth = gdk_pixbuf_get_width(gsi->si->raw);
+	rawheight = gdk_pixbuf_get_height(gsi->si->raw);
+
+	gsi->si->sx = (double) alloc->width / rawwidth;
+	gsi->si->sy = (double) alloc->height / rawheight;
+
+	if (gsi->si->image)
+		g_object_unref(gsi->si->image);
+	gsi->si->image = gdk_pixbuf_scale_simple(gsi->si->raw,
+	                                         alloc->width, alloc->height,
+	                                         GDK_INTERP_BILINEAR);
+
+	gtk_image_set_from_pixbuf(GTK_IMAGE(gsi->emu->background),
+	                          gsi->si->image);
+
+	lcdleft = gsi->si->lcd_pos.left * gsi->si->sx + 0.5;
+	lcdright = gsi->si->lcd_pos.right * gsi->si->sx + 0.5;
+	lcdtop = gsi->si->lcd_pos.top * gsi->si->sy + 0.5;
+	lcdbottom = gsi->si->lcd_pos.bottom * gsi->si->sy + 0.5;
+
+	gtk_widget_set_size_request(gsi->emu->lcdwin,
+	                            MAX(lcdright - lcdleft, 1),
+	                            MAX(lcdbottom - lcdtop, 1));
+
+	gtk_layout_move(GTK_LAYOUT(widget), gsi->emu->lcdwin,
+	                lcdleft, lcdtop);
+}
+
 /* Used when you load another skin */
 void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 {
@@ -23,6 +66,8 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	if (gsi->emu->lcdwin)
 		gtk_widget_destroy(gsi->emu->lcdwin);
+	if (gsi->emu->background)
+		gtk_widget_destroy(gsi->emu->background);
 	if (gsi->pLayout)
 		gtk_widget_destroy(gsi->pLayout);
 
@@ -37,6 +82,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	if (gsi->view == 0) {
 		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
 		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), pImage, 0, 0);
+		gsi->emu->background = pImage;
 
 		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->emu->lcdwin,
 		               gsi->si->lcd_pos.left,
@@ -44,8 +90,13 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 		gtk_window_resize(GTK_WINDOW(gsi->pWindow), gsi->si->width,
 		                  gsi->si->height);
+
+		g_signal_connect(gsi->pLayout, "size-allocate",
+		                 G_CALLBACK(skin_size_allocate), gsi);
 	}
 	else {
+		gsi->emu->background = NULL;
+
 		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->emu->lcdwin, 0, 0);
 
 		gtk_window_resize(GTK_WINDOW(gsi->pWindow), screenwidth, screenheight);

@@ -106,7 +106,7 @@ typedef struct
   int height;
 
   GdkPixbuf *raw;	// raw jpeg image
-  double	s;		// scaling factor
+  double sx, sy;		// scaling factor
 
   char calc[9];
   uint32_t colortype;

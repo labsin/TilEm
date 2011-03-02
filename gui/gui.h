@@ -48,6 +48,7 @@ typedef struct _TilemCalcEmulator {
 	GdkRgbCmap* lcd_cmap;
 
 	GtkWidget* lcdwin;
+	GtkWidget* background;
 } TilemCalcEmulator;
 
 /* Internal data structure for gui */

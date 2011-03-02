@@ -242,7 +242,7 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 		return -1;
 	}
 
-	si->s = 1.0;
+	si->sx = si->sy = 1.0;
 	si->image = g_object_ref(si->raw);
 
 	// Get new skin size
