@@ -114,7 +114,7 @@ static void scale2d_smooth(const byte * /*restrict*/ in,
 						   out_rem);
 			else
 				add_scale1d_exact(in, inwidth, out, outwidth,
-						  in_rem);
+						  out_rem);
 			out += outrowstride;
 			out_rem = inheight;
 			i--;
