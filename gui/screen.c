@@ -54,7 +54,10 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
 void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 {
 	GtkWidget *pImage;
+	GtkWidget *emuwin;
+	int lcdwidth, lcdheight;
 	int screenwidth, screenheight;
+	int minwidth, minheight, defwidth, defheight;
 
 	if (gsi->si) {
 		skin_unload(gsi->si);
@@ -64,8 +67,8 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gsi->si = g_new0(SKIN_INFOS, 1);
 	skin_load(gsi->si, gsi->SkinFileName);
 
-	screenwidth = gsi->si->lcd_pos.right - gsi->si->lcd_pos.left;
-	screenheight = gsi->si->lcd_pos.bottom - gsi->si->lcd_pos.top;
+	lcdwidth = gsi->emu->calc->hw.lcdwidth;
+	lcdheight = gsi->emu->calc->hw.lcdheight;
 
 	if (gsi->emu->lcdwin)
 		gtk_widget_destroy(gsi->emu->lcdwin);
@@ -76,55 +79,66 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	/* create LCD widget */
 	gsi->emu->lcdwin = gtk_drawing_area_new();
-	gtk_widget_set_size_request(gsi->emu->lcdwin,
-	                            screenwidth, screenheight);
 
 	/* create background image and layout */
-	gsi->pLayout = gtk_layout_new(NULL, NULL);
-
 	if (gsi->view == 0) {
+		gsi->pLayout = gtk_layout_new(NULL, NULL);
+
 		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
 		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), pImage, 0, 0);
 		gsi->emu->background = pImage;
 
+		screenwidth = gsi->si->lcd_pos.right - gsi->si->lcd_pos.left;
+		screenheight = gsi->si->lcd_pos.bottom - gsi->si->lcd_pos.top;
+
+		gtk_widget_set_size_request(gsi->emu->lcdwin,
+		                            screenwidth, screenheight);
 		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->emu->lcdwin,
 		               gsi->si->lcd_pos.left,
 		               gsi->si->lcd_pos.top);
 
-		gtk_window_resize(GTK_WINDOW(gsi->pWindow), gsi->si->width,
-		                  gsi->si->height);
-
 		g_signal_connect(gsi->pLayout, "size-allocate",
 		                 G_CALLBACK(skin_size_allocate), gsi);
+
+		emuwin = gsi->pLayout;
+
+		defwidth = gsi->si->width;
+		defheight = gsi->si->height;
+		minwidth = ((double) defwidth * lcdwidth) / screenwidth + 0.5;
+		minheight = ((double) defheight * lcdheight) / screenheight + 0.5;
 	}
 	else {
+		gsi->pLayout = NULL;
 		gsi->emu->background = NULL;
 
-		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->emu->lcdwin, 0, 0);
+		emuwin = gsi->emu->lcdwin;
 
-		gtk_window_resize(GTK_WINDOW(gsi->pWindow), screenwidth, screenheight);
+		minwidth = lcdwidth;
+		minheight = lcdheight;
+		defwidth = lcdwidth * 2;
+		defheight = lcdheight * 2;
 	}
 
-	gtk_widget_add_events(gsi->pLayout, (GDK_BUTTON_PRESS_MASK
-	                                     | GDK_BUTTON_RELEASE_MASK
-	                                     | GDK_BUTTON1_MOTION_MASK
-	                                     | GDK_POINTER_MOTION_HINT_MASK));
+	gtk_widget_add_events(emuwin, (GDK_BUTTON_PRESS_MASK
+	                               | GDK_BUTTON_RELEASE_MASK
+	                               | GDK_BUTTON1_MOTION_MASK
+	                               | GDK_POINTER_MOTION_HINT_MASK));
 
 	g_signal_connect(gsi->emu->lcdwin, "expose-event",
 	                 G_CALLBACK(screen_repaint), gsi);
-	//g_signal_connect(gsi->emu->lcdwin, "expose-event",
-	  //               G_CALLBACK(record_anim_screenshot), gsi);
 	g_signal_connect(gsi->emu->lcdwin, "style-set",
 	                 G_CALLBACK(screen_restyle), gsi);
 
-	g_signal_connect(gsi->pLayout, "button-press-event",
+	g_signal_connect(emuwin, "button-press-event",
 	                 G_CALLBACK(mouse_press_event), gsi);
-	g_signal_connect(gsi->pLayout, "motion-notify-event",
+	g_signal_connect(emuwin, "motion-notify-event",
 	                 G_CALLBACK(pointer_motion_event), gsi);
-	g_signal_connect(gsi->pLayout, "button-release-event",
+	g_signal_connect(emuwin, "button-release-event",
 	                 G_CALLBACK(mouse_release_event), gsi);
 
-	gtk_container_add(GTK_CONTAINER(gsi->pWindow), gsi->pLayout);
+	gtk_widget_set_size_request(emuwin, minwidth, minheight);
+	gtk_container_add(GTK_CONTAINER(gsi->pWindow), emuwin);
+	gtk_window_resize(GTK_WINDOW(gsi->pWindow), defwidth, defheight);
 
 	gtk_widget_show_all(gsi->pWindow);
 }
