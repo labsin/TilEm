@@ -10,6 +10,7 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
 	GLOBAL_SKIN_INFOS *gsi = data;
 	int rawwidth, rawheight;
 	int lcdleft, lcdright, lcdtop, lcdbottom;
+	double rx, ry;
 
 	g_return_if_fail(gsi->si != NULL);
 
@@ -22,8 +23,10 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
 	rawwidth = gdk_pixbuf_get_width(gsi->si->raw);
 	rawheight = gdk_pixbuf_get_height(gsi->si->raw);
 
-	gsi->si->sx = (double) alloc->width / rawwidth;
-	gsi->si->sy = (double) alloc->height / rawheight;
+	rx = (double) alloc->width / rawwidth;
+	ry = (double) alloc->height / rawheight;
+	gsi->si->sx = (double) rawwidth / alloc->width;
+	gsi->si->sy = (double) rawheight / alloc->height;
 
 	if (gsi->si->image)
 		g_object_unref(gsi->si->image);
@@ -34,10 +37,10 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
 	gtk_image_set_from_pixbuf(GTK_IMAGE(gsi->emu->background),
 	                          gsi->si->image);
 
-	lcdleft = gsi->si->lcd_pos.left * gsi->si->sx + 0.5;
-	lcdright = gsi->si->lcd_pos.right * gsi->si->sx + 0.5;
-	lcdtop = gsi->si->lcd_pos.top * gsi->si->sy + 0.5;
-	lcdbottom = gsi->si->lcd_pos.bottom * gsi->si->sy + 0.5;
+	lcdleft = gsi->si->lcd_pos.left * rx + 0.5;
+	lcdright = gsi->si->lcd_pos.right * rx + 0.5;
+	lcdtop = gsi->si->lcd_pos.top * ry + 0.5;
+	lcdbottom = gsi->si->lcd_pos.bottom * ry + 0.5;
 
 	gtk_widget_set_size_request(gsi->emu->lcdwin,
 	                            MAX(lcdright - lcdleft, 1),

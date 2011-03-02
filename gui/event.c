@@ -80,8 +80,8 @@ static int scan_click(const SKIN_INFOS* skin, double x, double y)
 	guint ix, iy, nearest = 0, i;
 	int dx, dy, d, best_d = G_MAXINT;
 
-	ix = (x + 0.5);
-	iy = (y + 0.5);
+	ix = (x * skin->sx + 0.5);
+	iy = (y * skin->sy + 0.5);
 
 	for (i = 0; i < G_N_ELEMENTS(keycode_map); i++) {
 		if (ix >= skin->keys_pos[i].left
