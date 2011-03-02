@@ -193,12 +193,6 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 {
 	DSKIN_L2_A0("* -> fct : skin_read_image                             *\n");
 	FILE *fp = NULL;
-	int i;
-	int sw, sh;
-	int lw, lh;
-	float rw, rh, r;
-	double s;
-	int lcd_w, lcd_h;
 
 	GdkPixbufLoader *loader;
 	GError *error = NULL;
@@ -206,16 +200,6 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 	guchar *buf;
 	gsize count;
 	struct stat st;
-
-	// set lcd size
-	if(!strcmp(si->calc, SKIN_TI89) || !strcmp(si->calc, SKIN_TI89T)) {
-		lcd_w = 160;
-		lcd_h = 100;
-	}
-	else {
-		lcd_w = 240;
-		lcd_h = 128;
-	}
 
 	fp = fopen(filename, "rb");
 	if (fp == NULL) {
@@ -258,43 +242,12 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 		return -1;
 	}
 
-	// Rescale image to a fixed LCD size but keep original image (avoid resolution lost)
-	sw = gdk_pixbuf_get_width(si->raw);
-	sh = gdk_pixbuf_get_height(si->raw);
-
-	lw = si->lcd_pos.right - si->lcd_pos.left;
-	lh = si->lcd_pos.bottom - si->lcd_pos.top;
-
-	rw = (float)lw / lcd_w;
-	rh = (float)lh / lcd_h;
-
-	r = (rw < rh) ? rw : rh;
-	si->s = s = ceil(10 * r) / 10.0;
-
-	DSKIN_L0_A2("*  image :<%i x %i>                                  *\n", sw, sh);
-	DSKIN_L0_A2("*  lcd : <%i x %i>                                   *\n", lw, lh);
-	DSKIN_L0_A3("*  ratios : <%2.2f x %2.2f> => %2.1f                       *\n", rw, rh, s);
-
-	//if(si->image)
-	//g_object_unref(si->image);
-	si->image = gdk_pixbuf_scale_simple(si->raw, (int)(sw/s), (int)(sh/s), GDK_INTERP_NEAREST);
+	si->s = 1.0;
+	si->image = g_object_ref(si->raw);
 
 	// Get new skin size
 	si->width = gdk_pixbuf_get_width(si->image);
 	si->height = gdk_pixbuf_get_height(si->image);
-
-	// Rescale all coords
-	si->lcd_pos.left = (long)(si->lcd_pos.left / s);
-	si->lcd_pos.right = (long)(si->lcd_pos.right / s);
-	si->lcd_pos.top = (long)(si->lcd_pos.top / s);
-	si->lcd_pos.bottom = (long)(si->lcd_pos.bottom / s);
-
-	for (i = 0; i < SKIN_KEYS; i++) {
-		si->keys_pos[i].left = (long)(si->keys_pos[i].left / s);
-		si->keys_pos[i].top = (long)(si->keys_pos[i].top / s);
-		si->keys_pos[i].right = (long)(long)(si->keys_pos[i].right / s);
-		si->keys_pos[i].bottom = (long)(long)(si->keys_pos[i].bottom / s);
-	}
 
 	return 0;
 }
