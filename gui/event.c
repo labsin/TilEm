@@ -201,14 +201,9 @@ void on_about(GtkWidget *pBtn)
 /* Reset the calc */
 void on_reset(GLOBAL_SKIN_INFOS * gsi)
 {
-	tilem_calc_reset(gsi->emu->calc);
-	
-	/* Press and release Key "ON" */
 	g_mutex_lock(gsi->emu->calc_mutex);
-	run_with_key(gsi->emu->calc, TILEM_KEY_ON);			
-	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
+	tilem_calc_reset(gsi->emu->calc);
 	g_mutex_unlock(gsi->emu->calc_mutex);
-	printf(">>>>>>>>>RESET \n");
 }
 
 /* This event is executed when key (on keyboard) is pressed */
