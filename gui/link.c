@@ -42,6 +42,7 @@ static int ilp_reset(CableHandle* cbl)
 
 	g_mutex_lock(emu->calc_mutex);
 	tilem_linkport_graylink_reset(emu->calc);
+	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 	return 0;
 }
@@ -85,6 +86,7 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
 	emu->calc->z80.stop_mask = prevmask;
 
+	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
 }
@@ -136,6 +138,7 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
 	emu->calc->z80.stop_mask = prevmask;
 
+	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
 
@@ -237,6 +240,7 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 		
 	g_mutex_lock(emu->calc_mutex);
 	prepare_for_link(emu->calc);
+	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 
 	switch (tifiles_file_get_class(filename)) {

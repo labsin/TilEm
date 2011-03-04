@@ -288,8 +288,8 @@ int main(int argc, char **argv)
 	fclose(romfile);
 
 	/* Init emulator */
-	gsi->emu->run_mutex = g_mutex_new();
 	gsi->emu->calc_mutex = g_mutex_new();
+	gsi->emu->calc_wakeup_cond = g_cond_new();
 	gsi->emu->lcd_mutex = g_mutex_new();
 	gsi->emu->exiting = FALSE;
 	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;

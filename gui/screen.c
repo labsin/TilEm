@@ -267,7 +267,6 @@ static gboolean refresh_lcd(gpointer data)
 #define MICROSEC_PER_TICK 10000
 #define TICKS_PER_FRAME 4
 
-/* Thread for the gui */
 static gpointer core_thread(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -280,15 +279,19 @@ static gpointer core_thread(gpointer data)
 
 	g_timer_elapsed(tmr, &tnext);
 
-	while (1) {
-		g_mutex_lock(emu->run_mutex);
-		if (emu->exiting) {
-			g_mutex_unlock(emu->run_mutex);
-			break;
+	g_mutex_lock(emu->calc_mutex);
+	while (!emu->exiting) {
+		if (emu->calc->z80.halted
+		    && !emu->calc->z80.interrupts
+		    && !emu->calc->poweronhalt
+		    && ticks == TICKS_PER_FRAME) {
+			/* CPU power off - wait until an external
+			   event wakes us up */
+			g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
+			g_timer_elapsed(tmr, &tnext);
+			ticks = TICKS_PER_FRAME;
+			continue;
 		}
-		g_mutex_unlock(emu->run_mutex);
-		
-		g_mutex_lock(emu->calc_mutex);
 
 		tilem_z80_run_time(emu->calc, MICROSEC_PER_TICK, NULL);
 
@@ -313,7 +316,10 @@ static gpointer core_thread(gpointer data)
 			g_usleep(tnext - tcur);
 		else
 			tnext = tcur;
+
+		g_mutex_lock(emu->calc_mutex);
 	}
+	g_mutex_unlock(emu->calc_mutex);
 
 	g_timer_destroy(tmr);
 	return 0;

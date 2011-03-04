@@ -206,6 +206,7 @@ void on_reset(GLOBAL_SKIN_INFOS * gsi)
 	/* Press and release Key "ON" */
 	g_mutex_lock(gsi->emu->calc_mutex);
 	run_with_key(gsi->emu->calc, TILEM_KEY_ON);			
+	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 	g_mutex_unlock(gsi->emu->calc_mutex);
 	printf(">>>>>>>>>RESET \n");
 }
@@ -286,6 +287,7 @@ static void press_mouse_key(GLOBAL_SKIN_INFOS* gsi, int key)
 	if (key)
 		tilem_keypad_press_key(gsi->emu->calc, key);
 
+	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 	g_mutex_unlock(gsi->emu->calc_mutex);
 
 	if (key)
@@ -313,6 +315,7 @@ gboolean mouse_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 		if (key) {
 			g_mutex_lock(gsi->emu->calc_mutex);
 			tilem_keypad_press_key(gsi->emu->calc, key);
+			g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 			g_mutex_unlock(gsi->emu->calc_mutex);
 			record_key(gsi, key);
 		}
@@ -468,6 +471,7 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 		gsi->sequence_keycode = event->hardware_keycode;
 	}
 
+	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 	g_mutex_unlock(gsi->emu->calc_mutex);
 
 	return TRUE;
@@ -488,6 +492,7 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 		if (gsi->keypress_keycodes[i] == event->hardware_keycode) {
 			g_mutex_lock(gsi->emu->calc_mutex);
 			tilem_keypad_release_key(gsi->emu->calc, i);
+			g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 			g_mutex_unlock(gsi->emu->calc_mutex);
 			gsi->keypress_keycodes[i] = 0;
 		}

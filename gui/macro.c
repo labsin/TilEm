@@ -154,6 +154,7 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 			DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", codechar, code);
 			g_mutex_lock(gsi->emu->calc_mutex);
 			run_with_key_slowly(gsi->emu->calc, code);			
+			g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 			g_mutex_unlock(gsi->emu->calc_mutex);
 		
 		}

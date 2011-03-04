@@ -33,11 +33,10 @@ typedef struct _TilemKeyBinding {
 } TilemKeyBinding;
 
 typedef struct _TilemCalcEmulator {
-	GMutex* run_mutex;
-	gboolean exiting;
-
 	GMutex* calc_mutex;
+	GCond* calc_wakeup_cond;
 	TilemCalc* calc;
+	gboolean exiting;
 
 	GMutex* lcd_mutex;
 	TilemGrayLCD* glcd;
