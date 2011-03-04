@@ -257,7 +257,15 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi)  /* Absolument neces
 
 }
 
-#define MICROSEC_PER_FRAME 10000
+static gboolean refresh_lcd(gpointer data)
+{
+	TilemCalcEmulator* emu = data;
+	gtk_widget_queue_draw(emu->lcdwin);
+	return FALSE;
+}
+
+#define MICROSEC_PER_TICK 10000
+#define TICKS_PER_FRAME 4
 
 /* Thread for the gui */
 static gpointer core_thread(gpointer data)
@@ -265,6 +273,7 @@ static gpointer core_thread(gpointer data)
 	TilemCalcEmulator* emu = data;
 	GTimer* tmr;
 	gulong tnext, tcur;
+	int ticks = TICKS_PER_FRAME;
 
 	tmr = g_timer_new();
 	g_timer_start(tmr);
@@ -280,16 +289,27 @@ static gpointer core_thread(gpointer data)
 		g_mutex_unlock(emu->run_mutex);
 		
 		g_mutex_lock(emu->calc_mutex);
-		tilem_z80_run_time(emu->calc, MICROSEC_PER_FRAME, NULL);
+
+		tilem_z80_run_time(emu->calc, MICROSEC_PER_TICK, NULL);
+
+		ticks--;
+		if (!ticks) {
+			g_mutex_lock(emu->lcd_mutex);
+			tilem_gray_lcd_next_frame(emu->glcd, 0);
+			g_mutex_unlock(emu->lcd_mutex);
+		}
+
 		g_mutex_unlock(emu->calc_mutex);
 
-		g_mutex_lock(emu->lcd_mutex);
-		tilem_gray_lcd_next_frame(emu->glcd, 0);
-		g_mutex_unlock(emu->lcd_mutex);
+		if (!ticks) {
+			g_idle_add_full(G_PRIORITY_DEFAULT,
+			                &refresh_lcd, emu, NULL);
+			ticks = TICKS_PER_FRAME;
+		}
 
 		g_timer_elapsed(tmr, &tcur);
-		tnext += MICROSEC_PER_FRAME;
-		if (tnext - tcur < MICROSEC_PER_FRAME)
+		tnext += MICROSEC_PER_TICK;
+		if (tnext - tcur < MICROSEC_PER_TICK)
 			g_usleep(tnext - tcur);
 		else
 			tnext = tcur;
@@ -381,18 +401,6 @@ gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	return TRUE;
 }
 
-/* Update the lcd */
-gboolean screen_update(gpointer data)
-{
-	DLCD_L2_A0(">screen_update\n");
-	TilemCalcEmulator* emu = data;
-	gtk_widget_queue_draw(emu->lcdwin);	
-	DLCD_L2_A0("<screen_update\n");
-	return TRUE;
-}
-
-
-
 void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_items, int thisitems, const char *menuname,gpointer* gsi)
 {
 	
@@ -442,7 +450,6 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	redraw_screen(gsi);
 
 	th = g_thread_create(&core_thread, gsi->emu, TRUE, NULL);
-	g_timeout_add(50, screen_update, gsi->emu);
 	g_timeout_add(250, record_anim_screenshot,  gsi);
 
 	return gsi->pWindow;
