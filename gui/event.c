@@ -179,25 +179,6 @@ void show_about()
 
 }
 
-/* Show about dialog box */
-void on_about(GtkWidget *pBtn)
-{
-	GtkWidget *pAbout;
-	pBtn=pBtn;
-
-	pAbout = gtk_message_dialog_new (NULL,
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_INFO,
-        GTK_BUTTONS_OK,
-        "TilEm2\n\nCoded by : \n* Benjamin Moody (core/debugger) *\n* Thibault Duponchelle (GTK's gui) *\n* Luc Bruant (QT's gui) *\n\nCopyleft 2010 ;D");
-
-	/* Show the msg box */
-	gtk_dialog_run(GTK_DIALOG(pAbout));
-	
-	/* Destroy the msg box */
-	gtk_widget_destroy(pAbout);
-}
-
 /* Reset the calc */
 void on_reset(GLOBAL_SKIN_INFOS * gsi)
 {
@@ -205,12 +186,6 @@ void on_reset(GLOBAL_SKIN_INFOS * gsi)
 	tilem_calc_reset(gsi->emu->calc);
 	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 	g_mutex_unlock(gsi->emu->calc_mutex);
-}
-
-/* This event is executed when key (on keyboard) is pressed */
-void keyboard_event() 
-{ 
-	printf("You press a key : keyboard_event\n");	/* debug */
 }
 
 /* Pop up context menu */
