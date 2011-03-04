@@ -203,6 +203,7 @@ void on_reset(GLOBAL_SKIN_INFOS * gsi)
 {
 	g_mutex_lock(gsi->emu->calc_mutex);
 	tilem_calc_reset(gsi->emu->calc);
+	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 	g_mutex_unlock(gsi->emu->calc_mutex);
 }
 
