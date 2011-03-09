@@ -19,7 +19,7 @@
 
 /*
 contra-sh :
-   This file is a perfect copy of the tiemu skinops.c file ...
+   This file is a (quasi) perfect copy of the tiemu skinops.c file ...
    Thank's to rom's and JB for this wonderful work.
 */
 
