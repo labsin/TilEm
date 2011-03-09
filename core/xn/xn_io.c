@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -745,8 +745,9 @@ void xn_z80_instr(TilemCalc* calc, dword opcode)
 
 		opcode = (l | (h << 8));
 		switch (opcode) {
-		case 0x1002:
-			/* Power off */
+		case 0x1000: /* Power off */
+		case 0x1001: /* Power on */
+		case 0x1002: /* Prepare for power off */
 			break;
 
 		case 0x1003:
