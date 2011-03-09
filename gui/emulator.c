@@ -162,7 +162,6 @@ static char *get_sav_name(const char *romname)
 
 	g_free(dname);
 	g_free(bname);
-
 	return sname;
 }
 
@@ -185,6 +184,7 @@ static void show_io_error(TilemCalcEmulator *emu, const char *filename,
 	g_free(dname);
 }
 
+/** TODO : I will probably add a parameter to handle command line args (option -s) */
 gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
                                         const char *filename)
 {
@@ -209,6 +209,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	savname = get_sav_name(filename);
 	savfile = g_fopen(savname, "rb");
+
 	if (!savfile && errno != ENOENT) {
 		show_io_error(emu, savname, errno, TRUE);
 		fclose(romfile);
@@ -222,21 +223,25 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	if (savfile)
 		model = tilem_get_sav_type(savfile);
 
+	/* Second chance, maybe user already defines model into the config file (using right click menu) */	
+
+	model = get_modelcalcid(filename);
+
 	/* Otherwise, guess from ROM file; ask user if ambiguous */
 
 	if (!model) {
 		model = tilem_guess_rom_type(romfile);
 		if (model) {
 			model = choose_rom_popup(get_toplevel(emu),
-			                         filename, model);
+						 filename, model);
 		}
 		else {
 			dname = g_filename_display_basename(filename);
 			messagebox01(get_toplevel(emu), GTK_MESSAGE_ERROR,
-			             "Unable to load calculator state",
-			             "The file %s is not a recognized"
-			             " calculator ROM file.",
-			             dname);
+				     "Unable to load calculator state",
+				     "The file %s is not a recognized"
+				     " calculator ROM file.",
+				     dname);
 			g_free(dname);
 		}
 	}
@@ -288,6 +293,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	return TRUE;
 }
 
+/* TODO : add a parameter to handle command line args (-s parameter) */
 gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu)
 {
 	FILE *romfile, *savfile;
@@ -314,6 +320,7 @@ gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu)
 	/* Open state file */
 
 	savname = get_sav_name(emu->rom_file_name);
+
 	savfile = g_fopen(savname, "wb");
 	if (!savfile) {
 		show_io_error(emu, savname, errno, FALSE);

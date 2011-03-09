@@ -159,15 +159,10 @@ void on_destroy()
 /* Save state */
 void save_state(GLOBAL_SKIN_INFOS * gsi)
 {
-	FILE* romfile, *savfile;
 	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
 	DGLOBAL_L2_A1("*  YES (%d)                                             *\n",SAVE_STATE);
 	DGLOBAL_L2_A0("********************************************************\n\n");
-	romfile = g_fopen(gsi->RomName, "wb");
-	savfile = g_fopen(gsi->SavName, "wt");
-	g_mutex_lock(gsi->emu->calc_mutex);
-	tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
-	g_mutex_unlock(gsi->emu->calc_mutex);
+	tilem_calc_emulator_save_state(gsi->emu);
 }
 
 /* Save tilem and save state */
@@ -235,6 +230,7 @@ static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 		{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
 		{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}
 	};
+
 	right_click_menu[0].extra_data=gsi;
 	create_menus(gsi->pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
 }

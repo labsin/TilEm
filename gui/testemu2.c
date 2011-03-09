@@ -214,6 +214,7 @@ int main(int argc, char **argv)
 	gsi->MacroName = NULL;
 	gsi->mouse_key = 0;
 	gsi->macro_file = NULL;
+	gsi->SavName = NULL;
 	gsi->isMacroRecording = 0;
 	gsi->isAnimScreenshotRecording = FALSE;
 

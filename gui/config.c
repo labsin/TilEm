@@ -136,7 +136,7 @@ void set_recentrom(char* romname) {
 }
 
 /* Get the saved model for a rom */
-char get_modelcalcid(char* romname) {
+int get_modelcalcid(const char* romname) {
 	GKeyFile * gkf;
 	gkf = g_key_file_new();
 	
@@ -148,7 +148,7 @@ char get_modelcalcid(char* romname) {
 	char* pcalc_id = g_key_file_get_string(gkf, "model", romname, NULL);
 	if(pcalc_id == NULL) {
 		printf("Not found :\n");
-		return '0';
+		return 0;
 	}
 	
 	g_key_file_free(gkf);
@@ -196,7 +196,7 @@ void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) {
 
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi) {
-	set_modelcalcid(gsi->RomName, gsi->calc_id);
+	set_modelcalcid(gsi->RomName, gsi->emu->calc->hw.model_id);
 
 }
 

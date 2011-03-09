@@ -239,7 +239,7 @@ char* get_recentrom(char* romname);
 void set_recentrom(char* romname);
 
 /* get the model */
-char get_modelcalcid(char* romname);
+int get_modelcalcid(const char* romname);
 
 /* Set model calc id */
 void set_modelcalcid(char* romname, char id);
