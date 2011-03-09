@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o
+objects = testemu2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -38,6 +38,10 @@ debugger.o: debugger.c debugger.h gui.h *.h ../core/tilem.h
 # Memory management and messages
 memory.o: memory.c ../core/tilem.h
 	$(compile) -c $(srcdir)/memory.c
+
+# Main emulation loop
+emulator.o: emulator.c gui.h *.h ../core/tilem.h
+	$(compile) -c $(srcdir)/emulator.c
 
 # Print the skin and add the events. 
 screen.o: screen.c gui.h *.h ../core/tilem.h

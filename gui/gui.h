@@ -16,6 +16,8 @@
 #define TI86   "TI86"
 #define X_FRINGE 2
 #define Y_FRINGE 1
+
+#include "emulator.h"
  
 /* A global boolean to say "save the state" */
 int SAVE_STATE;
@@ -31,27 +33,6 @@ typedef struct _TilemKeyBinding {
 	int nscancodes;          /* number of calculator scancodes */
 	byte *scancodes;         /* calculator scancodes */
 } TilemKeyBinding;
-
-typedef struct _TilemCalcEmulator {
-	GMutex* calc_mutex;
-	GCond* calc_wakeup_cond;
-	TilemCalc* calc;
-	gboolean exiting;
-
-	GMutex* lcd_mutex;
-	TilemGrayLCD* glcd;
-
-	byte* lcd_image_buf;
-	int lcd_image_width;
-	int lcd_image_height;
-	GdkRgbCmap* lcd_cmap;
-
-	GtkWidget* lcdwin;
-	GtkWidget* background;
-
-	GdkGeometry geomhints;
-	GdkWindowHints geomhintmask;
-} TilemCalcEmulator;
 
 /* Internal data structure for gui */
 typedef struct GLOBAL_SKIN_INFOS {

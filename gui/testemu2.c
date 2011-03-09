@@ -185,11 +185,6 @@
 
 int main(int argc, char **argv)
 {
-	
-	FILE *romfile,*savfile;
-	char default_model;
-
-
 	/* Some allocation to do not crash */	
 	GLOBAL_SKIN_INFOS *gsi;
 	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
@@ -244,59 +239,12 @@ int main(int argc, char **argv)
 	getargs(argc, argv, gsi);
 	/* End */	
 	
-	/* Create the SavName */
-	create_savname(gsi);
-	/* End */
+	gsi->emu = tilem_calc_emulator_new();
 
-	/* Open the romfile */
-	romfile = g_fopen(gsi->RomName, "rb");
-	if (!romfile) 
-	{
-		perror(gsi->RomName);
+	if (!tilem_calc_emulator_load_state(gsi->emu, gsi->RomName)) {
+		tilem_calc_emulator_free(gsi->emu);
 		return 1;
 	}
-	/* end */
-	
-
-	if((gsi->calc_id = get_modelcalcid(gsi->RomName)) != '0')
-	{
-		DCONFIG_FILE_L0_A1("Saved model id : %c\n", gsi->calc_id);
-	} else {
-		/* prompt user for calculator model */
-		default_model = tilem_guess_rom_type(romfile);
-		gsi->calc_id = choose_rom_popup(NULL, gsi->RomName, default_model);
-	}
-
-	if (!gsi->calc_id) {
-		fclose(romfile);
-		return 0;
-	}
-	
-	/* Create the calc */
-	gsi->emu = g_new0(TilemCalcEmulator, 1);
-	gsi->emu->calc = tilem_calc_new(gsi->calc_id);
-	/* End */
-	
-	/* Load save state */
-	savfile = g_fopen(gsi->SavName, "rt");
-	tilem_calc_load_state(gsi->emu->calc, romfile, savfile);
-	/* End */
-
-	if (savfile)
-		fclose(savfile);
-
-	fclose(romfile);
-
-	/* Init emulator */
-	gsi->emu->calc_mutex = g_mutex_new();
-	gsi->emu->calc_wakeup_cond = g_cond_new();
-	gsi->emu->lcd_mutex = g_mutex_new();
-	gsi->emu->exiting = FALSE;
-	gsi->emu->calc->lcd.emuflags = TILEM_LCD_REQUIRE_DELAY;
-	gsi->emu->calc->flash.emuflags = TILEM_FLASH_REQUIRE_DELAY;
-	/* end */
-
-	gsi->emu->glcd = tilem_gray_lcd_new(gsi->emu->calc, 2, 200);
 
 	DGLOBAL_L0_A0("**************** fct : main ****************************\n");
 	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",gsi->calc_id);
@@ -331,20 +279,19 @@ int main(int argc, char **argv)
 	if(gsi->isStartingSkinless) /* Given as parameter ? */
 		switch_view(gsi); /* Start without skin */
 	
-	
-	/* ####### BEGIN THE GTK_MAIN_LOOP ####### */
+	tilem_calc_emulator_run(gsi->emu);
+
 	gtk_main();
-	
-	
+
+	tilem_calc_emulator_pause(gsi->emu);
 	
 	/* Save the state */
-	if(SAVE_STATE==1) {
-		romfile = g_fopen(gsi->RomName, "wb");
-		savfile = g_fopen(gsi->SavName, "wt");
-		tilem_calc_save_state(gsi->emu->calc, romfile, savfile);
-	}
-	
-    return EXIT_SUCCESS;
+	if(SAVE_STATE==1)
+		tilem_calc_emulator_save_state(gsi->emu);
+
+	tilem_calc_emulator_free(gsi->emu);
+
+	return 0;
 }
 
 

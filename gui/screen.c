@@ -257,74 +257,6 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi)  /* Absolument neces
 
 }
 
-static gboolean refresh_lcd(gpointer data)
-{
-	TilemCalcEmulator* emu = data;
-	gtk_widget_queue_draw(emu->lcdwin);
-	return FALSE;
-}
-
-#define MICROSEC_PER_TICK 10000
-#define TICKS_PER_FRAME 4
-
-static gpointer core_thread(gpointer data)
-{
-	TilemCalcEmulator* emu = data;
-	GTimer* tmr;
-	gulong tnext, tcur;
-	int ticks = TICKS_PER_FRAME;
-
-	tmr = g_timer_new();
-	g_timer_start(tmr);
-
-	g_timer_elapsed(tmr, &tnext);
-
-	g_mutex_lock(emu->calc_mutex);
-	while (!emu->exiting) {
-		if (emu->calc->z80.halted
-		    && !emu->calc->z80.interrupts
-		    && !emu->calc->poweronhalt
-		    && ticks == TICKS_PER_FRAME) {
-			/* CPU power off - wait until an external
-			   event wakes us up */
-			g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
-			g_timer_elapsed(tmr, &tnext);
-			ticks = TICKS_PER_FRAME;
-			continue;
-		}
-
-		tilem_z80_run_time(emu->calc, MICROSEC_PER_TICK, NULL);
-
-		ticks--;
-		if (!ticks) {
-			g_mutex_lock(emu->lcd_mutex);
-			tilem_gray_lcd_next_frame(emu->glcd, 0);
-			g_mutex_unlock(emu->lcd_mutex);
-		}
-
-		g_mutex_unlock(emu->calc_mutex);
-
-		if (!ticks) {
-			g_idle_add_full(G_PRIORITY_DEFAULT,
-			                &refresh_lcd, emu, NULL);
-			ticks = TICKS_PER_FRAME;
-		}
-
-		g_timer_elapsed(tmr, &tcur);
-		tnext += MICROSEC_PER_TICK;
-		if (tnext - tcur < MICROSEC_PER_TICK)
-			g_usleep(tnext - tcur);
-		else
-			tnext = tcur;
-
-		g_mutex_lock(emu->calc_mutex);
-	}
-	g_mutex_unlock(emu->calc_mutex);
-
-	g_timer_destroy(tmr);
-	return 0;
-}
-
 /* Set the color palette for drawing the emulated LCD. */
 void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 		    GLOBAL_SKIN_INFOS* gsi)
@@ -432,8 +364,6 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_
 
 GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)  
 {
-	GThread *th;
-
 	gsi->view = 0;
 
 	/* Create the window */
@@ -455,7 +385,6 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	/* Create emulator widget */
 	redraw_screen(gsi);
 
-	th = g_thread_create(&core_thread, gsi->emu, TRUE, NULL);
 	g_timeout_add(250, record_anim_screenshot,  gsi);
 
 	return gsi->pWindow;
