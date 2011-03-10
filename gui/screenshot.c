@@ -96,19 +96,19 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("record event\n");
-	screenshot_anim_create_nostatic(gsi);
+	tilem_animation_start(gsi);
 }
 
 void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("record event\n");
-	screenshot_anim_addframe(gsi);
+	tilem_animation_add_frame(gsi);
 }
 
 void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("stop event\n");
-	stop_anim_screenshot(gsi) ;
+	tilem_animation_stop(gsi) ;
 }
 
 

@@ -348,16 +348,16 @@ void create_savname(GLOBAL_SKIN_INFOS* gsi) ;
 /* ##### animatedgif.c ##### */
 
 /* Create a animated screenshot */
-void screenshot_anim_create_nostatic(GLOBAL_SKIN_INFOS* gsi) ;
+void tilem_animation_start(GLOBAL_SKIN_INFOS* gsi) ;
 
 /* Add a frame to animation */
-void screenshot_anim_addframe(GLOBAL_SKIN_INFOS* gsi) ;
+void tilem_animation_add_frame(GLOBAL_SKIN_INFOS* gsi) ;
 
 /* Record the screenshot  (called in screen.c by a timer)*/
-gboolean record_anim_screenshot(gpointer data);
+gboolean tilem_animation_record(gpointer data);
 
 /* Stop recording screenshot */
-void stop_anim_screenshot(GLOBAL_SKIN_INFOS* gsi);
+void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi);
 
 
 

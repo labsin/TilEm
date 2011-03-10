@@ -405,7 +405,7 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	/* Create emulator widget */
 	redraw_screen(gsi);
 
-	g_timeout_add(100, record_anim_screenshot,  gsi);
+	g_timeout_add(100, tilem_animation_record,  gsi);
 
 	return gsi->pWindow;
 }
