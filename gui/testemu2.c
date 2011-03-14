@@ -205,9 +205,12 @@
 
 int main(int argc, char **argv)
 {
-	/* Some allocation to do not crash */	
 	GLOBAL_SKIN_INFOS *gsi;
-	gsi=malloc(sizeof(GLOBAL_SKIN_INFOS));
+
+	g_thread_init(NULL);
+	gtk_init(&argc, &argv);
+
+	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
 	gsi->si=NULL;
 	gsi->pWindow = NULL;
 	gsi->FileToLoad = NULL;
@@ -245,11 +248,7 @@ int main(int argc, char **argv)
 	gsi->keybindings[2].scancodes[0] = TILEM_KEY_1;
 
 	/*****/
-	
-	/* Init GTK+ */
-	g_thread_init(NULL);
-	gtk_init(&argc, &argv);
-	
+
 	/* Init isDebuggerRunning */
 	gsi->isDebuggerRunning=FALSE;
 
@@ -294,7 +293,7 @@ int main(int argc, char **argv)
 	gsi->pWindow=draw_screen(gsi);
 
 	tilem_calc_emulator_run(gsi->emu);
-		
+
 	if(gsi->FileToLoad != NULL) /* Given as parameter ? */
 		load_file_from_file(gsi, gsi->FileToLoad);
 	if(gsi->MacroName != NULL) /* Given as parameter ? */

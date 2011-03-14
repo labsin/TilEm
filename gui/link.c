@@ -388,4 +388,107 @@ int get_calc_model(TilemCalc* calc)
 	}
 }
 
+/* Link thread main loop */
+static gpointer link_main(gpointer data)
+{
+	TilemCalcEmulator *emu = data;
+	char *fname;
+	CalcHandle *ch;
+	CableHandle *cbl;
 
+	ticables_library_init();
+	tifiles_library_init();
+	ticalcs_library_init();
+
+	cbl = internal_link_handle_new(emu);
+
+	g_mutex_lock(emu->link_queue_mutex);
+	while (!emu->link_cancel) {
+		if (!(fname = g_queue_pop_head(emu->link_queue))) {
+			g_cond_wait(emu->link_queue_cond, emu->link_queue_mutex);
+			continue;
+		}
+		g_mutex_unlock(emu->link_queue_mutex);
+
+		ch = ticalcs_handle_new(get_calc_model(emu->calc));
+		if (!ch) {
+			fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
+			g_free(fname);
+			break;
+		}
+
+		ticalcs_update_set(ch, emu->link_update);
+
+		ticalcs_cable_attach(ch, cbl);
+
+		send_file(emu, ch, fname);
+
+		ticalcs_cable_detach(ch);
+		ticalcs_handle_del(ch);
+
+		g_free(fname);
+
+		g_mutex_lock(emu->link_queue_mutex);
+	}
+	g_mutex_unlock(emu->link_queue_mutex);
+
+	ticables_handle_del(cbl);
+
+	ticalcs_library_exit();
+	tifiles_library_exit();
+	ticables_library_exit();
+
+	return NULL;
+}
+
+void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
+                                   const char *filename)
+{
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(emu->calc != NULL);
+	g_return_if_fail(filename != NULL);
+
+	g_mutex_lock(emu->link_queue_mutex);
+	g_queue_push_tail(emu->link_queue, g_strdup(filename));
+	g_cond_broadcast(emu->link_queue_cond);
+	g_mutex_unlock(emu->link_queue_mutex);
+
+	if (!emu->link_thread)
+		emu->link_thread = g_thread_create(&link_main, emu, TRUE, NULL);
+}
+
+void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
+{
+	char *fname;
+	CalcUpdate *update;
+
+	g_return_if_fail(emu != NULL);
+
+	if (!emu->link_thread)
+		return;
+
+	/* remove any queued files that haven't yet been sent, and notify
+	   link thread that it should exit */
+	g_mutex_lock(emu->link_queue_mutex);
+	emu->link_cancel = 1;
+	while ((fname = g_queue_pop_head(emu->link_queue)))
+		g_free(fname);
+	g_cond_broadcast(emu->link_queue_cond);
+	g_mutex_unlock(emu->link_queue_mutex);
+
+	/* notify ticalcs that the operation is to be aborted */
+	update = emu->link_update;
+	update->cancel = 1;
+
+	/* cancel any ongoing transfer */
+	g_mutex_lock(emu->calc_mutex);
+	emu->ilp_abort = TRUE;
+	g_cond_broadcast(emu->ilp_finished_cond);
+	g_mutex_unlock(emu->calc_mutex);
+
+	/* wait for link thread to exit */
+	g_thread_join(emu->link_thread);
+	emu->link_thread = NULL;
+
+	update->cancel = 0;
+}

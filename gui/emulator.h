@@ -18,7 +18,7 @@
  */
 
 typedef struct _TilemCalcEmulator {
-	GThread *thread;
+	GThread *z80_thread;
 
 	GMutex *calc_mutex;
 	GCond *calc_wakeup_cond;
@@ -41,6 +41,13 @@ typedef struct _TilemCalcEmulator {
 	int ilp_read_count;        /* number of bytes left to read */
 	const byte *ilp_write_queue; /* data to be sent */
 	int ilp_write_count;         /* number of bytes left to send */
+
+	GThread *link_thread;
+	GMutex *link_queue_mutex;
+	GCond *link_queue_cond;
+	GQueue *link_queue;      /* queue of filenames to be sent */
+	gboolean link_cancel;    /* cancel_link() has been called */
+	gpointer link_update;    /* CalcUpdate (status and callbacks for ticalcs) */
 
 	/* FIXME: following stuff belongs elsewhere */
 
@@ -78,3 +85,10 @@ void tilem_calc_emulator_pause(TilemCalcEmulator *emu);
 
 /* Resume emulation (if currently paused.) */
 void tilem_calc_emulator_run(TilemCalcEmulator *emu);
+
+/* Add a file to the link queue. */
+void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
+                                   const char *filename);
+
+/* Abort any pending link transfers. */
+void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu);

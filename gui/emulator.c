@@ -162,14 +162,31 @@ static GtkWidget *get_toplevel(TilemCalcEmulator *emu)
 		return NULL;
 }
 
+static void link_update_nop()
+{
+}
+
 TilemCalcEmulator *tilem_calc_emulator_new()
 {
 	TilemCalcEmulator *emu = g_new0(TilemCalcEmulator, 1);
+	CalcUpdate *update;
 
 	emu->calc_mutex = g_mutex_new();
 	emu->calc_wakeup_cond = g_cond_new();
 	emu->ilp_finished_cond = g_cond_new();
 	emu->lcd_mutex = g_mutex_new();
+
+	emu->link_queue = g_queue_new();
+	emu->link_queue_mutex = g_mutex_new();
+	emu->link_queue_cond = g_cond_new();
+
+	update = g_new0(CalcUpdate, 1);
+	update->start = &link_update_nop;
+	update->stop = &link_update_nop;
+	update->refresh = &link_update_nop;
+	update->pbar = &link_update_nop;
+	update->label = &link_update_nop;
+	emu->link_update = update;
 
 	return emu;
 }
@@ -183,12 +200,21 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 
-	if (emu->thread)
-		g_thread_join(emu->thread);
+	if (emu->z80_thread)
+		g_thread_join(emu->z80_thread);
+
+	tilem_calc_emulator_cancel_link(emu);
 
 	g_mutex_free(emu->calc_mutex);
 	g_mutex_free(emu->lcd_mutex);
 	g_cond_free(emu->calc_wakeup_cond);
+	g_cond_free(emu->ilp_finished_cond);
+
+	g_mutex_free(emu->link_queue_mutex);
+	g_cond_free(emu->link_queue_cond);
+	g_queue_free(emu->link_queue);
+
+	g_free(emu->link_update);
 
 	if (emu->glcd)
 		tilem_gray_lcd_free(emu->glcd);
@@ -249,6 +275,8 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	g_return_val_if_fail(emu != NULL, FALSE);
 	g_return_val_if_fail(filename != NULL, FALSE);
+
+	tilem_calc_emulator_cancel_link(emu);
 
 	/* Open ROM file */
 
@@ -431,6 +459,6 @@ void tilem_calc_emulator_run(TilemCalcEmulator *emu)
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 
-	if (!emu->thread)
-		emu->thread = g_thread_create(&core_thread, emu, TRUE, NULL);
+	if (!emu->z80_thread)
+		emu->z80_thread = g_thread_create(&core_thread, emu, TRUE, NULL);
 }
