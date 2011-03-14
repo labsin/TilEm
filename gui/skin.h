@@ -26,4 +26,4 @@
 #include <gui.h>
 
 char* hwname[11] = {"ti73", "ti76", "ti81", "ti82", "ti83", "ti83p", "ti84p", "ti84pse", "ti84pns", "ti85", "ti86"};
-char* defaultskin[11] = { "./skn/ti73.skn", "./skn/ti76.skn", "./skn/ti81.skn", "./skn/ti82.skn", "./skn/ti83.skn", "./skn/ti83plus.skn", "./skn/ti84plus.skn", "./skn/ti84plus.skn", "./skn/ti84plus.skn", "./skn/ti82.skn", "./skn/ti82.skn" };
+char* defaultskin[11] = {"ti73.skn","ti76.skn","ti81.skn","ti82.skn","ti83.skn","ti83plus.skn","ti84plus.skn","ti84plus.skn","ti84plus.skn","ti82.skn","ti82.skn" };

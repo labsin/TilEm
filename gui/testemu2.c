@@ -285,7 +285,7 @@ int main(int argc, char **argv)
 			DCONFIG_FILE_L0_A1("Saved model id : %c\n", gsi->calc_id);
 		} else {
 			/* User does not have choosen another skin for this model, choose officials :) */
-			printf("skin default not found : %s\n", gsi->RomName ); 
+			//printf("skin default not found : %s\n", gsi->RomName ); 
 			tilem_choose_skin_filename_by_default(gsi);
 		}
 	}	

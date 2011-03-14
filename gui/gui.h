@@ -256,6 +256,8 @@ char* get_sendfile_recentdir();
 /* Set the last dir opened to send file */
 void set_sendfile_recentdir(char* recentdir);
 
+/* Get a key from a group from config file */
+char* tilem_config_universal_getter(char* group, char* key);
 
 
 

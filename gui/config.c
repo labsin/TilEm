@@ -247,3 +247,21 @@ void set_sendfile_recentdir(char* recentdir) {
 	g_key_file_free(gkf);
         g_free (data); 
 }
+
+/* Search and return the last directory opened to send a file*/
+char* tilem_config_universal_getter(char* group, char* key) {
+
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
+	
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
+	}
+
+	char* string = g_key_file_get_string(gkf, group, key, NULL);
+	//printf("%s from %s : %s\n", key, group, string);
+	
+	g_key_file_free(gkf);
+	return string;
+}
