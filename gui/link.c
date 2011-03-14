@@ -440,7 +440,6 @@ static gpointer link_main(gpointer data)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
-	on_destroy_progress_win(emu->progress_win);
 
 	return NULL;
 }
@@ -498,31 +497,3 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 	update->cancel = 0;
 }
 
-
-void progress_bar_init(TilemCalcEmulator* emu) {
-	create_progress_window(emu);
-}
-
-void progress_bar_update(TilemCalcEmulator* emu, gfloat percentage) {
-	gtk_progress_bar_update(GTK_PROGRESS_BAR(emu->ilp_progress_bar), percentage );
-
-
-}
-
-void on_destroy_progress_win(GtkWidget* progress_win)   {
-	gtk_widget_destroy(GTK_WIDGET(progress_win));
-}
-
-void create_progress_window(TilemCalcEmulator* emu) {
-	emu->ilp_progress_bar = gtk_progress_bar_new();
-	emu->progress_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(emu->progress_win), "Progress");
-	gtk_window_set_default_size(GTK_WINDOW(emu->progress_win), 400,30);
-	
-	gtk_signal_connect(GTK_OBJECT(emu->progress_win), "delete-event", G_CALLBACK(on_destroy_progress_win), NULL);
-
-	gtk_container_add(GTK_CONTAINER(emu->progress_win), emu->ilp_progress_bar);
-
-		
-	gtk_widget_show_all(emu->progress_win);
-}

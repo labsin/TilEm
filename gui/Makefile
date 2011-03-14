@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o
+objects = testemu2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o pbar.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -87,8 +87,13 @@ gifencod.o: gifencod.c gifencod.h
 animatedgif.o: animatedgif.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/animatedgif.c
 
+# Screenshot widget
 screenshot.o: screenshot.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/screenshot.c
+
+# Progress bar widget
+pbar.o: pbar.c gui.h *.h ../core/tilem.h
+	$(compile) -c $(srcdir)/pbar.c
 
 install: testemu2
 	chmod +x install.sh

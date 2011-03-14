@@ -317,7 +317,7 @@ void create_progress_window(TilemCalcEmulator* emu);
 void progress_bar_update(TilemCalcEmulator* emu, gfloat percentage);
 
 /* Destroy the progress bar when finished */
-void on_destroy_progress_win(GtkWidget* progress_win);
+void destroy_progress_win(GtkWidget* progress_win);
 
 
 /* ##### macro.c ##### */
