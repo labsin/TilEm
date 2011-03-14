@@ -144,7 +144,7 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi);
 /* ###### skin.c ##### */
 	
 /* Create the SKIN file selector */
-void skin_selection(GLOBAL_SKIN_INFOS *gsi);
+void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi);
 
 /* Choose automatically wich skin tilem must load */
 void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi);

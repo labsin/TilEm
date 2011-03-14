@@ -208,7 +208,7 @@ void on_reset(GLOBAL_SKIN_INFOS * gsi)
 static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 {
 	static GtkItemFactoryEntry right_click_menu[] = {
-		{"/Load skin...", "F12", skin_selection, 1, NULL,NULL},
+		{"/Load skin...", "F12", tilem_user_change_skin, 1, NULL,NULL},
 		{"/Send file...", "F11", load_file, 1, NULL, NULL},
 		{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 		{"/---", NULL, NULL, 0, "<Separator>", NULL},

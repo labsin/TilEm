@@ -24,7 +24,9 @@
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
 void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {
 	DSKIN_L0_A0("**************** fct : tilem_choose_ski_filename_by_default ************\n");
-	
+
+		
+
 	int i;
 	for(i = 0; hwname[i]; i++) {
 		if(strcmp(gsi->emu->calc->hw.name, hwname[i]) == 0){
@@ -41,19 +43,13 @@ void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {
 			strcpy(gsi->SkinFileName, defaultskin[i]);
 	}
 		
-		
 	//printf("skinfilename: %s\n", gsi->SkinFileName);
-	
-	
-	
-		
 	DSKIN_L0_A1("*  calc->hw.name == %s                             *\n",gsi->emu->calc->hw.name);
 	DSKIN_L0_A0("********************************************************\n");
-	//gsi->kl=x3_keylist;
 }
 
 /* GtkFileSelection */
-void skin_selection(GLOBAL_SKIN_INFOS *gsi) {
+void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi) {
 	
 	char* file_selected = NULL ;
 	DSKIN_L0_A0("\nSKINSELECTION\n");
