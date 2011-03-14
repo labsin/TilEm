@@ -18,51 +18,36 @@
  */
 
 #include "skin.h"
+#include "msgbox.h"
 
 
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
-void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi) {
-	DSKIN_L0_A0("**************** fct : choose_skin_filename ************\n");
+void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {
+	DSKIN_L0_A0("**************** fct : tilem_choose_ski_filename_by_default ************\n");
 	
-	if(strcmp(calc->hw.name,"ti73")==0) {
-		  gsi->SkinFileName=(gchar*)malloc(15);
-		  strcpy(gsi->SkinFileName,"./skn/ti73.skn");
-	}else if(strcmp(calc->hw.name,"ti76")==0) {
-		  gsi->SkinFileName=(gchar*)malloc(16);
-		  strcpy(gsi->SkinFileName,"./skn/ti76.skn"); /* no ti76skin for the moment */
-	}else if(strcmp(calc->hw.name,"ti81")==0) {
-		  gsi->SkinFileName=(gchar*)malloc(16);
-		  strcpy(gsi->SkinFileName,"./skn/ti81.skn");
-	}else if(strcmp(calc->hw.name,"ti82")==0) {
-		  gsi->SkinFileName=(gchar*)malloc(15);
-		  strcpy(gsi->SkinFileName,"./skn/ti82.skn");
-	}else if(strcmp(calc->hw.name,"ti83")==0) {
-		gsi->SkinFileName=(gchar*)malloc(41);
-		strcpy(gsi->SkinFileName,"./skn/ti83.skn");
-	}else if(strcmp(calc->hw.name,"ti83p")==0) {
-		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti83plus.skn");
-	}else if(strcmp(calc->hw.name,"ti84p")==0) {
-		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti84plus.skn");
-	}else if(strcmp(calc->hw.name,"ti84pse")==0) {
-		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti84plus.skn");
-	}else if(strcmp(calc->hw.name,"ti84pns")==0) {
-		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti84plus.skn");
-	}else if(strcmp(calc->hw.name,"ti85")==0) {
-		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti82.skn");
-	}else if(strcmp(calc->hw.name,"ti86")==0) {
-		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti82.skn");
-	} else {
-		gsi->SkinFileName=(gchar*)malloc(16);
-		strcpy(gsi->SkinFileName,"./skn/ti83plus.skn");
+	int i;
+	for(i = 0; hwname[i]; i++) {
+		if(strcmp(gsi->emu->calc->hw.name, hwname[i]) == 0){
+			//printf("found: %s\n", gsi->emu->calc->hw.name);
+			gsi->SkinFileName = (char*) malloc(strlen(defaultskin[i]) * sizeof(char) +1);
+			strcpy(gsi->SkinFileName, defaultskin[i]);	
+		}
+	}
+
+	/* Load a default if no correspondance found (to do not crash)
+	   User should change after by loading skin */
+	if(!gsi->SkinFileName)	{
+			gsi->SkinFileName = (char*) malloc(strlen(defaultskin[i]) * sizeof(char) +1);
+			strcpy(gsi->SkinFileName, defaultskin[i]);
 	}
 		
-	DSKIN_L0_A1("*  calc->hw.name == %s                             *\n",calc->hw.name);
+		
+	//printf("skinfilename: %s\n", gsi->SkinFileName);
+	
+	
+	
+		
+	DSKIN_L0_A1("*  calc->hw.name == %s                             *\n",gsi->emu->calc->hw.name);
 	DSKIN_L0_A0("********************************************************\n");
 	//gsi->kl=x3_keylist;
 }

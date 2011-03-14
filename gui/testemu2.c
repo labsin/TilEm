@@ -214,6 +214,7 @@ int main(int argc, char **argv)
 	gsi->si=NULL;
 	gsi->pWindow = NULL;
 	gsi->FileToLoad = NULL;
+	gsi->SkinFileName = NULL;
 	gsi->MacroName = NULL;
 	gsi->mouse_key = 0;
 	gsi->macro_file = NULL;
@@ -285,7 +286,7 @@ int main(int argc, char **argv)
 		} else {
 			/* User does not have choosen another skin for this model, choose officials :) */
 			printf("skin default not found : %s\n", gsi->RomName ); 
-			choose_skin_filename(gsi->emu->calc,gsi);
+			tilem_choose_skin_filename_by_default(gsi);
 		}
 	}	
 
@@ -296,10 +297,11 @@ int main(int argc, char **argv)
 
 	if(gsi->FileToLoad != NULL) /* Given as parameter ? */
 		load_file_from_file(gsi, gsi->FileToLoad);
-	if(gsi->MacroName != NULL) /* Given as parameter ? */
-		play_macro_default(gsi, gsi->MacroName); 		
 	if(gsi->isStartingSkinless) /* Given as parameter ? */
 		switch_view(gsi); /* Start without skin */
+	if(gsi->MacroName != NULL) { /* Given as parameter ? */
+		play_macro_default(gsi, gsi->MacroName); 		
+	}
 
 	gtk_main();
 

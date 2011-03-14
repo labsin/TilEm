@@ -147,7 +147,7 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi);
 void skin_selection(GLOBAL_SKIN_INFOS *gsi);
 
 /* Choose automatically wich skin tilem must load */
-void choose_skin_filename(TilemCalc* calc,GLOBAL_SKIN_INFOS *gsi);
+void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi);
 
 
 
