@@ -292,6 +292,8 @@ int main(int argc, char **argv)
 
 	/* Draw skin */	
 	gsi->pWindow=draw_screen(gsi);
+
+	tilem_calc_emulator_run(gsi->emu);
 		
 	if(gsi->FileToLoad != NULL) /* Given as parameter ? */
 		load_file_from_file(gsi, gsi->FileToLoad);
@@ -299,8 +301,6 @@ int main(int argc, char **argv)
 		play_macro_default(gsi, gsi->MacroName); 		
 	if(gsi->isStartingSkinless) /* Given as parameter ? */
 		switch_view(gsi); /* Start without skin */
-	
-	tilem_calc_emulator_run(gsi->emu);
 
 	gtk_main();
 
