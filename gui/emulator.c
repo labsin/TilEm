@@ -35,6 +35,50 @@
 #define GRAY_WINDOW_SIZE 2
 #define GRAY_SAMPLE_INT 200
 
+static void update_link(TilemCalcEmulator *emu)
+{
+	int b;
+
+	if (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR) {
+		emu->ilp_error = TRUE;
+		g_cond_broadcast(emu->ilp_finished_cond);
+		return;
+	}
+
+	if (emu->ilp_write_count > 0) {
+		b = emu->ilp_write_queue[0];
+		if (!tilem_linkport_graylink_send_byte(emu->calc, b)) {
+			emu->ilp_write_queue++;
+			emu->ilp_write_count--;
+			emu->ilp_timeout = emu->ilp_timeout_max;
+			if (emu->ilp_write_count == 0)
+				g_cond_broadcast(emu->ilp_finished_cond);
+		}
+	}
+
+	if (emu->ilp_read_count > 0) {
+		b = tilem_linkport_graylink_get_byte(emu->calc);
+		if (b != -1) {
+			emu->ilp_read_queue[0] = b;
+			emu->ilp_read_queue++;
+			emu->ilp_read_count--;
+			emu->ilp_timeout = emu->ilp_timeout_max;
+			if (emu->ilp_read_count == 0)
+				g_cond_broadcast(emu->ilp_finished_cond);
+		}
+	}
+
+	if (emu->ilp_timeout && !emu->calc->z80.stop_reason) {
+		emu->ilp_timeout--;
+		if (!emu->ilp_timeout) {
+			emu->ilp_error = TRUE;
+			emu->ilp_write_count = 0;
+			emu->ilp_read_count = 0;
+			g_cond_broadcast(emu->ilp_finished_cond);
+		}
+	}
+}
+
 static gboolean refresh_lcd(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -72,6 +116,9 @@ static gpointer core_thread(gpointer data)
 
 		tilem_z80_run_time(emu->calc, MICROSEC_PER_TICK, NULL);
 
+		if (emu->ilp_active)
+			update_link(emu);
+
 		ticks--;
 		if (!ticks) {
 			g_mutex_lock(emu->lcd_mutex);
@@ -87,12 +134,17 @@ static gpointer core_thread(gpointer data)
 			ticks = TICKS_PER_FRAME;
 		}
 
-		g_timer_elapsed(tmr, &tcur);
-		tnext += MICROSEC_PER_TICK;
-		if (tnext - tcur < MICROSEC_PER_TICK)
-			g_usleep(tnext - tcur);
-		else
-			tnext = tcur;
+		if (!emu->calc->z80.stop_reason) {
+			g_timer_elapsed(tmr, &tcur);
+			tnext += MICROSEC_PER_TICK;
+			if (tnext - tcur < MICROSEC_PER_TICK)
+				g_usleep(tnext - tcur);
+			else
+				tnext = tcur;
+		}
+		else {
+			g_timer_elapsed(tmr, &tnext);
+		}
 
 		g_mutex_lock(emu->calc_mutex);
 	}
@@ -116,6 +168,7 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 
 	emu->calc_mutex = g_mutex_new();
 	emu->calc_wakeup_cond = g_cond_new();
+	emu->ilp_finished_cond = g_cond_new();
 	emu->lcd_mutex = g_mutex_new();
 
 	return emu;

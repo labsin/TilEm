@@ -56,112 +56,140 @@ void print_lc_error(int errnum)
 
 
 /* Internal link emulation */
-static int ilp_reset(CableHandle* cbl)
+
+/* Open cable */
+static int ilp_open(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
 	g_mutex_lock(emu->calc_mutex);
+
+	if (emu->ilp_active) {
+		fprintf(stderr, "INTERNAL ERROR: cable already opened\n");
+		g_mutex_unlock(emu->calc_mutex);
+		return 1;
+	}
+
+	emu->calc->z80.stop_mask &= ~(TILEM_STOP_LINK_READ_BYTE
+	                              | TILEM_STOP_LINK_WRITE_BYTE
+	                              | TILEM_STOP_LINK_ERROR);
+
+	emu->ilp_active = TRUE;
+	emu->ilp_error = FALSE;
+	emu->ilp_abort = FALSE;
+	emu->ilp_timeout = 0;
+	emu->ilp_write_count = 0;
+	emu->ilp_read_count = 0;
 	tilem_linkport_graylink_reset(emu->calc);
+
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 	return 0;
 }
 
-/* Send */
+/* Close cable */
+static int ilp_close(CableHandle* cbl)
+{
+	TilemCalcEmulator* emu = cbl->priv;
+
+	g_mutex_lock(emu->calc_mutex);
+
+	if (!emu->ilp_active) {
+		fprintf(stderr, "INTERNAL ERROR: cable already closed\n");
+		g_mutex_unlock(emu->calc_mutex);
+		return 1;
+	}
+
+	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
+	emu->calc->z80.stop_mask |= (TILEM_STOP_LINK_STATE
+	                             | TILEM_STOP_LINK_READ_BYTE
+	                             | TILEM_STOP_LINK_WRITE_BYTE
+	                             | TILEM_STOP_LINK_ERROR);
+
+	emu->ilp_active = FALSE;
+	tilem_linkport_graylink_reset(emu->calc);
+
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
+	return 0;
+}
+
+/* Reset cable */
+static int ilp_reset(CableHandle* cbl)
+{
+	TilemCalcEmulator* emu = cbl->priv;
+
+	g_mutex_lock(emu->calc_mutex);
+
+	emu->ilp_error = FALSE;
+	emu->ilp_timeout = 0;
+	emu->ilp_write_count = 0;
+	emu->ilp_read_count = 0;
+	tilem_linkport_graylink_reset(emu->calc);
+
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
+	return 0;
+}
+
+/* Send data to calc */
 static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 	int status = 0;
-	unsigned int i;
-	dword prevmask;
 
 	g_mutex_lock(emu->calc_mutex);
 
+	g_cond_broadcast(emu->calc_wakeup_cond);
+
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
-	prevmask = emu->calc->z80.stop_mask;
-	emu->calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE | TILEM_STOP_LINK_WRITE_BYTE | TILEM_STOP_LINK_ERROR);
 
-	tilem_z80_run_time(emu->calc, 1000, NULL);
+	emu->ilp_timeout = emu->ilp_timeout_max = cbl->timeout * 10;
+	emu->ilp_write_queue = data;
+	emu->ilp_write_count = count;
 
-	printf(" >>");
-	while (count > 0) {
-		if (!tilem_linkport_graylink_send_byte(emu->calc, data[0])) {
-			printf(" %02X", data[0]);
-			data++;
-			count--;
-		}
-
-		for (i = 0; i < cbl->timeout; i++)
-			if (tilem_linkport_graylink_ready(emu->calc)|| tilem_z80_run_time(emu->calc, 100000, NULL))
-				break;
-
-		if (i == cbl->timeout || (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR)) {
-			tilem_linkport_graylink_reset(emu->calc);
+	while (emu->ilp_write_count != 0) {
+		if (emu->ilp_abort || emu->ilp_error) {
 			status = ERROR_WRITE_TIMEOUT;
 			break;
 		}
+		g_cond_wait(emu->ilp_finished_cond, emu->calc_mutex);
 	}
-	printf("\n");
 
-	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
-	emu->calc->z80.stop_mask = prevmask;
+	emu->ilp_timeout = 0;
 
-	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
 }
 
+/* Receive data from calc */
 static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 	int status = 0;
-	int value;
-	unsigned int i;
-	dword prevmask;
 
 	g_mutex_lock(emu->calc_mutex);
 
+	g_cond_broadcast(emu->calc_wakeup_cond);
+
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
-	prevmask = emu->calc->z80.stop_mask;
-	emu->calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE
-				      | TILEM_STOP_LINK_WRITE_BYTE
-				      | TILEM_STOP_LINK_ERROR);
 
-	tilem_z80_run_time(emu->calc, 1000, NULL);
+	emu->ilp_timeout = emu->ilp_timeout_max = cbl->timeout * 10;
+	emu->ilp_read_queue = data;
+	emu->ilp_read_count = count;
 
-	printf(" <<");
-	while (count > 0) {
-		value = tilem_linkport_graylink_get_byte(emu->calc);
-
-		if (value != -1) {
-			printf(" %02X", value);
-			data[0] = value;
-			data++;
-			count--;
-			if (!count)
-				break;
-		}
-
-		for (i = 0; i < cbl->timeout; i++)
-			if (tilem_z80_run_time(emu->calc, 100000, NULL))
-				break;
-
-		if (i == cbl->timeout
-		    || (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR)) {
-			tilem_linkport_graylink_reset(emu->calc);
-			status = ERROR_READ_TIMEOUT;
+	while (emu->ilp_read_count != 0) {
+		if (emu->ilp_abort || emu->ilp_error) {
+			status = ERROR_WRITE_TIMEOUT;
 			break;
 		}
+		g_cond_wait(emu->ilp_finished_cond, emu->calc_mutex);
 	}
-	printf("\n");
 
-	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
-	emu->calc->z80.stop_mask = prevmask;
+	emu->ilp_timeout = 0;
 
-	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
-
 }
 
 static int ilp_check(CableHandle* cbl, int* status)
@@ -189,6 +217,8 @@ CableHandle* internal_link_handle_new(TilemCalcEmulator* emu)
 		return NULL;
 
 	cbl->priv = emu;
+	cbl->cable->open = ilp_open;
+	cbl->cable->close = ilp_close;
 	cbl->cable->reset = ilp_reset;
 	cbl->cable->send = ilp_send;
 	cbl->cable->recv = ilp_recv;

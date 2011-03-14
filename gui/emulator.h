@@ -31,6 +31,17 @@ typedef struct _TilemCalcEmulator {
 
 	char *rom_file_name;
 
+	gboolean ilp_active;       /* internal link cable active */
+	GCond *ilp_finished_cond;  /* used to signal when transfer finishes */
+	gboolean ilp_error;        /* error (collision or timeout) */
+	gboolean ilp_abort;        /* transfer aborted */
+	int ilp_timeout_max;       /* time allowed per byte */
+	int ilp_timeout;           /* time left for next byte */
+	byte *ilp_read_queue;      /* buffer for received data */
+	int ilp_read_count;        /* number of bytes left to read */
+	const byte *ilp_write_queue; /* data to be sent */
+	int ilp_write_count;         /* number of bytes left to send */
+
 	/* FIXME: following stuff belongs elsewhere */
 
 	byte* lcd_image_buf;
