@@ -535,3 +535,40 @@ void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename)
 {
 	tilem_calc_emulator_send_file(gsi->emu, filename);
 }
+
+/* Load a file without file_selector old method without thread */
+void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename)
+{
+		CableHandle* cbl;
+		CalcHandle* ch;
+	
+		/* Init the libtis */
+		ticables_library_init();
+		tifiles_library_init();
+		ticalcs_library_init();
+		
+		/* Create cable (here an internal an dvirtual cabla) */
+		cbl = internal_link_handle_new(gsi->emu);
+		if (!cbl) 
+			fprintf(stderr, "Cannot create ilp handle\n");
+		
+		/* Create calc */
+		ch = ticalcs_handle_new(get_calc_model(gsi->emu->calc));
+		if (!ch) 
+			fprintf(stderr, "Cannot create calc handle\n");
+		
+		/* Attach cable to the emulated calc */
+		ticalcs_cable_attach(ch, cbl);
+		
+		send_file(gsi->emu, ch,  filename); /* See link.c for send_file function */
+		
+		ticalcs_cable_detach(ch);
+		ticalcs_handle_del(ch);
+		ticables_handle_del(cbl);
+
+		/* Exit the libtis */
+		ticalcs_library_exit();
+		tifiles_library_exit();
+		ticables_library_exit();
+
+}

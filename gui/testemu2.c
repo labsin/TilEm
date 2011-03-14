@@ -299,12 +299,13 @@ int main(int argc, char **argv)
 	tilem_calc_emulator_run(gsi->emu);
 
 	if(gsi->FileToLoad != NULL) /* Given as parameter ? */
-		load_file_from_file(gsi, gsi->FileToLoad);
+		tilem_load_file_from_file_at_startup(gsi, gsi->FileToLoad);
 	if(gsi->isStartingSkinless) /* Given as parameter ? */
 		switch_view(gsi); /* Start without skin */
 	if(gsi->MacroName != NULL) { /* Given as parameter ? */
 		play_macro_default(gsi, gsi->MacroName); 		
 	}
+	//progress_bar_init(gsi->emu);
 
 	gtk_main();
 

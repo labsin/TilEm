@@ -54,34 +54,40 @@ typedef struct _TilemKeyBinding {
 	byte *scancodes;         /* calculator scancodes */
 } TilemKeyBinding;
 
+/* FIXME : I plan to change all this stuff to use TilemCalcEmu struct instead
+Command line args will be grouped in its own struct
+Debugger struff will be grouped in its own struct
+Idem for macros and gif */
+
 /* Internal data structure for gui */
 typedef struct GLOBAL_SKIN_INFOS {
-	SKIN_INFOS *si;
-	GtkWidget *pWindow;
+	SKIN_INFOS *si; // Skin infos (see skinops.h) 
+	GtkWidget *pWindow; // top level window
 	GtkWidget *pLayout;
 	GtkWidget *pFrame;
-	gchar* FileSelected;
-	GtkFileChooser *pFileChooser;
+	gchar* FileSelected; // used by GtkFileSelection
+	GtkFileChooser *pFileChooser; // widget for the 
 	gint FileChooserResult;
 	gchar* SkinFileName;
 	GtkWidget *pRadio;
-	int view;
-	char calc_id;
-	char *RomName;
-	char *SavName;
-	char RomType;
-	char *FileToLoad; 
-	char *MacroName;
-	TilemCalcEmulator *emu;
-	TilemDebuggerRegister *reg_entry;
-	gboolean isDebuggerRunning;
+	int view;  // skinless or non
+	char calc_id; // model id
+	char *RomName;  // the romname (cmd line arg)
+	char *SavName; // idem
+	char *FileToLoad;  //cmd line arg (file to load at startup)
+	char *MacroName;   // cmd line arg 
+	TilemCalcEmulator *emu; // struct emu
+	/* Debgugger */ 
+	TilemDebuggerRegister *reg_entry; 
+	gboolean isDebuggerRunning; 
 	GtkWidget* stack_treeview;	
-	FILE * macro_file;
-	FILE * animation_file;
-	gboolean isMacroRecording;
-	gboolean isMacroPlaying;
-	gboolean isStartingSkinless;
-	gboolean isAnimScreenshotRecording;
+	FILE * macro_file;	// macro
+	FILE * animation_file; // gif
+	/* FLAGS */
+	gboolean isMacroRecording; // to know everywhere that macro is recording
+	gboolean isMacroPlaying; // idem for play
+	gboolean isStartingSkinless; // cmd line argument
+	gboolean isAnimScreenshotRecording; // know everywhere that screenshot is recording (gif)
 
 	int mouse_key;		/* Key currently pressed by mouse button */
 
@@ -134,6 +140,9 @@ void load_file(GLOBAL_SKIN_INFOS *gsi);
 
 /* Load the file designed by filename */
 void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) ;
+
+/* Load a file at startup using old method (no thread) */
+void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename);
 
 /* Take a screenshot i*/
 void screenshot(GLOBAL_SKIN_INFOS *gsi);
@@ -298,6 +307,17 @@ int get_calc_model(TilemCalc* calc);
 /* Simply emulate a click on key (use to prepare link -> come into receive mode) */
 void run_with_key(TilemCalc* calc, int key);
 
+/* Create a progress bar */
+void progress_bar_init(TilemCalcEmulator* emu);
+
+/* create the progress bar window (FIXME : should be static into link.h or other) */
+void create_progress_window(TilemCalcEmulator* emu);
+
+/* Update the progress bar */
+void progress_bar_update(TilemCalcEmulator* emu, gfloat percentage);
+
+/* Destroy the progress bar when finished */
+void on_destroy_progress_win(GtkWidget* progress_win);
 
 
 /* ##### macro.c ##### */
