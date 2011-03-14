@@ -248,7 +248,7 @@ void set_sendfile_recentdir(char* recentdir) {
         g_free (data); 
 }
 
-/* Search and return the last directory opened to send a file*/
+/* Search the value for key into group */
 char* tilem_config_universal_getter(char* group, char* key) {
 
 	GKeyFile * gkf;

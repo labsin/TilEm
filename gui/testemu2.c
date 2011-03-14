@@ -198,6 +198,9 @@
 * - Fix an important mistake into the gif creator function (palette should be before gif frame information).
 * ---18/02/11---
 * - Connect a timer to automatically add frame to a animated screenshot (using screenshot box).
+* ---14/03/11---
+* - Improve default skin choice.
+* - Define the skin's basedir into the config.ini. Add a universal getter into config.c .
 */
 
 
