@@ -191,12 +191,12 @@ void set_modelcalcid(char* romname, char id) {
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) {
 
-	set_defaultskin(gsi->RomName, gsi->SkinFileName);
+	set_defaultskin(gsi->emu->cmdline->RomName, gsi->emu->cmdline->SkinFileName);
 }
 
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi) {
-	set_modelcalcid(gsi->RomName, gsi->emu->calc->hw.model_id);
+	set_modelcalcid(gsi->emu->cmdline->RomName, gsi->emu->calc->hw.model_id);
 
 }
 

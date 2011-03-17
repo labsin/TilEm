@@ -108,7 +108,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	}
 
 	gsi->si = g_new0(SKIN_INFOS, 1);
-	skin_load(gsi->si, gsi->SkinFileName);
+	skin_load(gsi->si, gsi->emu->cmdline->SkinFileName);
 
 	lcdwidth = gsi->emu->calc->hw.lcdwidth;
 	lcdheight = gsi->emu->calc->hw.lcdheight;

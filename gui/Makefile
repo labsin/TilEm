@@ -95,6 +95,10 @@ screenshot.o: screenshot.c gui.h *.h ../core/tilem.h
 pbar.o: pbar.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/pbar.c
 
+# Startup handling 
+
+
+
 install: testemu2
 	chmod +x install.sh
 	./install.sh

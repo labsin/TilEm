@@ -68,15 +68,11 @@ typedef struct GLOBAL_SKIN_INFOS {
 	gchar* FileSelected; // used by GtkFileSelection
 	GtkFileChooser *pFileChooser; // widget for the 
 	gint FileChooserResult;
-	gchar* SkinFileName;
 	GtkWidget *pRadio;
-	int view;  // skinless or non
+	int view;  	// skinless or not
 	char calc_id; // model id
-	char *RomName;  // the romname (cmd line arg)
-	char *SavName; // idem
-	char *FileToLoad;  //cmd line arg (file to load at startup)
-	char *MacroName;   // cmd line arg 
 	TilemCalcEmulator *emu; // struct emu
+
 	/* Debgugger */ 
 	TilemDebuggerRegister *reg_entry; 
 	gboolean isDebuggerRunning; 
@@ -86,7 +82,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 	/* FLAGS */
 	gboolean isMacroRecording; // to know everywhere that macro is recording
 	gboolean isMacroPlaying; // idem for play
-	gboolean isStartingSkinless; // cmd line argument
 	gboolean isAnimScreenshotRecording; // know everywhere that screenshot is recording (gif)
 
 	int mouse_key;		/* Key currently pressed by mouse button */
@@ -107,6 +102,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	int key_queue_pressed;
 
 }GLOBAL_SKIN_INFOS;
+
 
 
 /* ###### event.c ##### */
@@ -360,10 +356,10 @@ void run_with_key_slowly(TilemCalc* calc, int key);
 void help(char *name, int ret) ;
 
 /* Command line argument handling */
-int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) ;
+int getargs(int argc, char* argv[], TilemCmdlineArgs* cmdline) ;
 
 /* Create the SavName */
-void create_savname(GLOBAL_SKIN_INFOS* gsi) ;
+void create_savname(TilemCmdlineArgs* cmdline) ;
 
 
 

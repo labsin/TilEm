@@ -216,21 +216,30 @@ int main(int argc, char **argv)
 	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
 	gsi->si=NULL;
 	gsi->pWindow = NULL;
-	gsi->FileToLoad = NULL;
-	gsi->SkinFileName = NULL;
-	gsi->MacroName = NULL;
+	
+	
+	//gsi->MacroName = NULL;
 	gsi->mouse_key = 0;
 	gsi->macro_file = NULL;
-	gsi->SavName = NULL;
 	gsi->isMacroRecording = 0;
 	gsi->isAnimScreenshotRecording = FALSE;
+	gsi->isDebuggerRunning=FALSE;
+	
+	/* TilemCmdlineArgs */
+	TilemCmdlineArgs *cmdline = g_new0(TilemCmdlineArgs, 1);
+	cmdline->SkinFileName = NULL;
+	cmdline->RomName = NULL;
+	cmdline->SavName = NULL;
+	cmdline->FileToLoad = NULL;
+	cmdline->SavName = NULL;
+	cmdline->MacroToPlay = NULL;
+	cmdline->isStartingSkinless = FALSE;
 
 	gsi->key_queue = NULL;
 	gsi->key_queue_len = 0;
 	gsi->key_queue_timer = 0;
 
 	/***** TESTING *****/
-
 	gsi->nkeybindings = 3;
 	gsi->keybindings = g_new(TilemKeyBinding, 3);
 	gsi->keybindings[0].keysym = GDK_A;
@@ -253,19 +262,14 @@ int main(int argc, char **argv)
 
 	/*****/
 
-	/* Init isDebuggerRunning */
-	gsi->isDebuggerRunning=FALSE;
 
-	/* Default start with skin */
-	gsi->isStartingSkinless = FALSE;
-	
-	/* Get the romname */
-	getargs(argc, argv, gsi);
-	/* End */	
-	
 	gsi->emu = tilem_calc_emulator_new();
+	
+	getargs(argc, argv, cmdline);
+	
+	gsi->emu->cmdline = cmdline;
 
-	if (!tilem_calc_emulator_load_state(gsi->emu, gsi->RomName)) {
+	if (!tilem_calc_emulator_load_state(gsi->emu, cmdline->RomName)) {
 		tilem_calc_emulator_free(gsi->emu);
 		return 1;
 	}
@@ -278,13 +282,13 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A0("********************************************************\n");
 	
 
-	if(gsi->SkinFileName == NULL) { /* Given as parameter ? */
+	if(cmdline->SkinFileName == NULL) { /* Given as parameter ? */
 		/* Test if exists into config.ini */
-		if(get_defaultskin(gsi->RomName) != NULL) 
+		if(get_defaultskin(cmdline->RomName) != NULL) 
 		{
 			/* it exists */
-			gsi->SkinFileName = get_defaultskin(gsi->RomName);
-			printf("Load saved skin : %s\n", gsi->SkinFileName);
+			cmdline->SkinFileName = get_defaultskin(cmdline->RomName);
+			printf("Load saved skin : %s\n", cmdline->SkinFileName);
 			DCONFIG_FILE_L0_A1("Saved model id : %c\n", gsi->calc_id);
 		} else {
 			/* User does not have choosen another skin for this model, choose officials :) */
@@ -298,12 +302,12 @@ int main(int argc, char **argv)
 
 	tilem_calc_emulator_run(gsi->emu);
 
-	if(gsi->FileToLoad != NULL) /* Given as parameter ? */
-		tilem_load_file_from_file_at_startup(gsi, gsi->FileToLoad);
-	if(gsi->isStartingSkinless) /* Given as parameter ? */
+	if(cmdline->FileToLoad != NULL) /* Given as parameter ? */
+		tilem_load_file_from_file_at_startup(gsi, cmdline->FileToLoad);
+	if(cmdline->isStartingSkinless) /* Given as parameter ? */
 		switch_view(gsi); /* Start without skin */
-	if(gsi->MacroName != NULL) { /* Given as parameter ? */
-		play_macro_default(gsi, gsi->MacroName); 		
+	if(cmdline->MacroToPlay != NULL) { /* Given as parameter ? */
+		play_macro_default(gsi, cmdline->MacroToPlay); 		
 	}
 	//progress_bar_init(gsi->emu);
 

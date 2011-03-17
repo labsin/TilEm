@@ -44,7 +44,7 @@ void help(char *name, int ret)
 }
 
 /* Get args using getopt */
-int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) {
+int getargs(int argc, char* argv[], TilemCmdlineArgs* cmdline) {
        	
        	char options;
 
@@ -59,32 +59,32 @@ int getargs(int argc, char* argv[], GLOBAL_SKIN_INFOS* gsi) {
                 {		//de commande
 			case 's':
                         printf("arg : s, optarg = %s\n", optarg);
-			gsi->SavName = optarg;
-                        printf("gsi->SavName = %s\n", gsi->SavName);
+			cmdline->SavName = optarg;
+                        printf("cmdline->SavName = %s\n", cmdline->SavName);
 			break;
                         case 'r':
                         printf("arg : r, optarg = %s\n", optarg);
-			gsi->RomName = optarg;
-                        printf("gsi->RomName = %s\n", gsi->RomName);
+			cmdline->RomName = optarg;
+                        printf("cmdline->RomName = %s\n", cmdline->RomName);
                         break;
                         case 'f':
                         printf("arg : f, optarg = %s\n", optarg);
-			gsi->FileToLoad = optarg;
-                        printf("gsi->FileToLoad = %s\n", gsi->FileToLoad);
+			cmdline->FileToLoad = optarg;
+                        printf("cmdline->FileToLoad = %s\n", cmdline->FileToLoad);
                         break;
                         case 'k':
                         printf("arg : k, optarg = %s\n", optarg);
-			gsi->SkinFileName = optarg;
-                        printf("gsi->SkinFileName = %s\n", gsi->SkinFileName);
+			cmdline->SkinFileName = optarg;
+                        printf("cmdline->SkinFileName = %s\n", cmdline->SkinFileName);
                         break;
                         case 'm':
                         printf("arg : m, optarg = %s\n", optarg);
-			gsi->MacroName = optarg;
-                        printf("gsi->MacroName = %s\n", gsi->MacroName);
+			cmdline->MacroToPlay = optarg;
+                        printf("cmdline->MacroName = %s\n", cmdline->MacroToPlay);
                         break;
 			case 'l':
                         printf("arg : l\n");
-			gsi->isStartingSkinless = TRUE;
+			cmdline->isStartingSkinless = TRUE;
                         break;
 			
                         default :
@@ -99,25 +99,25 @@ return 0;
 }
 
 /* Create the savname */
-void create_savname(GLOBAL_SKIN_INFOS* gsi) {
+void create_savname(TilemCmdlineArgs* cmdline) {
 
 	char* p;
 	
-	if(gsi->RomName != NULL) 
-		if(gsi->SavName == NULL) {
+	if(cmdline->RomName != NULL) 
+		if(cmdline->SavName == NULL) {
 			
-			gsi->SavName = g_malloc(strlen(gsi->RomName) + 5); /* sav/ (4 char) + romname + .sav (4 char) + \0 (1 char) */
-			memset(gsi->SavName, 0 , strlen(gsi->RomName));
-			strcat(gsi->SavName, gsi->RomName);
+			cmdline->SavName = g_malloc(strlen(cmdline->RomName) + 5); /* sav/ (4 char) + romname + .sav (4 char) + \0 (1 char) */
+			memset(cmdline->SavName, 0 , strlen(cmdline->RomName));
+			strcat(cmdline->SavName, cmdline->RomName);
 			
-			if ((p = strrchr(gsi->SavName, '.'))) 
+			if ((p = strrchr(cmdline->SavName, '.'))) 
 			{
 				strcpy(p, ".sav");
 				DGLOBAL_L0_A0("**************** fct : main ****************************\n");
-				DGLOBAL_L0_A2("*  gsi->RomName=%s gsi->SavName=%s           *\n",gsi->RomName, gsi->SavName);	
+				DGLOBAL_L0_A2("*  cmdline->RomName=%s cmdline->SavName=%s           *\n",cmdline->RomName, cmdline->SavName);	
 				DGLOBAL_L0_A0("********************************************************\n");
 			} else {
-				strcat(gsi->SavName, ".sav");
+				strcat(cmdline->SavName, ".sav");
 		}
 	}
 }

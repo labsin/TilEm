@@ -17,6 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* This struct is used to handle cmd line args */
+typedef struct TilemCmdlineArg {
+	char *SkinFileName;
+	char *RomName;  
+	char *SavName; 
+	char *FileToLoad;  
+	char *MacroToPlay;  
+	/* Flags */
+	gboolean isStartingSkinless; 
+} TilemCmdlineArgs;
+
+
+
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
 
@@ -30,6 +43,9 @@ typedef struct _TilemCalcEmulator {
 	TilemGrayLCD *glcd;
 
 	char *rom_file_name;
+	
+	/* new struct to handle cmd line args */
+	TilemCmdlineArgs *cmdline;
 
 	GtkWidget* ilp_progress_bar; 		   /* progress bar (link) */
 	GtkWidget* progress_win; 		   /* progress bar (link) */

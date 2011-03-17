@@ -96,7 +96,7 @@ void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz)
 {
   GifTree *first = &GifRoot, *newNode, *curNode;
   unsigned char   *end;
-  int     cc, eoi, next, tel=0, dbw=0;
+  int     cc, eoi, next, tel=0; //, dbw=0;
   short   cLength;
 
   char    *pos, *buffer;

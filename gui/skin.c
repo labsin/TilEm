@@ -35,21 +35,21 @@ void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {
 			/* Get the default directory wich contains the skins */
 			char* basedir = tilem_config_universal_getter("skin", "basedir");
 			printf("basedir : %s\n", basedir);
-			gsi->SkinFileName = (char*) malloc(strlen(basedir) * sizeof(char) + strlen(defaultskin[i]) * sizeof(char) +1);
-			strcpy(gsi->SkinFileName, basedir);	
-			strcat(gsi->SkinFileName, defaultskin[i]);	
+			gsi->emu->cmdline->SkinFileName = (char*) malloc(strlen(basedir) * sizeof(char) + strlen(defaultskin[i]) * sizeof(char) +1);
+			strcpy(gsi->emu->cmdline->SkinFileName, basedir);	
+			strcat(gsi->emu->cmdline->SkinFileName, defaultskin[i]);	
 		}
 	}
 
 	/* Load a default if no correspondance found (to do not crash)
 	   User should change after by loading skin */
-	if(!gsi->SkinFileName)	{
+	if(!gsi->emu->cmdline->SkinFileName)	{
 			char* basedir = tilem_config_universal_getter("skin", "basedir");
 			printf("basedir : %s\n", basedir);
-			gsi->SkinFileName = (char*) malloc(strlen(basedir) * sizeof(char) + strlen(defaultskin[i]) * sizeof(char) +1);
-			strcpy(gsi->SkinFileName, basedir);	
-			gsi->SkinFileName = (char*) malloc(strlen(defaultskin[i]) * sizeof(char) +1);
-			strcpy(gsi->SkinFileName, defaultskin[i]);
+			gsi->emu->cmdline->SkinFileName = (char*) malloc(strlen(basedir) * sizeof(char) + strlen(defaultskin[i]) * sizeof(char) +1);
+			strcpy(gsi->emu->cmdline->SkinFileName, basedir);	
+			gsi->emu->cmdline->SkinFileName = (char*) malloc(strlen(defaultskin[i]) * sizeof(char) +1);
+			strcpy(gsi->emu->cmdline->SkinFileName, defaultskin[i]);
 	}
 		
 	//printf("skinfilename: %s\n", gsi->SkinFileName);
@@ -74,9 +74,9 @@ void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi) {
 			DSKIN_L0_A2("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
 			DSKIN_L0_A1("file to load : %s\n", file_selected);
 		
-			gsi->SkinFileName= (char*) malloc(strlen(file_selected) * sizeof(char));
-			strcpy(gsi->SkinFileName, file_selected);
-			printf("Just before loading skin : gsi->SkinFileName : %s\n ", gsi->SkinFileName);
+			gsi->emu->cmdline->SkinFileName= (char*) malloc(strlen(file_selected) * sizeof(char));
+			strcpy(gsi->emu->cmdline->SkinFileName, file_selected);
+			printf("Just before loading skin : gsi->SkinFileName : %s\n ", gsi->emu->cmdline->SkinFileName);
 			free(file_selected);
 			
 			/* redraw the skin into the Window (here gsi->pWindow) */
