@@ -367,6 +367,7 @@ int get_calc_model(TilemCalc* calc)
 		return CALC_TI82;
 
 	case TILEM_CALC_TI83:
+	case TILEM_CALC_TI76:
 		return CALC_TI83;
 
 	case TILEM_CALC_TI83P:
@@ -375,6 +376,7 @@ int get_calc_model(TilemCalc* calc)
 
 	case TILEM_CALC_TI84P:
 	case TILEM_CALC_TI84P_SE:
+	case TILEM_CALC_TI84P_NSPIRE:
 		return CALC_TI84P;
 
 	case TILEM_CALC_TI85:
