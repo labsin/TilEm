@@ -393,17 +393,20 @@ int get_calc_model(TilemCalc* calc)
 /* Link thread main loop */
 static gpointer link_main(gpointer data)
 {
+
 	TilemCalcEmulator *emu = data;
+	
+
 	char *fname;
-	gfloat progress = 0;
 	CalcHandle *ch;
 	CableHandle *cbl;
-
+	
 	ticables_library_init();
 	tifiles_library_init();
 	ticalcs_library_init();
 
 	cbl = internal_link_handle_new(emu);
+
 
 	g_mutex_lock(emu->link_queue_mutex);
 	while (!emu->link_cancel) {
@@ -419,9 +422,8 @@ static gpointer link_main(gpointer data)
 			g_free(fname);
 			break;
 		}
-		progress = progress + 0.1;	
-		//gtk_main_iteration();
-		progress_bar_update(emu, progress) ;
+		
+
 		ticalcs_update_set(ch, emu->link_update);
 
 		ticalcs_cable_attach(ch, cbl);
@@ -442,6 +444,7 @@ static gpointer link_main(gpointer data)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
+	
 
 	return NULL;
 }
@@ -449,11 +452,13 @@ static gpointer link_main(gpointer data)
 void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
                                    const char *filename)
 {
-	progress_bar_init(emu);
 	g_return_if_fail(emu != NULL);
 	g_return_if_fail(emu->calc != NULL);
 	g_return_if_fail(filename != NULL);
-
+	
+	progress_bar_init(emu);
+	g_timeout_add(100, progress_bar_update_activity, (gpointer)emu);
+	
 	g_mutex_lock(emu->link_queue_mutex);
 	g_queue_push_tail(emu->link_queue, g_strdup(filename));
 	g_cond_broadcast(emu->link_queue_cond);
@@ -461,6 +466,7 @@ void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
 
 	if (!emu->link_thread)
 		emu->link_thread = g_thread_create(&link_main, emu, TRUE, NULL);
+
 }
 
 void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
@@ -495,7 +501,8 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 	/* wait for link thread to exit */
 	g_thread_join(emu->link_thread);
 	emu->link_thread = NULL;
-
+	
+	destroy_progress(emu->ilp_progress_win, (gpointer) emu);
 	update->cancel = 0;
 }
 

@@ -31,34 +31,46 @@ void progress_bar_init(TilemCalcEmulator* emu) {
 	create_progress_window(emu);
 }
 
-/* Update the progress bar (FIXME : gtk_progress_bar_update is deprecated) */
-void progress_bar_update(TilemCalcEmulator* emu, gfloat percentage) {
-	gtk_progress_bar_update(GTK_PROGRESS_BAR(emu->ilp_progress_bar), percentage );
+
+/* Update the progress_bar (activity mode) */
+gboolean progress_bar_update_activity(TilemCalcEmulator* emu) {
+	if(!emu->ilp_progress_win)
+		return FALSE;
+	if(GTK_IS_PROGRESS_BAR(emu->ilp_progress_bar))
+		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(emu->ilp_progress_bar));
+	return TRUE;
 
 }
 
-/* Destroy the widget */
-void destroy_progress_win(GtkWidget* progress_win)   {
-	gtk_widget_destroy(GTK_WIDGET(progress_win));
+void destroy_progress(GtkWidget *widget, gpointer* data) {
+	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
+	if(GTK_IS_WIDGET(widget)) {
+		gtk_widget_destroy(GTK_WIDGET(widget));
+		emu->ilp_progress_bar = NULL;
+		widget = NULL;
+	}
+
 }
+
 
 /* Create the progress bar window */
 void create_progress_window(TilemCalcEmulator* emu) {
 
 	GtkWidget* pw = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	emu->progress_win = pw; 
-	emu->ilp_progress_bar = gtk_progress_bar_new();
-	gtk_window_set_title(GTK_WINDOW(emu->progress_win), "Progress");
-	gtk_window_set_default_size(GTK_WINDOW(emu->progress_win), 400,30);
+	emu->ilp_progress_win = pw; 
+	GtkWidget *pb = gtk_progress_bar_new();
+	emu->ilp_progress_bar = pb; 
+	gtk_widget_show (pb);
 	
-	gtk_container_add(GTK_CONTAINER(emu->progress_win), emu->ilp_progress_bar);
+	gtk_window_set_title(GTK_WINDOW(pw), "Progress");
+	gtk_window_set_default_size(GTK_WINDOW(pw), 400,30);
+	
+	gtk_container_add(GTK_CONTAINER(pw), emu->ilp_progress_bar);
 
-	g_signal_connect(emu->progress_win, "destroy", G_CALLBACK(destroy_progress_win), NULL);
-
-
+	g_signal_connect(pw, "delete-event", G_CALLBACK(destroy_progress), emu);
 
 		
-	gtk_widget_show_all(emu->progress_win);
+	gtk_widget_show_all(pw);
 }
 
 

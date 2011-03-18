@@ -310,6 +310,9 @@ int main(int argc, char **argv)
 		play_macro_default(gsi, cmdline->MacroToPlay); 		
 	}
 	//progress_bar_init(gsi->emu);
+	//progress_bar_init(gsi->emu);
+	//gtk_progress_bar_pulse (GTK_PROGRESS_BAR (gsi->emu->ilp_progress_bar));
+	//g_timeout_add(100, progress_bar_update_activity, gsi->emu);
 
 	gtk_main();
 

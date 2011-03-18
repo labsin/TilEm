@@ -55,7 +55,6 @@ typedef struct _TilemKeyBinding {
 } TilemKeyBinding;
 
 /* FIXME : I plan to change all this stuff to use TilemCalcEmu struct instead
-Command line args will be grouped in its own struct
 Debugger struff will be grouped in its own struct
 Idem for macros and gif */
 
@@ -102,6 +101,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	int key_queue_pressed;
 
 }GLOBAL_SKIN_INFOS;
+
 
 
 
@@ -303,17 +303,22 @@ int get_calc_model(TilemCalc* calc);
 /* Simply emulate a click on key (use to prepare link -> come into receive mode) */
 void run_with_key(TilemCalc* calc, int key);
 
+
+
+/* ##### pbar.c ##### */
+
 /* Create a progress bar */
 void progress_bar_init(TilemCalcEmulator* emu);
 
 /* create the progress bar window (FIXME : should be static into link.h or other) */
 void create_progress_window(TilemCalcEmulator* emu);
 
-/* Update the progress bar */
-void progress_bar_update(TilemCalcEmulator* emu, gfloat percentage);
+/* Pulse the progress bar */
+gboolean progress_bar_update_activity(TilemCalcEmulator* emu);
 
 /* Destroy the progress bar when finished */
-void destroy_progress_win(GtkWidget* progress_win);
+//void destroy_progress(GtkWidget *widget);
+void destroy_progress(GtkWidget *widget, gpointer* data);
 
 
 /* ##### macro.c ##### */

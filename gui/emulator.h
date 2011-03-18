@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011 Duponchelle Thibault
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -48,7 +49,8 @@ typedef struct _TilemCalcEmulator {
 	TilemCmdlineArgs *cmdline;
 
 	GtkWidget* ilp_progress_bar; 		   /* progress bar (link) */
-	GtkWidget* progress_win; 		   /* progress bar (link) */
+	GtkWidget* ilp_progress_win;
+
 	gboolean ilp_active;       /* internal link cable active */
 	GCond *ilp_finished_cond;  /* used to signal when transfer finishes */
 	gboolean ilp_error;        /* error (collision or timeout) */

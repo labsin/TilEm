@@ -533,6 +533,7 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 /* Load a file without file_selector */
 void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename)
 {
+	
 	tilem_calc_emulator_send_file(gsi->emu, filename);
 }
 
