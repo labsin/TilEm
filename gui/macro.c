@@ -38,7 +38,14 @@ void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) {
 		gsi->isMacroRecording = 0;
 		if(gsi->macro_file != NULL)
 			fclose(gsi->macro_file);
+		
+		char* dest = select_file_for_save(gsi, tilem_config_universal_getter("macro", "loadmacro_recentdir"));
+		if(dest) {
+			copy_paste("play.txt", dest);
+			set_loadmacro_recentdir(dest);	
+		}
 	}
+	
 }
 	
 /* Create the macro file */
@@ -130,8 +137,11 @@ void play_macro(GLOBAL_SKIN_INFOS* gsi) {
 
 /* Callback signal (rightclick menu) */
 void play_macro_from_file(GLOBAL_SKIN_INFOS* gsi) {
-	play_macro_default(gsi, select_file(gsi, "./macros/"));
+	char* filename = select_file(gsi, tilem_config_universal_getter("macro", "loadmacro_recentdir"));
+	if(filename)
+		play_macro_default(gsi, filename);
 }
+	
 
 /* Play the partition (macro) */
 int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {

@@ -226,6 +226,11 @@ void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir);
 /* Get the skin file selected */
 void get_selected_file(GLOBAL_SKIN_INFOS *gsi);
 
+/* Choose a filename to save */
+char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir);
+
+/* Copy paste a file */
+void copy_paste(char* src, char* dest);
 
 
 
@@ -264,6 +269,8 @@ void set_sendfile_recentdir(char* recentdir);
 /* Get a key from a group from config file */
 char* tilem_config_universal_getter(char* group, char* key);
 
+/* Set the most recent dir for load macro */
+void set_loadmacro_recentdir(char* recentdir);
 
 
 /* ##### debugger.c ##### */

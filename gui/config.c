@@ -265,3 +265,35 @@ char* tilem_config_universal_getter(char* group, char* key) {
 	g_key_file_free(gkf);
 	return string;
 }
+
+
+/* Set the last dir opened to send file */
+void set_loadmacro_recentdir(char* recentdir) {
+	
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
+	
+	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
+	}
+	
+	char* p = strrchr(recentdir, '/');
+	strcpy(p, "\0");
+	g_key_file_set_string(gkf, "macro", "loadmacro_recentdir", recentdir);
+	
+	/* Save the config */
+	FILE *file;
+        char *data;
+
+        if (!(file = fopen (CONFIG_FILE, "w")))
+        {
+            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
+            return;
+        }
+        data = g_key_file_to_data (gkf, NULL, NULL);
+        fputs (data, file);
+        fclose (file);
+	g_key_file_free(gkf);
+        g_free (data); 
+}

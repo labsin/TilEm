@@ -220,6 +220,40 @@ result = gtk_dialog_run (GTK_DIALOG (dialog));
 
 }
 
+/* File chooser with a different base directory */
+char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
+
+GtkWidget *dialog;
+GtkFileChooser *pFileChooser;
+char* filename = NULL;
+gint result;
+
+dialog = gtk_file_chooser_dialog_new ("Save File", GTK_WINDOW(gsi->pWindow), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+pFileChooser=GTK_FILE_CHOOSER(dialog);
+
+if(basedir != NULL)
+	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), basedir);
+result = gtk_dialog_run (GTK_DIALOG (dialog)); 
+
+/* ######## SIGNALS ######## */
+/* Connect the signal to get the filename (when OK button is clicked) */
+//gtk_signal_connect_object(GTK_OBJECT(dialog),"response",G_CALLBACK(get_selected_file),(gpointer)gsi);
+/* Connect the destroy signal to OK */
+//gtk_signal_connect(GTK_OBJECT(dialog),"response",G_CALLBACK(gtk_widget_destroy),(gpointer)gsi);
+
+	if(result == GTK_RESPONSE_ACCEPT)
+	{	
+		filename=(gchar*)gtk_file_chooser_get_filename(pFileChooser);
+		printf("Selected file : %s\n", filename);
+	} else {
+		printf("Cancelled ...\n");
+	}	
+	
+	gtk_widget_destroy(GTK_WIDGET(pFileChooser));
+	
+	return filename;	
+
+}
 
 
 
@@ -275,6 +309,33 @@ void get_selected_file(GLOBAL_SKIN_INFOS *gsi) {
 		printf("Cancelled ...\n");		
 	}	
 	gtk_widget_destroy(GTK_WIDGET(gsi->pFileChooser));
+}
+
+
+void copy_paste(char* src, char* dest){ 
+
+	FILE * fsrc;
+	FILE * fdest;
+	char buffer[1024];
+	int n;
+
+	if((fdest = fopen(dest, "w+")) == NULL) {
+		printf("Can't open destination : %s\n", dest);
+	}
+
+	if((fsrc = fopen(src, "r")) == NULL) {
+		printf("Can't open src : %s\n", src);
+	}
+
+
+	while ((n = fread(buffer, 1, 1024, fsrc)) != 0) {
+		fwrite(buffer, 1, n, fdest);
+	}
+	if(fsrc)	
+		fclose(fsrc);
+	if(fdest)
+		fclose(fdest);
+
 }
 
 
