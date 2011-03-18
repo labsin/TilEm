@@ -34,7 +34,11 @@ void progress_bar_init(TilemCalcEmulator* emu) {
 
 /* Update the progress_bar (activity mode) */
 gboolean progress_bar_update_activity(TilemCalcEmulator* emu) {
-	if(!emu->ilp_progress_win)
+	
+	if(!emu->ilp_active)
+		destroy_progress(emu->ilp_progress_win, (gpointer) emu);
+		
+	if(!GTK_IS_WIDGET(emu->ilp_progress_win))
 		return FALSE;
 	if(GTK_IS_PROGRESS_BAR(emu->ilp_progress_bar))
 		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(emu->ilp_progress_bar));
