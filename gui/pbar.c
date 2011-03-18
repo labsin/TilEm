@@ -60,6 +60,9 @@ void destroy_progress(GtkWidget *widget, gpointer* data) {
 /* Create the progress bar window */
 void create_progress_window(TilemCalcEmulator* emu) {
 
+	GtkWidget* cancel_button;
+	GtkWidget* vbox = NULL;
+
 	GtkWidget* pw = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	emu->ilp_progress_win = pw; 
 	GtkWidget *pb = gtk_progress_bar_new();
@@ -68,10 +71,27 @@ void create_progress_window(TilemCalcEmulator* emu) {
 	
 	gtk_window_set_title(GTK_WINDOW(pw), "Progress");
 	gtk_window_set_default_size(GTK_WINDOW(pw), 400,30);
-	
-	gtk_container_add(GTK_CONTAINER(pw), emu->ilp_progress_bar);
 
+	cancel_button = gtk_button_new_with_label("Cancel");
+
+	/* create vertical box to separate progress bar and button */	
+	vbox = gtk_vbox_new(FALSE, 3);
+	gtk_box_pack_start(GTK_BOX(vbox), pb, FALSE, FALSE, 0);
+	//gtk_box_pack_end(GTK_BOX(vbox), cancel_button, FALSE, FALSE, 30);
+
+	/* Center the button */	
+	GtkWidget* table= gtk_table_new(1, 3, TRUE);
+	gtk_table_attach_defaults(GTK_TABLE(table), cancel_button, 1, 2, 0, 1);
+	gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(table), FALSE, FALSE, 3);
+
+	gtk_container_add(GTK_CONTAINER(pw), vbox);
+
+	//gtk_container_add(GTK_CONTAINER(pw), cancel_button);
+	
+
+	
 	g_signal_connect(pw, "delete-event", G_CALLBACK(destroy_progress), emu);
+	g_signal_connect_swapped(cancel_button, "clicked", G_CALLBACK(tilem_calc_emulator_cancel_link), emu);
 
 		
 	gtk_widget_show_all(pw);
