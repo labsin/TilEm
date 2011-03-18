@@ -263,7 +263,6 @@ static void show_io_error(TilemCalcEmulator *emu, const char *filename,
 	g_free(dname);
 }
 
-/** TODO : I will probably add a parameter to handle command line args (option -s) */
 gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
                                         const char *filename)
 {

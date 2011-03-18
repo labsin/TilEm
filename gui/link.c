@@ -456,6 +456,9 @@ void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
 	g_return_if_fail(emu->calc != NULL);
 	g_return_if_fail(filename != NULL);
 	
+	emu->ilp_abort = FALSE;
+	emu->link_cancel = FALSE;
+
 	progress_bar_init(emu);
 	g_timeout_add(100, progress_bar_update_activity, (gpointer)emu);
 	
