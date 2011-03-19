@@ -145,6 +145,8 @@ void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename
 /* Take a screenshot i*/
 void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
+/* Toggle limit speed */
+void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi);
 
 
 

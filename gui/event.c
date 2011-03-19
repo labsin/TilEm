@@ -212,6 +212,7 @@ static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 		{"/Send file...", "F11", load_file, 1, NULL, NULL},
 		{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
 		{"/---", NULL, NULL, 0, "<Separator>", NULL},
+		{"/Toggle speed",NULL, tilem_change_speed, 1, NULL, NULL},
 		{"/Screenshot !",NULL, create_screenshot_window, 1, NULL, NULL},
 		{"/Display lcd into console !",NULL, display_lcdimage_into_terminal, 1, NULL, NULL},
 		{"/Switch view",NULL,switch_view,1,NULL,NULL},
@@ -572,4 +573,10 @@ void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename
 		tifiles_library_exit();
 		ticables_library_exit();
 
+}
+
+/* Toggle limit speed */
+void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi) {
+
+	tilem_calc_emulator_set_limit_speed(gsi->emu, !gsi->emu->limit_speed);
 }
