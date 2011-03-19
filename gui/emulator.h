@@ -68,7 +68,7 @@ typedef struct _TilemCalcEmulator {
 	GCond *link_queue_cond;
 	GQueue *link_queue;      /* queue of filenames to be sent */
 	gboolean link_cancel;    /* cancel_link() has been called */
-	gpointer link_update;    /* CalcUpdate (status and callbacks for ticalcs) */
+	CalcUpdate *link_update; /* CalcUpdate (status and callbacks for ticalcs) */
 
 	/* FIXME: following stuff belongs elsewhere */
 
