@@ -49,7 +49,9 @@ typedef struct _TilemCalcEmulator {
 	/* new struct to handle cmd line args */
 	TilemCmdlineArgs *cmdline;
 
-	GtkWidget* ilp_progress_bar; 		   /* progress bar (link) */
+	GtkProgressBar* ilp_progress_bar1; /* progress bar (current item) */
+	GtkProgressBar* ilp_progress_bar2; /* progress bar (total) */
+	GtkLabel* ilp_progress_label; /* status message */
 	GtkWidget* ilp_progress_win;
 
 	gboolean ilp_active;       /* internal link cable active */

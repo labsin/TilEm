@@ -42,6 +42,8 @@
 /* A global boolean to say "save the state" */
 int SAVE_STATE;
 
+#define LABEL_X_ALIGN 0.0
+
 typedef struct _TilemDebuggerRegister {
 	GtkWidget* reg[12];
 	
@@ -317,15 +319,8 @@ void run_with_key(TilemCalc* calc, int key);
 /* Create a progress bar */
 void progress_bar_init(TilemCalcEmulator* emu);
 
-/* create the progress bar window (FIXME : should be static into link.h or other) */
-void create_progress_window(TilemCalcEmulator* emu);
-
-/* Pulse the progress bar */
-gboolean progress_bar_update_activity(TilemCalcEmulator* emu);
-
-/* Destroy the progress bar when finished */
-//void destroy_progress(GtkWidget *widget);
-void destroy_progress(GtkWidget *widget, gpointer* data);
+/* Update the progress bar */
+void progress_bar_update_activity(TilemCalcEmulator* emu);
 
 
 /* ##### macro.c ##### */

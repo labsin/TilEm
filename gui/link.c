@@ -396,7 +396,7 @@ static gboolean pbar_start(gpointer data)
 	TilemCalcEmulator *emu = data;
 
 	if (!emu->ilp_progress_win)
-		create_progress_window(emu);
+		progress_bar_init(emu);
 
 	return FALSE;
 }
@@ -409,7 +409,9 @@ static gboolean pbar_stop(gpointer data)
 	if (emu->ilp_progress_win) {
 		gtk_widget_destroy(emu->ilp_progress_win);
 		emu->ilp_progress_win = NULL;
-		emu->ilp_progress_bar = NULL;
+		emu->ilp_progress_bar1 = NULL;
+		emu->ilp_progress_bar2 = NULL;
+		emu->ilp_progress_label = NULL;
 	}
 
 	return FALSE;
@@ -465,6 +467,10 @@ static gpointer link_main(gpointer data)
 			g_free(fname);
 			break;
 		}
+
+		emu->link_update->max1 = 0;
+		emu->link_update->max2 = 0;
+		emu->link_update->text[0] = 0;
 
 		g_idle_add(&pbar_start, emu);
 

@@ -26,74 +26,96 @@
 #include <gui.h>
 
 
-/* Create a window with progress bar */
-void progress_bar_init(TilemCalcEmulator* emu) {
-	create_progress_window(emu);
-}
-
-
 /* Update the progress_bar (activity mode) */
-gboolean progress_bar_update_activity(TilemCalcEmulator* emu) {
-	
-	if(!emu->ilp_active)
-		destroy_progress(emu->ilp_progress_win, (gpointer) emu);
-		
-	if(!GTK_IS_WIDGET(emu->ilp_progress_win))
-		return FALSE;
-	if(GTK_IS_PROGRESS_BAR(emu->ilp_progress_bar))
-		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(emu->ilp_progress_bar));
-	return TRUE;
+void progress_bar_update_activity(TilemCalcEmulator* emu)
+{
+	gdouble f;
 
-}
+	if (!emu->ilp_progress_win)
+		return;
 
-void destroy_progress(GtkWidget *widget, gpointer* data) {
-	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
-	if(GTK_IS_WIDGET(widget)) {
-		gtk_widget_destroy(GTK_WIDGET(widget));
-		emu->ilp_progress_bar = NULL;
-		widget = NULL;
+	if (emu->link_update->max1 > 0) {
+		f = (gdouble) emu->link_update->cnt1 / emu->link_update->max1;
+		f = CLAMP(f, 0.0, 1.0);
+		gtk_progress_bar_set_fraction(emu->ilp_progress_bar1, f);
+	}
+	else {
+		gtk_progress_bar_pulse(emu->ilp_progress_bar1);
 	}
 
+	if (emu->link_update->max2 > 0) {
+		f = (gdouble) emu->link_update->cnt2 / emu->link_update->max2;
+		f = CLAMP(f, 0.0, 1.0);
+		gtk_progress_bar_set_fraction(emu->ilp_progress_bar2, f);
+	}
+
+	gtk_label_set_text(emu->ilp_progress_label, emu->link_update->text);
 }
 
+static void destroy_progress(G_GNUC_UNUSED GtkDialog *dlg,
+                             G_GNUC_UNUSED gint response,
+                             gpointer data)
+{
+	TilemCalcEmulator* emu = data;
+	tilem_calc_emulator_cancel_link(emu);
+}
 
 /* Create the progress bar window */
-void create_progress_window(TilemCalcEmulator* emu) {
+void progress_bar_init(TilemCalcEmulator* emu)
+{
+	GtkWidget *pw, *parent, *tbl, *lbl, *pb;
 
-	GtkWidget* cancel_button;
-	GtkWidget* vbox = NULL;
+	g_return_if_fail(emu != NULL);
 
-	GtkWidget* pw = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	emu->ilp_progress_win = pw; 
-	GtkWidget *pb = gtk_progress_bar_new();
-	emu->ilp_progress_bar = pb; 
-	gtk_widget_show (pb);
-	
-	gtk_window_set_title(GTK_WINDOW(pw), "Progress");
-	gtk_window_set_default_size(GTK_WINDOW(pw), 400,30);
+	if (emu->lcdwin)
+		parent = gtk_widget_get_toplevel(emu->lcdwin);
+	else
+		parent = NULL;
 
-	cancel_button = gtk_button_new_with_label("Cancel");
+	pw = gtk_dialog_new_with_buttons("Sending files", GTK_WINDOW(parent),
+	                                 GTK_DIALOG_DESTROY_WITH_PARENT,
+	                                 GTK_STOCK_CANCEL,
+	                                 GTK_RESPONSE_CANCEL,
+	                                 NULL);
+	emu->ilp_progress_win = pw;
 
-	/* create vertical box to separate progress bar and button */	
-	vbox = gtk_vbox_new(FALSE, 3);
-	gtk_box_pack_start(GTK_BOX(vbox), pb, FALSE, FALSE, 0);
-	//gtk_box_pack_end(GTK_BOX(vbox), cancel_button, FALSE, FALSE, 30);
+	tbl = gtk_table_new(2, 2, FALSE);
+	gtk_container_set_border_width(GTK_CONTAINER(tbl), 6);
+	gtk_table_set_row_spacings(GTK_TABLE(tbl), 6);
+	gtk_table_set_col_spacings(GTK_TABLE(tbl), 6);
 
-	/* Center the button */	
-	GtkWidget* table= gtk_table_new(1, 3, TRUE);
-	gtk_table_attach_defaults(GTK_TABLE(table), cancel_button, 1, 2, 0, 1);
-	gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(table), FALSE, FALSE, 3);
+	lbl = gtk_label_new("Current:");
+	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), lbl, 0, 1, 0, 1,
+	                 GTK_FILL, GTK_FILL, 0, 0);
 
-	gtk_container_add(GTK_CONTAINER(pw), vbox);
+	pb = gtk_progress_bar_new();
+	emu->ilp_progress_bar1 = GTK_PROGRESS_BAR(pb);
+	gtk_table_attach(GTK_TABLE(tbl), pb, 1, 2, 0, 1,
+	                 GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 
-	//gtk_container_add(GTK_CONTAINER(pw), cancel_button);
-	
+	lbl = gtk_label_new("Total:");
+	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), lbl, 0, 1, 1, 2,
+	                 GTK_FILL, GTK_FILL, 0, 0);
 
-	
-	g_signal_connect(pw, "delete-event", G_CALLBACK(destroy_progress), emu);
-	g_signal_connect_swapped(cancel_button, "clicked", G_CALLBACK(tilem_calc_emulator_cancel_link), emu);
+	pb = gtk_progress_bar_new();
+	emu->ilp_progress_bar2 = GTK_PROGRESS_BAR(pb);
+	gtk_table_attach(GTK_TABLE(tbl), pb, 1, 2, 1, 2,
+	                 GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 
-		
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pw)->vbox), tbl,
+	                   FALSE, FALSE, 0);
+
+	lbl = gtk_label_new(emu->link_update->text);
+	gtk_misc_set_alignment(GTK_MISC(lbl), 0.5, 0.5);
+	emu->ilp_progress_label = GTK_LABEL(lbl);
+
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pw)->vbox), lbl,
+	                   FALSE, FALSE, 6);
+
+	g_signal_connect(pw, "response", G_CALLBACK(destroy_progress), emu);
+
 	gtk_widget_show_all(pw);
 }
 
