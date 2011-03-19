@@ -39,6 +39,7 @@ typedef struct _TilemCalcEmulator {
 	TilemCalc *calc;
 	gboolean paused;
 	gboolean exiting;
+	gboolean limit_speed;   /* limit to actual speed */
 
 	GMutex *lcd_mutex;
 	TilemGrayLCD *glcd;
@@ -105,6 +106,11 @@ void tilem_calc_emulator_pause(TilemCalcEmulator *emu);
 
 /* Resume emulation (if currently paused.) */
 void tilem_calc_emulator_run(TilemCalcEmulator *emu);
+
+/* Enable/disable speed limiting (TRUE means attempt to run at the
+   actual CPU speed; FALSE means run as fast as we can.) */
+void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
+                                         gboolean limit);
 
 /* Add a file to the link queue. */
 void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,

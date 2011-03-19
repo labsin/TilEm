@@ -94,6 +94,7 @@ static gpointer core_thread(gpointer data)
 	TilemCalcEmulator* emu = data;
 	GTimer* tmr;
 	gulong tnext, tcur;
+	int remaining;
 	int ticks = TICKS_PER_FRAME;
 
 	tmr = g_timer_new();
@@ -114,7 +115,7 @@ static gpointer core_thread(gpointer data)
 			continue;
 		}
 
-		tilem_z80_run_time(emu->calc, MICROSEC_PER_TICK, NULL);
+		tilem_z80_run_time(emu->calc, MICROSEC_PER_TICK, &remaining);
 
 		if (emu->ilp_active)
 			update_link(emu);
@@ -134,16 +135,13 @@ static gpointer core_thread(gpointer data)
 			ticks = TICKS_PER_FRAME;
 		}
 
-		if (!emu->calc->z80.stop_reason) {
+		if (emu->limit_speed) {
 			g_timer_elapsed(tmr, &tcur);
-			tnext += MICROSEC_PER_TICK;
+			tnext += MICROSEC_PER_TICK - remaining;
 			if (tnext - tcur < MICROSEC_PER_TICK)
 				g_usleep(tnext - tcur);
 			else
 				tnext = tcur;
-		}
-		else {
-			g_timer_elapsed(tmr, &tnext);
 		}
 
 		g_mutex_lock(emu->calc_mutex);
@@ -175,6 +173,8 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 	emu->calc_wakeup_cond = g_cond_new();
 	emu->ilp_finished_cond = g_cond_new();
 	emu->lcd_mutex = g_mutex_new();
+
+	emu->limit_speed = TRUE;
 
 	emu->link_queue = g_queue_new();
 	emu->link_queue_mutex = g_mutex_new();
@@ -460,4 +460,10 @@ void tilem_calc_emulator_run(TilemCalcEmulator *emu)
 
 	if (!emu->z80_thread)
 		emu->z80_thread = g_thread_create(&core_thread, emu, TRUE, NULL);
+}
+
+void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
+                                         gboolean limit)
+{
+	emu->limit_speed = limit;
 }
