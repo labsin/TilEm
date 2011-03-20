@@ -27,7 +27,7 @@
 #include <gui.h>
 
 
-/* Update the progress_bar (activity mode) */
+/* Update the progress_bar */
 void progress_bar_update_activity(TilemCalcEmulator* emu)
 {
 	gdouble f;
@@ -53,6 +53,7 @@ void progress_bar_update_activity(TilemCalcEmulator* emu)
 	gtk_label_set_text(emu->ilp_progress_label, emu->link_update->text);
 }
 
+/* Callback to destroy the progress bar */
 static void destroy_progress(G_GNUC_UNUSED GtkDialog *dlg,
                              G_GNUC_UNUSED gint response,
                              gpointer data)

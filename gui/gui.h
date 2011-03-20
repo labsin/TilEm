@@ -44,8 +44,9 @@ int SAVE_STATE;
 
 #define LABEL_X_ALIGN 0.0
 
+/* This struct contains the registers for the debugger window */
 typedef struct _TilemDebuggerRegister {
-	GtkWidget* reg[12];
+	GtkWidget* reg[12]; /* The debugger registers */
 	
 } TilemDebuggerRegister;
 
@@ -62,29 +63,39 @@ Idem for macros and gif */
 
 /* Internal data structure for gui */
 typedef struct GLOBAL_SKIN_INFOS {
-	SKIN_INFOS *si; // Skin infos (see skinops.h) 
-	GtkWidget *pWindow; // top level window
-	GtkWidget *pLayout;
-	GtkWidget *pFrame;
-	gchar* FileSelected; // used by GtkFileSelection
-	GtkFileChooser *pFileChooser; // widget for the 
-	gint FileChooserResult;
-	GtkWidget *pRadio;
-	int view;  	// skinless or not
-	char calc_id; // model id
-	TilemCalcEmulator *emu; // struct emu
+
+	/* General informations */
+	TilemCalcEmulator *emu; /* The very important  TilemCalcEmulator struct */
+	char calc_id; /* The model id */ 
+	int view;  	/* A flag to know if skinless or not */
+
+	/* Skin infos  */
+	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
+
+	/* Widgets  and some related things */
+	GtkWidget *pWindow; /* The top level window */
+	GtkWidget *pLayout; /* Layout */
+	GtkWidget *pFrame;   
+	gchar* FileSelected; /* The filename selected in the file chooser */
+	GtkFileChooser *pFileChooser; /* The file chooser widget (open or save) */
+	gint FileChooserResult; /* The result of the file chooser widget (cancel or OK) */ 
+	GtkWidget *pRadio; /* The radio button of the choose_rom_popup */
 
 	/* Debgugger */ 
-	TilemDebuggerRegister *reg_entry; 
-	gboolean isDebuggerRunning; 
+	TilemDebuggerRegister *reg_entry; /* A structure wich contains the register */
+	gboolean isDebuggerRunning; /* A flag to know if debugger is runnig */
 	GtkWidget* stack_treeview;	
-	FILE * macro_file;	// macro
-	FILE * animation_file; // gif
-	/* FLAGS */
-	gboolean isMacroRecording; // to know everywhere that macro is recording
-	gboolean isMacroPlaying; // idem for play
-	gboolean isAnimScreenshotRecording; // know everywhere that screenshot is recording (gif)
 
+	/* Macros */
+	FILE * macro_file;	/* The macro file */
+	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */
+	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
+	
+	/* Animated gif */
+	FILE * animation_file; // The animated gif file */
+	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
+
+	
 	int mouse_key;		/* Key currently pressed by mouse button */
 
 	/* List of key bindings */
@@ -133,6 +144,21 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 /* Key-release event */
 gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 
+/* Switch view to lcd only or skin + lcd */
+void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
+
+/* Switch borderless. */
+void switch_borderless(GLOBAL_SKIN_INFOS* gsi); 
+
+/* Create the right click menu */
+void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
+
+/* Adapt the style */
+void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
+
+/* Resize screen */
+void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi);
+
 /* Load a file from PC to TI */
 void load_file(GLOBAL_SKIN_INFOS *gsi);
 
@@ -142,7 +168,7 @@ void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) ;
 /* Load a file at startup using old method (no thread) */
 void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename);
 
-/* Take a screenshot i*/
+/* Take a screenshot */
 void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
 /* Toggle limit speed */
@@ -157,7 +183,6 @@ void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi);
 
 /* Choose automatically wich skin tilem must load */
 void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi);
-
 
 
 
@@ -186,34 +211,13 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi);
 
 
 
-/* ##### event.c ##### */
-
-/* Switch view to lcd only or skin + lcd */
-void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
-
-/* Switch borderless. */
-void switch_borderless(GLOBAL_SKIN_INFOS* gsi); 
-
-/* Create the right click menu */
-void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
-
-/* Adapt the style */
-void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
-
-/* Resize screen */
-void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi);
-
-
-
-
 /* ##### tool.c ##### */
 
 /* Generic popup (could be use for all kind of msg) */
 void popup_error(char* msg, GLOBAL_SKIN_INFOS * gsi);
 
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
-char choose_rom_popup(GtkWidget *parent_window, const char *filename,
-                      char default_model);
+char choose_rom_popup(GtkWidget *parent_window, const char *filename, char default_model);
 
 /* like on_destroy but save state */
 void quit_with_save();
@@ -277,6 +281,7 @@ char* tilem_config_universal_getter(char* group, char* key);
 void set_loadmacro_recentdir(char* recentdir);
 
 
+
 /* ##### debugger.c ##### */
 
 /* Main function for the debugger. */
@@ -293,7 +298,6 @@ void printstate(TilemCalcEmulator* emu);
 
 
 
-
 /* ##### link.c ##### */
 
 /* Init libtis, create ch/cbl, attach cable, and send file to TI */
@@ -302,7 +306,7 @@ void send_file(TilemCalcEmulator* emu, CableHandle* cbl, const char* filename);
 /* Init libtis, create ch/cbl, attach cable */ 
 CableHandle* internal_link_handle_new(TilemCalcEmulator* emu);
 
-/* test if the calc is ready */
+/* Test if the calc is ready */
 int is_ready(CalcHandle* h);
 
 /* Simply print the error */
@@ -323,6 +327,7 @@ void progress_bar_init(TilemCalcEmulator* emu);
 
 /* Update the progress bar */
 void progress_bar_update_activity(TilemCalcEmulator* emu);
+
 
 
 /* ##### macro.c ##### */

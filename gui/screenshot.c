@@ -93,25 +93,28 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_widget_show_all(screenshotanim_win);
 }
 
+/* Callback for record button */
 void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("record event\n");
 	tilem_animation_start(gsi);
 }
 
+/* Only used for testing purpose */
 void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("record event\n");
 	tilem_animation_add_frame(gsi);
 }
 
+/* Callback for stop button (stop the recording) */
 void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("stop event\n");
 	tilem_animation_stop(gsi) ;
 }
 
-
+/* Callback for screenshot button (take a screenshot) */
 void on_screenshot(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	screenshot(gsi);
@@ -167,6 +170,7 @@ void on_destroy_playview(GtkWidget* playwin)   {
 	gtk_widget_destroy(GTK_WIDGET(playwin));
 }
 
+/* Callback for play button (replay the last gif) */
 void on_play(GLOBAL_SKIN_INFOS* gsi) {
 	g_print("play event : %d\n", gsi->isAnimScreenshotRecording);
 

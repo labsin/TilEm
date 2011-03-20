@@ -193,6 +193,7 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 	return status;
 }
 
+/* Check if ready */
 static int ilp_check(CableHandle* cbl, int* status)
 {
 	TilemCalcEmulator* emu = cbl->priv;
@@ -228,6 +229,7 @@ CableHandle* internal_link_handle_new(TilemCalcEmulator* emu)
 	return cbl;
 }
 
+/* Print the tilibs error */
 static int print_tilibs_error(int errcode)
 {
 	char* p = NULL;
@@ -245,6 +247,7 @@ static int print_tilibs_error(int errcode)
 	return errcode;
 }
 
+/* Run a key (wait, press, wait; release; wait) */
 void run_with_key(TilemCalc* calc, int key)
 {
 	tilem_z80_run_time(calc, 500000, NULL);
@@ -254,6 +257,7 @@ void run_with_key(TilemCalc* calc, int key)
 	tilem_z80_run_time(calc, 500000, NULL);
 }
 
+/* Automatically press key to be in the receive mode i(ti82 and ti85) */
 static void prepare_for_link(TilemCalc* calc)
 {
 	run_with_key(calc, TILEM_KEY_ON);
@@ -276,12 +280,13 @@ static void prepare_for_link(TilemCalc* calc)
 		run_with_key(calc, TILEM_KEY_WINDOW);
 	}
 }
-
+/* Press a key */
 static void tmr_press_key(TilemCalc* calc, void* data)
 {
 	tilem_keypad_press_key(calc, TILEM_PTR_TO_DWORD(data));
 }
 
+/* Send a file to the calc */
 void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)
 {
 	CalcHandle* ch;
@@ -391,6 +396,7 @@ void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)
 	ticalcs_handle_del(ch);
 }
 
+/* Get the calc model (compatible for ticalcs) */
 int get_calc_model(TilemCalc* calc)
 {
 	switch (calc->hw.model_id) {
@@ -524,6 +530,7 @@ static gpointer link_main(gpointer data)
 	return NULL;
 }
 
+/* Send a file creating an using a separate thread */
 void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
                                    const char *filename)
 {
@@ -543,6 +550,7 @@ void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
 		emu->link_thread = g_thread_create(&link_main, emu, TRUE, NULL);
 }
 
+/* Cancel the transfert (used as signal callback) */
 void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 {
 	char *fname;
