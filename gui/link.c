@@ -31,6 +31,7 @@
 #include <ticalcs.h>
 #include <gui.h>
 
+#include "ti81prg.h"
 
 
 /* Test if the calc is ready */
@@ -281,18 +282,49 @@ static void tmr_press_key(TilemCalc* calc, void* data)
 	tilem_keypad_press_key(calc, TILEM_PTR_TO_DWORD(data));
 }
 
-void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
+void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)
 {
+	CalcHandle* ch;
 	CalcScreenCoord sc;
 	uint8_t *bitmap = NULL;
 	int tmr, k, err;
 	FileContent* filec;
-		
+	TI81Program* prgm = NULL;
+	FILE* f;
+
 	g_mutex_lock(emu->calc_mutex);
 	prepare_for_link(emu->calc);
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 
+	if (emu->calc->hw.model_id == TILEM_CALC_TI81) {
+		f = g_fopen(filename, "rb");
+		if (!f) {
+			perror(filename);
+			return;
+		}
+
+		ti81_read_prg_file(f, &prgm);
+		fclose(f);
+
+		if (prgm) {
+			g_mutex_lock(emu->calc_mutex);
+			ti81_load_program(emu->calc, prgm);
+			g_mutex_unlock(emu->calc_mutex);
+			ti81_program_free(prgm);
+		}
+		return;
+	}
+
+	ch = ticalcs_handle_new(get_calc_model(emu->calc));
+	if (!ch) {
+		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
+		return;
+	}
+
+	ticalcs_update_set(ch, emu->link_update);
+	ticalcs_cable_attach(ch, cbl);
+		
 	switch (tifiles_file_get_class(filename)) {
 	case TIFILE_SINGLE:
 	case TIFILE_GROUP:
@@ -354,6 +386,9 @@ void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename)
 		}
 		break;
 	}
+
+	ticalcs_cable_detach(ch);
+	ticalcs_handle_del(ch);
 }
 
 int get_calc_model(TilemCalc* calc)
@@ -442,7 +477,6 @@ static gpointer link_main(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
 	char *fname;
-	CalcHandle *ch;
 	CableHandle *cbl;
 
 	ticables_library_init();
@@ -461,13 +495,6 @@ static gpointer link_main(gpointer data)
 		}
 		g_mutex_unlock(emu->link_queue_mutex);
 
-		ch = ticalcs_handle_new(get_calc_model(emu->calc));
-		if (!ch) {
-			fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
-			g_free(fname);
-			break;
-		}
-
 		emu->link_update->max1 = 0;
 		emu->link_update->max2 = 0;
 		emu->link_update->text[0] = 0;
@@ -475,14 +502,9 @@ static gpointer link_main(gpointer data)
 		g_idle_add(&pbar_start, emu);
 
 		emu->link_update->pbar = &pbar_do_update;
-		ticalcs_update_set(ch, emu->link_update);
+		emu->link_update->label = &pbar_do_update;
 
-		ticalcs_cable_attach(ch, cbl);
-
-		send_file(emu, ch, fname);
-
-		ticalcs_cable_detach(ch);
-		ticalcs_handle_del(ch);
+		send_file(emu, cbl, fname);
 
 		g_free(fname);
 

@@ -297,7 +297,7 @@ void printstate(TilemCalcEmulator* emu);
 /* ##### link.c ##### */
 
 /* Init libtis, create ch/cbl, attach cable, and send file to TI */
-void send_file(TilemCalcEmulator* emu, CalcHandle* ch, const char* filename);
+void send_file(TilemCalcEmulator* emu, CableHandle* cbl, const char* filename);
 
 /* Init libtis, create ch/cbl, attach cable */ 
 CableHandle* internal_link_handle_new(TilemCalcEmulator* emu);
