@@ -15,7 +15,7 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o pbar.o
+objects = testemu2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o pbar.o ti81prg.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
@@ -95,7 +95,9 @@ screenshot.o: screenshot.c gui.h *.h ../core/tilem.h
 pbar.o: pbar.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/pbar.c
 
-# Startup handling 
+# TI-81 program file functions
+ti81prg.o: ti81prg.c ti81prg.h ../core/tilem.h
+	$(compile) -c $(srcdir)/ti81prg.c
 
 
 
