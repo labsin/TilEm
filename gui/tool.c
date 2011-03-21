@@ -203,11 +203,6 @@ char* select_file(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), basedir);
 	result = gtk_dialog_run (GTK_DIALOG (dialog)); 
 
-	/* ######## SIGNALS ######## */
-	/* Connect the signal to get the filename (when OK button is clicked) */
-	//gtk_signal_connect_object(GTK_OBJECT(dialog),"response",G_CALLBACK(get_selected_file),(gpointer)gsi);
-	/* Connect the destroy signal to OK */
-	//gtk_signal_connect(GTK_OBJECT(dialog),"response",G_CALLBACK(gtk_widget_destroy),(gpointer)gsi);
 
 	if(result == GTK_RESPONSE_ACCEPT)
 	{	
@@ -238,11 +233,6 @@ char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), basedir);
 	result = gtk_dialog_run (GTK_DIALOG (dialog)); 
 
-	/* ######## SIGNALS ######## */
-	/* Connect the signal to get the filename (when OK button is clicked) */
-	//gtk_signal_connect_object(GTK_OBJECT(dialog),"response",G_CALLBACK(get_selected_file),(gpointer)gsi);
-	/* Connect the destroy signal to OK */
-	//gtk_signal_connect(GTK_OBJECT(dialog),"response",G_CALLBACK(gtk_widget_destroy),(gpointer)gsi);
 
 	if(result == GTK_RESPONSE_ACCEPT)
 	{	
@@ -274,12 +264,6 @@ void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), basedir);
 	gsi->FileChooserResult = gtk_dialog_run (GTK_DIALOG (dialog)); 
 
-	/* ######## SIGNALS ######## */
-	/* Connect the signal to get the filename (when OK button is clicked) */
-	//gtk_signal_connect_object(GTK_OBJECT(dialog),"response",G_CALLBACK(get_selected_file),(gpointer)gsi);
-	/* Connect the destroy signal to OK */
-	//gtk_signal_connect(GTK_OBJECT(dialog),"response",G_CALLBACK(gtk_widget_destroy),(gpointer)gsi);
-
 	printf("filechooserResult : %d", gsi->FileChooserResult);
 	printf("GTK_RESPONSE_OK : %d", GTK_RESPONSE_OK);
 	printf("GTK_RESPONSE_ACCEPT : %d\n", GTK_RESPONSE_ACCEPT);
@@ -290,10 +274,9 @@ void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 	} else {
 		printf("Cancelled ...\n");		
 	}	
-/* Launch the dialog and get the result (dialog widget is "modal") */
+
 	gtk_widget_destroy(GTK_WIDGET(gsi->pFileChooser));
 	
-//return gsi->FileSelected;							
 
 }
 

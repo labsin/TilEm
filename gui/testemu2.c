@@ -28,9 +28,6 @@
 #include <gui.h>
 //#include <skinops.h>
 
-/***** TESTING *****/
-#include <gdk/gdkkeysyms.h>
-#include <scancodes.h>
 
 /*  contra-sh : 
 * ---18/08/09---
@@ -201,6 +198,10 @@
 * ---14/03/11---
 * - Improve default skin choice.
 * - Define the skin's basedir into the config.ini. Add a universal getter into config.c .
+* ---19/03/11---
+* - Add a bouncy progress bar to show the link status (send file).
+* - Add a file saver.  
+* - Create a new TilemCmdlineArgs structure.
 */
 
 
@@ -217,8 +218,6 @@ int main(int argc, char **argv)
 	gsi->si=NULL;
 	gsi->pWindow = NULL;
 	
-	
-	//gsi->MacroName = NULL;
 	gsi->mouse_key = 0;
 	gsi->macro_file = NULL;
 	gsi->isMacroRecording = 0;
@@ -239,29 +238,8 @@ int main(int argc, char **argv)
 	gsi->key_queue_len = 0;
 	gsi->key_queue_timer = 0;
 
-	/***** TESTING *****/
-	gsi->nkeybindings = 3;
-	gsi->keybindings = g_new(TilemKeyBinding, 3);
-	gsi->keybindings[0].keysym = GDK_A;
-	gsi->keybindings[0].modifiers = 0;
-	gsi->keybindings[0].nscancodes = 2;
-	gsi->keybindings[0].scancodes = g_new(byte, 2);
-	gsi->keybindings[0].scancodes[0] = TILEM_KEY_ALPHA;
-	gsi->keybindings[0].scancodes[1] = TILEM_KEY_MATH;
-	gsi->keybindings[1].keysym = GDK_B;
-	gsi->keybindings[1].modifiers = 0;
-	gsi->keybindings[1].nscancodes = 2;
-	gsi->keybindings[1].scancodes = g_new(byte, 2);
-	gsi->keybindings[1].scancodes[0] = TILEM_KEY_ALPHA;
-	gsi->keybindings[1].scancodes[1] = TILEM_KEY_MATRIX;
-	gsi->keybindings[2].keysym = GDK_1;
-	gsi->keybindings[2].modifiers = 0;
-	gsi->keybindings[2].nscancodes = 1;
-	gsi->keybindings[2].scancodes = g_new(byte, 1);
-	gsi->keybindings[2].scancodes[0] = TILEM_KEY_1;
 
-	/*****/
-
+	tilem_keybindings_init(gsi);
 
 	gsi->emu = tilem_calc_emulator_new();
 	

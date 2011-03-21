@@ -404,3 +404,10 @@ void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
 
 /* create the screenshot popup */
 void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi);
+
+
+
+/* ##### keybindings.c ##### */
+
+/* Load the keybindings */
+void tilem_keybindings_init(GLOBAL_SKIN_INFOS* gsi);
