@@ -15,21 +15,21 @@ TICONV_CFLAGS = `pkg-config --cflags ticonv`
 TICONV_LIBS = `pkg-config --libs ticonv`
 
 
-objects = testemu2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o pbar.o keybindings.o ti81prg.o
+objects = tilem2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o pbar.o keybindings.o ti81prg.o
 
 
 libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
 
 compile = $(CC) -I$(srcdir) -I$(srcdir)/../core -I$(srcdir)/../db $(CFLAGS) $(DEFS) $(GTK_CFLAGS) 
 
-all: testemu2
+all: tilem2
 
 #Main emulator GUI
-testemu2: $(objects) ../core/libtilemcore.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o testemu2 $(objects) $(libs)
+tilem2: $(objects) ../core/libtilemcore.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o tilem2 $(objects) $(libs)
 
-testemu2.o: testemu2.c gui.h *.h ../core/tilem.h
-	$(compile) -c $(srcdir)/testemu2.c
+tilem2.o: tilem2.c gui.h *.h ../core/tilem.h
+	$(compile) -c $(srcdir)/tilem2.c
 
 #Debugger
 debugger.o: debugger.c debugger.h gui.h *.h ../core/tilem.h
@@ -112,6 +112,6 @@ install: testemu2
 	./install.sh
 clean:
 	rm -f *.o
-	rm -f testemu2
+	rm -f tilem2
 
 .PHONY: all clean
