@@ -28,6 +28,7 @@
 #define DGLOBAL_L2 
 #define DSKIN_L0 
 #define DCLICK_L0 
+#define DCLICK_L2 
 #define DDEBUGGER_L0 
 #define DMACRO_L0
 #endif

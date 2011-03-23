@@ -239,7 +239,6 @@ int main(int argc, char **argv)
 	gsi->key_queue_timer = 0;
 
 
-	tilem_keybindings_init(gsi);
 
 	gsi->emu = tilem_calc_emulator_new();
 	
@@ -280,6 +279,9 @@ int main(int argc, char **argv)
 
 	tilem_calc_emulator_run(gsi->emu);
 
+	
+	tilem_keybindings_init(gsi, gsi->emu->calc->hw.name);
+		
 	if(cmdline->FileToLoad != NULL) /* Given as parameter ? */
 		tilem_load_file_from_file_at_startup(gsi, cmdline->FileToLoad);
 	if(cmdline->isStartingSkinless) /* Given as parameter ? */

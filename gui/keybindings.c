@@ -22,12 +22,10 @@
 #include "keybindings.h"
 
 
-void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi) {
+void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char* model) {
 
-	char* model = "ti83";
-	/* Testing */
 	//tilem_ksc_get_scancode("GDK_A", "ti83") ;
-	gchar ** keys = tilem_ksc_get_all_keys("ti83");
+	gchar ** keys = tilem_ksc_get_all_keys(model);
 
 	int i = 0;
 	int n = 0;
@@ -41,11 +39,30 @@ void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi) {
 
 	for(i = 0; keys[i]; i++) {
 		gsi->keybindings[i].keysym = tilem_get_gdkkeysyms(gks, keys[i]);
-		gsi->keybindings[i].modifiers = 0;
-		gsi->keybindings[i].nscancodes = 1;
-		gsi->keybindings[i].scancodes = g_new(byte, 1);
-		gsi->keybindings[i].scancodes[0] = tilem_get_tilemkeysyms(tks, tilem_ksc_get_scancode(keys[i], model));
-		//printf("keysym= %d\tscancode[0]= %d\n", gsi->keybindings[i].keysym, gsi->keybindings[i].scancodes[0]);
+		char* scancodestr = tilem_ksc_get_scancode(keys[i], model);
+		printf("scancodestr : %s \n", scancodestr);
+	
+		if(scancodestr) {
+			char* p = strrchr(scancodestr, ':');
+			if(p) {
+				gsi->keybindings[i].modifiers = 0;
+				gsi->keybindings[i].nscancodes = 2;
+				gsi->keybindings[i].scancodes = g_new(byte, 2);
+				gsi->keybindings[i].scancodes[1] = tilem_get_tilemkeysyms(tks, ++p);
+				--p;
+				p[0] = '\0';
+				gsi->keybindings[i].scancodes[0] = tilem_get_tilemkeysyms(tks, scancodestr);
+				printf("keysym= %d\tscancode[0]= %d\tscancode[1]= %d\n", gsi->keybindings[i].keysym, gsi->keybindings[i].scancodes[0],gsi->keybindings[i].scancodes[1]);
+			} else {	
+				gsi->keybindings[i].modifiers = 0;
+				gsi->keybindings[i].nscancodes = 1;
+				gsi->keybindings[i].scancodes = g_new(byte, 1);
+				gsi->keybindings[i].scancodes[0] = tilem_get_tilemkeysyms(tks, tilem_ksc_get_scancode(keys[i], model));
+				printf("keysym= %d\tscancode[0]= %d\n", gsi->keybindings[i].keysym, gsi->keybindings[i].scancodes[0]);
+			}
+			p = NULL;
+		}
+		free(scancodestr);
 	}
 }
 
@@ -73,11 +90,10 @@ unsigned int tilem_get_tilemkeysyms(TilemKeySyms *tks, char* string) {
 		}
 	}
 	return 0;
-
 }
 
 /* Search the scancode into the keysyms config file */
-char* tilem_ksc_get_scancode(char* gdkkeysymstr, char* model) {
+char* tilem_ksc_get_scancode(char* gdkkeysymstr, const char* model) {
 
 	GKeyFile * gkf;
 	gkf = g_key_file_new();
@@ -95,7 +111,7 @@ char* tilem_ksc_get_scancode(char* gdkkeysymstr, char* model) {
 }
 
 /* Get all the keys from the group model */
-static gchar** tilem_ksc_get_all_keys(char* model) {
+static gchar** tilem_ksc_get_all_keys(const char* model) {
 
 	GKeyFile * gkf;
 	gchar** keys;
@@ -116,4 +132,5 @@ static gchar** tilem_ksc_get_all_keys(char* model) {
 	
 	return keys;
 }
+
 

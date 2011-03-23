@@ -25,6 +25,7 @@ GdkKeySyms gks[] = {
 	{"GDK_B", GDK_B},
 	{"GDK_C", GDK_C},
 	{"GDK_D", GDK_D},
+	{"GDK_Escape", GDK_Escape},
 	{"GDK_BackSpace", GDK_BackSpace},
 	{"GDK_KP_Left",GDK_KP_Left},
 	{"GDK_KP_Up" , GDK_KP_Up },
@@ -124,26 +125,25 @@ TilemKeySyms tks[] = {
 	{"TILEM_KEY_LEFT", TILEM_KEY_LEFT},
 	{"TILEM_KEY_RIGHT", TILEM_KEY_RIGHT},
 	{"TILEM_KEY_UP", TILEM_KEY_UP},
-	{"TILEM_KEY_ENTER", TILEM_KEY_ENTER},
-	{"TILEM_KEY_ADD ", TILEM_KEY_ADD},
-	{"TILEM_KEY_SUB ", TILEM_KEY_SUB},
-	{"TILEM_KEY_MUL ", TILEM_KEY_MUL},
-	{"TILEM_KEY_DIV ", TILEM_KEY_DIV},
+	{"TILEM_KEY_ADD", TILEM_KEY_ADD},
+	{"TILEM_KEY_SUB", TILEM_KEY_SUB},
+	{"TILEM_KEY_MUL", TILEM_KEY_MUL},
+	{"TILEM_KEY_DIV", TILEM_KEY_DIV},
 	{"TILEM_KEY_POWER", TILEM_KEY_POWER},
 	{"TILEM_KEY_CLEAR", TILEM_KEY_CLEAR},
-	{"TILEM_KEY_CHS ", TILEM_KEY_CHS},
+	{"TILEM_KEY_CHS", TILEM_KEY_CHS},
 	{"TILEM_KEY_3", TILEM_KEY_3},
 	{"TILEM_KEY_6", TILEM_KEY_6},
 	{"TILEM_KEY_9", TILEM_KEY_9},
 	{"TILEM_KEY_RPAREN", TILEM_KEY_RPAREN},
-	{"TILEM_KEY_TAN ", TILEM_KEY_TAN },
+	{"TILEM_KEY_TAN", TILEM_KEY_TAN },
 	{"TILEM_KEY_VARS", TILEM_KEY_VARS},
 	{"TILEM_KEY_DECPNT", TILEM_KEY_DECPNT},
 	{"TILEM_KEY_2", TILEM_KEY_2},
 	{"TILEM_KEY_5", TILEM_KEY_5},
 	{"TILEM_KEY_8", TILEM_KEY_8},
 	{"TILEM_KEY_LPAREN", TILEM_KEY_LPAREN},
-	{"TILEM_KEY_COS ", TILEM_KEY_COS},
+	{"TILEM_KEY_COS", TILEM_KEY_COS},
 	{"TILEM_KEY_PRGM", TILEM_KEY_PRGM},
 	{"TILEM_KEY_STAT", TILEM_KEY_STAT},
 	{"TILEM_KEY_0", TILEM_KEY_0},
@@ -151,7 +151,7 @@ TilemKeySyms tks[] = {
 	{"TILEM_KEY_4", TILEM_KEY_4},
 	{"TILEM_KEY_7", TILEM_KEY_7},
 	{"TILEM_KEY_COMMA", TILEM_KEY_COMMA},
-	{"TILEM_KEY_SIN ", TILEM_KEY_SIN},
+	{"TILEM_KEY_SIN", TILEM_KEY_SIN},
 	{"TILEM_KEY_MATRIX", TILEM_KEY_MATRIX},
 	{"TILEM_KEY_GRAPHVAR", TILEM_KEY_GRAPHVAR},
 	{"TILEM_KEY_ON", TILEM_KEY_ON},
@@ -160,15 +160,12 @@ TilemKeySyms tks[] = {
 	{"TILEM_KEY_LOG", TILEM_KEY_LOG},
 	{"TILEM_KEY_SQUARE", TILEM_KEY_SQUARE},
 	{"TILEM_KEY_RECIP", TILEM_KEY_RECIP},
-	{"TILEM_KEY_MATH", TILEM_KEY_MATH},
-	{"TILEM_KEY_ALPH", TILEM_KEY_ALPHA},
 	{"TILEM_KEY_GRAPH", TILEM_KEY_GRAPH},
 	{"TILEM_KEY_TRACE", TILEM_KEY_TRACE},
 	{"TILEM_KEY_ZOOM", TILEM_KEY_ZOOM},
 	{"TILEM_KEY_WINDOW", TILEM_KEY_WINDOW},
 	{"TILEM_KEY_YEQU", TILEM_KEY_YEQU},
 	{"TILEM_KEY_2ND", TILEM_KEY_2ND},
-	{"TILEM_KEY_MODE", TILEM_KEY_MODE},
 	{"TILEM_KEY_DEL", TILEM_KEY_DEL}
 
 };
@@ -181,7 +178,7 @@ unsigned int tilem_get_gdkkeysyms(GdkKeySyms *gks, char* gdkkeysymsstr);
 unsigned int tilem_get_tilemkeysyms(TilemKeySyms *tks, char* tilemkeysymsstr);
 
 /* Search the associated code into keybindings config file */
-char* tilem_ksc_get_scancode(char* gdkkeysymstr, char* model);
+char* tilem_ksc_get_scancode(char* gdkkeysymstr, const char* model);
 
 /* Get all keys */
-static gchar** tilem_ksc_get_all_keys(char* model);
+static gchar** tilem_ksc_get_all_keys(const char* model);
