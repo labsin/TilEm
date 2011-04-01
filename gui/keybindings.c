@@ -25,6 +25,12 @@
 void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char* model) {
 
 	//tilem_ksc_get_scancode("GDK_A", "ti83") ;
+	
+	/* Test if there's a group for the current model */	
+	if(!tilem_test_group_exist_from_config_file("keybindings.ini", (char*)model))
+		return ;
+
+	
 	gchar ** keys = tilem_ksc_get_all_keys(model);
 
 	int i = 0;
@@ -77,7 +83,7 @@ unsigned int tilem_get_gdkkeysyms(GdkKeySyms *gks, char* string) {
 	
 	return 0;
 
-}
+} 
 
 /* Translating a string name (by example "TILEM_KEY_A") to a unsigned int value (code for TILEM_KEY_A) */
 unsigned int tilem_get_tilemkeysyms(TilemKeySyms *tks, char* string) {

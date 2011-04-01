@@ -266,6 +266,24 @@ char* tilem_config_universal_getter(char* group, char* key) {
 	return string;
 }
 
+/* Test if the group exists in config_file */
+gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group) {
+
+	GKeyFile * gkf;
+	gkf = g_key_file_new();
+	
+	if (! g_key_file_load_from_file(gkf, config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
+		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
+		exit(EXIT_FAILURE);
+	}
+
+	gboolean ret = g_key_file_has_group(gkf, group);
+	g_key_file_free(gkf);
+
+	return ret;
+	
+}
+
 
 /* Set the last dir opened to send file */
 void set_loadmacro_recentdir(char* recentdir) {

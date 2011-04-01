@@ -280,6 +280,8 @@ char* tilem_config_universal_getter(char* group, char* key);
 /* Set the most recent dir for load macro */
 void set_loadmacro_recentdir(char* recentdir);
 
+/* Test if the group exists in config_file */
+gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group);
 
 
 /* ##### debugger.c ##### */
