@@ -5,22 +5,44 @@ DEFS = -DPACKAGE_VERSION=\"pre-release\"
 RANLIB = ranlib
 
 srcdir = .
-top_srcdir = ../..
-top_builddir = ../..
+top_srcdir = ..
+top_builddir = ..
 
-GTK_CFLAGS = `pkg-config --cflags gtk+-2.0 gthread-2.0 glib-2.0 ticalcs2`
-GTK_LIBS = `pkg-config --libs gtk+-2.0 gthread-2.0 glib-2.0 ticalcs2`
+GTK_CFLAGS = `pkg-config --cflags gtk+-2.0 gthread-2.0 glib-2.0`
+GTK_LIBS = `pkg-config --libs gtk+-2.0 gthread-2.0 glib-2.0`
 
-TICONV_CFLAGS = `pkg-config --cflags ticonv`
-TICONV_LIBS = `pkg-config --libs ticonv`
+TICALCS_CFLAGS = `pkg-config --cflags ticalcs2 ticonv`
+TICALCS_LIBS = `pkg-config --libs ticalcs2 ticonv`
 
+TILEMCORE_CFLAGS = -I$(top_srcdir)/core
+TILEMCORE_LIBS = -L$(top_builddir)/core -ltilemcore
 
-objects = tilem2.o memory.o emulator.o screen.o event.o skinops.o skin.o tool.o config.o debugger.o link.o ../db/disasm.o macro.o args.o gifencod.o animatedgif.o screenshot.o pbar.o keybindings.o ti81prg.o
+TILEMDB_CFLAGS = -I$(top_srcdir)/db
+TILEMDB_LIBS = -L$(top_builddir)/db -ltilemdb
 
+objects = tilem2.o \
+	animatedgif.o \
+	args.o \
+	config.o \
+	debugger.o \
+	emulator.o \
+	event.o \
+	gifencod.o \
+	keybindings.o \
+	link.o \
+	macro.o \
+	memory.o \
+	pbar.o \
+	screen.o \
+	screenshot.o \
+	skin.o \
+	skinops.o \
+	ti81prg.o \
+	tool.o
 
-libs = -L../core -ltilemcore -lreadline $(GTK_LIBS) $(TICONV_LIBS) $(LIBS)
+libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
 
-compile = $(CC) -I$(srcdir) -I$(srcdir)/../core -I$(srcdir)/../db $(CFLAGS) $(DEFS) $(GTK_CFLAGS) 
+compile = $(CC) -I$(srcdir) $(CFLAGS) $(DEFS) $(TILEMCORE_CFLAGS) $(TILEMDB_CFLAGS) $(GTK_CFLAGS) $(TICALCS_CFLAGS)
 
 all: tilem2
 
