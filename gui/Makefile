@@ -31,6 +31,7 @@ objects = tilem2.o \
 	keybindings.o \
 	link.o \
 	macro.o \
+	memmodel.o \
 	memory.o \
 	pbar.o \
 	screen.o \
@@ -55,7 +56,11 @@ tilem2.o: tilem2.c gui.h *.h ../core/tilem.h
 
 #Debugger
 debugger.o: debugger.c debugger.h gui.h *.h ../core/tilem.h
-	$(compile) -c $(srcdir)/debugger.c 
+	$(compile) -c $(srcdir)/debugger.c
+
+# Tree model interface for calc memory
+memmodel.o: memmodel.c gui.h *.h ../core/tilem.h
+	$(compile) -c $(srcdir)/memmodel.c
 
 # Memory management and messages
 memory.o: memory.c ../core/tilem.h

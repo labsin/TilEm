@@ -20,6 +20,7 @@
 
 
 #include "debugger.h"
+#include "memmodel.h"
 
 /* This function is the first to be called. Start the debugger */
 void launch_debugger(GLOBAL_SKIN_INFOS* gsi){
@@ -483,36 +484,42 @@ void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
 	/* Create the memory list tree view and set title invisible */
 	GtkWidget* debug_treeview= gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(debug_treeview), FALSE);	
-	gtk_tree_view_set_enable_search(GTK_TREE_VIEW(debug_treeview), TRUE);
+	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(debug_treeview), TRUE);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, 70, 16);
-	column = gtk_tree_view_column_new_with_attributes("ADDR",renderer, "text", COL_OFFSET_MEM, NULL);
-	gtk_tree_view_column_set_expand(column, FALSE);
+	column = gtk_tree_view_column_new_with_attributes("ADDR",renderer, "text", MM_COL_ADDRESS(0), NULL);
+	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_fixed_width(column, 70);
+	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 
 	int i=0;
 	for(i=0; i<8; i++)
 	{
 		renderer = gtk_cell_renderer_text_new ();
-		gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
-		column = gtk_tree_view_column_new_with_attributes(NULL ,renderer, "text", COL_HEXA_MEM+i, NULL);
+		column = gtk_tree_view_column_new_with_attributes(NULL ,renderer, "text", MM_COL_HEX(i), NULL);
+		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
+		gtk_tree_view_column_set_fixed_width(column, 20);
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 	}	
 
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, 60, 16);
-	column = gtk_tree_view_column_new_with_attributes("ASCII",renderer, "text", COL_ASCII_MEM, NULL);
-	gtk_tree_view_column_set_expand(column, FALSE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
-		
+	for (i = 0; i < 8; i++) {
+		renderer = gtk_cell_renderer_text_new ();
+		column = gtk_tree_view_column_new_with_attributes("ASCII",renderer, "text", MM_COL_CHAR(i), NULL);
+		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
+		gtk_tree_view_column_set_fixed_width(column, 16);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
+	}
+
 	/* Get the list */
-	model = fill_memory_list ();
+	model = tilem_mem_model_new(gsi->emu, 8, 0, TRUE);
 
 	/* Add the list */
 	gtk_tree_view_set_model (GTK_TREE_VIEW (debug_treeview), model);
+	g_object_unref(model);
 
 	gtk_container_add(GTK_CONTAINER(debug_memoryscroll), debug_treeview);
 	gtk_tree_view_columns_autosize (GTK_TREE_VIEW(debug_treeview));
