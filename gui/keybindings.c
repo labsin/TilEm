@@ -29,6 +29,7 @@
 #include "gui.h"
 #include "msgbox.h"
 
+/* Get the associated calculator key name */
 static int calc_key_from_name(const TilemCalc *calc, const char *name)
 {
 	int i;
@@ -41,6 +42,7 @@ static int calc_key_from_name(const TilemCalc *calc, const char *name)
 	return 0;
 }
 
+/* Parse a line of the group (model) in the keybindings file */
 static gboolean parse_binding(TilemKeyBinding *kb,
                               const char *pckeys, const char *tikeys,
                               const TilemCalc *calc)
@@ -127,6 +129,7 @@ static gboolean parse_binding(TilemKeyBinding *kb,
 	return TRUE;
 }
 
+/* Parse a group (model) in the keybindings file */
 static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
                                 const char *group)
 {
@@ -165,9 +168,15 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 	g_strfreev(keys);
 }
 
+/* Init the keybindings struct and open the keybindings file */
 void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 {
-	const char *kfname = "keybindings.ini"; /* FIXME */
+	/* Allow to load the keybindings file wich is given by config.ini */
+	/* Is is sufficient? (because you put here a fixme ) */
+	char* kfname = tilem_config_universal_getter("settings", "keybindings");
+	if(!kfname)
+		kfname = "keybindings.ini"; /* FIXME */
+
 	GKeyFile *gkf;
 	GError *err = NULL;
 
