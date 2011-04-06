@@ -35,11 +35,11 @@ void launch_debugger(GLOBAL_SKIN_INFOS* gsi){
 }
 
 /* Destroy the debugger, and turn to FALSE the isDebuggerRunning variable (use by other function to know if debuuger is running) */
-void on_debug_destroy(GtkWidget* debug_win, GdkEvent* Event, GLOBAL_SKIN_INFOS* gsi)
+void on_debug_destroy(GtkWidget* debug_win, GLOBAL_SKIN_INFOS* gsi)
 {
-	Event=NULL;	
 	gsi->isDebuggerRunning=FALSE;
-	gtk_widget_destroy(GTK_WIDGET(debug_win));
+	if(GTK_IS_WIDGET(debug_win))
+		gtk_widget_destroy(GTK_WIDGET(debug_win));
 
 }
 
@@ -181,7 +181,6 @@ void create_debug_window(GLOBAL_SKIN_INFOS* gsi)
 	create_stack_list(debug_stackscroll, gsi);
 	gtk_container_add(GTK_CONTAINER(debug_stackframe), debug_stackscroll);
 	
-
 	/* Create the memory list scrolled widget */
 	GtkWidget* debug_memoryframe= gtk_frame_new("Memory");
 	gtk_frame_set_label_align(GTK_FRAME(debug_memoryframe), 0.5, 0.5);
@@ -193,13 +192,12 @@ void create_debug_window(GLOBAL_SKIN_INFOS* gsi)
 	
 	GtkWidget* debug_label= gtk_label_new("Tilem-dbg (c) Duponchelle Thibault, Moody Benjamin, Bruant Luc");
 	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_label, 0, 7, 13, 14);
-	//GtkWidget* debug_image= gtk_image_new_from_file("./pix/tilem_matrix2.png");
-	//gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_image, 0, 7, 14, 15);
 	gtk_table_attach_defaults(GTK_TABLE(debug_table),debug_dasmscroll, 1 , 6, 1, 7); 
 	gtk_table_attach_defaults(GTK_TABLE(debug_table),debug_stackframe, 6 , 7, 0, 7); 
 	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_memoryframe, 0, 7, 7, 13);
 	gtk_container_add(GTK_CONTAINER(debug_win), debug_table);
-	gtk_signal_connect(GTK_OBJECT(debug_win), "delete-event", G_CALLBACK(on_debug_destroy), gsi);
+	//gtk_signal_connect(GTK_OBJECT(debug_win), "delete-event", G_CALLBACK(on_debug_destroy), gsi);
+	g_signal_connect(GTK_OBJECT(debug_win), "delete-event", G_CALLBACK(on_debug_destroy), gsi);	
 	gtk_widget_show_all(debug_win);
 }
 
@@ -513,16 +511,19 @@ void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
 	}
+	
 
 	/* Get the list */
-	model = tilem_mem_model_new(gsi->emu, 8, 0, TRUE);
+	model = (GtkTreeModel*)tilem_mem_model_new(gsi->emu, 8, 0, TRUE);
+	//model = fill_memory_list();
 
 	/* Add the list */
-	gtk_tree_view_set_model (GTK_TREE_VIEW (debug_treeview), model);
+	gtk_tree_view_set_model (GTK_TREE_VIEW (debug_treeview), (GtkTreeModel*)model);
 	g_object_unref(model);
-
+	
 	gtk_container_add(GTK_CONTAINER(debug_memoryscroll), debug_treeview);
 	gtk_tree_view_columns_autosize (GTK_TREE_VIEW(debug_treeview));
+
 
 }
 

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtk/gtktreemodel.h>
+#include <gtk/gtk.h>
 
 /* TilemMemModel object: an efficient GtkTreeModel interface for
    viewing and editing calculator's memory */

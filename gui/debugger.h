@@ -66,7 +66,7 @@ char* rvalue[12];
 static char *rlabel[12] = {"AF'", "AF", "BC'", "BC", "DE'", "DE", "HL'", "HL", "IY", "IX", "SP", "PC" };
 
 /* close debug window */
-static void on_debug_destroy(GtkWidget* debug_win, GdkEvent* Event, GLOBAL_SKIN_INFOS* gsi);
+static void on_debug_destroy(GtkWidget* debug_win, GLOBAL_SKIN_INFOS* gsi);
 
 /* create top level(*) debug window. (not really top level for gtk) */
 static void create_debug_window(GLOBAL_SKIN_INFOS* gsi);
@@ -102,5 +102,5 @@ static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi);
 static void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi); 
 
 /* Fill the GtkList used by memory list */
-static GtkTreeModel* fill_memory_list(void);
+static GtkTreeModel* fill_memory_list(void); 
 

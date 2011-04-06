@@ -20,6 +20,8 @@ TILEMCORE_LIBS = -L$(top_builddir)/core -ltilemcore
 TILEMDB_CFLAGS = -I$(top_srcdir)/db
 TILEMDB_LIBS = -L$(top_builddir)/db -ltilemdb
 
+GTK3_MIGRATION = -DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED 
+
 objects = tilem2.o \
 	animatedgif.o \
 	args.o \
@@ -43,7 +45,7 @@ objects = tilem2.o \
 
 libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
 
-compile = $(CC) -I$(srcdir) $(CFLAGS) $(DEFS) $(TILEMCORE_CFLAGS) $(TILEMDB_CFLAGS) $(GTK_CFLAGS) $(TICALCS_CFLAGS)
+compile = $(CC) -I$(srcdir) $(CFLAGS) $(DEFS) $(TILEMCORE_CFLAGS) $(TILEMDB_CFLAGS) $(GTK_CFLAGS) $(TICALCS_CFLAGS) $(GTK3_MIGRATION)
 
 all: tilem2
 
