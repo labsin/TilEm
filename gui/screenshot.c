@@ -59,7 +59,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_window_set_title(GTK_WINDOW(screenshotanim_win), "Screenshot");
 	gtk_window_set_default_size(GTK_WINDOW(screenshotanim_win), 400,30);
 	
-	gtk_signal_connect(GTK_OBJECT(screenshotanim_win), "delete-event", G_CALLBACK(on_destroy_screenshot), NULL);
+	g_signal_connect(GTK_OBJECT(screenshotanim_win), "delete-event", G_CALLBACK(on_destroy_screenshot), NULL);
 
 	GtkWidget* box;
 	box = gtk_hbox_new (0, 1);

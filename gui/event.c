@@ -231,25 +231,27 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* quit_with_save_item = gtk_menu_item_new_with_label ("Exit and save state");
 
 	/* Add items to the menu */
-	gtk_menu_append (GTK_MENU (right_click_menu), load_skin_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), send_file_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), launch_debugger_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), toggle_speed_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), screenshot_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), display_lcd_into_console_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), switch_view_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), switch_borderless_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), set_default_model_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), set_default_skin_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), save_state_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), start_record_macro_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), stop_record_macro_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), play_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), play_from_file_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), about_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), reset_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), quit_no_save_item);
-	gtk_menu_append (GTK_MENU (right_click_menu), quit_with_save_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), load_skin_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), send_file_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), launch_debugger_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), toggle_speed_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), screenshot_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), display_lcd_into_console_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_view_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_borderless_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), set_default_model_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), set_default_skin_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), save_state_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), start_record_macro_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), stop_record_macro_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), play_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), play_from_file_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), about_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), reset_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), quit_no_save_item);
+	//gtk_menu_append (GTK_MENU (right_click_menu), quit_with_save_item);
+	gtk_menu_shell_append(GTK_MENU_SHELL (right_click_menu), quit_with_save_item);
+
 
 	/* Callback */
 	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) gsi);
