@@ -528,15 +528,15 @@ void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Create GtkListStore and attach it */
-static GtkTreeModel* fill_memory_list(void)
+/*static GtkTreeModel* fill_memory_list(void)
 {
 	GtkListStore  *store;
 	GtkTreeIter    iter;
   
 	store = gtk_list_store_new (10, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-
+*/
 	/* Append a row and fill in some data (here is just for debugging) */
-	int i=0;
+/*	int i=0;
 	for(i=0; i<30; i++)
 	{
 		gtk_list_store_append (store, &iter);
@@ -546,4 +546,5 @@ static GtkTreeModel* fill_memory_list(void)
   
 	return GTK_TREE_MODEL (store);
 }
+*/
 

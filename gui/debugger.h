@@ -102,5 +102,5 @@ static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi);
 static void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi); 
 
 /* Fill the GtkList used by memory list */
-static GtkTreeModel* fill_memory_list(void); 
+//static GtkTreeModel* fill_memory_list(void); 
 

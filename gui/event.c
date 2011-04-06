@@ -183,7 +183,7 @@ void show_about()
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("pix/tilem.png", NULL);
 
   GtkWidget *dialog = gtk_about_dialog_new();
-  gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), "TilEm");
+  gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "TilEm");
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D");
@@ -218,17 +218,30 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* display_lcd_into_console_item = gtk_menu_item_new_with_label ("Display LCD into Console");
 	GtkWidget* switch_view_item = gtk_menu_item_new_with_label ("Switch view");
 	GtkWidget* switch_borderless_item = gtk_menu_item_new_with_label ("Switch borderless");
+	
+	/* >>>> Sub menu save */
+	GtkWidget* save_submenu = gtk_menu_new();
+	GtkWidget* save_item = gtk_menu_item_new_with_label ("Save current state/config...");
 	GtkWidget* set_default_model_item = gtk_menu_item_new_with_label ("Use this model as default for this rom");
 	GtkWidget* set_default_skin_item = gtk_menu_item_new_with_label ("Use this skin as default for this rom");
 	GtkWidget* save_state_item = gtk_menu_item_new_with_label ("Save state...");
+	/* <<<< */
+	
+	/* >>>> Sub menu macro */
+	GtkWidget* macro_submenu = gtk_menu_new();
+	GtkWidget* macro_item = gtk_menu_item_new_with_label ("Macro...");
 	GtkWidget* start_record_macro_item = gtk_menu_item_new_with_label ("Start recording macro...");
 	GtkWidget* stop_record_macro_item = gtk_menu_item_new_with_label ("Stop recording macro...");
 	GtkWidget* play_item = gtk_menu_item_new_with_label ("Play macro !");
 	GtkWidget* play_from_file_item = gtk_menu_item_new_with_label ("Play macro from file");
+	/* <<<< */
+
 	GtkWidget* about_item = gtk_menu_item_new_with_label ("About");
 	GtkWidget* reset_item = gtk_menu_item_new_with_label ("Reset");
 	GtkWidget* quit_no_save_item = gtk_menu_item_new_with_label ("Exit without saving state");
 	GtkWidget* quit_with_save_item = gtk_menu_item_new_with_label ("Exit and save state");
+
+
 
 	/* Add items to the menu */
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), load_skin_item);
@@ -239,17 +252,27 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), display_lcd_into_console_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_view_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_borderless_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), set_default_model_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), set_default_skin_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), save_state_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), start_record_macro_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), stop_record_macro_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), play_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), play_from_file_item);
+
+	/* Sub menu save */
+	gtk_menu_shell_append (GTK_MENU_SHELL (save_submenu), save_state_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (save_submenu), set_default_model_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (save_submenu), set_default_skin_item);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(save_item), save_submenu);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), save_item);
+	/* <<<< */
+	
+	/* >>>> Sub menu macro */
+	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), start_record_macro_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), stop_record_macro_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), play_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), play_from_file_item);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(macro_item), macro_submenu);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), macro_item);
+	/* <<<< */
+	
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), about_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), reset_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), quit_no_save_item);
-	//gtk_menu_append (GTK_MENU (right_click_menu), quit_with_save_item);
 	gtk_menu_shell_append(GTK_MENU_SHELL (right_click_menu), quit_with_save_item);
 
 
@@ -283,9 +306,11 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_widget_show (display_lcd_into_console_item);
 	gtk_widget_show (switch_view_item);
 	gtk_widget_show (switch_borderless_item);
+	gtk_widget_show (save_item);
 	gtk_widget_show (set_default_model_item);
 	gtk_widget_show (set_default_skin_item);
 	gtk_widget_show (save_state_item);
+	gtk_widget_show (macro_item);
 	gtk_widget_show (start_record_macro_item);
 	gtk_widget_show (stop_record_macro_item);
 	gtk_widget_show (play_item);
