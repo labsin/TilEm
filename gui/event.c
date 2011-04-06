@@ -204,36 +204,108 @@ void on_reset(GLOBAL_SKIN_INFOS * gsi)
 	g_mutex_unlock(gsi->emu->calc_mutex);
 }
 
+/* Build the menu */
+GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
+
+	GtkWidget* right_click_menu = gtk_menu_new ();    
+
+	/* Create the items for the menu */
+	GtkWidget* load_skin_item = gtk_menu_item_new_with_label ("Load skin...");
+	GtkWidget* send_file_item = gtk_menu_item_new_with_label ("Send file...");
+	GtkWidget* launch_debugger_item = gtk_menu_item_new_with_label ("Launch debugger...");
+	GtkWidget* toggle_speed_item = gtk_menu_item_new_with_label ("Toggle speed");
+	GtkWidget* screenshot_item = gtk_menu_item_new_with_label ("Screenshot !");
+	GtkWidget* display_lcd_into_console_item = gtk_menu_item_new_with_label ("Display LCD into Console");
+	GtkWidget* switch_view_item = gtk_menu_item_new_with_label ("Switch view");
+	GtkWidget* switch_borderless_item = gtk_menu_item_new_with_label ("Switch borderless");
+	GtkWidget* set_default_model_item = gtk_menu_item_new_with_label ("Use this model as default for this rom");
+	GtkWidget* set_default_skin_item = gtk_menu_item_new_with_label ("Use this skin as default for this rom");
+	GtkWidget* save_state_item = gtk_menu_item_new_with_label ("Save state...");
+	GtkWidget* start_record_macro_item = gtk_menu_item_new_with_label ("Start recording macro...");
+	GtkWidget* stop_record_macro_item = gtk_menu_item_new_with_label ("Stop recording macro...");
+	GtkWidget* play_item = gtk_menu_item_new_with_label ("Play macro !");
+	GtkWidget* play_from_file_item = gtk_menu_item_new_with_label ("Play macro from file");
+	GtkWidget* about_item = gtk_menu_item_new_with_label ("About");
+	GtkWidget* reset_item = gtk_menu_item_new_with_label ("Reset");
+	GtkWidget* quit_no_save_item = gtk_menu_item_new_with_label ("Exit without saving state");
+	GtkWidget* quit_with_save_item = gtk_menu_item_new_with_label ("Exit and save state");
+
+	/* Add items to the menu */
+	gtk_menu_append (GTK_MENU (right_click_menu), load_skin_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), send_file_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), launch_debugger_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), toggle_speed_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), screenshot_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), display_lcd_into_console_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), switch_view_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), switch_borderless_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), set_default_model_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), set_default_skin_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), save_state_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), start_record_macro_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), stop_record_macro_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), play_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), play_from_file_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), about_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), reset_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), quit_no_save_item);
+	gtk_menu_append (GTK_MENU (right_click_menu), quit_with_save_item);
+
+	/* Callback */
+	gtk_signal_connect_object (GTK_OBJECT (load_skin_item), "activate", GTK_SIGNAL_FUNC (tilem_user_change_skin), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (send_file_item), "activate", GTK_SIGNAL_FUNC (load_file), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (launch_debugger_item), "activate", GTK_SIGNAL_FUNC (launch_debugger), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (toggle_speed_item), "activate", GTK_SIGNAL_FUNC (tilem_change_speed), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (screenshot_item), "activate", GTK_SIGNAL_FUNC (create_screenshot_window), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (display_lcd_into_console_item), "activate", GTK_SIGNAL_FUNC (display_lcdimage_into_terminal), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (switch_view_item), "activate", GTK_SIGNAL_FUNC (switch_view), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (switch_borderless_item), "activate", GTK_SIGNAL_FUNC (switch_borderless), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (set_default_model_item), "activate", GTK_SIGNAL_FUNC (add_or_modify_defaultmodel), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (set_default_skin_item), "activate", GTK_SIGNAL_FUNC (add_or_modify_defaultskin), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (save_state_item), "activate", GTK_SIGNAL_FUNC (save_state), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (start_record_macro_item), "activate", GTK_SIGNAL_FUNC (start_record_macro), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (stop_record_macro_item), "activate", GTK_SIGNAL_FUNC (stop_record_macro), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (play_item), "activate", GTK_SIGNAL_FUNC (play_macro), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (play_from_file_item), "activate", GTK_SIGNAL_FUNC (play_macro_from_file), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (about_item), "activate", GTK_SIGNAL_FUNC (show_about), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (reset_item), "activate", GTK_SIGNAL_FUNC (on_reset), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (quit_no_save_item), "activate", GTK_SIGNAL_FUNC (on_destroy), (gpointer) gsi);
+	gtk_signal_connect_object (GTK_OBJECT (quit_with_save_item), "activate", GTK_SIGNAL_FUNC (quit_with_save), (gpointer) gsi);
+	
+	/* Show the items */
+	gtk_widget_show (load_skin_item);
+	gtk_widget_show (send_file_item);
+	gtk_widget_show (launch_debugger_item);
+	gtk_widget_show (toggle_speed_item);
+	gtk_widget_show (screenshot_item);
+	gtk_widget_show (display_lcd_into_console_item);
+	gtk_widget_show (switch_view_item);
+	gtk_widget_show (switch_borderless_item);
+	gtk_widget_show (set_default_model_item);
+	gtk_widget_show (set_default_skin_item);
+	gtk_widget_show (save_state_item);
+	gtk_widget_show (start_record_macro_item);
+	gtk_widget_show (stop_record_macro_item);
+	gtk_widget_show (play_item);
+	gtk_widget_show (play_from_file_item);
+	gtk_widget_show (about_item);
+	gtk_widget_show (reset_item);
+	gtk_widget_show (quit_no_save_item);
+	gtk_widget_show (quit_with_save_item);
+
+	return right_click_menu;
+}
+
+
 /* Pop up context menu */
 static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 {
-	static GtkItemFactoryEntry right_click_menu[] = {
-		{"/Load skin...", "F12", tilem_user_change_skin, 1, NULL,NULL},
-		{"/Send file...", "F11", load_file, 1, NULL, NULL},
-		{"/Enter debugger...", "F11", launch_debugger, 1, NULL, NULL},
-		{"/---", NULL, NULL, 0, "<Separator>", NULL},
-		{"/Toggle speed",NULL, tilem_change_speed, 1, NULL, NULL},
-		{"/Screenshot !",NULL, create_screenshot_window, 1, NULL, NULL},
-		{"/Display lcd into console !",NULL, display_lcdimage_into_terminal, 1, NULL, NULL},
-		{"/Switch view",NULL,switch_view,1,NULL,NULL},
-		{"/Switch borderless",NULL,switch_borderless,1,NULL,NULL},
-		{"/Use this model as default for this rom",NULL,add_or_modify_defaultmodel, 1, NULL, NULL},
-		{"/Use this skin as default for this rom ",NULL,add_or_modify_defaultskin, 1, NULL, NULL},
-		{"/Save state... ",NULL,save_state, 1, NULL, NULL},
-		{"/---", NULL, NULL, 0, "<Separator>", NULL},
-		{"/Start recording...", "<control>Q",start_record_macro, 0, NULL, NULL},
-		{"/Stop recording.", "<control>Q",stop_record_macro, 0, NULL, NULL},
-		{"/Play !", "<control>Q", play_macro, 0, NULL, NULL},
-		{"/Play ! (from file...)", "<control>Q", play_macro_from_file, 0, NULL, NULL},
-		{"/---", NULL, NULL, 0, "<Separator>", NULL},
-		{"/About", "<control>Q",show_about, 0, NULL, NULL},
-		{"/Reset", "<control>R", on_reset, 0, NULL, NULL},
-		{"/Quit without saving", "<control>Q", on_destroy, 0, NULL, NULL},
-		{"/Exit and save state", "<alt>X", quit_with_save, 1, NULL, NULL}
-	};
 
-	right_click_menu[0].extra_data=gsi;
-	create_menus(gsi->pWindow,event,right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
+
+
+
+	GtkWidget* right_click_menu = build_menu(gsi);
+	create_menus(gsi->pWindow,event, right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
 }
 
 /* If currently recording a macro, record a keypress */

@@ -151,7 +151,7 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
 void switch_borderless(GLOBAL_SKIN_INFOS* gsi); 
 
 /* Create the right click menu */
-void create_menus(GtkWidget *window,GdkEvent *event,GtkItemFactoryEntry *items, int this_items, const char *menuname,gpointer* gsi);
+void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget *items, int this_items, const char *menuname,gpointer* gsi);
 
 /* Adapt the style */
 void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
@@ -173,6 +173,9 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
 /* Toggle limit speed */
 void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi);
+
+/* Build the right click menu */
+GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi);
 
 
 

@@ -359,24 +359,24 @@ gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	return TRUE;
 }
 
-void create_menus(GtkWidget *window,GdkEvent *event, GtkItemFactoryEntry * menu_items, int thisitems, const char *menuname,gpointer* gsi)
+void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items, int thisitems, const char *menuname,gpointer* gsi)
 {
 	
 	DLCD_L2_A0("Entering : create_menus...\n");
 	GtkAccelGroup *accel_group;
-	GtkItemFactory *factory;
+	//GtkItemFactory *factory;
 	GtkWidget *menu;
 	GdkEventButton *bevent = (GdkEventButton *) event;
 
 
 	accel_group = gtk_accel_group_new();
-	factory = gtk_item_factory_new(GTK_TYPE_MENU, menuname, accel_group);
+	//factory = gtk_item_factory_new(GTK_TYPE_MENU, menuname, accel_group);
 	/* translatefunc */
-	gtk_item_factory_create_items(factory, thisitems, menu_items, gsi);
-	menu = factory->widget;
+	//gtk_item_factory_create_items(factory, thisitems, menu_items, gsi);
+	//menu = factory->widget;
 
 	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
+	gtk_menu_popup(GTK_MENU(menu_items), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
 	gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 	DLCD_L2_A0("Exiting create_menus...\n");
 
