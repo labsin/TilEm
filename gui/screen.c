@@ -359,13 +359,11 @@ gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	return TRUE;
 }
 
-void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items, int thisitems, const char *menuname,gpointer* gsi)
+void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items)
 {
 	
 	DLCD_L2_A0("Entering : create_menus...\n");
 	GtkAccelGroup *accel_group;
-	//GtkItemFactory *factory;
-	GtkWidget *menu;
 	GdkEventButton *bevent = (GdkEventButton *) event;
 
 

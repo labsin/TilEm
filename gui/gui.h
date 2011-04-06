@@ -151,7 +151,7 @@ void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
 void switch_borderless(GLOBAL_SKIN_INFOS* gsi); 
 
 /* Create the right click menu */
-void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget *items, int this_items, const char *menuname,gpointer* gsi);
+void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget *items);
 
 /* Adapt the style */
 void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);

@@ -305,7 +305,7 @@ static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 
 
 	GtkWidget* right_click_menu = build_menu(gsi);
-	create_menus(gsi->pWindow,event, right_click_menu, sizeof(right_click_menu) / sizeof(GtkItemFactoryEntry), "<magic_right_click_menu>",(gpointer)gsi);
+	create_menus(gsi->pWindow, event, right_click_menu);
 }
 
 /* If currently recording a macro, record a keypress */
