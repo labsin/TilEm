@@ -252,25 +252,25 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_menu_append (GTK_MENU (right_click_menu), quit_with_save_item);
 
 	/* Callback */
-	gtk_signal_connect_object (GTK_OBJECT (load_skin_item), "activate", GTK_SIGNAL_FUNC (tilem_user_change_skin), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (send_file_item), "activate", GTK_SIGNAL_FUNC (load_file), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (launch_debugger_item), "activate", GTK_SIGNAL_FUNC (launch_debugger), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (toggle_speed_item), "activate", GTK_SIGNAL_FUNC (tilem_change_speed), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (screenshot_item), "activate", GTK_SIGNAL_FUNC (create_screenshot_window), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (display_lcd_into_console_item), "activate", GTK_SIGNAL_FUNC (display_lcdimage_into_terminal), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (switch_view_item), "activate", GTK_SIGNAL_FUNC (switch_view), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (switch_borderless_item), "activate", GTK_SIGNAL_FUNC (switch_borderless), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (set_default_model_item), "activate", GTK_SIGNAL_FUNC (add_or_modify_defaultmodel), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (set_default_skin_item), "activate", GTK_SIGNAL_FUNC (add_or_modify_defaultskin), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (save_state_item), "activate", GTK_SIGNAL_FUNC (save_state), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (start_record_macro_item), "activate", GTK_SIGNAL_FUNC (start_record_macro), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (stop_record_macro_item), "activate", GTK_SIGNAL_FUNC (stop_record_macro), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (play_item), "activate", GTK_SIGNAL_FUNC (play_macro), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (play_from_file_item), "activate", GTK_SIGNAL_FUNC (play_macro_from_file), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (about_item), "activate", GTK_SIGNAL_FUNC (show_about), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (reset_item), "activate", GTK_SIGNAL_FUNC (on_reset), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (quit_no_save_item), "activate", GTK_SIGNAL_FUNC (on_destroy), (gpointer) gsi);
-	gtk_signal_connect_object (GTK_OBJECT (quit_with_save_item), "activate", GTK_SIGNAL_FUNC (quit_with_save), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (screenshot_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (set_default_model_item), "activate", G_CALLBACK (add_or_modify_defaultmodel), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (set_default_skin_item), "activate", G_CALLBACK (add_or_modify_defaultskin), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (save_state_item), "activate", G_CALLBACK (save_state), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (start_record_macro_item), "activate", G_CALLBACK (start_record_macro), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (stop_record_macro_item), "activate", G_CALLBACK (stop_record_macro), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (play_item), "activate", G_CALLBACK (play_macro), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (play_from_file_item), "activate", G_CALLBACK (play_macro_from_file), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (about_item), "activate", G_CALLBACK (show_about), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (reset_item), "activate", G_CALLBACK (on_reset), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (quit_no_save_item), "activate", G_CALLBACK (on_destroy), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (quit_with_save_item), "activate", G_CALLBACK (quit_with_save), (gpointer) gsi);
 	
 	/* Show the items */
 	gtk_widget_show (load_skin_item);
