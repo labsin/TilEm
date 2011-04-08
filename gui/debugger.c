@@ -453,21 +453,26 @@ static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi)
 	stack_offset = (char*) malloc(sizeof(char*));
 	stack_value = (char*) malloc(sizeof(char*));
  	gushort i=0; 
-
+	dword phys;
+	
+	g_mutex_lock(gsi->emu->calc_mutex);
 	store = gtk_list_store_new (NUM_COLS_STK, G_TYPE_STRING, G_TYPE_STRING);
 	i = getreg_int(gsi, 10) + 1;
         while  (i > 0x0010) {
         	sprintf(stack_offset, "%04X:", i - 1);
-                //sprintf(stack_value, "%04X", Z80_RDMEM(i - 1) + (Z80_RDMEM(i) << 0x08));
+		phys = gsi->emu->calc->hw.mem_ltop(gsi->emu->calc, i);
+                sprintf(stack_value, "%02X%02X", gsi->emu->calc->mem[phys],gsi->emu->calc->mem[phys +1] );
+		
 
 		/* Append a row and fill in some data (here is just for debugging) */
 		gtk_list_store_append (store, &iter);
-		gtk_list_store_set (store, &iter, COL_OFFSET_STK, stack_offset, COL_VALUE_STK, "----", -1);
+		gtk_list_store_set (store, &iter, COL_OFFSET_STK, stack_offset, COL_VALUE_STK, stack_value, -1);
  
                 i += 0x0002;
       }
   
   
+	g_mutex_unlock(gsi->emu->calc_mutex);
 	return GTK_TREE_MODEL (store);
 }
 
@@ -518,6 +523,9 @@ void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
 	//model = fill_memory_list();
 
 	/* Add the list */
+	/* FIXME : THERE'S A BUG HERE ! 
+	It works only with fill_memory_list, I don't know why??
+	*/
 	gtk_tree_view_set_model (GTK_TREE_VIEW (debug_treeview), (GtkTreeModel*)model);
 	g_object_unref(model);
 	

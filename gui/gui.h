@@ -20,9 +20,9 @@
 
 #include <tilem.h>
 #include <z80.h>
-#include <skinops.h>
-#include <scancodes.h>
-#include <debuginfo.h>
+#include "skinops.h"
+#include "scancodes.h"
+#include "debuginfo.h"
 #include <tilemdb.h>
 
 #include <ticalcs.h>
