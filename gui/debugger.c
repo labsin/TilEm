@@ -461,7 +461,7 @@ static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi)
         while  (i > 0x0010) {
         	sprintf(stack_offset, "%04X:", i - 1);
 		phys = gsi->emu->calc->hw.mem_ltop(gsi->emu->calc, i - 1);
-                sprintf(stack_value, "%02X%02X", gsi->emu->calc->mem[phys],gsi->emu->calc->mem[phys +1] );
+                sprintf(stack_value, "%02X%02X", gsi->emu->calc->mem[phys + 1],gsi->emu->calc->mem[phys] );
 		
 
 		/* Append a row and fill in some data (here is just for debugging) */
