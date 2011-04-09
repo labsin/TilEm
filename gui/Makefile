@@ -77,7 +77,7 @@ screen.o: screen.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/screen.c
 
 # Handle events
-event.o: event.c event.h gui.h *.h ../core/tilem.h
+event.o: event.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/event.c
 
 # Open skin (skn format file) originally created by Julien Blache and Romain Lievins
@@ -85,7 +85,7 @@ skinops.o: skinops.c skinops.h
 	$(compile) -c $(srcdir)/skinops.c
 
 # Manage skins
-skin.o: skin.c skin.h gui.h *.h ../core/tilem.h
+skin.o: skin.c gui.h *.h ../core/tilem.h
 	$(compile) -c $(srcdir)/skin.c 
 
 # Popups and other stuff

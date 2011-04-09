@@ -27,7 +27,6 @@
 #include <tilem.h>
 
 #include "gui.h"
-#include "animatedgif.h"
 
 /* Create an empty gif and add the first frame */ 
 void tilem_animation_start(GLOBAL_SKIN_INFOS* gsi) {

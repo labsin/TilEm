@@ -30,7 +30,17 @@
 #include <tilem.h>
 
 #include "gui.h"
-#include "screenshot.h"
+
+void on_screenshot();
+void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+void on_play(GLOBAL_SKIN_INFOS* gsi);
+void on_destroy_playview(GtkWidget* playwin);
+
+void screenshot(GLOBAL_SKIN_INFOS *gsi);
+
+static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename, const char *format);
 
 /* This method is called from click event */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
