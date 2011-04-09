@@ -65,7 +65,7 @@ static void destroy_progress(G_GNUC_UNUSED GtkDialog *dlg,
 /* Create the progress bar window */
 void progress_bar_init(TilemCalcEmulator* emu)
 {
-	GtkWidget *pw, *parent, *tbl, *lbl, *pb;
+	GtkWidget *pw, *parent, *vbox, *tbl, *lbl, *pb;
 
 	g_return_if_fail(emu != NULL);
 
@@ -80,6 +80,8 @@ void progress_bar_init(TilemCalcEmulator* emu)
 	                                 GTK_RESPONSE_CANCEL,
 	                                 NULL);
 	emu->ilp_progress_win = pw;
+
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(pw));
 
 	tbl = gtk_table_new(2, 2, FALSE);
 	gtk_container_set_border_width(GTK_CONTAINER(tbl), 6);
@@ -106,15 +108,13 @@ void progress_bar_init(TilemCalcEmulator* emu)
 	gtk_table_attach(GTK_TABLE(tbl), pb, 1, 2, 1, 2,
 	                 GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 
-	gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(pw))), tbl,
-	                   FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), tbl, FALSE, FALSE, 0);
 
 	lbl = gtk_label_new(emu->link_update->text);
 	gtk_misc_set_alignment(GTK_MISC(lbl), 0.5, 0.5);
 	emu->ilp_progress_label = GTK_LABEL(lbl);
 
-	gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(pw))), lbl,
-	                   FALSE, FALSE, 6);
+	gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 6);
 
 	g_signal_connect(pw, "response", G_CALLBACK(destroy_progress), emu);
 

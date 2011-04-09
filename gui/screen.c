@@ -283,6 +283,7 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 {
 	TilemCalcEmulator* emu = gsi->emu;
 	dword* palette;
+	GtkStyle *style;
 	int r_dark, g_dark, b_dark;
 	int r_light, g_light, b_light;
 	double gamma = 2.2;
@@ -290,13 +291,15 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	if (gsi->view == 1 || !gsi->si) {
 		/* no skin -> use standard GTK colors */
 
-		r_dark = gtk_widget_get_style(w)->text[GTK_STATE_NORMAL].red / 257;
-		g_dark = gtk_widget_get_style(w)->text[GTK_STATE_NORMAL].green / 257;
-		b_dark = gtk_widget_get_style(w)->text[GTK_STATE_NORMAL].blue / 257;
+		style = gtk_widget_get_style(w);
 
-		r_light = gtk_widget_get_style(w)->base[GTK_STATE_NORMAL].red / 257;
-		g_light = gtk_widget_get_style(w)->base[GTK_STATE_NORMAL].green / 257;
-		b_light = gtk_widget_get_style(w)->base[GTK_STATE_NORMAL].blue / 257;
+		r_dark = style->text[GTK_STATE_NORMAL].red / 257;
+		g_dark = style->text[GTK_STATE_NORMAL].green / 257;
+		b_dark = style->text[GTK_STATE_NORMAL].blue / 257;
+
+		r_light = style->base[GTK_STATE_NORMAL].red / 257;
+		g_light = style->base[GTK_STATE_NORMAL].green / 257;
+		b_light = style->base[GTK_STATE_NORMAL].blue / 257;
 	}
 	else {
 		/* use skin colors */
@@ -327,37 +330,38 @@ gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 			GLOBAL_SKIN_INFOS *gsi)
 {
 	TilemCalcEmulator* emu = gsi->emu;
-	int width, height;
-	
-	GtkAllocation * allocation = g_new(GtkAllocation, 1);
-	gtk_widget_get_allocation(w, allocation);
-	width = allocation->width;
-	height = allocation->height;
+	GtkAllocation alloc;
+	GdkWindow *win;
+	GtkStyle *style;
+
+	gtk_widget_get_allocation(w, &alloc);
 
 	/* If image buffer is not the correct size, allocate a new one */
 
 	if (!emu->lcd_image_buf
-	    || width != emu->lcd_image_width
-	    || height != emu->lcd_image_height) {
-		emu->lcd_image_width = width;
-		emu->lcd_image_height = height;
+	    || alloc.width != emu->lcd_image_width
+	    || alloc.height != emu->lcd_image_height) {
+		emu->lcd_image_width = alloc.width;
+		emu->lcd_image_height = alloc.height;
 		g_free(emu->lcd_image_buf);
-		emu->lcd_image_buf = g_new(byte, width * height);
+		emu->lcd_image_buf = g_new(byte, alloc.width * alloc.height);
 	}
 
 	/* Draw LCD contents into the image buffer */
 
 	g_mutex_lock(emu->lcd_mutex);
 	tilem_gray_lcd_draw_image_indexed(emu->glcd, emu->lcd_image_buf,
-					  width, height, width,
+	                                  alloc.width, alloc.height, alloc.width,
 					  TILEM_SCALE_SMOOTH);
 	g_mutex_unlock(emu->lcd_mutex);
 
 	/* Render buffer to the screen */
 
-	gdk_draw_indexed_image(gtk_widget_get_window(w), gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
-			       0, 0, width, height, GDK_RGB_DITHER_NONE,
-			       emu->lcd_image_buf, width, emu->lcd_cmap);
+	win = gtk_widget_get_window(w);
+	style = gtk_widget_get_style(w);
+	gdk_draw_indexed_image(win, style->fg_gc[GTK_STATE_NORMAL], 0, 0,
+	                       alloc.width, alloc.height, GDK_RGB_DITHER_NONE,
+	                       emu->lcd_image_buf, alloc.width, emu->lcd_cmap);
 	return TRUE;
 }
 

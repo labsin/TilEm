@@ -139,8 +139,8 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 6);
 	gtk_widget_show_all(frame);
 
-	gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dlg))), frame,
-	                   FALSE, FALSE, 0);
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, FALSE, 0);
 
 	response = gtk_dialog_run(GTK_DIALOG(dlg));
 
