@@ -88,8 +88,8 @@ RCC_DIR = .build
 MOC_DIR = .build
 OBJECTS_DIR = .build
 
-INCLUDEPATH += ../core ../db
+INCLUDEPATH += ../emu ../db
 
-LIBS += -L../core -L../db -ltilemcore -ltilemdb
+LIBS += -L../emu -L../db -ltilemcore -ltilemdb
 
-PRE_TARGETDEPS += ../core/libtilemcore.a ../db/libtilemdb.a
+PRE_TARGETDEPS += ../emu/libtilemcore.a ../db/libtilemdb.a

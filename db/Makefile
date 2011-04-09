@@ -10,7 +10,7 @@ top_builddir = ..
 
 objects = disasm.o listing.o lstfile.o
 
-compile = $(CC) -I$(top_builddir) -I$(top_srcdir)/core -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS)
+compile = $(CC) -I$(top_builddir) -I$(top_srcdir)/emu -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS)
 
 all: libtilemdb.a
 
@@ -20,15 +20,15 @@ libtilemdb.a: $(objects)
 
 # Disassembler
 
-disasm.o: disasm.c tilemdb.h ../core/tilem.h
+disasm.o: disasm.c tilemdb.h ../emu/tilem.h
 	$(compile) -c $(srcdir)/disasm.c
 
 # Listing file management
 
-listing.o: listing.c tilemdb.h ../core/tilem.h
+listing.o: listing.c tilemdb.h ../emu/tilem.h
 	$(compile) -c $(srcdir)/listing.c
 
-lstfile.o: lstfile.c tilemdb.h ../core/tilem.h
+lstfile.o: lstfile.c tilemdb.h ../emu/tilem.h
 	$(compile) -c $(srcdir)/lstfile.c
 
 
