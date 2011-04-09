@@ -38,6 +38,8 @@
 #define Y_FRINGE 1
 
 #include "emulator.h"
+
+#include "gtk-compat.h"
  
 /* A global boolean to say "save the state" */
 int SAVE_STATE;
