@@ -18,15 +18,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
-
+#include <ticalcs.h>
 #include <tilem.h>
 #include <scancodes.h>
-#include <gui.h>
+
+#include "gui.h"
 
 /* Table for translating skin-file key number (based on actual
    position, and defined by the VTI/TiEmu file formats) into a
@@ -183,7 +187,6 @@ void show_about()
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("pix/tilem.png", NULL);
 
   GtkWidget *dialog = gtk_about_dialog_new();
-  gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "TilEm");
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D");

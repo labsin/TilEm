@@ -18,14 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <stdio.h>
-
-#include <tilem.h>
-#include <malloc.h>
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
-#include <gui.h>
+#include <ticalcs.h>
+#include <tilem.h>
 
+#include "gui.h"
 
 /* Update the progress_bar */
 void progress_bar_update_activity(TilemCalcEmulator* emu)

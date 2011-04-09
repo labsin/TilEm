@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2010 Benjamin Moody
+ * Copyright (c) 2010-2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,13 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <glib/gstdio.h>
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
+#include <stdio.h>
+#include <stdarg.h>
+#include <glib.h>
 #include <tilem.h>
-
 
 /* Memory management */
 

@@ -17,7 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <screenshot.h>
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <gtk/gtk.h>
+#include <glib/gstdio.h>
+#include <ticalcs.h>
+#include <tilem.h>
+
+#include "gui.h"
+#include "screenshot.h"
 
 /* This method is called from click event */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {

@@ -17,17 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <tilem.h>
-#include "gui.h"
-#include "z80.h"
-#include <malloc.h>
-#include "tilemdb.h"
-#include <glib.h>
-
 //typedef unsigned short  gushort;
 
 /* Central dasm list */

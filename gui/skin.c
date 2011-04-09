@@ -17,9 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "skin.h"
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <gtk/gtk.h>
+#include <ticalcs.h>
+#include <tilem.h>
+
+#include "gui.h"
 #include "msgbox.h"
 
+char* hwname[11] = {"ti73", "ti76", "ti81", "ti82", "ti83", "ti83p", "ti84p", "ti84pse", "ti84pns", "ti85", "ti86"};
+char* defaultskin[11] = {"ti73.skn","ti76.skn","ti81.skn","ti82.skn","ti83.skn","ti83plus.skn","ti84plus.skn","ti84plus.skn","ti84plus.skn","ti82.skn","ti82.skn" };
 
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
 void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {

@@ -17,16 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <stdio.h>
-#include <gtk/gtk.h>
-#include <string.h>
-#include <malloc.h>
-#include <gui.h>
-#include <glib/gstdio.h>
-
-
-
 /* Callback event */
 void on_screenshot();
 void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);

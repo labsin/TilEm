@@ -17,9 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
-#include "config.h" 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <gtk/gtk.h>
+#include <ticalcs.h>
+#include <tilem.h>
 
+#include "gui.h"
+
+#ifndef CONFIG_FILE
+#define CONFIG_FILE "config.ini"
+#endif
 
 /* TODO : remove some redundant code (write a specific function to write config file) */
 

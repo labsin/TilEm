@@ -18,21 +18,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <readline/readline.h>
-
-#include <tilem.h>
-#include <z80.h>
-#include <scancodes.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <ticalcs.h>
-#include <gui.h>
+#include <tilem.h>
+#include <scancodes.h>
 
+#include "gui.h"
 #include "ti81prg.h"
-
 
 /* Test if the calc is ready */
 int is_ready(CalcHandle* h)

@@ -18,16 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <string.h>
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdio.h>
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
+#include <ticalcs.h>
+#include <tilem.h>
 
-//#include <tilem.h>
-
-#include <gui.h>
-//#include <skinops.h>
-
+#include "gui.h"
 
 /*  contra-sh : 
 * ---18/08/09---
@@ -213,6 +213,8 @@ int main(int argc, char **argv)
 
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
+
+	g_set_application_name("TilEm");
 
 	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
 	gsi->si=NULL;

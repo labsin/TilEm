@@ -18,11 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <string.h>
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdio.h>
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
-#include <gui.h>
+#include <ticalcs.h>
+#include <tilem.h>
+
+#include "gui.h"
 
 /* Gtk style */
 static GtkWidget* new_gnome_style_frame(const gchar* label, GtkWidget* contents)

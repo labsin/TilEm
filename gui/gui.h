@@ -18,26 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tilem.h>
-#include <z80.h>
-#include "skinops.h"
-#include "scancodes.h"
-#include "debuginfo.h"
-#include <tilemdb.h>
-
-#include <ticalcs.h>
-#include <ticables.h>
-#include <tifiles.h>
-#define TI73   "TI73"
-#define TI82   "TI82"
-#define TI83   "TI83"
-#define TI83P  "TI83+"
-#define TI85   "TI85"
-#define TI86   "TI86"
-#define X_FRINGE 2
-#define Y_FRINGE 1
-
 #include "emulator.h"
+#include "skinops.h"
+#include "debuginfo.h"
 
 #include "gtk-compat.h"
  

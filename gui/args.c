@@ -17,14 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtk/gtk.h>
-#include <glib/gstdio.h>
-#include <gui.h>
-
 #include <getopt.h>
+#include <gtk/gtk.h>
+#include <ticalcs.h>
+#include <tilem.h>
+
+#include "gui.h"
 
 /* Print help */
 void help(char *name, int ret) 
