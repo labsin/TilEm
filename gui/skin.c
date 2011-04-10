@@ -31,8 +31,8 @@
 #include "gui.h"
 #include "msgbox.h"
 
-char* hwname[11] = {"ti73", "ti76", "ti81", "ti82", "ti83", "ti83p", "ti84p", "ti84pse", "ti84pns", "ti85", "ti86"};
-char* defaultskin[11] = {"ti73.skn","ti76.skn","ti81.skn","ti82.skn","ti83.skn","ti83plus.skn","ti84plus.skn","ti84plus.skn","ti84plus.skn","ti82.skn","ti82.skn" };
+static const char* hwname[11] = {"ti73", "ti76", "ti81", "ti82", "ti83", "ti83p", "ti84p", "ti84pse", "ti84pns", "ti85", "ti86"};
+static const char* defaultskin[11] = {"ti73.skn","ti76.skn","ti81.skn","ti82.skn","ti83.skn","ti83plus.skn","ti84plus.skn","ti84plus.skn","ti84plus.skn","ti82.skn","ti82.skn" };
 
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
 void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {

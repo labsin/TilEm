@@ -210,6 +210,8 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 
 	if (mm->use_logical)
 		phys = calc->hw.mem_ltop(calc, addr);
+	else
+		phys = addr;
 
 	column %= MM_COLUMNS_PER_BYTE;
 

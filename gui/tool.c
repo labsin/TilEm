@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib/gstdio.h>
 #include <ticalcs.h>
 #include <tilem.h>
 
@@ -54,7 +55,7 @@ static GtkWidget* new_gnome_style_frame(const gchar* label, GtkWidget* contents)
 }
 
 /* A easy to use error popup */
-void popup_error(char* msg, GLOBAL_SKIN_INFOS * gsi)
+void popup_error(const char* msg, GLOBAL_SKIN_INFOS * gsi)
 {
 	GtkWidget *pPopup;
 
@@ -75,7 +76,7 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 	GtkWidget *dlg, *vbox, *frame, *btn;
 	GtkToggleButton **btns;
 	char *ids, id = 0;
-	int nmodels, noptions, i, j, defoption, response;
+	int nmodels, noptions, i, j, defoption = 0, response;
 	dword romsize;
 	char *fn, *msg;
 
@@ -194,7 +195,7 @@ return "";
 #endif
 
 /* File chooser with a different base directory */
-char* select_file(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
+char* select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
 
 	GtkWidget *dialog;
 	GtkFileChooser *pFileChooser;
@@ -304,18 +305,18 @@ void get_selected_file(GLOBAL_SKIN_INFOS *gsi) {
 }
 
 /* Simply cp src to dest */
-void copy_paste(char* src, char* dest){ 
+void copy_paste(const char* src, const char* dest){ 
 
 	FILE * fsrc;
 	FILE * fdest;
 	char buffer[1024];
 	int n;
 
-	if((fdest = fopen(dest, "w+")) == NULL) {
+	if((fdest = g_fopen(dest, "w+")) == NULL) {
 		printf("Can't open destination : %s\n", dest);
 	}
 
-	if((fsrc = fopen(src, "r")) == NULL) {
+	if((fsrc = g_fopen(src, "r")) == NULL) {
 		printf("Can't open src : %s\n", src);
 	}
 

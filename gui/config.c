@@ -262,7 +262,7 @@ void set_sendfile_recentdir(char* recentdir) {
 }
 
 /* Search the value for key into group */
-char* tilem_config_universal_getter(char* group, char* key) {
+char* tilem_config_universal_getter(const char* group, const char* key) {
 
 	GKeyFile * gkf;
 	gkf = g_key_file_new();

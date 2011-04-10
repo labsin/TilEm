@@ -205,7 +205,7 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi);
 /* ##### tool.c ##### */
 
 /* Generic popup (could be use for all kind of msg) */
-void popup_error(char* msg, GLOBAL_SKIN_INFOS * gsi);
+void popup_error(const char* msg, GLOBAL_SKIN_INFOS * gsi);
 
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
 char choose_rom_popup(GtkWidget *parent_window, const char *filename, char default_model);
@@ -217,7 +217,7 @@ void quit_with_save();
 void show_about();
 
 /* File chooser */
-char * select_file(GLOBAL_SKIN_INFOS *gsi, char* basedir);
+char * select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir);
 
 /* File chooser with a different folder */
 void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir);
@@ -229,7 +229,7 @@ void get_selected_file(GLOBAL_SKIN_INFOS *gsi);
 char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir);
 
 /* Copy paste a file */
-void copy_paste(char* src, char* dest);
+void copy_paste(const char* src, const char* dest);
 
 
 
@@ -266,7 +266,7 @@ char* get_sendfile_recentdir();
 void set_sendfile_recentdir(char* recentdir);
 
 /* Get a key from a group from config file */
-char* tilem_config_universal_getter(char* group, char* key);
+char* tilem_config_universal_getter(const char* group, const char* key);
 
 /* Set the most recent dir for load macro */
 void set_loadmacro_recentdir(char* recentdir);
