@@ -30,6 +30,7 @@
 
 #include "gui.h"
 #include "msgbox.h"
+#include "files.h"
 
 /* Get the associated calculator key name */
 static int calc_key_from_name(const TilemCalc *calc, const char *name)
@@ -173,12 +174,7 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 /* Init the keybindings struct and open the keybindings file */
 void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 {
-	/* Allow to load the keybindings file wich is given by config.ini */
-	/* Is is sufficient? (because you put here a fixme ) */
-	char* kfname = tilem_config_universal_getter("settings", "keybindings");
-	if(!kfname)
-		kfname = "keybindings.ini"; /* FIXME */
-
+	char *kfname = get_shared_file_path("keybindings.ini", NULL);
 	GKeyFile *gkf;
 	GError *err = NULL;
 
@@ -193,6 +189,7 @@ void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 		             "An error occurred while reading %s: %s",
 		             kfname, err->message);
 		g_error_free(err);
+		g_free(kfname);
 		return;
 	}
 
@@ -203,4 +200,5 @@ void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 	parse_binding_group(gsi, gkf, model);
 
 	g_key_file_free(gkf);
+	g_free(kfname);
 }

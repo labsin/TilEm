@@ -151,7 +151,7 @@ files.o: files.c files.h
 	$(compile) $(DEF_SHARE_DIR) -c $(srcdir)/files.c
 
 # Keybindings
-keybindings.o: keybindings.c $(common_headers)
+keybindings.o: keybindings.c files.h $(common_headers)
 	$(compile) -c $(srcdir)/keybindings.c
 
 
