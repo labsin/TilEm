@@ -31,15 +31,15 @@ libtilemdb.a: $(objects)
 
 # Disassembler
 
-disasm.o: disasm.c tilemdb.h ../emu/tilem.h
+disasm.o: disasm.c tilemdb.h ../emu/tilem.h ../config.h
 	$(compile) -c $(srcdir)/disasm.c
 
 # Listing file management
 
-listing.o: listing.c tilemdb.h ../emu/tilem.h
+listing.o: listing.c tilemdb.h ../emu/tilem.h ../config.h
 	$(compile) -c $(srcdir)/listing.c
 
-lstfile.o: lstfile.c tilemdb.h ../emu/tilem.h
+lstfile.o: lstfile.c tilemdb.h ../emu/tilem.h ../config.h
 	$(compile) -c $(srcdir)/lstfile.c
 
 
