@@ -32,6 +32,9 @@ TILEMCORE_LIBS = -L$(top_builddir)/emu -ltilemcore
 TILEMDB_CFLAGS = -I$(top_srcdir)/db
 TILEMDB_LIBS = -L$(top_builddir)/db -ltilemdb
 
+DEF_SHARE_DIR = -DSHARE_DIR=\"$(pkgdatadir)\" \
+	-DUNINSTALLED_SHARE_DIR=\"$(top_srcdir)/data\"
+
 objects = tilem2.o \
 	animatedgif.o \
 	args.o \
@@ -39,6 +42,7 @@ objects = tilem2.o \
 	debugger.o \
 	emulator.o \
 	event.o \
+	files.o \
 	gifencod.o \
 	keybindings.o \
 	link.o \
@@ -141,6 +145,10 @@ screenshot.o: screenshot.c $(common_headers)
 pbar.o: pbar.c $(common_headers)
 	$(compile) -c $(srcdir)/pbar.c
 
+
+# Shared/configuration files
+files.o: files.c files.h
+	$(compile) $(DEF_SHARE_DIR) -c $(srcdir)/files.c
 
 # Keybindings
 keybindings.o: keybindings.c $(common_headers)
