@@ -100,7 +100,10 @@ typedef struct GLOBAL_SKIN_INFOS {
 
 }GLOBAL_SKIN_INFOS;
 
-
+typedef struct _TilemDebugger {
+	TilemCalcEmulator *emu;
+	struct _TilemDisasm *dasm;
+} TilemDebugger;
 
 
 /* ###### event.c ##### */
