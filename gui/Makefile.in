@@ -61,21 +61,24 @@ compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(DEFS) \
 
 link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
 
+common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
+	gui.h emulator.h skinops.h debuginfo.h gtk-compat.h msgbox.h
+
 all: tilem2@EXEEXT@
 
 #Main emulator GUI
 tilem2@EXEEXT@: $(objects) ../emu/libtilemcore.a
 	$(link) -o tilem2@EXEEXT@ $(objects) $(libs)
 
-tilem2.o: tilem2.c gui.h *.h ../emu/tilem.h
+tilem2.o: tilem2.c $(common_headers)
 	$(compile) -c $(srcdir)/tilem2.c
 
 #Debugger
-debugger.o: debugger.c debugger.h gui.h *.h ../emu/tilem.h
+debugger.o: debugger.c debugger.h memmodel.h $(common_headers)
 	$(compile) -c $(srcdir)/debugger.c
 
 # Tree model interface for calc memory
-memmodel.o: memmodel.c gui.h *.h ../emu/tilem.h
+memmodel.o: memmodel.c memmodel.h $(common_headers)
 	$(compile) -c $(srcdir)/memmodel.c
 
 # Memory management and messages
@@ -83,15 +86,15 @@ memory.o: memory.c ../emu/tilem.h
 	$(compile) -c $(srcdir)/memory.c
 
 # Main emulation loop
-emulator.o: emulator.c gui.h *.h ../emu/tilem.h
+emulator.o: emulator.c $(common_headers)
 	$(compile) -c $(srcdir)/emulator.c
 
 # Print the skin and add the events. 
-screen.o: screen.c gui.h *.h ../emu/tilem.h
+screen.o: screen.c $(common_headers)
 	$(compile) -c $(srcdir)/screen.c
 
 # Handle events
-event.o: event.c gui.h *.h ../emu/tilem.h
+event.o: event.c $(common_headers)
 	$(compile) -c $(srcdir)/event.c
 
 # Open skin (skn format file) originally created by Julien Blache and Romain Lievins
@@ -99,27 +102,27 @@ skinops.o: skinops.c skinops.h
 	$(compile) -c $(srcdir)/skinops.c
 
 # Manage skins
-skin.o: skin.c gui.h *.h ../emu/tilem.h
+skin.o: skin.c $(common_headers)
 	$(compile) -c $(srcdir)/skin.c 
 
 # Popups and other stuff
-tool.o: tool.c gui.h *.h ../emu/tilem.h
+tool.o: tool.c $(common_headers)
 	$(compile) -c $(srcdir)/tool.c
 
 # Manage config.ini 
-config.o: config.c gui.h *.h ../emu/tilem.h
+config.o: config.c $(common_headers)
 	$(compile) -c $(srcdir)/config.c
 
 # Handle internal link
-link.o: link.c gui.h *.h ../emu/tilem.h
+link.o: link.c ti81prg.h $(common_headers)
 	$(compile) -c $(srcdir)/link.c
 
 # Handle macro
-macro.o: macro.c gui.h *.h ../emu/tilem.h
+macro.o: macro.c $(common_headers)
 	$(compile) -c $(srcdir)/macro.c
 
 # Handle args
-args.o: args.c gui.h *.h ../emu/tilem.h
+args.o: args.c $(common_headers)
 	$(compile) -c $(srcdir)/args.c
 
 # Create and modify animated gif
@@ -127,20 +130,20 @@ gifencod.o: gifencod.c gifencod.h
 	$(compile) -c $(srcdir)/gifencod.c
 
 # Handle screenshot anim (animated gif)
-animatedgif.o: animatedgif.c gui.h *.h ../emu/tilem.h
+animatedgif.o: animatedgif.c $(common_headers)
 	$(compile) -c $(srcdir)/animatedgif.c
 
 # Screenshot widget
-screenshot.o: screenshot.c gui.h *.h ../emu/tilem.h
+screenshot.o: screenshot.c $(common_headers)
 	$(compile) -c $(srcdir)/screenshot.c
 
 # Progress bar widget
-pbar.o: pbar.c gui.h *.h ../emu/tilem.h
+pbar.o: pbar.c $(common_headers)
 	$(compile) -c $(srcdir)/pbar.c
 
 
 # Keybindings
-keybindings.o: keybindings.c gui.h *.h ../emu/tilem.h
+keybindings.o: keybindings.c $(common_headers)
 	$(compile) -c $(srcdir)/keybindings.c
 
 
