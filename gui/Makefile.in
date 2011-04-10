@@ -55,7 +55,7 @@ objects = tilem2.o \
 
 libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
 
-compile = $(CC) -I$(srcdir) $(CFLAGS) $(DEFS) \
+compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(DEFS) \
 	$(TILEMCORE_CFLAGS) $(TILEMDB_CFLAGS) \
 	$(GTK_CFLAGS) $(TICALCS_CFLAGS)
 
