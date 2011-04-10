@@ -1,0 +1,31 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+bindir = @bindir@
+datadir = @datadir@
+pkgdatadir = @datadir@/@PACKAGE_TARNAME@
+mandir = @mandir@
+
+top_builddir = @top_builddir@
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+@SET_MAKE@
+
+all:
+	cd emu && $(MAKE)
+	cd db && $(MAKE)
+	cd gui && $(MAKE)
+
+clean:
+	cd emu && $(MAKE) clean
+	cd db && $(MAKE) clean
+	cd gui && $(MAKE) clean
+
+distclean: clean
+	rm -f config.status config.log config.h configure.lineno
+	rm -f aclocal.m4
+	rm -rf autom4te.cache
+	rm -f Makefile emu/Makefile db/Makefile gui/Makefile
+
+.PHONY: all clean distclean

@@ -1,12 +1,24 @@
-AR = ar
-CC = gcc
-CFLAGS = -g -O3 -W -Wall -Wwrite-strings -Werror
-DEFS = -DPACKAGE_VERSION=\"pre-release\"
-RANLIB = ranlib
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+bindir = @bindir@
+datadir = @datadir@
+pkgdatadir = @datadir@/@PACKAGE_TARNAME@
+mandir = @mandir@
 
-srcdir = .
-top_srcdir = ../..
-top_builddir = ../..
+top_builddir = @top_builddir@
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+@SET_MAKE@
+
+AR = @AR@
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+DEFS = @DEFS@
+OPT_CFLAGS = @OPT_CFLAGS@
+RANLIB = @RANLIB@
 
 core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o \
 	cert.o md5.o timers.o graylcd.o grayimage.o graycolor.o
@@ -27,7 +39,7 @@ objects = $(core_objects) $(x7_objects) $(x1_objects) $(x2_objects) \
 	$(x3_objects) $(xp_objects) $(xs_objects) $(x4_objects) $(xz_objects) \
 	$(xn_objects) $(x5_objects) $(x6_objects)
 
-compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS)
+compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS) $(OPT_CFLAGS)
 
 all: libtilemcore.a
 

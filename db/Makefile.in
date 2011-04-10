@@ -1,12 +1,23 @@
-AR = ar
-CC = gcc
-CFLAGS = -g -O2 -W -Wall -Wwrite-strings
-DEFS = -DPACKAGE_VERSION=\"pre-release\"
-RANLIB = ranlib
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+bindir = @bindir@
+datadir = @datadir@
+pkgdatadir = @datadir@/@PACKAGE_TARNAME@
+mandir = @mandir@
 
-srcdir = .
-top_srcdir = ..
-top_builddir = ..
+top_builddir = @top_builddir@
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+@SET_MAKE@
+
+AR = @AR@
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+DEFS = @DEFS@
+RANLIB = @RANLIB@
 
 objects = disasm.o listing.o lstfile.o
 
