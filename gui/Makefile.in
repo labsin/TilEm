@@ -114,7 +114,7 @@ tool.o: tool.c $(common_headers)
 	$(compile) -c $(srcdir)/tool.c
 
 # Manage config.ini 
-config.o: config.c $(common_headers)
+config.o: config.c files.h $(common_headers)
 	$(compile) -c $(srcdir)/config.c
 
 # Handle internal link

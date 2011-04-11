@@ -76,7 +76,6 @@ static char * get_default_config_dir()
 static char * find_filev(GFileTest test, const char *name, va_list rest)
 {
 	char *fullname, *dname, *path;
-	GSList *names;
 
 	fullname = build_filenamev(name, rest);
 

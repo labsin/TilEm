@@ -175,6 +175,7 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 {
 	char *kfname = get_shared_file_path("keybindings.ini", NULL);
+	char *dname;
 	GKeyFile *gkf;
 	GError *err = NULL;
 
@@ -182,13 +183,23 @@ void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 	g_return_if_fail(gsi->emu != NULL);
 	g_return_if_fail(gsi->emu->calc != NULL);
 
+	if (kfname == NULL) {
+		messagebox00(NULL, GTK_MESSAGE_ERROR,
+		             "Unable to load key bindings",
+		             "The file keybindings.ini could not be found."
+		             "  TilEm may not have been installed correctly.");
+		return;
+	}
+
 	gkf = g_key_file_new();
 	if (!g_key_file_load_from_file(gkf, kfname, 0, &err)) {
+		dname = g_filename_display_name(kfname);
 		messagebox02(NULL, GTK_MESSAGE_ERROR,
 		             "Unable to load key bindings",
 		             "An error occurred while reading %s: %s",
-		             kfname, err->message);
+		             dname, err->message);
 		g_error_free(err);
+		g_free(dname);
 		g_free(kfname);
 		return;
 	}

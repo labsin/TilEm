@@ -236,22 +236,22 @@ void copy_paste(const char* src, const char* dest);
 /* ##### config.c ##### */
 
 /* Search and return the default skin for this model */
-char* get_defaultskin(char* romname);
+char* get_defaultskin(const char* romname);
 
 /* Set a default skin, or add it if not exists */
-void set_defaultskin(char* romname, char* skinname);
+void set_defaultskin(const char* romname, const char* skinname);
 
 /* Search the most recent rom */
 char* get_recentrom(char* romname);
 
 /* Set a default skin, or add it if not exists */
-void set_recentrom(char* romname);
+void set_recentrom(const char* romname);
 
 /* get the model */
 int get_modelcalcid(const char* romname);
 
 /* Set model calc id */
-void set_modelcalcid(char* romname, char id);
+void set_modelcalcid(const char* romname, char id);
 
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
@@ -263,13 +263,13 @@ void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi);
 char* get_sendfile_recentdir();
 
 /* Set the last dir opened to send file */
-void set_sendfile_recentdir(char* recentdir);
+void set_sendfile_recentdir(const char* recentdir);
 
 /* Get a key from a group from config file */
 char* tilem_config_universal_getter(const char* group, const char* key);
 
 /* Set the most recent dir for load macro */
-void set_loadmacro_recentdir(char* recentdir);
+void set_loadmacro_recentdir(const char* recentdir);
 
 /* Test if the group exists in config_file */
 gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group);

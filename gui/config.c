@@ -29,62 +29,172 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "files.h"
+#include "msgbox.h"
 
 #ifndef CONFIG_FILE
 #define CONFIG_FILE "config.ini"
 #endif
 
-/* TODO : remove some redundant code (write a specific function to write config file) */
+#define MAX_RECENT_FILES 10
 
-/* Search and return the default skin for this model */
-char* get_defaultskin(char* romname) {
+/* Store a filename in a GKeyFile.  Any control characters or
+   non-UTF-8 filenames are stored in octal.  Note that
+   g_key_file_set/get_string() can't be used because they only allow
+   UTF-8 */
+static void key_file_set_filename(GKeyFile *gkf, const char *group,
+                                  const char *key, const char *value)
+{
+	char *escaped;
+	const char *p;
+	char *q;
+	gunichar uc;
+	int b;
 
-	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
+	q = escaped = g_new(char, strlen(value) * 4 + 1);
+
+	while (*value != 0) {
+		uc = g_utf8_get_char_validated(value, -1);
+		if (uc < 0x20 || uc == 0x7F || !g_unichar_validate(uc)) {
+			b = (unsigned char) *value;
+			q[0] = '\\';
+			q[1] = '0' + (b >> 6);
+			q[2] = '0' + ((b >> 3) & 7);
+			q[3] = '0' + (b & 7);
+			q += 4;
+			value++;
+		}
+		else if (uc == '\\') {
+			q[0] = q[1] = '\\';
+			q += 2;
+			value++;
+		}
+		else {
+			p = g_utf8_next_char(value);
+			while (value != p)
+				*q++ = *value++;
+		}
 	}
 
-	char* SkinFileName = g_key_file_get_string(gkf, "skin", romname, NULL);
-	printf("skinfilename : %s\n", SkinFileName);
+	*q = 0;
+
+	g_key_file_set_value(gkf, group, key, escaped);
+	g_free(escaped);
+}
+
+/* Retrieve a filename from a GKeyFile. */
+static char *key_file_get_filename(GKeyFile *gkf, const char *group,
+                                   const char *key, GError **error)
+{
+	char *value, *unescaped;
+
+	value = g_key_file_get_value(gkf, group, key, error);
+	if (!value)
+		return NULL;
+
+	unescaped = g_strcompress(value);
+	g_free(value);
+	return unescaped;
+}
+
+/* Load and parse the configuration file. */
+static GKeyFile *load_config(gboolean writable)
+{
+	static gboolean warned;
+	GKeyFile *gkf;
+	GKeyFileFlags flags;
+	char *cfname, *dname;
+	GError *err = NULL;
+
+	gkf = g_key_file_new();
+
+	cfname = get_shared_file_path(CONFIG_FILE, NULL);
+	if (!cfname)
+		return gkf;
+
+	if (writable)
+		flags = (G_KEY_FILE_KEEP_COMMENTS
+		         | G_KEY_FILE_KEEP_TRANSLATIONS);
+	else
+		flags = 0;
+
+	if (!g_key_file_load_from_file(gkf, cfname, flags, &err)) {
+		/* don't bother the user more than once */
+		if (!warned) {
+			dname = g_filename_display_name(cfname);
+			messagebox02(NULL, GTK_MESSAGE_ERROR,
+			             "Unable to read settings",
+			             "An error occurred while reading %s: %s",
+			             dname, err->message);
+			g_free(dname);
+			warned = TRUE;
+		}
+		g_error_free(err);
+	}
+
+	g_free(cfname);
+	return gkf;
+}
+
+/* Save the configuration file. */
+static void save_config(GKeyFile *gkf)
+{
+	static gboolean warned;
+	char *cfname, *dname;
+	char *data;
+	gsize length;
+	GError *err = NULL;
+
+	data = g_key_file_to_data(gkf, &length, NULL);
 	
+	cfname = get_config_file_path(CONFIG_FILE, NULL);
+
+	if (!g_file_set_contents(cfname, data, length, &err)) {
+		/* don't bother the user more than once */
+		if (!warned) {
+			dname = g_filename_display_name(cfname);
+			messagebox02(NULL, GTK_MESSAGE_ERROR,
+			             "Unable to save settings",
+			             "An error occurred while writing %s: %s",
+			             dname, err->message);
+			g_free(dname);
+			warned = TRUE;
+		}
+		g_error_free(err);
+	}
+
+	g_free(cfname);
+	g_free(data);
+}
+
+/* Search and return the default skin for this model */
+char* get_defaultskin(const char* romname)
+{
+	GKeyFile * gkf;
+	char *skinname;
+
+	gkf = load_config(FALSE);
+	skinname = g_key_file_get_string(gkf, "skin", romname, NULL);
 	g_key_file_free(gkf);
-	return SkinFileName;
+	return skinname;
 }
 
 /* Set a default skin, or add it if not exists */
-void set_defaultskin(char* romname, char* skinname) {
-	
+void set_defaultskin(const char* romname, const char* skinname)
+{
 	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
-	
-	g_key_file_set_string(gkf, "skin", romname, skinname);
-	
-	/* Save the config */
-	FILE *file;
-        char *data;
 
-        if (!(file = fopen (CONFIG_FILE, "w")))
-        {
-            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
-            return;
-        }
-        data = g_key_file_to_data (gkf, NULL, NULL);
-        fputs (data, file);
-        fclose (file);
+	gkf = load_config(TRUE);
+	g_key_file_set_string(gkf, "skin", romname, skinname);
+	save_config(gkf);
 	g_key_file_free(gkf);
-        g_free (data); 
 }
 
 /* Search the most recent rom */
-char* get_recentrom(char* romname) {
+char* get_recentrom(char* romname)
+{
+	/* FIXME: I'm not sure what exactly this function is supposed
+	   to be doing, but it's not doing it :) */
 
 	GKeyFile * gkf;
 	gkf = g_key_file_new();
@@ -101,63 +211,48 @@ char* get_recentrom(char* romname) {
 	return recentrom;
 }
 
-
-
-
-/* Set a default skin, or add it if not exists */
-void set_recentrom(char* romname) {
-	
+/* Add the given file to the list of recently used ROM files */
+void set_recentrom(const char* romname)
+{
 	GKeyFile * gkf;
-	gchar** keys;
-	
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
-	int i = 0;	
-		
-	keys = g_key_file_get_keys(gkf, "recent", NULL, NULL);
-	
-	/* Shift from top to bottom */	
-	for(i = 9; i > 0; i--) {	
-		printf("%s\n", g_key_file_get_string(gkf, "recent", keys[(i-1)], NULL));
-		g_key_file_set_string(gkf, "recent", keys[i], g_key_file_get_string(gkf, "recent", keys[(i-1)], NULL));
-		
-	}
-	
-	/* write the most recent rom */
-	g_key_file_set_string(gkf, "recent", keys[0], romname);
-	
-	/* Save the config */
-	FILE *file;
-        char *data;
+	char key[10];
+	char *values[MAX_RECENT_FILES];
+	int i, j;
 
-        if (!(file = fopen (CONFIG_FILE, "w")))
-        {
-            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
-            return;
-        }
-        data = g_key_file_to_data (gkf, NULL, NULL);
-        fputs (data, file);
-        fclose (file);
-	
-	g_strfreev(keys);
+	gkf = load_config(TRUE);
+
+	for (i = 0; i < MAX_RECENT_FILES; i++) {
+		g_snprintf(key, sizeof(key), "rom%d", i);
+		values[i] = key_file_get_filename(gkf, "recent", key, NULL);
+	}
+
+	for (i = 0; i < MAX_RECENT_FILES; i++)
+		if (!values[i] || !strcmp(values[i], romname))
+			break;
+
+	/* Shift from top to bottom */
+	for (j = i; j > 0; j--) {
+		g_snprintf(key, sizeof(key), "rom%d", j);
+		key_file_set_filename(gkf, "recent", values[j - 1], NULL);
+	}
+
+	/* write the most recent rom */
+	key_file_set_filename(gkf, "recent", "rom0", romname);
+
+	for (i = 0; i < MAX_RECENT_FILES; i++)
+		g_free(values[i]);
+
+	/* Save the config */
+	save_config(gkf);
 	g_key_file_free(gkf);
-        g_free (data); 
 }
 
 /* Get the saved model for a rom */
-int get_modelcalcid(const char* romname) {
+int get_modelcalcid(const char* romname)
+{
 	GKeyFile * gkf;
-	gkf = g_key_file_new();
+	gkf = load_config(FALSE);
 	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
-
 	char* pcalc_id = g_key_file_get_string(gkf, "model", romname, NULL);
 	if(pcalc_id == NULL) {
 		printf("Not found :\n");
@@ -170,161 +265,77 @@ int get_modelcalcid(const char* romname) {
 }
 
 /* Set model calc id */
-void set_modelcalcid(char* romname, char id) {
-	
+void set_modelcalcid(const char* romname, char id)
+{
 	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
-	
 	char idstr[2];
+
+	gkf = load_config(TRUE);
+
 	idstr[0] = id;
 	idstr[1] = '\0';
 	g_key_file_set_string(gkf, "model", romname, idstr);
 	
 	/* Save the config */
-	FILE *file;
-        char *data;
-
-        if (!(file = fopen (CONFIG_FILE, "w")))
-        {
-            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
-            return;
-        }
-        data = g_key_file_to_data (gkf, NULL, NULL);
-        fputs (data, file);
-        fclose (file);
+	save_config(gkf);
 	g_key_file_free(gkf);
-        g_free (data); 
 }
 
 /* search, write, and save config on right click menu */
-void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi) {
-
+void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi)
+{
 	set_defaultskin(gsi->emu->cmdline->RomName, gsi->emu->cmdline->SkinFileName);
 }
 
 /* search, write, and save config on right click menu */
-void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi) {
+void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi)
+{
 	set_modelcalcid(gsi->emu->cmdline->RomName, gsi->emu->calc->hw.model_id);
-
 }
 
 
 /* Search and return the last directory opened to send a file*/
-char* get_sendfile_recentdir() {
-
+char* get_sendfile_recentdir()
+{
 	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
+	char *recentdir;
 
-	char* recentdir = g_key_file_get_string(gkf, "upload", "sendfile_recentdir", NULL);
-	printf("send file recent dir : %s\n", recentdir);
-	
+	gkf = load_config(FALSE);
+	recentdir = key_file_get_filename(gkf, "upload", "sendfile_recentdir", NULL);
 	g_key_file_free(gkf);
 	return recentdir;
 }
 
 /* Set the last dir opened to send file */
-void set_sendfile_recentdir(char* recentdir) {
-	
+void set_sendfile_recentdir(const char* recentdir)
+{
 	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
-	
-	g_key_file_set_string(gkf, "upload", "sendfile_recentdir", recentdir);
-	
-	/* Save the config */
-	FILE *file;
-        char *data;
 
-        if (!(file = fopen (CONFIG_FILE, "w")))
-        {
-            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
-            return;
-        }
-        data = g_key_file_to_data (gkf, NULL, NULL);
-        fputs (data, file);
-        fclose (file);
+	gkf = load_config(TRUE);
+	key_file_set_filename(gkf, "upload", "sendfile_recentdir", recentdir);
+	save_config(gkf);
 	g_key_file_free(gkf);
-        g_free (data); 
 }
 
 /* Search the value for key into group */
-char* tilem_config_universal_getter(const char* group, const char* key) {
-
+char* tilem_config_universal_getter(const char* group, const char* key)
+{
 	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
+	char *string;
 
-	char* string = g_key_file_get_string(gkf, group, key, NULL);
-	//printf("%s from %s : %s\n", key, group, string);
-	
+	gkf = load_config(FALSE);
+	string = g_key_file_get_string(gkf, group, key, NULL);
 	g_key_file_free(gkf);
 	return string;
 }
 
-/* Test if the group exists in config_file */
-gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group) {
-
-	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
-
-	gboolean ret = g_key_file_has_group(gkf, group);
-	g_key_file_free(gkf);
-
-	return ret;
-	
-}
-
-
 /* Set the last dir opened to send file */
-void set_loadmacro_recentdir(char* recentdir) {
-	
+void set_loadmacro_recentdir(const char* recentdir)
+{
 	GKeyFile * gkf;
-	gkf = g_key_file_new();
-	
-	if (! g_key_file_load_from_file(gkf, CONFIG_FILE, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL)) {
-		fprintf(stderr, "Could not read config file '%s'\n", CONFIG_FILE);
-		exit(EXIT_FAILURE);
-	}
-	
-	char* p = strrchr(recentdir, '/');
-	strcpy(p, "\0");
-	g_key_file_set_string(gkf, "macro", "loadmacro_recentdir", recentdir);
-	
-	/* Save the config */
-	FILE *file;
-        char *data;
 
-        if (!(file = fopen (CONFIG_FILE, "w")))
-        {
-            fprintf(stderr, "Could not open file: %s", CONFIG_FILE);
-            return;
-        }
-        data = g_key_file_to_data (gkf, NULL, NULL);
-        fputs (data, file);
-        fclose (file);
+	gkf = load_config(TRUE);
+	g_key_file_set_filename(gkf, "macro", "loadmacro_recentdir", recentdir);
+	save_config(gkf);
 	g_key_file_free(gkf);
-        g_free (data); 
 }
