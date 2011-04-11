@@ -848,7 +848,7 @@ void tilem_gray_lcd_next_frame(TilemGrayLCD *glcd, int mono);
    calculator itself; thus, this function can run concurrently with
    tilem_z80_run(), but not with tilem_gray_lcd_next_frame().)  */
 void tilem_gray_lcd_draw_image_indexed(TilemGrayLCD *glcd,
-				       byte * /*restrict*/ buffer,
+				       byte * restrict buffer,
 				       int imgwidth, int imgheight,
 				       int rowstride, int scaletype);
 
@@ -861,9 +861,9 @@ void tilem_gray_lcd_draw_image_indexed(TilemGrayLCD *glcd,
    tilem_gray_lcd_draw_image_indexed(), this function can run
    concurrently with tilem_z80_run(), but not with
    tilem_gray_lcd_next_frame().) */
-void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * /*restrict*/ buffer,
+void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * restrict buffer,
 				   int imgwidth, int imgheight, int rowstride,
-				   int pixbytes, const dword * /*restrict*/ palette,
+				   int pixbytes, const dword * restrict palette,
 				   int scaletype);
 
 /* Calculate a color palette for use with the above functions.

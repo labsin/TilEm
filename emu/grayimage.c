@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2010 Benjamin Moody
+ * Copyright (C) 2010-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -30,8 +30,8 @@
 /* Scale the input buffer, multiply by F * INCOUNT, and add to the
    output buffer (which must be an exact multiple of the size of the
    input buffer.) */
-static inline void add_scale1d_exact(const byte * /*restrict*/ in, int incount,
-				     unsigned int * /*restrict*/ out,
+static inline void add_scale1d_exact(const byte * restrict in, int incount,
+				     unsigned int * restrict out,
 				     int outcount, int f)
 {
 	int i, j;
@@ -47,8 +47,8 @@ static inline void add_scale1d_exact(const byte * /*restrict*/ in, int incount,
 
 /* Scale a 1-dimensional buffer, multiply by F * INCOUNT, and add to
    the output buffer. */
-static inline void add_scale1d_smooth(const byte * /*restrict*/ in, int incount,
-				      unsigned int * /*restrict*/ out,
+static inline void add_scale1d_smooth(const byte * restrict in, int incount,
+				      unsigned int * restrict out,
 				      int outcount, int f)
 {
 	int in_rem, out_rem;
@@ -80,9 +80,9 @@ static inline void add_scale1d_smooth(const byte * /*restrict*/ in, int incount,
 
 /* Scale a 2-dimensional buffer, multiply by INWIDTH * INHEIGHT, and
    store in the output buffer. */
-static void scale2d_smooth(const byte * /*restrict*/ in,
+static void scale2d_smooth(const byte * restrict in,
 			   int inwidth, int inheight, int inrowstride,
-			   unsigned int * /*restrict*/ out,
+			   unsigned int * restrict out,
 			   int outwidth, int outheight, int outrowstride)
 {
 	int in_rem, out_rem;
@@ -124,8 +124,8 @@ static void scale2d_smooth(const byte * /*restrict*/ in,
 
 /* Quickly scale a 1-dimensional buffer and store in the output
    buffer. */
-static inline void scale1d_fast(const byte * /*restrict*/ in, int incount,
-				byte * /*restrict*/ out, int outcount)
+static inline void scale1d_fast(const byte * restrict in, int incount,
+				byte * restrict out, int outcount)
 {
 	int i, e;
 
@@ -147,9 +147,9 @@ static inline void scale1d_fast(const byte * /*restrict*/ in, int incount,
 
 /* Quickly scale a 2-dimensional buffer and store in the output
    buffer. */
-static void scale2d_fast(const byte * /*restrict*/ in,
+static void scale2d_fast(const byte * restrict in,
 			 int inwidth, int inheight, int inrowstride,
-			 byte * /*restrict*/ out,
+			 byte * restrict out,
 			 int outwidth, int outheight, int outrowstride)
 {
 	int i, e;
@@ -185,7 +185,7 @@ static void* alloc_scalebuf(TilemGrayLCD *glcd, int size)
 }
 
 void tilem_gray_lcd_draw_image_indexed(TilemGrayLCD *glcd,
-				       byte * /*restrict*/ buffer,
+				       byte * restrict buffer,
 				       int imgwidth, int imgheight,
 				       int rowstride, int scaletype)
 {
@@ -215,9 +215,9 @@ void tilem_gray_lcd_draw_image_indexed(TilemGrayLCD *glcd,
 	}
 }
 
-void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * /*restrict*/ buffer,
+void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * restrict buffer,
 				   int imgwidth, int imgheight, int rowstride,
-				   int pixbytes, const dword * /*restrict*/ palette,
+				   int pixbytes, const dword * restrict palette,
 				   int scaletype)
 {
 	int dwidth =  glcd->calc->hw.lcdwidth;
