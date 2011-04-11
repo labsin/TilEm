@@ -47,6 +47,12 @@ void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {
 
 			/* Get the default directory wich contains the skins */
 			char* basedir = tilem_config_universal_getter("skin", "basedir");
+			if(!basedir){ 
+				messagebox00(NULL, GTK_MESSAGE_ERROR, "Error", "Unable to find the directory which contains skins (in config.ini)");
+				exit(2) ; 
+			}
+			
+			
 			printf("basedir : %s\n", basedir);
 			gsi->emu->cmdline->SkinFileName = (char*) malloc(strlen(basedir) * sizeof(char) + strlen(defaultskin[i]) * sizeof(char) +1);
 			strcpy(gsi->emu->cmdline->SkinFileName, basedir);	

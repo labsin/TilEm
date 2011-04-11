@@ -202,6 +202,9 @@
 * - Add a bouncy progress bar to show the link status (send file).
 * - Add a file saver.  
 * - Create a new TilemCmdlineArgs structure.
+* ---07/04/11---
+* - Drop deprecated gtkitemfactory
+* - Prepare GT3 migration
 */
 
 

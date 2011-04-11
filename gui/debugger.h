@@ -52,7 +52,7 @@ TilemDisasm *dasm;
 char* rvalue[12];
 
 /* List of label for create_register_list */
-static char *rlabel[12] = {"AF'", "AF", "BC'", "BC", "DE'", "DE", "HL'", "HL", "IY", "IX", "SP", "PC" };
+static const char *rlabel[12] = {"AF'", "AF", "BC'", "BC", "DE'", "DE", "HL'", "HL", "IY", "IX", "SP", "PC" };
 
 /* close debug window */
 static void on_debug_destroy(GtkWidget* debug_win, GLOBAL_SKIN_INFOS* gsi);

@@ -335,7 +335,7 @@ void set_loadmacro_recentdir(const char* recentdir)
 	GKeyFile * gkf;
 
 	gkf = load_config(TRUE);
-	g_key_file_set_filename(gkf, "macro", "loadmacro_recentdir", recentdir);
+	key_file_set_filename(gkf, "macro", "loadmacro_recentdir", recentdir);
 	save_config(gkf);
 	g_key_file_free(gkf);
 }

@@ -152,7 +152,7 @@ void play_macro_from_file(GLOBAL_SKIN_INFOS* gsi) {
 int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 	int code;
 	char* codechar;
-	char c;
+	char c = 'a'; /* Just give a value to do not have warning */
 	char* lengthchar;
 	int length;
 	char* filename;

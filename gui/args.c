@@ -100,7 +100,7 @@ int getargs(int argc, char* argv[], TilemCmdlineArgs* cmdline) {
                 }
         }
 
-return 0;
+	return 0;
 }
 
 /* Create the savname */
