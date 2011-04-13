@@ -35,7 +35,8 @@ void on_screenshot();
 void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-void on_play(GLOBAL_SKIN_INFOS* gsi);
+void on_play(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
+void on_playfrom(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
 void on_destroy_playview(GtkWidget* playwin);
 
 void screenshot(GLOBAL_SKIN_INFOS *gsi);
@@ -106,7 +107,8 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* record = gtk_button_new_with_label ("Record");
 	//GtkWidget* add_frame = gtk_button_new_with_label ("Add frame (anim)");
 	GtkWidget* stop = gtk_button_new_with_label ("Stop");
-	GtkWidget* play = gtk_button_new_with_label ("Play (detached)");
+	GtkWidget* play = gtk_button_new_with_label ("Replay (detached)");
+	GtkWidget* playfrom = gtk_button_new_with_label ("Replay (browse)");
 	GtkWidget* animation_directory = gtk_button_new_with_label (tilem_config_universal_getter("screenshot", "animation_directory"));
 	GtkWidget* screenshot_directory = gtk_button_new_with_label (tilem_config_universal_getter("screenshot", "screenshot_directory"));
 	
@@ -120,6 +122,8 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_widget_show(stop);
 	gtk_box_pack_start (GTK_BOX (vbox), play, 2, 3, 4);
 	gtk_widget_show(play);
+	gtk_box_pack_start (GTK_BOX (vbox), playfrom, 2, 3, 4);
+	gtk_widget_show(playfrom);
 
 	gtk_box_pack_start (GTK_BOX (parent_vbox), animation_directory, 2, 3, 4);
 	gtk_widget_show(animation_directory);
@@ -131,7 +135,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	//g_signal_connect(GTK_OBJECT(add_frame), "clicked", G_CALLBACK(on_add_frame), gsi);
 	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), gsi);
 	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), gsi);
-    
+	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), gsi);
 	gtk_widget_show_all(screenshotanim_win);
 }
 
@@ -237,8 +241,9 @@ void on_destroy_playview(GtkWidget* playwin)   {
 }
 
 /* Callback for play button (replay the last gif) */
-void on_play(GLOBAL_SKIN_INFOS* gsi) {
-	g_print("play event : %d\n", gsi->isAnimScreenshotRecording);
+void on_play(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
+	gsi = gsi;
 
 	printf("play\n");
 	GtkWidget *fenetre = NULL;
@@ -251,6 +256,33 @@ void on_play(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_container_add(GTK_CONTAINER(fenetre),image);
 
 	gtk_widget_show_all(fenetre);
+
+}
+
+/* Callback for play button (replay the last gif) */
+void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
+	char* src = NULL;
+	src = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
+	if(src) {
+		set_animation_recentfile(src);	
+		char* p =  strrchr(src, '/');
+		printf("%s", p);
+		if(p)
+			strcpy(p, "\0");
+		printf("%s", src);
+		
+		set_animation_recentdir(src);	
+	}
+
+	
+	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
+		gtk_widget_show(gsi->screenshot_preview_image);
+		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+	}
 
 }
 	 

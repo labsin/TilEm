@@ -224,6 +224,7 @@ char* select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
 
 }
 
+
 /* File chooser for saving file */
 char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 
