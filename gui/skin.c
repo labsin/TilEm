@@ -31,47 +31,18 @@
 #include "gui.h"
 #include "msgbox.h"
 
-static const char* hwname[11] = {"ti73", "ti76", "ti81", "ti82", "ti83", "ti83p", "ti84p", "ti84pse", "ti84pns", "ti85", "ti86"};
-static const char* defaultskin[11] = {"ti73.skn","ti76.skn","ti81.skn","ti82.skn","ti83.skn","ti83plus.skn","ti84plus.skn","ti84plus.skn","ti84plus.skn","ti82.skn","ti82.skn" };
-
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
-void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi) {
+void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi)
+{
+	char *name;
 
-	int i;
+	/* FIXME: try fallbacks if the default skin doesn't exist */
 
-	/* Compare the emu->calc->hw.name with a tab defined into skin.h
-	   Set the associated skinname */
-	for(i = 0; hwname[i]; i++) {
-		if(strcmp(gsi->emu->calc->hw.name, hwname[i]) == 0){
-			//printf("found: %s\n", gsi->emu->calc->hw.name);
-
-			/* Get the default directory wich contains the skins */
-			char* basedir = tilem_config_universal_getter("skin", "basedir");
-			if(!basedir){ 
-				messagebox00(NULL, GTK_MESSAGE_ERROR, "Error", "Unable to find the directory which contains skins (in config.ini)");
-				exit(2) ; 
-			}
-			
-			
-			printf("basedir : %s\n", basedir);
-			gsi->emu->cmdline->SkinFileName = (char*) malloc(strlen(basedir) * sizeof(char) + strlen(defaultskin[i]) * sizeof(char) +1);
-			strcpy(gsi->emu->cmdline->SkinFileName, basedir);	
-			strcat(gsi->emu->cmdline->SkinFileName, defaultskin[i]);	
-		}
+	if (!gsi->emu->cmdline->SkinFileName) {
+		name = g_strconcat(gsi->emu->calc->hw.name, ".skn", NULL);
+		gsi->emu->cmdline->SkinFileName = get_shared_file_path("skins", name, NULL);
+		g_free(name);
 	}
-
-	/* Load a default if no correspondance found (to do not crash)
-	   User should change after by loading skin */
-	if(!gsi->emu->cmdline->SkinFileName)	{
-			char* basedir = tilem_config_universal_getter("skin", "basedir");
-			printf("basedir : %s\n", basedir);
-			gsi->emu->cmdline->SkinFileName = (char*) malloc(strlen(basedir) * sizeof(char) + strlen(defaultskin[i]) * sizeof(char) +1);
-			strcpy(gsi->emu->cmdline->SkinFileName, basedir);	
-			gsi->emu->cmdline->SkinFileName = (char*) malloc(strlen(defaultskin[i]) * sizeof(char) +1);
-			strcpy(gsi->emu->cmdline->SkinFileName, defaultskin[i]);
-	}
-		
-	//printf("skinfilename: %s\n", gsi->SkinFileName);
 }
 
 /* GtkFileSelection */
@@ -90,15 +61,8 @@ void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi) {
 
 		file_selected = select_file(gsi, "./skn/");
 		if(file_selected != NULL) {
-			DSKIN_L0_A2("gsi->si->name : %s gsi->si->type  %d\n",gsi->si->name,gsi->si->type);
-			DSKIN_L0_A1("file to load : %s\n", file_selected);
-		
-			gsi->emu->cmdline->SkinFileName= (char*) malloc(strlen(file_selected) * sizeof(char));
-			strcpy(gsi->emu->cmdline->SkinFileName, file_selected);
-			printf("Just before loading skin : gsi->SkinFileName : %s\n ", gsi->emu->cmdline->SkinFileName);
-			free(file_selected);
-			
-			/* redraw the skin into the Window (here gsi->pWindow) */
+			g_free(gsi->emu->cmdline->SkinFileName);
+			gsi->emu->cmdline->SkinFileName = file_selected;
 			redraw_screen(gsi);
 		}
 	}
