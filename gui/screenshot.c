@@ -38,6 +38,8 @@ void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 void on_play(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
 void on_playfrom(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
 void on_destroy_playview(GtkWidget* playwin);
+void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
+void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
 
 void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
@@ -49,14 +51,26 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	FILE * fp;
 	char *buffer;
 	char * filename;
-	filename = (char*) malloc((strlen("screenshot")+8)*sizeof(char));
-	strcpy(filename, "screenshot");
+	char* folder = tilem_config_universal_getter("screenshot", "screenshot_directory");
+	printf("folder : %s\n", folder);
+
+	/* FIXME : That's really ugly all these stuff, I will do something to correct this problem */
+
 	
+	/* Complicated method just to find a free filename (don not save more than 500 screenshots ! I know this is stupid) */
 	for(i=0; i<500; i++) {
-		/* Complicated method just to find a free filename (don not save more than 500 screenshots ! I know this is stupid) */
 		buffer = (char*) malloc(3);
+		if(folder) {
+			filename = (char*) malloc((strlen(folder) + strlen("screenshot") + 8)*sizeof(char));
+			strcpy(filename, folder);
+			strcat(filename, "/");
+			strcat(filename, "screenshot");
+			printf("temp : %s\n", filename);
+		} else {
+			filename = (char*) malloc((strlen("screenshot")+8)*sizeof(char) );
+			strcpy(filename, "screenshot");
+		}
 		sprintf(buffer,"%03d", i);
-		strcpy(filename, "screenshot");
 		strcat(filename, buffer);
 		strcat(filename, ".png");
 		//printf("filename : %s\n", filename);
@@ -65,8 +79,19 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 			fclose(fp);
 		} else { 
 			save_screenshot(gsi, filename, "png");
+			printf("Screenshot : %s\n", filename);
 			break;
 		}
+	} 
+	
+	set_screenshot_recentfile(filename);
+
+	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+		gsi->screenshot_preview_image = gtk_image_new_from_file(filename);
+		gtk_widget_show(gsi->screenshot_preview_image);
+		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
 	}
 }
 
@@ -81,7 +106,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* screenshotanim_win;
 	screenshotanim_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(screenshotanim_win), "Screenshot");
-	gtk_window_set_default_size(GTK_WINDOW(screenshotanim_win), 400,30);
+	gtk_window_set_default_size(GTK_WINDOW(screenshotanim_win) , 450, 300);
 	
 	g_signal_connect(GTK_OBJECT(screenshotanim_win), "delete-event", G_CALLBACK(on_destroy_screenshot), NULL);
 
@@ -94,6 +119,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 		
 	GtkWidget * screenshot_preview = gtk_expander_new("preview");
 	gtk_expander_set_expanded(GTK_EXPANDER(screenshot_preview), TRUE);
+
 	gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
 	gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
 
@@ -109,8 +135,41 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* stop = gtk_button_new_with_label ("Stop");
 	GtkWidget* play = gtk_button_new_with_label ("Replay (detached)");
 	GtkWidget* playfrom = gtk_button_new_with_label ("Replay (browse)");
-	GtkWidget* animation_directory = gtk_button_new_with_label (tilem_config_universal_getter("screenshot", "animation_directory"));
-	GtkWidget* screenshot_directory = gtk_button_new_with_label (tilem_config_universal_getter("screenshot", "screenshot_directory"));
+
+
+
+	/* >>>> SOUTH */	
+	GtkWidget * config_expander = gtk_expander_new("config");
+	gtk_expander_set_expanded(GTK_EXPANDER(config_expander), TRUE);
+	
+	GtkWidget* vboxc0, *hboxc1, *hboxc2; 
+	vboxc0 = gtk_vbox_new(0,1);
+	hboxc1 = gtk_hbox_new (0, 1);
+	hboxc2 = gtk_hbox_new (0, 1);
+	
+	gtk_container_add(GTK_CONTAINER(config_expander), vboxc0);
+	gtk_box_pack_start(GTK_BOX(vboxc0), hboxc1, 2, 3, 4);
+	gtk_box_pack_end(GTK_BOX(vboxc0), hboxc2, 2, 3, 4);
+
+	/* Labels */	
+	GtkWidget * screenshot_dir_label = gtk_label_new("Screenshot folder :");
+	GtkWidget * animation_dir_label = gtk_label_new("Animations folder :");
+
+	/* GtkFileChooserButton */
+	gsi->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot), tilem_config_universal_getter("screenshot", "screenshot_directory"));	
+	gsi->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation), tilem_config_universal_getter("screenshot", "animation_directory"));	
+
+	gtk_box_pack_start (GTK_BOX (hboxc1), screenshot_dir_label, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc1), gsi->folder_chooser_screenshot, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (hboxc2), animation_dir_label, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc2), gsi->folder_chooser_animation, 2, 3, 4);
+	gtk_widget_show(screenshot_dir_label);
+	gtk_widget_show(animation_dir_label);
+	gtk_widget_show(gsi->folder_chooser_animation);
+	gtk_widget_show(gsi->folder_chooser_screenshot);
+	/* <<<< */	
 	
 	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, 2, 3, 4);
 	gtk_widget_show(screenshot_button);
@@ -125,10 +184,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_box_pack_start (GTK_BOX (vbox), playfrom, 2, 3, 4);
 	gtk_widget_show(playfrom);
 
-	gtk_box_pack_start (GTK_BOX (parent_vbox), animation_directory, 2, 3, 4);
-	gtk_widget_show(animation_directory);
-	gtk_box_pack_end (GTK_BOX (parent_vbox), screenshot_directory, 2, 3, 4);
-	gtk_widget_show(screenshot_directory);
+	gtk_box_pack_end (GTK_BOX (parent_vbox), config_expander, 2, 3, 4);
 	
 	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), gsi);
 	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), gsi);
@@ -136,6 +192,8 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), gsi);
 	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), gsi);
 	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), gsi);
+	g_signal_connect(GTK_OBJECT(gsi->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), gsi);
+	g_signal_connect(GTK_OBJECT(gsi->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), gsi);
 	gtk_widget_show_all(screenshotanim_win);
 }
 
@@ -286,3 +344,22 @@ void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 
 }
 	 
+
+void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
+	char* folder = NULL;
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot)); 
+	if(folder) 
+		set_screenshot_recentdir(folder);
+	
+}
+
+	
+void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+	win = win;
+	char* folder = NULL;
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation)); 
+	if(folder)
+		set_animation_recentdir(folder);
+	
+}

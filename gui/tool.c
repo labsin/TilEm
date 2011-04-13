@@ -225,6 +225,36 @@ char* select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
 }
 
 
+/* Folder chooser with a different base directory */
+char* select_dir(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
+
+	GtkWidget *dialog;
+	GtkFileChooser *pFileChooser;
+	char* filename = NULL;
+	gint result;
+
+	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(gsi->pWindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	pFileChooser=GTK_FILE_CHOOSER(dialog);
+
+	if(basedir != NULL)
+		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), basedir);
+	result = gtk_dialog_run (GTK_DIALOG (dialog)); 
+
+
+	if(result == GTK_RESPONSE_ACCEPT)
+	{	
+		filename=(gchar*)gtk_file_chooser_get_filename(pFileChooser);
+		printf("Selected file : %s\n", filename);
+	} else {
+		printf("Cancelled ...\n");
+	}	
+	
+	gtk_widget_destroy(GTK_WIDGET(pFileChooser));
+	
+	return filename;	
+
+}
+
 /* File chooser for saving file */
 char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 

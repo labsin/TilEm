@@ -79,6 +79,8 @@ typedef struct GLOBAL_SKIN_INFOS {
 	
 	/* Animated gif */
 	GtkWidget* screenshot_preview_image;
+	GtkWidget* folder_chooser_screenshot;
+	GtkWidget* folder_chooser_animation;
 	FILE * animation_file; // The animated gif file */
 	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
 	
@@ -216,6 +218,9 @@ void show_about();
 /* File chooser */
 char * select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir);
 
+/* Folder chooser with a different base directory */
+char* select_dir(GLOBAL_SKIN_INFOS *gsi, const char* basedir);
+
 /* File chooser with a different folder */
 void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir);
 
@@ -279,6 +284,9 @@ void set_animation_recentdir(const char* recentdir);
 
 /* Set the last name to save a animation */
 void set_animation_recentfile(const char* recentfile);
+
+/* Set the last name to save a animation */
+void set_screenshot_recentfile(const char* recentfile);
 
 
 /* ##### link.c ##### */

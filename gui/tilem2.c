@@ -207,6 +207,7 @@
 * - Prepare GT3 migration
 * ---13/04/11---
 * - Completely refactoring the screenshot window. New preview possibility.
+* - Add some cool features for screenshot menu (replay from file, preview animation, preview screenshot, 2 gtkfilechooserbutton, change default folders etc...).
 */
 
 
