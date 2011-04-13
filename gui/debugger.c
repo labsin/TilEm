@@ -175,7 +175,7 @@ static GtkWidget *create_stack_view()
 	
 	/* Create the stack list tree view and set title invisible */
 	treeview = gtk_tree_view_new();
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_search_column(GTK_TREE_VIEW(treeview),
 	                                COL_VALUE_STK);

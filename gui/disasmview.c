@@ -603,6 +603,7 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 
 	gtk_tree_view_set_enable_search(tv, FALSE);
 	gtk_tree_view_set_fixed_height_mode(tv, TRUE);
+	gtk_tree_view_set_headers_visible(tv, FALSE);
 
 	cell = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes("Addr", cell,
