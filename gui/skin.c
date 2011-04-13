@@ -29,6 +29,7 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "files.h"
 #include "msgbox.h"
 
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
@@ -46,8 +47,8 @@ void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi)
 }
 
 /* GtkFileSelection */
-void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi) {
-	
+void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi)
+{
 	char* file_selected = NULL ;
 	DSKIN_L0_A0("\nSKINSELECTION\n");
 	
