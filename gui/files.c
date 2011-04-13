@@ -89,7 +89,7 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 
 #ifdef G_OS_WIN32
 	if ((dname = g_win32_get_package_installation_directory(NULL))) {
-		path = g_build_filename(dname, name, NULL);
+		path = g_build_filename(dname, fullname, NULL);
 		g_free(dname);
 		if (g_file_test(path, test)) {
 			g_free(fullname);
@@ -100,7 +100,7 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 #endif
 
 #ifdef UNINSTALLED_SHARE_DIR
-	path = g_build_filename(UNINSTALLED_SHARE_DIR, name, NULL);
+	path = g_build_filename(UNINSTALLED_SHARE_DIR, fullname, NULL);
 	if (g_file_test(path, test)) {
 		g_free(fullname);
 		return path;
@@ -109,7 +109,7 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 #endif
 
 #ifdef SHARE_DIR
-	path = g_build_filename(SHARE_DIR, name, NULL);
+	path = g_build_filename(SHARE_DIR, fullname, NULL);
 	if (g_file_test(path, test)) {
 		g_free(fullname);
 		return path;
