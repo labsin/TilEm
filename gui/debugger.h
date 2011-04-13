@@ -43,6 +43,7 @@ typedef struct _TilemDebugger {
 	dword lastsp;
 	gboolean paused;
 	gboolean refreshing;
+	gboolean delayed_refresh;
 } TilemDebugger;
 
 /* Create a new TilemDebugger. */

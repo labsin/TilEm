@@ -23,6 +23,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <ticalcs.h>
 #include <tilem.h>
@@ -63,25 +64,138 @@ static const char flag_labels[][2] = {
 /* Register edited */
 static void reg_edited(GtkEntry *ent, gpointer data)
 {
-	/* FIXME */
+	TilemDebugger *dbg = data;
+	TilemCalc *calc;
+	const char *text;
+	char *end;
+	dword value;
+	int i;
+
+	if (dbg->refreshing)
+		return;
+
+	calc = dbg->emu->calc;
+	g_return_if_fail(calc != NULL);
+
+	text = gtk_entry_get_text(ent);
+	value = strtol(text, &end, 16);
+
+	for (i = 0; i < NUM_REGS; i++)
+		if (ent == (GtkEntry*) dbg->reg_entries[i])
+			break;
+
+	g_mutex_lock(dbg->emu->calc_mutex);
+	switch (i) {
+	case R_AF: calc->z80.r.af.d = value; break;
+	case R_BC: calc->z80.r.bc.d = value; break;
+	case R_DE: calc->z80.r.de.d = value; break;
+	case R_HL: calc->z80.r.hl.d = value; break;
+	case R_AF2: calc->z80.r.af2.d = value; break;
+	case R_BC2: calc->z80.r.bc2.d = value; break;
+	case R_DE2: calc->z80.r.de2.d = value; break;
+	case R_HL2: calc->z80.r.hl2.d = value; break;
+	case R_SP: calc->z80.r.sp.d = value; break;
+	case R_PC: calc->z80.r.pc.d = value; break;
+	case R_IX: calc->z80.r.ix.d = value; break;
+	case R_IY: calc->z80.r.iy.d = value; break;
+	case R_I: calc->z80.r.ir.b.h = value; break;
+	}
+	g_mutex_unlock(dbg->emu->calc_mutex);
+
+	/* Set the value of the register immediately, but don't
+	   refresh the display: refreshing the registers themselves
+	   while user is trying to edit them would just be obnoxious,
+	   and refreshing stack and disassembly would be at least
+	   distracting.  Instead, we'll refresh only when focus
+	   changes. */
+
+	dbg->delayed_refresh = TRUE;
 }
 
 /* Flag button toggled */
 static void flag_edited(GtkToggleButton *btn, gpointer data)
 {
-	/* FIXME */
+	TilemDebugger *dbg = data;
+	TilemCalc *calc;
+	int i;
+
+	if (dbg->refreshing)
+		return;
+
+	calc = dbg->emu->calc;
+	g_return_if_fail(calc != NULL);
+
+	for (i = 0; i < 8; i++)
+		if (btn == (GtkToggleButton*) dbg->flag_buttons[i])
+			break;
+
+	g_mutex_lock(dbg->emu->calc_mutex);
+	if (gtk_toggle_button_get_active(btn))
+		calc->z80.r.af.d |= (1 << i);
+	else
+		calc->z80.r.af.d &= ~(1 << i);
+	g_mutex_unlock(dbg->emu->calc_mutex);
+
+	/* refresh AF */
+	tilem_debugger_refresh(dbg, FALSE);
 }
 
 /* IM edited */
 static void im_edited(GtkEntry *ent, gpointer data)
 {
-	/* FIXME */
+	TilemDebugger *dbg = data;
+	TilemCalc *calc;
+	const char *text;
+	char *end;
+	int value;
+
+	if (dbg->refreshing)
+		return;
+
+	calc = dbg->emu->calc;
+	g_return_if_fail(calc != NULL);
+
+	text = gtk_entry_get_text(ent);
+	value = strtol(text, &end, 0);
+
+	g_mutex_lock(dbg->emu->calc_mutex);
+	if (value >= 0 && value <= 2)
+		calc->z80.r.im = value;
+	g_mutex_unlock(dbg->emu->calc_mutex);
+	/* no need to refresh */
 }
 
 /* IFF button toggled */
 static void iff_edited(GtkToggleButton *btn, gpointer data)
 {
-	/* FIXME */
+	TilemDebugger *dbg = data;
+	TilemCalc *calc;
+
+	if (dbg->refreshing)
+		return;
+
+	calc = dbg->emu->calc;
+	g_return_if_fail(calc != NULL);
+
+	g_mutex_lock(dbg->emu->calc_mutex);
+	if (gtk_toggle_button_get_active(btn))
+		calc->z80.r.iff1 = calc->z80.r.iff2 = 1;
+	else
+		calc->z80.r.iff1 = calc->z80.r.iff2 = 0;
+	g_mutex_unlock(dbg->emu->calc_mutex);
+	/* no need to refresh */
+}
+
+/* Main window's focus widget changed */
+static void focus_changed(G_GNUC_UNUSED GtkWindow *win,
+                          G_GNUC_UNUSED GtkWidget *widget,
+                          gpointer data)
+{
+	TilemDebugger *dbg = data;
+
+	/* delayed refresh - see reg_edited() above */
+	if (dbg->delayed_refresh)
+		tilem_debugger_refresh(dbg, FALSE);
 }
 
 /* Main window received a "delete" message */
@@ -284,6 +398,8 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	gtk_window_set_title(GTK_WINDOW(dbg->window), "TilEm Debugger");
 	gtk_window_set_role(GTK_WINDOW(dbg->window), "Debugger");
 
+	g_signal_connect(dbg->window, "set-focus",
+	                 G_CALLBACK(focus_changed), dbg);
 	g_signal_connect(dbg->window, "delete-event",
 	                 G_CALLBACK(delete_win), dbg);
 
@@ -422,6 +538,7 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 	gboolean paused;
 
 	dbg->refreshing = TRUE;
+	dbg->delayed_refresh = FALSE;
 
 	g_mutex_lock(dbg->emu->calc_mutex);
 	calc = dbg->emu->calc;
