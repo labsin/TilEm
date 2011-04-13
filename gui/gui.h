@@ -78,9 +78,9 @@ typedef struct GLOBAL_SKIN_INFOS {
 	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
 	
 	/* Animated gif */
+	GtkWidget* screenshot_preview_image;
 	FILE * animation_file; // The animated gif file */
 	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
-
 	
 	int mouse_key;		/* Key currently pressed by mouse button */
 
@@ -98,6 +98,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	int key_queue_len;
 	int key_queue_timer;
 	int key_queue_pressed;
+	
 
 }GLOBAL_SKIN_INFOS;
 
@@ -270,6 +271,14 @@ void set_loadmacro_recentdir(const char* recentdir);
 /* Test if the group exists in config_file */
 gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group);
 
+/* Set the last dir to save a animation */
+void set_screenshot_recentdir(const char* recentdir);
+
+/* Set the last dir used to save screenshot */
+void set_animation_recentdir(const char* recentdir);
+
+/* Set the last name to save a animation */
+void set_animation_recentfile(const char* recentfile);
 
 
 /* ##### link.c ##### */

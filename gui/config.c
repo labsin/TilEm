@@ -324,9 +324,18 @@ char* tilem_config_universal_getter(const char* group, const char* key)
 	char *string;
 
 	gkf = load_config(FALSE);
-	string = g_key_file_get_string(gkf, group, key, NULL);
-	g_key_file_free(gkf);
-	return string;
+	if(!g_key_file_has_group(gkf, group)) {
+		messagebox02(NULL, GTK_MESSAGE_ERROR,
+			             "Unable to load settings",
+			             "An error occurred while getting %s: %s",
+			             group, key);
+		return NULL;
+	} else {
+
+		string = g_key_file_get_string(gkf, group, key, NULL);
+		g_key_file_free(gkf);
+		return string;
+	}
 }
 
 /* Set the last dir opened to send file */
@@ -339,3 +348,46 @@ void set_loadmacro_recentdir(const char* recentdir)
 	save_config(gkf);
 	g_key_file_free(gkf);
 }
+
+/* Set the last dir to save a animation */
+void set_screenshot_recentdir(const char* recentdir)
+{
+	GKeyFile * gkf;
+	gkf = load_config(TRUE);
+	key_file_set_filename(gkf, "screenshot", "screenshot_directory", recentdir);
+	save_config(gkf);
+	g_key_file_free(gkf);
+}
+
+/* Set the last dir to save a animation */
+void set_animation_recentdir(const char* recentdir)
+{
+	GKeyFile * gkf;
+	gkf = load_config(TRUE);
+	key_file_set_filename(gkf, "screenshot", "animation_directory", recentdir);
+	save_config(gkf);
+	g_key_file_free(gkf);
+}
+
+/* Set the last name to save a animation */
+void set_animation_recentfile(const char* recentfile)
+{
+	GKeyFile * gkf;
+	gkf = load_config(TRUE);
+	key_file_set_filename(gkf, "screenshot", "animation_recent", recentfile);
+	save_config(gkf);
+	g_key_file_free(gkf);
+}
+
+/* Set the last name to save a animation */
+void set_screenshot_recentfile(const char* recentfile)
+{
+	GKeyFile * gkf;
+	gkf = load_config(TRUE);
+	key_file_set_filename(gkf, "screenshot", "screenshot_recent", recentfile);
+	save_config(gkf);
+	g_key_file_free(gkf);
+}
+
+
+

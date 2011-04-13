@@ -84,28 +84,47 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	
 	g_signal_connect(GTK_OBJECT(screenshotanim_win), "delete-event", G_CALLBACK(on_destroy_screenshot), NULL);
 
-	GtkWidget* box;
-	box = gtk_hbox_new (0, 1);
+	GtkWidget* hbox, *vbox, *parent_vbox;
+	parent_vbox = gtk_vbox_new (0, 1);
+	vbox = gtk_vbox_new(0,1);
+	hbox = gtk_hbox_new (0, 1);
 	
-	gtk_container_add(GTK_CONTAINER(screenshotanim_win), box);
+	
+		
+	GtkWidget * screenshot_preview = gtk_expander_new("preview");
+	gtk_expander_set_expanded(GTK_EXPANDER(screenshot_preview), TRUE);
+	gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
+	gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+
+	gtk_container_add(GTK_CONTAINER(screenshotanim_win), parent_vbox);
+	gtk_box_pack_start(GTK_BOX(parent_vbox), hbox, 2, 3, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), screenshot_preview, 2, 3, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), vbox, 2, 3, 4);
 
 		
 	GtkWidget* screenshot_button = gtk_button_new_with_label ("Shoot!");
 	GtkWidget* record = gtk_button_new_with_label ("Record");
 	//GtkWidget* add_frame = gtk_button_new_with_label ("Add frame (anim)");
 	GtkWidget* stop = gtk_button_new_with_label ("Stop");
-	GtkWidget* play = gtk_button_new_with_label ("Play");
+	GtkWidget* play = gtk_button_new_with_label ("Play (detached)");
+	GtkWidget* animation_directory = gtk_button_new_with_label (tilem_config_universal_getter("screenshot", "animation_directory"));
+	GtkWidget* screenshot_directory = gtk_button_new_with_label (tilem_config_universal_getter("screenshot", "screenshot_directory"));
 	
-	gtk_box_pack_start (GTK_BOX (box), screenshot_button, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, 2, 3, 4);
 	gtk_widget_show(screenshot_button);
-	gtk_box_pack_start (GTK_BOX (box), record, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), record, 2, 3, 4);
 	gtk_widget_show(record);
-	//gtk_box_pack_start (GTK_BOX (box), add_frame, 2, 3, 4);
+	//gtk_box_pack_start (GTK_BOX (hbox), add_frame, 2, 3, 4);
 	//gtk_widget_show(add_frame);
-	gtk_box_pack_start (GTK_BOX (box), stop, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), stop, 2, 3, 4);
 	gtk_widget_show(stop);
-	gtk_box_pack_start (GTK_BOX (box), play, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), play, 2, 3, 4);
 	gtk_widget_show(play);
+
+	gtk_box_pack_start (GTK_BOX (parent_vbox), animation_directory, 2, 3, 4);
+	gtk_widget_show(animation_directory);
+	gtk_box_pack_end (GTK_BOX (parent_vbox), screenshot_directory, 2, 3, 4);
+	gtk_widget_show(screenshot_directory);
 	
 	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), gsi);
 	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), gsi);
@@ -134,7 +153,31 @@ void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("stop event\n");
+	char* dest = NULL;
+	if(gsi->isAnimScreenshotRecording) 
+		dest = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
 	tilem_animation_stop(gsi) ;
+	if(dest) {
+		set_animation_recentfile(dest);	
+		copy_paste("gifencod.gif", dest);
+		char* p =  strrchr(dest, '/');
+		printf("%s", p);
+		if(p)
+			strcpy(p, "\0");
+		printf("%s", dest);
+		
+		set_animation_recentdir(dest);	
+	}
+
+	
+	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
+		gtk_widget_show(gsi->screenshot_preview_image);
+		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+	}
+	
 }
 
 /* Callback for screenshot button (take a screenshot) */
@@ -204,11 +247,10 @@ void on_play(GLOBAL_SKIN_INFOS* gsi) {
 	fenetre = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(fenetre),"destroy",G_CALLBACK(on_destroy_playview), NULL);
 
-	image = gtk_image_new_from_file("gifencod.gif");
+	image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
 	gtk_container_add(GTK_CONTAINER(fenetre),image);
 
 	gtk_widget_show_all(fenetre);
 
 }
 	 
-

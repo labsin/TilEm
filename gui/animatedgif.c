@@ -169,6 +169,7 @@ void tilem_animation_add_frame(GLOBAL_SKIN_INFOS* gsi) {
 	}
 }
 
+/* Stop recording animations */
 void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi) {
 	
 	
@@ -179,10 +180,12 @@ void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi) {
 		fp = fopen("gifencod.gif", "a");
 		fwrite(trailer, 1, 1,fp);
 		fclose(fp);
+		
 	}
 
 }
 
+/* Add frames to the animations */
 gboolean tilem_animation_record(gpointer data) {
 	GLOBAL_SKIN_INFOS * gsi = (GLOBAL_SKIN_INFOS*) data;
 	
