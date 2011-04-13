@@ -40,6 +40,7 @@ objects = tilem2.o \
 	args.o \
 	config.o \
 	debugger.o \
+	disasmview.o \
 	emulator.o \
 	event.o \
 	files.o \
@@ -66,7 +67,7 @@ compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(DEFS) \
 link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
 
 common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
-	gui.h emulator.h skinops.h debuginfo.h gtk-compat.h msgbox.h
+	gui.h emulator.h debugger.h skinops.h debuginfo.h gtk-compat.h msgbox.h
 
 all: tilem2@EXEEXT@
 
@@ -77,9 +78,13 @@ tilem2@EXEEXT@: $(objects) ../emu/libtilemcore.a
 tilem2.o: tilem2.c $(common_headers)
 	$(compile) -c $(srcdir)/tilem2.c
 
-#Debugger
-debugger.o: debugger.c debugger.h memmodel.h $(common_headers)
+# Debugger
+debugger.o: debugger.c disasmview.h memmodel.h $(common_headers)
 	$(compile) -c $(srcdir)/debugger.c
+
+# Disassembly view
+disasmview.o: disasmview.c disasmview.h $(common_headers)
+	$(compile) -c $(srcdir)/disasmview.c
 
 # Tree model interface for calc memory
 memmodel.o: memmodel.c memmodel.h $(common_headers)
@@ -106,7 +111,7 @@ skinops.o: skinops.c skinops.h
 	$(compile) -c $(srcdir)/skinops.c
 
 # Manage skins
-skin.o: skin.c $(common_headers)
+skin.o: skin.c files.h $(common_headers)
 	$(compile) -c $(srcdir)/skin.c 
 
 # Popups and other stuff

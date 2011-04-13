@@ -21,6 +21,7 @@
 #include "emulator.h"
 #include "skinops.h"
 #include "debuginfo.h"
+#include "debugger.h"
 
 #include "gtk-compat.h"
  
@@ -99,11 +100,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 	int key_queue_pressed;
 
 }GLOBAL_SKIN_INFOS;
-
-typedef struct _TilemDebugger {
-	TilemCalcEmulator *emu;
-	struct _TilemDisasm *dasm;
-} TilemDebugger;
 
 
 /* ###### event.c ##### */
@@ -273,21 +269,6 @@ void set_loadmacro_recentdir(const char* recentdir);
 
 /* Test if the group exists in config_file */
 gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group);
-
-
-/* ##### debugger.c ##### */
-
-/* Main function for the debugger. */
-void launch_debugger(GLOBAL_SKIN_INFOS *gsi);
-
-/* Refresh on click the register in the debugger */
-void refresh_register(GLOBAL_SKIN_INFOS* gsi);
-
-/* Refresh on click the stack in the debugger */
-void refresh_stack(GLOBAL_SKIN_INFOS* gsi);
-
-/* Print state register in terminal */
-void printstate(TilemCalcEmulator* emu);
 
 
 

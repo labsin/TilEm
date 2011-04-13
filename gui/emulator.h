@@ -45,6 +45,8 @@ typedef struct _TilemCalcEmulator {
 	TilemGrayLCD *glcd;
 
 	char *rom_file_name;
+
+	struct _TilemDebugger *dbg;
 	
 	/* new struct to handle cmd line args */
 	TilemCmdlineArgs *cmdline;

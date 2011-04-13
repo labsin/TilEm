@@ -207,6 +207,13 @@ void on_reset(GLOBAL_SKIN_INFOS * gsi)
 	g_mutex_unlock(gsi->emu->calc_mutex);
 }
 
+static void launch_debugger(GLOBAL_SKIN_INFOS * gsi)
+{
+	if (!gsi->emu->dbg)
+		gsi->emu->dbg = tilem_debugger_new(gsi->emu);
+	tilem_debugger_show(gsi->emu->dbg);
+}
+
 /* Build the menu */
 GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 

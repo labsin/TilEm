@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,79 +18,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//typedef unsigned short  gushort;
+typedef struct _TilemDebugger {
+	struct _TilemCalcEmulator *emu;
+	struct _TilemDisasm *dasm;
 
-/* Central dasm list */
-enum
-{
-	COL_OFFSET_DASM = 0,
-	COL_OP_DASM,
-	COL_ARGS_DASM,
-  	NUM_COLS_DASM
-};
+	/* Debugger widgets */
+	GtkWidget *window; /* Main debugger window */
 
-/* Stack list */
-enum
-{
-	COL_OFFSET_STK = 0,
-	COL_VALUE_STK,
-  	NUM_COLS_STK
-};
+	GtkWidget *disasm_view;	 /* Disassembly view */
+	GtkWidget *mem_view;	 /* Memory view */
+	GtkWidget *stack_view;	 /* Stack view */
 
-/* Memory list */
-enum
-{
-	COL_OFFSET_MEM = 0,
-	COL_HEXA_MEM = 1,
-	COL_ASCII_MEM = 9,
-  	NUM_COLS_MEM = 10
-};
+	GtkWidget *regbox;	    /* Box containing registers */
+	GtkWidget *reg_entries[14]; /* Entries for registers */
+	GtkWidget *iff_checkbox;    /* Checkbox for IFF */
+	GtkWidget *flag_buttons[8]; /* Buttons for flags */
 
-/* Disasm struct */
-TilemDisasm *dasm;
+	/* Memory settings */
+	int mem_rowsize;
+	int mem_start;
+	gboolean mem_logical;
 
-/* Register values */
-char* rvalue[12];
+	dword lastwrite;
+	dword lastsp;
+	gboolean paused;
+	gboolean refreshing;
+} TilemDebugger;
 
-/* List of label for create_register_list */
-static const char *rlabel[12] = {"AF'", "AF", "BC'", "BC", "DE'", "DE", "HL'", "HL", "IY", "IX", "SP", "PC" };
+/* Create a new TilemDebugger. */
+TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu);
 
-/* close debug window */
-static void on_debug_destroy(GtkWidget* debug_win, GLOBAL_SKIN_INFOS* gsi);
+/* Free a TilemDebugger. */
+void tilem_debugger_free(TilemDebugger *dbg);
 
-/* create top level(*) debug window. (not really top level for gtk) */
-static void create_debug_window(GLOBAL_SKIN_INFOS* gsi);
+/* Show debugger, and pause emulator if not already paused. */
+void tilem_debugger_show(TilemDebugger *dbg);
 
-/* Create global GtkTable */
-static GtkWidget* create_debug_table(GLOBAL_SKIN_INFOS* gsi);
+/* Hide debugger, and resume emulation if not already running. */
+void tilem_debugger_hide(TilemDebugger *dbg);
 
-/* Create navigation buttons */
-static void create_debug_button(GtkWidget* debug_table);
+/* New calculator loaded. */
+void tilem_debugger_calc_changed(TilemDebugger *dbg);
 
-/* Create register area (GtkFrame + entry) */
-static void create_register_list(GtkWidget* debug_table, GLOBAL_SKIN_INFOS* gsi); 
-
-/* Get the register values */
-static void getreg(GLOBAL_SKIN_INFOS* gsi , int i, char* string);
-
-/* Get the register values decimal) */
-gushort getreg_int(GLOBAL_SKIN_INFOS* gsi , int i);
-
-/* Create the dasm list */
-static void create_dasm_list(GtkWidget* debug_dasmscroll, GLOBAL_SKIN_INFOS* gsi); 
-
-/* Fill the GtkList used by dasm_list */
-static GtkTreeModel* fill_dasm_list(void);
-
-/* Create the stack list */
-static void create_stack_list(GtkWidget* debug_stackscroll, GLOBAL_SKIN_INFOS* gsi); 
-
-/* Fill the GtkList used by dasm_list */
-static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi);
-
-/* Create the memory list */
-static void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi); 
-
-/* Fill the GtkList used by memory list */
-//static GtkTreeModel* fill_memory_list(void); 
-
+/* Update display. */
+void tilem_debugger_refresh(TilemDebugger *dbg, gboolean updatemem);

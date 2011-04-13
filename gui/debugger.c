@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010 Benjamin Moody
+ * Copyright (c) 2010-2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,547 +23,490 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <ticalcs.h>
 #include <tilem.h>
 #include <tilemdb.h>
 
 #include "gui.h"
-#include "debugger.h"
+#include "disasmview.h"
 #include "memmodel.h"
 
-/* This function is the first to be called. Start the debugger */
-void launch_debugger(GLOBAL_SKIN_INFOS* gsi){
+/* Stack list */
+enum
+{
+	COL_OFFSET_STK = 0,
+	COL_VALUE_STK,
+  	NUM_COLS_STK
+};
 
-	//printf("%s", gsi->RomName);
-	dasm= tilem_disasm_new();
-	//gsi->reg_entry=malloc(sizeof(TilemDisasm));
-	//gsi->dasm= tilem_disasm_new();	
-	//gsi->dasm= dasm;
-	create_debug_window(gsi);
-	
+/* Indices in reg_entries */
+enum {
+	R_AF, R_BC, R_DE, R_HL, R_IX, R_SP,
+	R_AF2, R_BC2, R_DE2, R_HL2, R_IY, R_PC,
+	R_IM, R_I,
+	NUM_REGS
+};
+
+/* Labels for the entries */
+static const char * const reg_labels[] = {
+	"A_F:", "B_C:", "D_E:", "H_L:", "I_X:", "SP:",
+	"AF':", "BC':", "DE':", "HL':", "I_Y:", "PC:",
+	"IM:", "I:"
+};
+
+/* Labels for the flag buttons */
+static const char flag_labels[][2] = {
+	"C", "N", "P", "X", "H", "Y", "Z", "S"
+};
+
+/* Register edited */
+static void reg_edited(GtkEntry *ent, gpointer data)
+{
+	/* FIXME */
 }
 
-/* Destroy the debugger, and turn to FALSE the isDebuggerRunning variable (use by other function to know if debuuger is running) */
-void on_debug_destroy(GtkWidget* debug_win, GLOBAL_SKIN_INFOS* gsi)
+/* Flag button toggled */
+static void flag_edited(GtkToggleButton *btn, gpointer data)
 {
-	gsi->isDebuggerRunning=FALSE;
-	if(GTK_IS_WIDGET(debug_win))
-		gtk_widget_destroy(GTK_WIDGET(debug_win));
-
+	/* FIXME */
 }
 
-/* Print register value in terminal (copy paste of Benjamin Moody's work) */
-void printstate(TilemCalcEmulator* emu)
+/* IM edited */
+static void im_edited(GtkEntry *ent, gpointer data)
 {
-       printf("*  PC=%02X:%04X AF=%04X BC=%04X DE=%04X                  *\n"
-		"*  HL=%04X IX=%04X IY=%04X SP=%04X                     *\n",
-       emu->calc->mempagemap[emu->calc->z80.r.pc.b.h >> 6],
-       emu->calc->z80.r.pc.w.l,
-       emu->calc->z80.r.af.w.l,
-       emu->calc->z80.r.bc.w.l,
-       emu->calc->z80.r.de.w.l,
-       emu->calc->z80.r.hl.w.l,
-       emu->calc->z80.r.ix.w.l,
-       emu->calc->z80.r.iy.w.l,
-       emu->calc->z80.r.sp.w.l);
+	/* FIXME */
 }
 
-/* Return the string value of the register(function used by create_register_list) */
-void getreg(GLOBAL_SKIN_INFOS* gsi , int i, char* string)
+/* IFF button toggled */
+static void iff_edited(GtkToggleButton *btn, gpointer data)
 {
-	switch(i)
-	{
-	case 0:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.af2.d);
-		break;
-	case 1:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.af.d);
-		break;
-	case 2:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.bc2.d);
-		break;
-	case 3:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.bc.d);
-		break;
-	case 4:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.de2.d);
-		break;
-	case 5:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.de.d);
-		break;
-	case 6:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.hl2.d);
-		break;
-	case 7:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.hl.d);
-		break;
-	case 8:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.iy.d);
-		break;
-	case 9:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.ix.d);
-		break;
-	case 10:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.sp.d);
-		break;
-	case 11:
-		snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.pc.d);
-		break;
-	default:
-		snprintf(string, 5, "%s", "----");
-		break;
+	/* FIXME */
+}
 
+/* Main window received a "delete" message */
+static gboolean delete_win(G_GNUC_UNUSED GtkWidget *w,
+                           G_GNUC_UNUSED GdkEvent *ev,
+                           gpointer data)
+{
+	TilemDebugger *dbg = data;
+	tilem_debugger_hide(dbg);
+	return TRUE;
+}
+
+/* Create table of widgets for editing registers */
+static GtkWidget *create_registers(TilemDebugger *dbg)
+{
+	GtkWidget *vbox, *tbl, *lbl, *hbox, *ent, *btn;
+	int i;
+
+	vbox = gtk_vbox_new(FALSE, 6);
+
+	tbl = gtk_table_new(6, 4, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(tbl), 6);
+	gtk_table_set_col_spacings(GTK_TABLE(tbl), 6);
+	gtk_table_set_col_spacing(GTK_TABLE(tbl), 1, 12);
+
+	for (i = 0; i < 12; i++) {
+		lbl = gtk_label_new_with_mnemonic(reg_labels[i]);
+		gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+		gtk_table_attach(GTK_TABLE(tbl), lbl,
+		                 2 * (i / 6), 2 * (i / 6) + 1,
+		                 (i % 6), (i % 6) + 1,
+		                 GTK_FILL, GTK_FILL, 0, 0);
+
+		dbg->reg_entries[i] = ent = gtk_entry_new();
+		gtk_entry_set_width_chars(GTK_ENTRY(ent), 5);
+		g_signal_connect(ent, "changed", G_CALLBACK(reg_edited), dbg);
+		gtk_table_attach(GTK_TABLE(tbl), ent,
+		                 2 * (i / 6) + 1, 2 * (i / 6) + 2,
+		                 (i % 6), (i % 6) + 1,
+		                 GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+
+		gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ent);
 	}
 
-}
+	gtk_box_pack_start(GTK_BOX(vbox), tbl, FALSE, FALSE, 0);
 
-/* Return the string value of the register */
-gushort getreg_int(GLOBAL_SKIN_INFOS* gsi , int i)
-{
-	switch(i)
-	{
-	case 0:
-		return gsi->emu->calc->z80.r.af2.d;
-		break;
-	case 1:
-		return gsi->emu->calc->z80.r.af.d;
-		break;
-	case 2:
-		return gsi->emu->calc->z80.r.bc2.d;
-		break;
-	case 3:
-		return gsi->emu->calc->z80.r.bc.d;
-		break;
-	case 4:
-		return gsi->emu->calc->z80.r.de2.d;
-		break;
-	case 5:
-		return gsi->emu->calc->z80.r.de.d;
-		break;
-	case 6:
-		return gsi->emu->calc->z80.r.hl2.d;
-		break;
-	case 7:
-		return gsi->emu->calc->z80.r.hl.d;
-		break;
-	case 8:
-		return gsi->emu->calc->z80.r.iy.d;
-		break;
-	case 9:
-		return gsi->emu->calc->z80.r.ix.d;
-		break;
-	case 10:
-		return gsi->emu->calc->z80.r.sp.d;
-		break;
-	case 11:
-		return gsi->emu->calc->z80.r.pc.d;
-		break;
-	default:
-		return 0;
-		break;
+	hbox = gtk_hbox_new(TRUE, 0);
 
+	for (i = 7; i >= 0; i--) {
+		btn = gtk_toggle_button_new_with_label(flag_labels[i]);
+		dbg->flag_buttons[i] = btn;
+		g_signal_connect(btn, "toggled", G_CALLBACK(flag_edited), dbg);
+		gtk_box_pack_start(GTK_BOX(hbox), btn, TRUE, TRUE, 0);
 	}
 
-}
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-/* Create the debugger window */
-void create_debug_window(GLOBAL_SKIN_INFOS* gsi) 
-{
-	
-	GtkWidget* debug_win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	//gtk_window_set_modal(GTK_WINDOW(debug_win), TRUE);
-	gtk_widget_set_size_request(GTK_WIDGET(debug_win) , 600, 400);	
-	gtk_window_set_resizable(GTK_WINDOW(debug_win), TRUE);	
-	gtk_window_set_title(GTK_WINDOW(debug_win), "TilEm debugger");
-	GtkWidget* debug_table= create_debug_table(gsi);
-	
-	/* Create the central dasm scrolled widget */
-	GtkWidget* debug_dasmscroll= gtk_scrolled_window_new(NULL, NULL);	
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_dasmscroll), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
-	create_dasm_list(debug_dasmscroll, gsi);	
-		
-	/* Create the stack list scrolled widget */
-	GtkWidget* debug_stackframe= gtk_frame_new("Stack");
-	gtk_frame_set_label_align(GTK_FRAME(debug_stackframe), 1.0, 0.5);
-	GtkWidget* debug_stackscroll= gtk_scrolled_window_new(NULL, NULL);	
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_stackscroll), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
-	create_stack_list(debug_stackscroll, gsi);
-	gtk_container_add(GTK_CONTAINER(debug_stackframe), debug_stackscroll);
-	
-	/* Create the memory list scrolled widget */
-	GtkWidget* debug_memoryframe= gtk_frame_new("Memory");
-	gtk_frame_set_label_align(GTK_FRAME(debug_memoryframe), 0.5, 0.5);
-	//gtk_widget_set_size_request(GTK_WIDGET(debug_memoryframe) , 400, 160);	
-	GtkWidget* debug_memoryscroll= gtk_scrolled_window_new(NULL, NULL);	
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(debug_memoryscroll), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
-	create_memory_list(debug_memoryscroll, gsi);
-	gtk_container_add(GTK_CONTAINER(debug_memoryframe), debug_memoryscroll);
-	
-	GtkWidget* debug_label= gtk_label_new("Tilem-dbg (c) Duponchelle Thibault, Moody Benjamin, Bruant Luc");
-	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_label, 0, 7, 13, 14);
-	gtk_table_attach_defaults(GTK_TABLE(debug_table),debug_dasmscroll, 1 , 6, 1, 7); 
-	gtk_table_attach_defaults(GTK_TABLE(debug_table),debug_stackframe, 6 , 7, 0, 7); 
-	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_memoryframe, 0, 7, 7, 13);
-	gtk_container_add(GTK_CONTAINER(debug_win), debug_table);
-	//gtk_signal_connect(GTK_OBJECT(debug_win), "delete-event", G_CALLBACK(on_debug_destroy), gsi);
-	g_signal_connect(GTK_OBJECT(debug_win), "delete-event", G_CALLBACK(on_debug_destroy), gsi);	
-	gtk_widget_show_all(debug_win);
-}
+	hbox = gtk_hbox_new(FALSE, 6);
 
-/* The debugger windows contains a GtkTable.This is the high layout. */
-GtkWidget* create_debug_table(GLOBAL_SKIN_INFOS* gsi) 
-{
-	GtkWidget* debug_table= gtk_table_new(14, 8, FALSE);
-	create_debug_button(debug_table);
-	create_register_list(debug_table, gsi);
-	return debug_table;
-}
+	for (i = 12; i < 14; i++) {
+		lbl = gtk_label_new(reg_labels[i]);
+		gtk_box_pack_start(GTK_BOX(hbox), lbl, FALSE, FALSE, 0);
 
-/* Create navigation button */
-void create_debug_button(GtkWidget* debug_table) 
-{	
-	/* Create the navigation buttons (5 buttons)*/
-	GtkWidget* buttonleft2= gtk_button_new();
-	GtkWidget* left2= gtk_image_new_from_file("./pix/rewindleft2.png"); 
-	gtk_button_set_image(GTK_BUTTON(buttonleft2), left2);
-	gtk_table_attach(GTK_TABLE(debug_table), buttonleft2, 1, 2, 0, 1, 0, 0, 0, 0);
-	
-	GtkWidget* buttonleft1= gtk_button_new();
-	GtkWidget* left1= gtk_image_new_from_file("./pix/rewindleft1.png"); 
-	gtk_button_set_image(GTK_BUTTON(buttonleft1), left1);
-	gtk_table_attach(GTK_TABLE(debug_table), buttonleft1, 2, 3, 0, 1, 0, 0, 0, 0);
-	
-	GtkWidget* buttonpause= gtk_button_new();
-	GtkWidget* pause= gtk_image_new_from_file("./pix/pause.png"); 
-	gtk_button_set_image(GTK_BUTTON(buttonpause), pause);
-	gtk_table_attach(GTK_TABLE(debug_table), buttonpause, 3, 4, 0, 1, 0, 0, 0, 0);
-	
-	GtkWidget* buttonright1= gtk_button_new();
-	GtkWidget* right1= gtk_image_new_from_file("./pix/rewindright1.png"); 
-	gtk_button_set_image(GTK_BUTTON(buttonright1), right1);
-	gtk_table_attach(GTK_TABLE(debug_table), buttonright1, 4, 5, 0, 1, 0, 0, 0, 0);
-	
-	GtkWidget* buttonright2= gtk_button_new();
-	GtkWidget* right2= gtk_image_new_from_file("./pix/rewindright2.png"); 
-	gtk_button_set_image(GTK_BUTTON(buttonright2), right2);
-	gtk_table_attach(GTK_TABLE(debug_table), buttonright2, 5, 6, 0, 1, 0, 0, 0, 0);
-
-}
-
-
-/* Refresh the register value in the GtkEntry (could be called out of debugger.c)*/
-void refresh_register(GLOBAL_SKIN_INFOS* gsi)
-{
-	DDEBUGGER_L0_A0("******************** fct: refresh_register *************\n");
-	DDEBUGGER_L0_A0("*  Refresh register :                                  *\n");
-	printstate(gsi->emu);
-	DDEBUGGER_L0_A0("********************************************************\n");
-
-	if(gsi->reg_entry!=NULL)
-	{
-		char string[50];
-		int i=0;
-		for(i=0; i<12; i++) 
-		{
-			getreg(gsi, i, string);
-			gtk_entry_set_text(GTK_ENTRY(gsi->reg_entry->reg[i]), string);
-		}
+		dbg->reg_entries[i] = ent = gtk_entry_new();
+		gtk_box_pack_start(GTK_BOX(hbox), ent, TRUE, TRUE, 0);
 	}
 
+	g_signal_connect(dbg->reg_entries[R_I], "changed",
+	                 G_CALLBACK(reg_edited), dbg);
+	g_signal_connect(dbg->reg_entries[R_IM], "changed",
+	                 G_CALLBACK(im_edited), dbg);
+
+	gtk_entry_set_width_chars(GTK_ENTRY(dbg->reg_entries[R_IM]), 2);
+	gtk_entry_set_width_chars(GTK_ENTRY(dbg->reg_entries[R_I]), 3);
+
+	dbg->iff_checkbox = btn = gtk_check_button_new_with_label("EI");
+	g_signal_connect(btn, "toggled", G_CALLBACK(iff_edited), dbg);
+	gtk_box_pack_start(GTK_BOX(hbox), btn, TRUE, TRUE, 0);
+
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
+	return vbox;
 }
 
-/* Create another GtkTable which contain a one GtkFrame per register */
-void create_register_list(GtkWidget* debug_table, GLOBAL_SKIN_INFOS* gsi) 
+/* Create the GtkTreeView to show the stack */
+static GtkWidget *create_stack_view()
 {
-	GtkWidget* debug_register_frame= gtk_frame_new("Registers");
-	GtkWidget* debug_register_table= gtk_table_new(5, 8, FALSE);
-	
-	gtk_table_attach_defaults(GTK_TABLE(debug_table), debug_register_frame, 0, 1, 0, 7);
-	gtk_container_add(GTK_CONTAINER(debug_register_frame), debug_register_table);
-	
-	char string[50]; /* Useful to get and format (snprintf) the registers */
-	int i=0;
-	int j=0;
-	int n=0;
-
-	/* Init gsi->reg_entry. This is a save of the register widget.It 's easier to refresh it from another function with it. */
-	gsi->reg_entry=malloc(sizeof(TilemDebuggerRegister));
-	gsi->isDebuggerRunning=TRUE;
-	for(i=0; i<12; i++)
-		gsi->reg_entry->reg[i]= gtk_entry_new();
-
-	/* Create the register table */
-	for(i=0; i<6; i++) {
-		for(j=0; j<2; j++) {
-
-			GtkWidget* frame= gtk_frame_new(rlabel[n]);
-			GtkWidget* entry= gtk_entry_new();
-			gsi->reg_entry->reg[n]=entry;
-			gtk_widget_set_size_request(GTK_WIDGET(entry), 40,20);
-			//snprintf(string, 5, "%04X", gsi->emu->calc->z80.r.af.d);
-			getreg(gsi, n, string);
-			gtk_entry_set_text(GTK_ENTRY(entry), string);
-			gtk_container_add(GTK_CONTAINER(frame), entry);
-			gtk_table_attach(GTK_TABLE(debug_register_table), frame, j, j+1, i, i+1, 0, 0, 0, 0);
-			n++;
-		}
-	}
-	DDEBUGGER_L0_A0("********************* fct: create_register_list ********\n");
-	printstate(gsi->emu);
-	DDEBUGGER_L0_A0("********************************************************\n");
-}
-
-/* Create the GtkTreeView to show the dasm_list */
-void create_dasm_list(GtkWidget* debug_dasmscroll, GLOBAL_SKIN_INFOS* gsi) {
-	
-	GtkCellRenderer     *renderer;
-	GtkTreeModel        *model;
-	GtkWidget* debug_treeview;
-	GtkTreeViewColumn *column;
-	gsi=gsi;	
-	
-	debug_treeview= gtk_tree_view_new();
-
-	/* Create the columns */
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
-	column = gtk_tree_view_column_new_with_attributes("ADDR" ,renderer, "text", COL_OFFSET_DASM, NULL);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
-	
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
-	column = gtk_tree_view_column_new_with_attributes("OP" ,renderer, "text", COL_OP_DASM, NULL);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
-
-	
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
-	column = gtk_tree_view_column_new_with_attributes("ARGS" ,renderer, "text", COL_ARGS_DASM, NULL);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
-
-	/*renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (debug_treeview), -1, "OFFSET", renderer, "text", COL_OFFSET_DASM, NULL);
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (debug_treeview), -1, "OP", renderer, "text", COL_OP_DASM, NULL);
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (debug_treeview), -1, "VALUE", renderer, "text", COL_ARGS_DASM, NULL);
-	*/
-	/* Get the list */
-	model = fill_dasm_list ();
-
-	/* Add the list */
-	gtk_tree_view_set_model (GTK_TREE_VIEW (debug_treeview), model);
-
-	gtk_container_add(GTK_CONTAINER(debug_dasmscroll), debug_treeview);
-
-}
-
-/* Create GtkListStore and attach it */
-static GtkTreeModel* fill_dasm_list(void)
-{
-	GtkListStore  *store;
-	GtkTreeIter    iter;
-  
-	store = gtk_list_store_new (NUM_COLS_DASM, G_TYPE_STRING, G_TYPE_STRING , G_TYPE_STRING);
-
-	/* Append a row and fill in some data (here is just for debugging) */
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "0000", COL_OP_DASM, "INC", COL_ARGS_DASM, "$12", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "0002", COL_OP_DASM, "ADD", COL_ARGS_DASM, "$A3", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "0004", COL_OP_DASM, "DEC", COL_ARGS_DASM, "$11", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "0006", COL_OP_DASM, "CP", COL_ARGS_DASM, "$08", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "0008", COL_OP_DASM, "JP", COL_ARGS_DASM, "$FF", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "000A", COL_OP_DASM, "LD", COL_ARGS_DASM, "$FF", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "000C", COL_OP_DASM, "LD", COL_ARGS_DASM, "$FF", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "000E", COL_OP_DASM, "JNZ", COL_ARGS_DASM, "$FF", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "0010", COL_OP_DASM, "JNZ", COL_ARGS_DASM, "$FF", -1);
-	gtk_list_store_append (store, &iter);
-	gtk_list_store_set (store, &iter, COL_OFFSET_DASM, "0012", COL_OP_DASM, "JNZ", COL_ARGS_DASM, "$FF", -1);
-  
-  
-	return GTK_TREE_MODEL (store);
-}
-
-/* Create the GtkTreeView to show the stack_list */
-void create_stack_list(GtkWidget* debug_stackscroll, GLOBAL_SKIN_INFOS* gsi) {
-	
-	GtkCellRenderer     *renderer;
-	GtkTreeModel        *model;
-	GtkWidget* 	debug_treeview;
+	GtkCellRenderer   *renderer;
+	GtkWidget         *treeview;
 	GtkTreeViewColumn *column;
 	
 	/* Create the stack list tree view and set title invisible */
-	debug_treeview= gtk_tree_view_new();
-	gsi->stack_treeview= debug_treeview;
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(debug_treeview), TRUE);	
-	gtk_tree_view_set_search_column(GTK_TREE_VIEW(debug_treeview), COL_OP_DASM);
+	treeview = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
+	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
+	gtk_tree_view_set_search_column(GTK_TREE_VIEW(treeview),
+	                                COL_VALUE_STK);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
-	column = gtk_tree_view_column_new_with_attributes("ADDR" ,renderer, "text", COL_OFFSET_STK, NULL);
+	column = gtk_tree_view_column_new_with_attributes
+		("ADDR", renderer, "text", COL_OFFSET_STK, NULL);
+
+	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_renderer_set_fixed_size(renderer, -1, 16);
-	column = gtk_tree_view_column_new_with_attributes("VAL" ,renderer, "text", COL_VALUE_STK, NULL);
+	column = gtk_tree_view_column_new_with_attributes
+		("VAL", renderer, "text", COL_VALUE_STK, NULL);
+
+	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-	/*renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (debug_treeview), -1, NULL, renderer, "text", COL_OFFSET_STK, NULL);
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (debug_treeview), -1, NULL, renderer, "text", COL_VALUE_STK, NULL);
-	*/
-
-	/* Get the list */
-	model = fill_stk_list(gsi);
-
-	/* Add the list */
-	gtk_tree_view_set_model (GTK_TREE_VIEW (debug_treeview), model);
-
-	gtk_container_add(GTK_CONTAINER(debug_stackscroll), debug_treeview);
-
+	return treeview;
 }
 
-void refresh_stack(GLOBAL_SKIN_INFOS * gsi)
+/* Create the GtkTreeView to show the memory */
+static GtkWidget *create_memory_view()
 {
-	char* sp;
-	sp= malloc(sizeof(char*));
-	getreg(gsi, 10, sp);
-	DDEBUGGER_L0_A0("******************** fct: refresh_stack ****************\n");
-	DDEBUGGER_L0_A1("*  SP : %s                                           *\n", sp);
-	DDEBUGGER_L0_A0("********************************************************\n");
-	GtkTreeModel * model;
-	model = fill_stk_list(gsi);
-	gtk_tree_view_set_model (GTK_TREE_VIEW (gsi->stack_treeview), model);
+	GtkCellRenderer     *renderer;
+	GtkTreeViewColumn   *column;
+	GtkWidget           *treeview;
+	int i;
+
+	/* Create the memory list tree view and set title invisible */
+	treeview = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
+
+	/* Create the columns */
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes
+		("ADDR", renderer, "text", MM_COL_ADDRESS(0), NULL);
+
+	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_fixed_width(column, 70);
+	gtk_tree_view_column_set_expand(column, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+
+	/* FIXME: column sizes should be determined by font */
+
+	for (i = 0; i < 8; i++) {
+		renderer = gtk_cell_renderer_text_new ();
+		column = gtk_tree_view_column_new_with_attributes
+			(NULL, renderer, "text", MM_COL_HEX(i), NULL);
+
+		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
+		gtk_tree_view_column_set_fixed_width(column, 20);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+	}
+
+	for (i = 0; i < 8; i++) {
+		renderer = gtk_cell_renderer_text_new ();
+		column = gtk_tree_view_column_new_with_attributes
+			(NULL, renderer, "text", MM_COL_CHAR(i), NULL);
+
+		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
+		gtk_tree_view_column_set_fixed_width(column, 16);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+	}
+	
+	return treeview;
 }
 
+/* Create a new scrolled window with sensible default settings. */
+static GtkWidget *new_scrolled_window(GtkWidget *contents)
+{
+	GtkWidget *sw;
+	sw = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+	                               GTK_POLICY_AUTOMATIC,
+	                               GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw),
+	                                    GTK_SHADOW_IN);
+	gtk_container_add(GTK_CONTAINER(sw), contents);
+	return sw;
+}
+
+/* Create a new TilemDebugger. */
+TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
+{
+	TilemDebugger *dbg;
+	GtkWidget *hbox, *vbox, *vpaned, *sw;
+
+	g_return_val_if_fail(emu != NULL, NULL);
+
+	dbg = g_slice_new0(TilemDebugger);
+	dbg->emu = emu;
+	dbg->dasm = tilem_disasm_new();
+
+	dbg->mem_rowsize = 8;
+	dbg->mem_start = 0;
+	dbg->mem_logical = TRUE;
+
+	dbg->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(dbg->window), "TilEm Debugger");
+	gtk_window_set_role(GTK_WINDOW(dbg->window), "Debugger");
+
+	g_signal_connect(dbg->window, "delete-event",
+	                 G_CALLBACK(delete_win), dbg);
+
+	hbox = gtk_hbox_new(FALSE, 6);
+
+	vpaned = gtk_vpaned_new();
+
+	/* Disassembly view */
+
+	dbg->disasm_view = tilem_disasm_view_new(dbg);
+	sw = new_scrolled_window(dbg->disasm_view);
+	gtk_paned_pack1(GTK_PANED(vpaned), sw, TRUE, TRUE);
+
+	/* Memory view */
+
+	dbg->mem_view = create_memory_view();
+	sw = new_scrolled_window(dbg->mem_view);
+	gtk_paned_pack2(GTK_PANED(vpaned), sw, TRUE, TRUE);
+
+	gtk_box_pack_start(GTK_BOX(hbox), vpaned, TRUE, TRUE, 0);
+
+	vbox = gtk_vbox_new(FALSE, 6);
+
+	/* Registers */
+
+	dbg->regbox = create_registers(dbg);
+	gtk_box_pack_start(GTK_BOX(vbox), dbg->regbox, FALSE, FALSE, 0);
+
+	/* Stack view */
+
+	dbg->stack_view = create_stack_view();
+	sw = new_scrolled_window(dbg->stack_view);
+	gtk_box_pack_start(GTK_BOX(vbox), sw, TRUE, TRUE, 0);
+
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, FALSE, 0);
+	gtk_widget_show_all(hbox);
+
+	gtk_container_add(GTK_CONTAINER(dbg->window), hbox);
+
+	tilem_debugger_calc_changed(dbg);
+
+	return dbg;
+}
+
+/* Free a TilemDebugger. */
+void tilem_debugger_free(TilemDebugger *dbg)
+{
+	g_return_if_fail(dbg != NULL);
+
+	if (dbg->emu && dbg->emu->dbg == dbg)
+		dbg->emu->dbg = NULL;
+	if (dbg->window)
+		gtk_widget_destroy(dbg->window);
+	if (dbg->dasm)
+		tilem_disasm_free(dbg->dasm);
+
+	g_slice_free(TilemDebugger, dbg);
+}
+
+static void entry_printf(GtkWidget *ent, const char *s, ...)
+{
+	char buf[20];
+	va_list ap;
+	va_start(ap, s);
+	g_vsnprintf(buf, sizeof(buf), s, ap);
+	va_end(ap);
+	gtk_entry_set_text(GTK_ENTRY(ent), buf);
+}
+
+static void refresh_regs(TilemDebugger *dbg)
+{
+	TilemCalc *calc = dbg->emu->calc;
+	int i;
+	GtkToggleButton *btn;
+
+	entry_printf(dbg->reg_entries[R_AF], "%04X", calc->z80.r.af.w.l);
+	entry_printf(dbg->reg_entries[R_BC], "%04X", calc->z80.r.bc.w.l);
+	entry_printf(dbg->reg_entries[R_DE], "%04X", calc->z80.r.de.w.l);
+	entry_printf(dbg->reg_entries[R_HL], "%04X", calc->z80.r.hl.w.l);
+	entry_printf(dbg->reg_entries[R_AF2], "%04X", calc->z80.r.af2.w.l);
+	entry_printf(dbg->reg_entries[R_BC2], "%04X", calc->z80.r.bc2.w.l);
+	entry_printf(dbg->reg_entries[R_DE2], "%04X", calc->z80.r.de2.w.l);
+	entry_printf(dbg->reg_entries[R_HL2], "%04X", calc->z80.r.hl2.w.l);
+	entry_printf(dbg->reg_entries[R_SP], "%04X", calc->z80.r.sp.w.l);
+	entry_printf(dbg->reg_entries[R_PC], "%04X", calc->z80.r.pc.w.l);
+	entry_printf(dbg->reg_entries[R_IX], "%04X", calc->z80.r.ix.w.l);
+	entry_printf(dbg->reg_entries[R_IY], "%04X", calc->z80.r.iy.w.l);
+	entry_printf(dbg->reg_entries[R_I], "%02X", calc->z80.r.ir.b.h);
+	entry_printf(dbg->reg_entries[R_IM], "%d", calc->z80.r.im);
+
+	for (i = 0; i < 8; i++) {
+		btn = GTK_TOGGLE_BUTTON(dbg->flag_buttons[i]);
+		gtk_toggle_button_set_active(btn, calc->z80.r.af.d & (1 << i));
+	}
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dbg->iff_checkbox),
+	                             calc->z80.r.iff1);
+}
 
 /* Create GtkListStore and attach it */
-static GtkTreeModel* fill_stk_list(GLOBAL_SKIN_INFOS* gsi)
+static GtkTreeModel* fill_stk_list(TilemDebugger *dbg)
 {
 	GtkListStore  *store;
 	GtkTreeIter    iter;
-	char* stack_offset;
-	char* stack_value;
-	stack_offset = (char*) malloc(sizeof(char*));
-	stack_value = (char*) malloc(sizeof(char*));
+	char stack_offset[10];
+	char stack_value[10];
  	gushort i=0; 
 	dword phys;
-	
-	g_mutex_lock(gsi->emu->calc_mutex);
-	store = gtk_list_store_new (NUM_COLS_STK, G_TYPE_STRING, G_TYPE_STRING);
-	i = getreg_int(gsi, 10) + 1;
-        while  (i > 0x0010) {
-        	sprintf(stack_offset, "%04X:", i - 1);
-		phys = gsi->emu->calc->hw.mem_ltop(gsi->emu->calc, i - 1);
-                sprintf(stack_value, "%02X%02X", gsi->emu->calc->mem[phys + 1],gsi->emu->calc->mem[phys] );
-		
 
-		/* Append a row and fill in some data (here is just for debugging) */
+	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+	i = dbg->emu->calc->z80.r.sp.w.l;
+        while  (i > 0x0010) {
+	        g_snprintf(stack_offset, sizeof(stack_offset), "%04X:", i - 1);
+		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, i - 1);
+		g_snprintf(stack_value, sizeof(stack_value), "%02X%02X", dbg->emu->calc->mem[phys + 1],dbg->emu->calc->mem[phys] );
+
 		gtk_list_store_append (store, &iter);
 		gtk_list_store_set (store, &iter, COL_OFFSET_STK, stack_offset, COL_VALUE_STK, stack_value, -1);
  
                 i += 0x0002;
-      }
-  
-  
-	g_mutex_unlock(gsi->emu->calc_mutex);
+        }
+    
 	return GTK_TREE_MODEL (store);
 }
 
-/* Create the GtkTreeView to show the memory_list */
-void create_memory_list(GtkWidget* debug_memoryscroll, GLOBAL_SKIN_INFOS* gsi) {
-	
-	GtkCellRenderer     *renderer;
-	GtkTreeModel        *model;
-	GtkTreeViewColumn   *column;
-	gsi=gsi;
-	
-	/* Create the memory list tree view and set title invisible */
-	GtkWidget* debug_treeview= gtk_tree_view_new();
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(debug_treeview), FALSE);	
-	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(debug_treeview), TRUE);
-
-	/* Create the columns */
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes("ADDR",renderer, "text", MM_COL_ADDRESS(0), NULL);
-	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(column, 70);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
-
-	int i=0;
-	for(i=0; i<8; i++)
-	{
-		renderer = gtk_cell_renderer_text_new ();
-		column = gtk_tree_view_column_new_with_attributes(NULL ,renderer, "text", MM_COL_HEX(i), NULL);
-		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-		gtk_tree_view_column_set_fixed_width(column, 20);
-		gtk_tree_view_column_set_expand(column, TRUE);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
-	}	
-
-	for (i = 0; i < 8; i++) {
-		renderer = gtk_cell_renderer_text_new ();
-		column = gtk_tree_view_column_new_with_attributes("ASCII",renderer, "text", MM_COL_CHAR(i), NULL);
-		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-		gtk_tree_view_column_set_fixed_width(column, 16);
-		gtk_tree_view_column_set_expand(column, TRUE);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(debug_treeview), column);
-	}
-	
-
-	/* Get the list */
-	model = (GtkTreeModel*)tilem_mem_model_new(gsi->emu, 8, 0, TRUE);
-	//model = fill_memory_list();
-
-	/* Add the list */
-	/* FIXME : THERE'S A BUG HERE ! 
-	It works only with fill_memory_list, I don't know why??
-	*/
-	gtk_tree_view_set_model (GTK_TREE_VIEW (debug_treeview), (GtkTreeModel*)model);
-	g_object_unref(model);
-	
-	gtk_container_add(GTK_CONTAINER(debug_memoryscroll), debug_treeview);
-	gtk_tree_view_columns_autosize (GTK_TREE_VIEW(debug_treeview));
-
-
-}
-
-/* Create GtkListStore and attach it */
-/*static GtkTreeModel* fill_memory_list(void)
+static void refresh_stack(TilemDebugger *dbg)
 {
-	GtkListStore  *store;
-	GtkTreeIter    iter;
-  
-	store = gtk_list_store_new (10, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-*/
-	/* Append a row and fill in some data (here is just for debugging) */
-/*	int i=0;
-	for(i=0; i<30; i++)
-	{
-		gtk_list_store_append (store, &iter);
-		gtk_list_store_set(store,&iter, 0, "0000", 1, "AE", 2, "EE", 3, "FF", 4, "EF", 5, "3F", 6, "FE", 7, "A1", 8, "2B", 9, ". . . . . .", -1);
-	}
-  
-  
-	return GTK_TREE_MODEL (store);
+	GtkTreeModel *model = fill_stk_list(dbg);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(dbg->stack_view), model);
+	g_object_unref(model);
 }
-*/
+
+static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
+{
+	TilemCalc *calc;
+	gboolean paused;
+
+	dbg->refreshing = TRUE;
+
+	g_mutex_lock(dbg->emu->calc_mutex);
+	calc = dbg->emu->calc;
+	paused = dbg->emu->paused;
+
+	if (calc) {
+		refresh_regs(dbg);
+
+		if (dbg->lastwrite != calc->z80.lastwrite)
+			updatemem = TRUE;
+
+		if (updatemem || dbg->lastsp != calc->z80.r.sp.d)
+			refresh_stack(dbg);
+
+		dbg->lastwrite = calc->z80.lastwrite;
+		dbg->lastsp = calc->z80.r.sp.d;
+	}
+
+	g_mutex_unlock(dbg->emu->calc_mutex);
+
+	gtk_widget_queue_draw(dbg->mem_view);
+
+	if (updatemem) {
+		/*tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));*/
+	}
+
+	if (paused != dbg->paused) {
+		dbg->paused = paused;
+		gtk_widget_set_sensitive(dbg->regbox, paused);
+		gtk_widget_set_sensitive(dbg->disasm_view, paused);
+		gtk_widget_set_sensitive(dbg->mem_view, paused);
+		gtk_widget_set_sensitive(dbg->stack_view, paused);
+	}
+
+	dbg->refreshing = FALSE;
+}
+
+/* Show debugger, and pause emulator if not already paused. */
+void tilem_debugger_show(TilemDebugger *dbg)
+{
+	g_return_if_fail(dbg != NULL);
+	tilem_calc_emulator_pause(dbg->emu);
+	refresh_all(dbg, TRUE);
+	gtk_window_present(GTK_WINDOW(dbg->window));
+}
+
+/* Hide debugger, and resume emulation if not already running. */
+void tilem_debugger_hide(TilemDebugger *dbg)
+{
+	g_return_if_fail(dbg != NULL);
+	gtk_widget_hide(dbg->window);
+	tilem_calc_emulator_run(dbg->emu);
+}
+
+/* New calculator loaded. */
+void tilem_debugger_calc_changed(TilemDebugger *dbg)
+{
+	TilemCalc *calc;
+	GtkTreeModel *model;
+
+	g_return_if_fail(dbg != NULL);
+
+	tilem_disasm_free(dbg->dasm);
+	dbg->dasm = tilem_disasm_new();
+
+	calc = dbg->emu->calc;
+	if (!calc)
+		return;
+
+	model = tilem_mem_model_new(dbg->emu, dbg->mem_rowsize,
+	                            dbg->mem_start, dbg->mem_logical);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(dbg->mem_view), model);
+	g_object_unref(model);
+
+	tilem_debugger_refresh(dbg, TRUE);
+}
+
+/* Update display. */
+void tilem_debugger_refresh(TilemDebugger *dbg, gboolean updatemem)
+{
+	g_return_if_fail(dbg != NULL);
+
+	if (!GTK_WIDGET_VISIBLE(dbg->window))
+		return;
+
+	refresh_all(dbg, updatemem);
+}
 
