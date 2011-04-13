@@ -444,9 +444,8 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 
 	gtk_widget_queue_draw(dbg->mem_view);
 
-	if (updatemem) {
-		/*tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));*/
-	}
+	if (updatemem)
+		tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));
 
 	if (paused != dbg->paused) {
 		dbg->paused = paused;
@@ -463,7 +462,10 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 void tilem_debugger_show(TilemDebugger *dbg)
 {
 	g_return_if_fail(dbg != NULL);
+	g_return_if_fail(dbg->emu->calc != NULL);
 	tilem_calc_emulator_pause(dbg->emu);
+	tilem_disasm_view_go_to_address(TILEM_DISASM_VIEW(dbg->disasm_view),
+	                                dbg->emu->calc->z80.r.pc.d);
 	refresh_all(dbg, TRUE);
 	gtk_window_present(GTK_WINDOW(dbg->window));
 }

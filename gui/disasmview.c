@@ -173,6 +173,33 @@ static dword get_prev_pos(TilemDisasmView *dv, dword pos)
 	}
 }
 
+/* Convert physical to logical position */
+static dword pos_ptol(TilemDisasmView *dv, dword pos)
+{
+	dword addr;
+
+	if (pos == (dword) -1)
+		return pos;
+
+	addr = default_ptol(dv, POS_TO_ADDR(pos));
+	return ADDR_TO_POS(addr) + (pos & 1);
+}
+
+/* Convert logical to physical position */
+static dword pos_ltop(TilemDisasmView *dv, dword pos)
+{
+	TilemCalc *calc = dv->dbg->emu->calc;
+	dword addr;
+
+	g_return_val_if_fail(calc != NULL, 0);
+
+	if (pos == (dword) -1)
+		return pos;
+
+	addr = (*calc->hw.mem_ltop)(calc, POS_TO_ADDR(pos));
+	return ADDR_TO_POS(addr) + (pos & 1);
+}
+
 /* List model management */
 
 /* Create a new list store for disassembly */
@@ -572,6 +599,8 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 	GtkCellRenderer *cell;
 	GtkTreeViewColumn *col;
 
+	dv->use_logical = TRUE;
+
 	gtk_tree_view_set_enable_search(tv, FALSE);
 	gtk_tree_view_set_fixed_height_mode(tv, TRUE);
 
@@ -634,4 +663,86 @@ GtkWidget * tilem_disasm_view_new(TilemDebugger *dbg)
 	dv->dbg = dbg;
 
 	return GTK_WIDGET(dv);
+}
+
+/* Select memory addressing mode. */
+void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical)
+{
+	dword start, curpos;
+
+	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
+
+	get_cursor_line(dv, &curpos, NULL);
+
+	if (logical && !dv->use_logical) {
+		curpos = pos_ptol(dv, curpos);
+		start = pos_ptol(dv, dv->startpos);
+
+		dv->use_logical = TRUE;
+		refresh_disassembly(dv, start, dv->nlines, curpos);
+	}
+	else if (!logical && dv->use_logical) {
+		curpos = pos_ltop(dv, curpos);
+		start = pos_ltop(dv, dv->startpos);
+
+		dv->use_logical = FALSE;
+		refresh_disassembly(dv, start, dv->nlines, curpos);
+	}
+}
+
+/* Refresh contents of view. */
+void tilem_disasm_view_refresh(TilemDisasmView *dv)
+{
+	dword curpos;
+	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
+	get_cursor_line(dv, &curpos, NULL);
+	refresh_disassembly(dv, dv->startpos, dv->nlines, curpos);
+}
+
+/* Find tree path for the given position */
+static GtkTreePath *find_path_for_position(GtkTreeModel *model, int pos)
+{
+	gint p;
+	GtkTreeIter iter;
+
+	if (!gtk_tree_model_get_iter_first(model, &iter))
+		return NULL;
+
+	do {
+		gtk_tree_model_get(model, &iter, COL_POSITION, &p, -1);
+		if (p == pos) {
+			return gtk_tree_model_get_path(model, &iter);
+		}
+	} while (gtk_tree_model_iter_next(model, &iter));
+
+	return NULL;
+}
+
+/* Highlight the specified Z80 address. */
+void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
+{
+	dword pos;
+	GtkTreeModel *model;
+	GtkTreePath *path;
+
+	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
+
+	addr &= 0xffff;
+	if (dv->use_logical)
+		pos = ADDR_TO_POS(addr);
+	else
+		pos = pos_ltop(dv, ADDR_TO_POS(addr));
+
+	if (pos >= dv->startpos && pos < dv->endpos) {
+		model = gtk_tree_view_get_model(GTK_TREE_VIEW(dv));
+		path = find_path_for_position(model, pos);
+		if (path) {
+			gtk_tree_view_set_cursor(GTK_TREE_VIEW(dv), path,
+			                         NULL, FALSE);
+			gtk_tree_path_free(path);
+			return;
+		}
+	}
+
+	refresh_disassembly(dv, pos, dv->nlines, pos);
 }

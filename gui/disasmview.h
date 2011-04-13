@@ -45,6 +45,19 @@ typedef struct _TilemDisasmViewClass {
 	GtkTreeViewClass parent_class;
 } TilemDisasmViewClass;
 
+GType tilem_disasm_view_get_type(void) G_GNUC_CONST;
+
+/* Create a new TilemDisasmView. */
 GtkWidget * tilem_disasm_view_new(TilemDebugger *dbg);
+
+/* Select memory addressing mode. */
+void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical);
+
+/* Refresh contents of view. */
+void tilem_disasm_view_refresh(TilemDisasmView *dv);
+
+/* Highlight the specified Z80 address. */
+void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr);
+
 
 G_END_DECLS
