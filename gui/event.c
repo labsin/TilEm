@@ -224,11 +224,19 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* send_file_item = gtk_menu_item_new_with_label ("Send file...");
 	GtkWidget* launch_debugger_item = gtk_menu_item_new_with_label ("Launch debugger...");
 	GtkWidget* toggle_speed_item = gtk_menu_item_new_with_label ("Toggle speed");
-	GtkWidget* screenshot_item = gtk_menu_item_new_with_label ("Screenshot !");
+
+	/* >>>> Sub menu screenshot */
+	GtkWidget* screenshot_submenu = gtk_menu_new();
+	GtkWidget* screenshot_item = gtk_menu_item_new_with_label ("Screenshot...");
+	GtkWidget* screenshot_menu_item = gtk_menu_item_new_with_label ("Screenshot menu");
+	GtkWidget* quick_screenshot_item = gtk_menu_item_new_with_label ("Quick screenshot !");
+	/* <<<< */
+	
 	GtkWidget* display_lcd_into_console_item = gtk_menu_item_new_with_label ("Display LCD into Console");
 	GtkWidget* switch_view_item = gtk_menu_item_new_with_label ("Switch view");
 	GtkWidget* switch_borderless_item = gtk_menu_item_new_with_label ("Switch borderless");
 	
+
 	/* >>>> Sub menu save */
 	GtkWidget* save_submenu = gtk_menu_new();
 	GtkWidget* save_item = gtk_menu_item_new_with_label ("Save current state/config...");
@@ -252,13 +260,18 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* quit_with_save_item = gtk_menu_item_new_with_label ("Exit and save state");
 
 
-
 	/* Add items to the menu */
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), load_skin_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), send_file_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), launch_debugger_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), toggle_speed_item);
+
+	/* Sub menu screenshot */
+	gtk_menu_shell_append(GTK_MENU_SHELL(screenshot_submenu), screenshot_menu_item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(screenshot_submenu), quick_screenshot_item);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(screenshot_item), screenshot_submenu);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), screenshot_item);
+	
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), display_lcd_into_console_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_view_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_borderless_item);
@@ -291,7 +304,8 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (screenshot_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (screenshot_menu_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (quick_screenshot_item), "activate", G_CALLBACK (screenshot), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) gsi);
@@ -313,6 +327,8 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_widget_show (launch_debugger_item);
 	gtk_widget_show (toggle_speed_item);
 	gtk_widget_show (screenshot_item);
+	gtk_widget_show (screenshot_menu_item);
+	gtk_widget_show (quick_screenshot_item);
 	gtk_widget_show (display_lcd_into_console_item);
 	gtk_widget_show (switch_view_item);
 	gtk_widget_show (switch_borderless_item);
