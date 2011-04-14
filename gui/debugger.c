@@ -61,6 +61,58 @@ static const char flag_labels[][2] = {
 	"C", "N", "P", "X", "H", "Y", "Z", "S"
 };
 
+/* Actions */
+
+static void action_run(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	tilem_calc_emulator_run(dbg->emu);
+	tilem_debugger_refresh(dbg, TRUE);
+}
+
+static void action_pause(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	tilem_debugger_show(dbg);
+}
+
+static void action_step(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+
+	g_return_if_fail(dbg->emu->calc != NULL);
+
+	/* FIXME: if CPU is halted, this should run until an interrupt
+	   occurs */
+	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_z80_run(dbg->emu->calc, 1, NULL);
+	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_debugger_show(dbg);
+}
+
+static void action_close(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	tilem_debugger_hide(dbg);
+}
+
+static const GtkActionEntry run_action_ents[] =
+	{{ "pause", GTK_STOCK_MEDIA_PAUSE, "_Pause", "Escape",
+	   "Pause emulation", G_CALLBACK(action_pause) }};
+
+static const GtkActionEntry paused_action_ents[] =
+	{{ "run", GTK_STOCK_MEDIA_PLAY, "_Run", "F5",
+	   "Resume emulation", G_CALLBACK(action_run) },
+	 { "step", 0, "_Step", "F7",
+	   "Execute one instruction", G_CALLBACK(action_step) }};
+
+static const GtkActionEntry misc_action_ents[] =
+	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
+	 { "close", GTK_STOCK_CLOSE, 0, 0,
+	   "Close the debugger", G_CALLBACK(action_close) }};
+
+/* Callbacks */
+
 /* Register edited */
 static void reg_edited(GtkEntry *ent, gpointer data)
 {
@@ -378,11 +430,25 @@ static GtkWidget *new_scrolled_window(GtkWidget *contents)
 	return sw;
 }
 
+static const char uidesc[] =
+	"<menubar name='menu-bar'>"
+	" <menu action='debug-menu'>"
+	"  <menuitem action='run'/>"
+	"  <menuitem action='pause'/>"
+	"  <menuitem action='step'/>"
+	"  <separator/>"
+	"  <menuitem action='close'/>"
+	" </menu>"
+	"</menubar>";
+
 /* Create a new TilemDebugger. */
 TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 {
 	TilemDebugger *dbg;
-	GtkWidget *hbox, *vbox, *vpaned, *sw;
+	GtkWidget *hbox, *vbox, *vbox2, *vpaned, *sw, *menubar;
+	GtkUIManager *uimgr;
+	GtkAccelGroup *accelgrp;
+	GError *err = NULL;
 
 	g_return_val_if_fail(emu != NULL, NULL);
 
@@ -402,6 +468,35 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	                 G_CALLBACK(focus_changed), dbg);
 	g_signal_connect(dbg->window, "delete-event",
 	                 G_CALLBACK(delete_win), dbg);
+
+	vbox2 = gtk_vbox_new(FALSE, 0);
+
+	/* Actions and menu bar */
+
+	uimgr = gtk_ui_manager_new();
+	dbg->run_actions = gtk_action_group_new("Debug");
+	gtk_action_group_add_actions(dbg->run_actions, run_action_ents,
+	                             G_N_ELEMENTS(run_action_ents), dbg);
+	gtk_ui_manager_insert_action_group(uimgr, dbg->run_actions, 0);
+	dbg->paused_actions = gtk_action_group_new("Debug");
+	gtk_action_group_add_actions(dbg->paused_actions, paused_action_ents,
+	                             G_N_ELEMENTS(paused_action_ents), dbg);
+	gtk_ui_manager_insert_action_group(uimgr, dbg->paused_actions, 0);
+	dbg->misc_actions = gtk_action_group_new("Debug");
+	gtk_action_group_add_actions(dbg->misc_actions, misc_action_ents,
+	                             G_N_ELEMENTS(misc_action_ents), dbg);
+	gtk_ui_manager_insert_action_group(uimgr, dbg->misc_actions, 0);
+
+	accelgrp = gtk_ui_manager_get_accel_group(uimgr);
+	gtk_window_add_accel_group(GTK_WINDOW(dbg->window), accelgrp);
+
+	if (!gtk_ui_manager_add_ui_from_string(uimgr, uidesc, -1, &err))
+		g_error("Failed to create menus: %s", err->message);
+
+	menubar = gtk_ui_manager_get_widget(uimgr, "/menu-bar");
+	gtk_box_pack_start(GTK_BOX(vbox2), menubar, FALSE, FALSE, 0);
+
+	g_object_unref(uimgr);
 
 	hbox = gtk_hbox_new(FALSE, 6);
 
@@ -435,9 +530,11 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	gtk_box_pack_start(GTK_BOX(vbox), sw, TRUE, TRUE, 0);
 
 	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, FALSE, 0);
-	gtk_widget_show_all(hbox);
 
-	gtk_container_add(GTK_CONTAINER(dbg->window), hbox);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, TRUE, TRUE, 0);
+	gtk_widget_show_all(vbox2);
+
+	gtk_container_add(GTK_CONTAINER(dbg->window), vbox2);
 
 	tilem_debugger_calc_changed(dbg);
 
@@ -455,6 +552,12 @@ void tilem_debugger_free(TilemDebugger *dbg)
 		gtk_widget_destroy(dbg->window);
 	if (dbg->dasm)
 		tilem_disasm_free(dbg->dasm);
+	if (dbg->run_actions)
+		g_object_unref(dbg->run_actions);
+	if (dbg->paused_actions)
+		g_object_unref(dbg->paused_actions);
+	if (dbg->misc_actions)
+		g_object_unref(dbg->misc_actions);
 
 	g_slice_free(TilemDebugger, dbg);
 }
@@ -570,6 +673,8 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 		gtk_widget_set_sensitive(dbg->disasm_view, paused);
 		gtk_widget_set_sensitive(dbg->mem_view, paused);
 		gtk_widget_set_sensitive(dbg->stack_view, paused);
+		gtk_action_group_set_sensitive(dbg->run_actions, !paused);
+		gtk_action_group_set_sensitive(dbg->paused_actions, paused);
 	}
 
 	dbg->refreshing = FALSE;

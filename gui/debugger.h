@@ -34,6 +34,11 @@ typedef struct _TilemDebugger {
 	GtkWidget *iff_checkbox;    /* Checkbox for IFF */
 	GtkWidget *flag_buttons[8]; /* Buttons for flags */
 
+	/* Action groups */
+	GtkActionGroup *run_actions;
+	GtkActionGroup *paused_actions;
+	GtkActionGroup *misc_actions;
+
 	/* Memory settings */
 	int mem_rowsize;
 	int mem_start;
