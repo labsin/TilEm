@@ -155,9 +155,6 @@ void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) ;
 /* Load a file at startup using old method (no thread) */
 void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename);
 
-/* Take a screenshot */
-void screenshot(GLOBAL_SKIN_INFOS *gsi);
-
 /* Toggle limit speed */
 void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi);
 
@@ -396,6 +393,8 @@ void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
 /* create the screenshot popup */
 void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi);
 
+/* Take a single screenshot */
+void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
 
 /* ##### keybindings.c ##### */

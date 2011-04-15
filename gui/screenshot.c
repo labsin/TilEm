@@ -30,20 +30,20 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "files.h"
 
-void on_screenshot();
-void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-void on_play(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
-void on_playfrom(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
-void on_destroy_playview(GtkWidget* playwin);
-void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
-void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
-
-void screenshot(GLOBAL_SKIN_INFOS *gsi);
-
+static void on_screenshot();
+static void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+static void on_play(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
+static void on_playfrom(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
+static void on_destroy_playview(GtkWidget* playwin);
+static void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
+static void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
 static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename, const char *format);
+
+/* UNUSED */
+void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 
 /* This method is called from click event */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
@@ -96,7 +96,7 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 }
 
 /* Destroy the screenshot box */
-void on_destroy_screenshot(GtkWidget* screenshotanim_win)   {
+static void on_destroy_screenshot(GtkWidget* screenshotanim_win)   {
 	
 	gtk_widget_destroy(GTK_WIDGET(screenshotanim_win));
 }
@@ -119,8 +119,16 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 		
 	GtkWidget * screenshot_preview = gtk_expander_new("preview");
 	gtk_expander_set_expanded(GTK_EXPANDER(screenshot_preview), TRUE);
-
-	gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
+	
+	/* Print the nice logo (from old tilem) 
+	   Maybe try to load the most recent gif/screenshot could be a good idea... (as it was done before)
+	   But I think it's good like this, because we don't really need to see last session screenshot */ 
+	char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
+	if(tilem_logo)
+		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+	else 
+		gsi->screenshot_preview_image = gtk_image_new();
+	
 	gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
 
 	gtk_container_add(GTK_CONTAINER(screenshotanim_win), parent_vbox);
@@ -198,13 +206,14 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Callback for record button */
-void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("record event\n");
 	tilem_animation_start(gsi);
 }
 
 /* Only used for testing purpose */
+/* NEVER USED  (but it works) xD */
 void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("record event\n");
@@ -212,7 +221,7 @@ void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Callback for stop button (stop the recording) */
-void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("stop event\n");
 	char* dest = NULL;
@@ -243,7 +252,7 @@ void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Callback for screenshot button (take a screenshot) */
-void on_screenshot(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_screenshot(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	screenshot(gsi);
 	g_print("screenshot event\n");
@@ -293,13 +302,13 @@ static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
 }
 
 /* Destroy the screenshot box */
-void on_destroy_playview(GtkWidget* playwin)   {
+static void on_destroy_playview(GtkWidget* playwin)   {
 	
 	gtk_widget_destroy(GTK_WIDGET(playwin));
 }
 
 /* Callback for play button (replay the last gif) */
-void on_play(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_play(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	gsi = gsi;
 
@@ -318,7 +327,7 @@ void on_play(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Callback for play button (replay the last gif) */
-void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	char* src = NULL;
 	src = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
@@ -345,7 +354,7 @@ void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 }
 	 
 
-void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot)); 
@@ -355,7 +364,7 @@ void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 }
 
 	
-void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation)); 

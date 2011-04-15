@@ -144,8 +144,8 @@ animatedgif.o: animatedgif.c $(common_headers)
 	$(compile) -c $(srcdir)/animatedgif.c
 
 # Screenshot widget
-screenshot.o: screenshot.c $(common_headers)
-	$(compile) -c $(srcdir)/screenshot.c
+screenshot.o: screenshot.c files.h $(common_headers)
+	$(compile) $(DEF_SHARE_DIR) -c $(srcdir)/screenshot.c
 
 # Progress bar widget
 pbar.o: pbar.c $(common_headers)
@@ -161,7 +161,7 @@ icons.o: icons.c icons.h
 	$(compile) $(DEF_SHARE_DIR) -c $(srcdir)/icons.c
 
 # Keybindings
-keybindings.o: keybindings.c files.h $(common_headers)
+keybindings.o: keybindings.c $(common_headers)
 	$(compile) -c $(srcdir)/keybindings.c
 
 
