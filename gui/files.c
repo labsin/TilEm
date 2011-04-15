@@ -88,7 +88,7 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 	g_free(path);
 
 #ifdef G_OS_WIN32
-	if ((dname = g_win32_get_package_installation_directory(NULL))) {
+	if ((dname = g_win32_get_package_installation_directory(NULL, NULL))) {
 		path = g_build_filename(dname, fullname, NULL);
 		g_free(dname);
 		if (g_file_test(path, test)) {

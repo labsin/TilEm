@@ -728,7 +728,7 @@ void tilem_debugger_refresh(TilemDebugger *dbg, gboolean updatemem)
 {
 	g_return_if_fail(dbg != NULL);
 
-	if (!GTK_WIDGET_VISIBLE(dbg->window))
+	if (!gtk_widget_get_visible(dbg->window))
 		return;
 
 	refresh_all(dbg, updatemem);

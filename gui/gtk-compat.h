@@ -4,4 +4,5 @@
 #endif
 #if !GTK_CHECK_VERSION(2, 18, 0)
 # define gtk_widget_get_allocation(w, a) (*(a) = (w)->allocation)
+# define gtk_widget_get_visible(w) GTK_WIDGET_VISIBLE(w)
 #endif

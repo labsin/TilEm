@@ -616,7 +616,7 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 	gtk_tree_view_column_set_title(col, "Disassembly");
 
 	cell = gtk_cell_renderer_text_new();
-	gtk_cell_renderer_set_padding(cell, 10, 0);
+	g_object_set(cell, "xpad", 10, NULL);
 	gtk_tree_view_column_pack_start(col, cell, FALSE);
 	gtk_tree_view_column_set_attributes(col, cell,
 	                                    "text", COL_MNEMONIC,
