@@ -52,6 +52,7 @@ void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 
 /* This method is called from click event */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
+
 	char basename[11] = "screenshot";
 	char* folder = tilem_config_universal_getter("screenshot", "screenshot_directory");
 	printf("folder : %s\n", folder);
@@ -62,11 +63,8 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	if(filename)	
 		save_screenshot(gsi, filename, "png");
 	 
-	
 	set_screenshot_recentfile(filename);
 	change_review_image(gsi, filename);
-
-	
 }
 
 
@@ -103,7 +101,6 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 			break;
 		}
 	}
-
 	return NULL;
 }
 
@@ -121,7 +118,8 @@ static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
 		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
 		gsi->screenshot_preview_image = gtk_image_new_from_file(new_image);
 		gtk_widget_show(gsi->screenshot_preview_image);
-		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->screenshot_preview_image, 10, 10);
+		gtk_widget_show(screenshot_preview);
 	}
 
 }
@@ -132,13 +130,16 @@ static void start_spinner(GLOBAL_SKIN_INFOS * gsi) {
 
 	/* Test if the widget exists (should exists), if not don't try to change the image */
 	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+
+		GtkWidget * layout = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
 		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+		
 		gsi->screenshot_preview_image = gtk_spinner_new();
 		gtk_spinner_start(GTK_SPINNER(gsi->screenshot_preview_image));	
-
+		
 		gtk_widget_show(gsi->screenshot_preview_image);
-		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(layout), gsi->screenshot_preview_image, 100, 60);
+		gtk_widget_show(layout);
 	}
 }
 
@@ -148,8 +149,6 @@ static void stop_spinner(GLOBAL_SKIN_INFOS * gsi) {
 			printf("is spinner\n");
 			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
 			gtk_widget_hide(GTK_WIDGET(gsi->screenshot_preview_image));
-			
-			
 		}
 }
 
@@ -165,7 +164,8 @@ static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi) {
 				gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 			gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 			gtk_widget_show(gsi->screenshot_preview_image);
-			gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+			gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->screenshot_preview_image, 10, 10);
+			gtk_widget_show(screenshot_preview);
 			
 		}
 }
@@ -192,11 +192,14 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	parent_vbox = gtk_vbox_new (0, 1);
 	vbox = gtk_vbox_new(0,1);
 	hbox = gtk_hbox_new (0, 1);
+	gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);	
 	
 	
 		
 	GtkWidget * screenshot_preview = gtk_expander_new("preview");
 	gtk_expander_set_expanded(GTK_EXPANDER(screenshot_preview), TRUE);
+	GtkWidget* layout = gtk_layout_new(NULL,NULL);
+	gtk_layout_set_size(GTK_LAYOUT(layout), 200, 100); 
 	
 	/* Print the nice logo (from old tilem) 
 	   Maybe try to load the most recent gif/screenshot could be a good idea... (as it was done before)
@@ -206,8 +209,9 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 	else 
 		gsi->screenshot_preview_image = gtk_image_new();
-	
-	gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+
+	gtk_layout_put(GTK_LAYOUT(layout), gsi->screenshot_preview_image, 10, 10);
+	gtk_container_add(GTK_CONTAINER(screenshot_preview), layout);
 
 	gtk_container_add(GTK_CONTAINER(screenshotanim_win), parent_vbox);
 	gtk_box_pack_start(GTK_BOX(parent_vbox), hbox, 2, 3, 4);
@@ -257,20 +261,20 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_widget_show(gsi->folder_chooser_screenshot);
 	/* <<<< */	
 	
-	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, FALSE, 3, 4);
 	gtk_widget_show(screenshot_button);
-	gtk_box_pack_start (GTK_BOX (vbox), record, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), record, FALSE, 3, 4);
 	gtk_widget_show(record);
 	//gtk_box_pack_start (GTK_BOX (hbox), add_frame, 2, 3, 4);
 	//gtk_widget_show(add_frame);
-	gtk_box_pack_start (GTK_BOX (vbox), stop, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), stop, FALSE, 3, 4);
 	gtk_widget_show(stop);
-	gtk_box_pack_start (GTK_BOX (vbox), play, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), play, FALSE, 3, 4);
 	gtk_widget_show(play);
-	gtk_box_pack_start (GTK_BOX (vbox), playfrom, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), playfrom, FALSE, 3, 4);
 	gtk_widget_show(playfrom);
 
-	gtk_box_pack_end (GTK_BOX (parent_vbox), config_expander, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (parent_vbox), config_expander, FALSE, 3, 4);
 	
 	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), gsi);
 	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), gsi);
