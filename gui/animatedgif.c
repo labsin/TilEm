@@ -175,7 +175,6 @@ void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi) {
 	
     	char trailer[1] = { 0x3b};
 	if(gsi->isAnimScreenshotRecording) {
-		gsi->isAnimScreenshotRecording = FALSE;
 		FILE* fp;
 		fp = fopen("gifencod.gif", "a");
 		fwrite(trailer, 1, 1,fp);

@@ -41,59 +41,84 @@ static void on_destroy_playview(GtkWidget* playwin);
 static void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
 static void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
 static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename, const char *format);
+char* find_free_filename(const char* directory, const char* filename, const char* extension);
+static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image);
 
 /* UNUSED */
 void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 
 /* This method is called from click event */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
-	int i;
-	FILE * fp;
-	char *buffer;
-	char * filename;
+	char basename[11] = "screenshot";
 	char* folder = tilem_config_universal_getter("screenshot", "screenshot_directory");
 	printf("folder : %s\n", folder);
-
-	/* FIXME : That's really ugly all these stuff, I will do something to correct this problem */
-
 	
-	/* Complicated method just to find a free filename (don not save more than 500 screenshots ! I know this is stupid) */
-	for(i=0; i<500; i++) {
-		buffer = (char*) malloc(3);
-		if(folder) {
-			filename = (char*) malloc((strlen(folder) + strlen("screenshot") + 8)*sizeof(char));
-			strcpy(filename, folder);
-			strcat(filename, "/");
-			strcat(filename, "screenshot");
-			printf("temp : %s\n", filename);
-		} else {
-			filename = (char*) malloc((strlen("screenshot")+8)*sizeof(char) );
-			strcpy(filename, "screenshot");
-		}
-		sprintf(buffer,"%03d", i);
-		strcat(filename, buffer);
-		strcat(filename, ".png");
-		//printf("filename : %s\n", filename);
+	/* Look for the next free filename (don't erase previous screenshots) */
+	char* filename = find_free_filename(folder, basename, ".png\0");
 
-		if((fp = g_fopen(filename,"r"))) {
-			fclose(fp);
-		} else { 
-			save_screenshot(gsi, filename, "png");
-			printf("Screenshot : %s\n", filename);
-			break;
-		}
-	} 
+	if(filename)	
+		save_screenshot(gsi, filename, "png");
+	 
 	
 	set_screenshot_recentfile(filename);
+	change_review_image(gsi, filename);
 
+	
+}
+
+
+char* find_free_filename(const char* folder, const char* basename, const char* extension) {
+	
+	char *buffer;
+	FILE * fp;
+	int i;
+	char* filename;
+
+	/* Complicated method just to find a free filename (do not save more than 999 screenshots ! I know this is stupid) */
+	for(i=0; i<999; i++) {
+		buffer = (char*) malloc(3);
+		if(folder) {
+			filename = (char*) malloc((strlen(folder) + strlen(basename) + 9)*sizeof(char));
+			strcpy(filename, folder);
+			strcat(filename, "/");
+			strcat(filename, basename);
+			printf("temp : %s\n", filename);
+		} else {
+			filename = (char*) malloc((strlen(basename)+9)*sizeof(char) );
+			strcpy(filename, basename);
+		}
+		printf("temp2 : %s\n", filename);
+		sprintf(buffer,"%03d", i);
+		strcat(filename, buffer);
+		strcat(filename, extension);
+		
+		if((fp = g_fopen(filename,"r"))) {
+			fclose(fp);
+		} else {
+			printf("filename : %s\n", filename);
+			return filename;
+			break;
+		}
+	}
+
+	return NULL;
+}
+
+
+/* Replace the current logo/review image by the recent shot/animation */
+static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
+
+	/* Test if the widget exists (should exists), if not don't try to change the image */
 	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
 		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
 		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
-		gsi->screenshot_preview_image = gtk_image_new_from_file(filename);
+		gsi->screenshot_preview_image = gtk_image_new_from_file(new_image);
 		gtk_widget_show(gsi->screenshot_preview_image);
 		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
 	}
+
 }
+
 
 /* Destroy the screenshot box */
 static void on_destroy_screenshot(GtkWidget* screenshotanim_win)   {
@@ -225,12 +250,18 @@ static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("stop event\n");
 	char* dest = NULL;
-	if(gsi->isAnimScreenshotRecording) 
-		dest = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
+
 	tilem_animation_stop(gsi) ;
+	
+	if(gsi->isAnimScreenshotRecording) {
+		gsi->isAnimScreenshotRecording = FALSE;
+		dest = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
+	}
+
 	if(dest) {
 		set_animation_recentfile(dest);	
 		copy_paste("gifencod.gif", dest);
+		change_review_image(gsi, dest);
 		char* p =  strrchr(dest, '/');
 		printf("%s", p);
 		if(p)
@@ -239,16 +270,6 @@ static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 		
 		set_animation_recentdir(dest);	
 	}
-
-	
-	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
-		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
-		gtk_widget_show(gsi->screenshot_preview_image);
-		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
-	}
-	
 }
 
 /* Callback for screenshot button (take a screenshot) */
@@ -333,6 +354,7 @@ static void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	src = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
 	if(src) {
 		set_animation_recentfile(src);	
+		change_review_image(gsi, src);
 		char* p =  strrchr(src, '/');
 		printf("%s", p);
 		if(p)
@@ -342,14 +364,6 @@ static void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 		set_animation_recentdir(src);	
 	}
 
-	
-	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
-		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
-		gtk_widget_show(gsi->screenshot_preview_image);
-		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
-	}
 
 }
 	 
