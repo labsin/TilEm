@@ -635,10 +635,17 @@ static void refresh_stack(TilemDebugger *dbg)
 	g_object_unref(model);
 }
 
+static void unselect_all(GtkTreeView *tv)
+{
+	GtkTreeSelection *sel = gtk_tree_view_get_selection(tv);
+	gtk_tree_selection_unselect_all(sel);
+}
+
 static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 {
 	TilemCalc *calc;
 	gboolean paused;
+	gboolean updatedasm = FALSE;
 
 	dbg->refreshing = TRUE;
 	dbg->delayed_refresh = FALSE;
@@ -656,16 +663,17 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 		if (updatemem || dbg->lastsp != calc->z80.r.sp.d)
 			refresh_stack(dbg);
 
+		if (paused && dbg->lastpc != calc->z80.r.pc.d)
+			updatedasm = TRUE;
+
 		dbg->lastwrite = calc->z80.lastwrite;
 		dbg->lastsp = calc->z80.r.sp.d;
+		dbg->lastpc = calc->z80.r.pc.d;
 	}
 
 	g_mutex_unlock(dbg->emu->calc_mutex);
 
 	gtk_widget_queue_draw(dbg->mem_view);
-
-	if (updatemem)
-		tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));
 
 	if (paused != dbg->paused) {
 		dbg->paused = paused;
@@ -675,6 +683,16 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 		gtk_widget_set_sensitive(dbg->stack_view, paused);
 		gtk_action_group_set_sensitive(dbg->run_actions, !paused);
 		gtk_action_group_set_sensitive(dbg->paused_actions, paused);
+		updatedasm = TRUE; /* need to redraw icons */
+	}
+
+	if (updatemem || updatedasm)
+		tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));
+
+	if (!paused) {
+		unselect_all(GTK_TREE_VIEW(dbg->disasm_view));
+		unselect_all(GTK_TREE_VIEW(dbg->mem_view));
+		unselect_all(GTK_TREE_VIEW(dbg->stack_view));
 	}
 
 	dbg->refreshing = FALSE;

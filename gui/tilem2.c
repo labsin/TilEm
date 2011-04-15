@@ -28,6 +28,7 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "icons.h"
 
 /*  contra-sh : 
 * ---18/08/09---
@@ -221,6 +222,8 @@ int main(int argc, char **argv)
 	gtk_init(&argc, &argv);
 
 	g_set_application_name("TilEm");
+
+	init_custom_icons();
 
 	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
 	gsi->si=NULL;

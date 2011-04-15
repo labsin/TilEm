@@ -45,6 +45,7 @@ objects = tilem2.o \
 	event.o \
 	files.o \
 	gifencod.o \
+	icons.o \
 	keybindings.o \
 	link.o \
 	macro.o \
@@ -75,7 +76,7 @@ all: tilem2@EXEEXT@
 tilem2@EXEEXT@: $(objects) ../emu/libtilemcore.a
 	$(link) -o tilem2@EXEEXT@ $(objects) $(libs)
 
-tilem2.o: tilem2.c $(common_headers)
+tilem2.o: tilem2.c icons.h $(common_headers)
 	$(compile) -c $(srcdir)/tilem2.c
 
 # Debugger
@@ -154,6 +155,10 @@ pbar.o: pbar.c $(common_headers)
 # Shared/configuration files
 files.o: files.c files.h
 	$(compile) $(DEF_SHARE_DIR) -c $(srcdir)/files.c
+
+# Custom icons
+icons.o: icons.c icons.h
+	$(compile) $(DEF_SHARE_DIR) -c $(srcdir)/icons.c
 
 # Keybindings
 keybindings.o: keybindings.c files.h $(common_headers)

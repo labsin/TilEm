@@ -46,6 +46,7 @@ typedef struct _TilemDebugger {
 
 	dword lastwrite;
 	dword lastsp;
+	dword lastpc;
 	gboolean paused;
 	gboolean refreshing;
 	gboolean delayed_refresh;

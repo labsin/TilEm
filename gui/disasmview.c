@@ -53,6 +53,7 @@ enum {
 	COL_MNEMONIC,
 	COL_ARGUMENTS,
 	COL_SHOW_MNEMONIC,
+	COL_ICON,
 	NUM_COLUMNS
 };
 
@@ -200,6 +201,14 @@ static dword pos_ltop(TilemDisasmView *dv, dword pos)
 	return ADDR_TO_POS(addr) + (pos & 1);
 }
 
+/* Icons */
+
+static GdkPixbuf *get_pc_icon(TilemDisasmView *dv)
+{
+	return gtk_widget_render_icon(GTK_WIDGET(dv), "tilem-disasm-pc",
+	                              GTK_ICON_SIZE_MENU, NULL);
+}
+
 /* List model management */
 
 /* Create a new list store for disassembly */
@@ -207,30 +216,40 @@ static GtkTreeModel * new_dasm_model()
 {
 	GtkListStore *store;
 
-	g_assert(NUM_COLUMNS == 5);
-	store = gtk_list_store_new(5,
+	g_assert(NUM_COLUMNS == 6);
+	store = gtk_list_store_new(6,
 	                           G_TYPE_INT,
 	                           G_TYPE_STRING,
 	                           G_TYPE_STRING,
 	                           G_TYPE_STRING,
-	                           G_TYPE_BOOLEAN);
+	                           G_TYPE_BOOLEAN,
+	                           GDK_TYPE_PIXBUF);
 
 	return GTK_TREE_MODEL(store);
 }
 
 /* Append dummy data to the model; used for sizing */
-static void append_dummy_line(GtkTreeModel *model, GtkTreeIter *iter)
+static void append_dummy_line(TilemDisasmView *dv, GtkTreeModel *model,
+                              GtkTreeIter *iter)
 {
 	GtkTreeIter iter1;
+	GdkPixbuf *icon;
 
 	gtk_list_store_append(GTK_LIST_STORE(model), &iter1);
 
+	icon = get_pc_icon(dv);
+
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter1,
+	                   COL_ICON, icon,
 	                   COL_ADDRESS, "DD:DDDD",
 	                   COL_MNEMONIC, "ROM_CALL",
 	                   COL_ARGUMENTS, "_fnord",
 	                   COL_SHOW_MNEMONIC, TRUE,
 	                   -1);
+
+	if (icon)
+		g_object_unref(icon);
+
 	if (iter)
 		*iter = iter1;
 }
@@ -242,7 +261,8 @@ static void append_dasm_line(TilemDisasmView *dv, GtkTreeModel *model,
 	TilemCalc *calc = dv->dbg->emu->calc;
 	GtkTreeIter iter1;
 	char abuf[20], *mnem, *args;
-	dword addr, page;
+	dword addr, page, pc;
+	GdkPixbuf *icon;
 
 	g_return_if_fail(calc != NULL);
 
@@ -266,13 +286,31 @@ static void append_dasm_line(TilemDisasmView *dv, GtkTreeModel *model,
 
 	disassemble(dv, pos, nextpos, &mnem, &args);
 
+	if (!mnem || !dv->dbg->emu->paused) {
+		icon = NULL;
+	}
+	else {
+		pc = calc->z80.r.pc.w.l;
+		if (!dv->use_logical)
+			pc = (*calc->hw.mem_ltop)(calc, pc);
+
+		if (addr == pc)
+			icon = get_pc_icon(dv);
+		else
+			icon = NULL;
+	}
+
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter1,
 	                   COL_POSITION, (int) pos,
 	                   COL_ADDRESS, abuf,
 	                   COL_MNEMONIC, mnem,
 	                   COL_SHOW_MNEMONIC, (mnem ? TRUE : FALSE),
 	                   COL_ARGUMENTS, args,
+	                   COL_ICON, icon,
 	                   -1);
+
+	if (icon)
+		g_object_unref(icon);
 
 	g_free(mnem);
 	g_free(args);
@@ -301,6 +339,8 @@ static void refresh_disassembly(TilemDisasmView *dv, dword pos, int nlines,
 
 	dv->startpos = pos;
 
+	g_mutex_lock(dv->dbg->emu->calc_mutex);
+
 	for (i = 0; i < nlines; i++) {
 		append_dasm_line(dv, model, &iter, pos, &nextpos);
 
@@ -309,6 +349,8 @@ static void refresh_disassembly(TilemDisasmView *dv, dword pos, int nlines,
 
 		pos = nextpos;
 	}
+
+	g_mutex_unlock(dv->dbg->emu->calc_mutex);
 
 	dv->endpos = pos;
 	dv->nlines = nlines;
@@ -396,11 +438,11 @@ static void tilem_disasm_view_size_allocate(GtkWidget *w,
 	if (!dv->line_height) {
 		model = new_dasm_model();
 
-		append_dummy_line(model, NULL);
+		append_dummy_line(dv, model, NULL);
 		gtk_tree_view_set_model(GTK_TREE_VIEW(dv), model);
 		height1 = get_parent_request_height(w);
 
-		append_dummy_line(model, NULL);
+		append_dummy_line(dv, model, NULL);
 		height2 = get_parent_request_height(w);
 
 		dv->line_height = height2 - height1;
@@ -453,7 +495,7 @@ static void tilem_disasm_view_style_set(GtkWidget *w, GtkStyle *oldstyle)
 	/* set column widths based on a dummy model */
 
 	model = new_dasm_model();
-	append_dummy_line(model, &iter);
+	append_dummy_line(dv, model, &iter);
 
 	cols = gtk_tree_view_get_columns(GTK_TREE_VIEW(dv));
 	for (cp = cols; cp; cp = cp->next) {
@@ -462,7 +504,7 @@ static void tilem_disasm_view_style_set(GtkWidget *w, GtkStyle *oldstyle)
 		                                        FALSE, FALSE);
 		gtk_tree_view_column_cell_get_size(col, NULL, NULL, NULL,
 		                                   &width, NULL);
-		gtk_tree_view_column_set_fixed_width(col, width + 10);
+		gtk_tree_view_column_set_fixed_width(col, width + 2);
 	}
 	g_list_free(cols);
 
@@ -483,6 +525,8 @@ static gboolean move_up_lines(TilemDisasmView *dv, int count)
 	if (linenum >= count)
 		return FALSE;
 
+	g_mutex_lock(dv->dbg->emu->calc_mutex);
+
 	pos = dv->startpos;
 	count -= linenum;
 	while (count > 0) {
@@ -490,7 +534,10 @@ static gboolean move_up_lines(TilemDisasmView *dv, int count)
 		count--;
 	}
 
+	g_mutex_unlock(dv->dbg->emu->calc_mutex);
+
 	refresh_disassembly(dv, pos, dv->nlines, pos);
+
 	return TRUE;
 }
 
@@ -506,6 +553,8 @@ static gboolean move_down_lines(TilemDisasmView *dv, int count)
 	if (linenum + count < dv->nlines)
 		return FALSE;
 
+	g_mutex_lock(dv->dbg->emu->calc_mutex);
+
 	startpos = get_next_pos(dv, dv->startpos);
 	selpos = dv->endpos;
 	count -= dv->nlines - linenum;
@@ -516,7 +565,10 @@ static gboolean move_down_lines(TilemDisasmView *dv, int count)
 		count--;
 	}
 
+	g_mutex_unlock(dv->dbg->emu->calc_mutex);
+
 	refresh_disassembly(dv, startpos, dv->nlines, selpos);
+
 	return TRUE;
 }
 
@@ -605,6 +657,13 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 	gtk_tree_view_set_fixed_height_mode(tv, TRUE);
 	gtk_tree_view_set_headers_visible(tv, FALSE);
 
+	cell = gtk_cell_renderer_pixbuf_new();
+	col = gtk_tree_view_column_new_with_attributes(NULL, cell,
+	                                               "pixbuf", COL_ICON,
+	                                               NULL);
+	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_append_column(tv, col);
+
 	cell = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes("Addr", cell,
 	                                               "text", COL_ADDRESS,
@@ -672,19 +731,24 @@ void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical)
 	dword start, curpos;
 
 	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
+	g_return_if_fail(dv->dbg->emu->calc != NULL);
 
 	get_cursor_line(dv, &curpos, NULL);
 
 	if (logical && !dv->use_logical) {
+		g_mutex_lock(dv->dbg->emu->calc_mutex);
 		curpos = pos_ptol(dv, curpos);
 		start = pos_ptol(dv, dv->startpos);
+		g_mutex_unlock(dv->dbg->emu->calc_mutex);
 
 		dv->use_logical = TRUE;
 		refresh_disassembly(dv, start, dv->nlines, curpos);
 	}
 	else if (!logical && dv->use_logical) {
+		g_mutex_lock(dv->dbg->emu->calc_mutex);
 		curpos = pos_ltop(dv, curpos);
 		start = pos_ltop(dv, dv->startpos);
+		g_mutex_unlock(dv->dbg->emu->calc_mutex);
 
 		dv->use_logical = FALSE;
 		refresh_disassembly(dv, start, dv->nlines, curpos);
@@ -727,12 +791,17 @@ void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
 	GtkTreePath *path;
 
 	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
+	g_return_if_fail(dv->dbg->emu->calc != NULL);
+
+	g_mutex_lock(dv->dbg->emu->calc_mutex);
 
 	addr &= 0xffff;
 	if (dv->use_logical)
 		pos = ADDR_TO_POS(addr);
 	else
 		pos = pos_ltop(dv, ADDR_TO_POS(addr));
+
+	g_mutex_unlock(dv->dbg->emu->calc_mutex);
 
 	if (pos >= dv->startpos && pos < dv->endpos) {
 		model = gtk_tree_view_get_model(GTK_TREE_VIEW(dv));
