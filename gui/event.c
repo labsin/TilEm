@@ -31,6 +31,7 @@
 #include <scancodes.h>
 
 #include "gui.h"
+#include "files.h"
 
 /* Table for translating skin-file key number (based on actual
    position, and defined by the VTI/TiEmu file formats) into a
@@ -184,17 +185,24 @@ void quit_with_save()
 void show_about()
 {
 
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("pix/tilem.png", NULL);
 
-  GtkWidget *dialog = gtk_about_dialog_new();
-  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
-  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D");
-  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://lpg.ticalc.org/prj_tilem/");
-  gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dialog), pixbuf);
-  g_object_unref(pixbuf), pixbuf = NULL;
-  gtk_dialog_run(GTK_DIALOG (dialog));
-  gtk_widget_destroy(dialog);
+
+	GtkWidget *dialog = gtk_about_dialog_new();
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
+	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D");
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://lpg.ticalc.org/prj_tilem/");
+
+	/* Add the logo */	
+	char* tilem_ban = get_shared_file_path("pixs", "tilem_ban.png", NULL);
+	if(tilem_ban) {
+		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(tilem_ban, NULL);
+		gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dialog), pixbuf);
+		g_object_unref(pixbuf), pixbuf = NULL;
+	}
+
+	gtk_dialog_run(GTK_DIALOG (dialog));
+	gtk_widget_destroy(dialog);
 
 }
 
