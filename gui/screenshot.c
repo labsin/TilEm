@@ -43,6 +43,9 @@ static void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gs
 static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename, const char *format);
 char* find_free_filename(const char* directory, const char* filename, const char* extension);
 static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image);
+static void start_spinner(GLOBAL_SKIN_INFOS * gsi);
+static void stop_spinner(GLOBAL_SKIN_INFOS * gsi);
+static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi);
 
 /* UNUSED */
 void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
@@ -111,6 +114,10 @@ static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
 	/* Test if the widget exists (should exists), if not don't try to change the image */
 	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
 		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+		if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
+			printf("is spinner\n");
+			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
+		}
 		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
 		gsi->screenshot_preview_image = gtk_image_new_from_file(new_image);
 		gtk_widget_show(gsi->screenshot_preview_image);
@@ -118,6 +125,52 @@ static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
 	}
 
 }
+
+
+/* Replace the current logo/review image by the recent shot/animation */
+static void start_spinner(GLOBAL_SKIN_INFOS * gsi) {
+
+	/* Test if the widget exists (should exists), if not don't try to change the image */
+	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+		gsi->screenshot_preview_image = gtk_spinner_new();
+		gtk_spinner_start(GTK_SPINNER(gsi->screenshot_preview_image));	
+
+		gtk_widget_show(gsi->screenshot_preview_image);
+		gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+	}
+}
+
+static void stop_spinner(GLOBAL_SKIN_INFOS * gsi) {
+	
+		if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
+			printf("is spinner\n");
+			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
+			gtk_widget_hide(GTK_WIDGET(gsi->screenshot_preview_image));
+			
+			
+		}
+}
+
+static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi) {
+	
+		if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
+			printf("is spinner\n");
+			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
+			GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+			gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+			char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
+			if(tilem_logo)
+				gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+			gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+			gtk_widget_show(gsi->screenshot_preview_image);
+			gtk_container_add(GTK_CONTAINER(screenshot_preview), gsi->screenshot_preview_image);
+			
+		}
+}
+
+
 
 
 /* Destroy the screenshot box */
@@ -234,6 +287,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 static void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	win = win;
 	g_print("record event\n");
+	start_spinner(gsi);
 	tilem_animation_start(gsi);
 }
 
@@ -255,6 +309,7 @@ static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	
 	if(gsi->isAnimScreenshotRecording) {
 		gsi->isAnimScreenshotRecording = FALSE;
+		stop_spinner(gsi);
 		dest = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
 	}
 
@@ -270,6 +325,8 @@ static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 		
 		set_animation_recentdir(dest);	
 	}
+	delete_spinner_and_put_logo(gsi);
+	
 }
 
 /* Callback for screenshot button (take a screenshot) */
