@@ -24,7 +24,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <gtk/gtk.h>
+#include <glib/gstdio.h>
 #include <ticalcs.h>
 #include <tilem.h>
 #include <tilemdb.h>
@@ -32,6 +34,8 @@
 #include "gui.h"
 #include "disasmview.h"
 #include "memmodel.h"
+#include "files.h"
+#include "msgbox.h"
 
 /* Stack list */
 enum
@@ -60,6 +64,61 @@ static const char * const reg_labels[] = {
 static const char flag_labels[][2] = {
 	"C", "N", "P", "X", "H", "Y", "Z", "S"
 };
+
+/* Determine model name for the purpose of looking up default system
+   symbols */
+static const char *get_sys_name(const TilemCalc *calc)
+{
+	g_return_val_if_fail(calc != NULL, NULL);
+
+	switch (calc->hw.model_id) {
+	case TILEM_CALC_TI83:
+	case TILEM_CALC_TI76:
+		return "ti83";
+
+	case TILEM_CALC_TI83P:
+	case TILEM_CALC_TI83P_SE:
+	case TILEM_CALC_TI84P:
+	case TILEM_CALC_TI84P_SE:
+	case TILEM_CALC_TI84P_NSPIRE:
+		return "ti83p";
+
+	default:
+		return calc->hw.name;
+	}
+}
+
+/* Load default system symbols */
+static void load_default_symbols(TilemDebugger *dbg)
+{
+	char *base, *path, *dname;
+	const char *errstr;
+	FILE *symfile;
+
+	base = g_strdup_printf("%s.sym", get_sys_name(dbg->emu->calc));
+	path = get_shared_file_path("symbols", base, NULL);
+	g_free(base);
+	if (!path)
+		return;
+
+	symfile = g_fopen(path, "rb");
+	if (!symfile) {
+		errstr = g_strerror(errno);
+		dname = g_filename_display_name(path);
+		messagebox02(NULL, GTK_MESSAGE_ERROR,
+		             "Unable to read symbols",
+		             "An error occurred while reading %s: %s",
+		             dname, errstr);
+		g_free(dname);
+		g_free(path);
+		return;
+	}
+
+	tilem_disasm_read_symbol_file(dbg->dasm, symfile);
+
+	fclose(symfile);
+	g_free(path);
+}
 
 /* Cancel temporary breakpoint */
 static void cancel_step_bp(TilemDebugger *dbg)
@@ -929,6 +988,8 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg)
 	calc = dbg->emu->calc;
 	if (!calc)
 		return;
+
+	load_default_symbols(dbg);
 
 	model = tilem_mem_model_new(dbg->emu, dbg->mem_rowsize,
 	                            dbg->mem_start, dbg->mem_logical);
