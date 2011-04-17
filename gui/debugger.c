@@ -347,12 +347,12 @@ static const GtkActionEntry run_action_ents[] =
 static const GtkActionEntry paused_action_ents[] =
 	{{ "run", GTK_STOCK_MEDIA_PLAY, "_Run", "F5",
 	   "Resume emulation", G_CALLBACK(action_run) },
-	 { "step", 0, "_Step", "F7",
+	 { "step", "tilem-db-step", "_Step", "F7",
 	   "Execute one instruction", G_CALLBACK(action_step) },
-	 { "step-over", 0, "Step _Over", "F8",
+	 { "step-over", "tilem-db-step-over", "Step _Over", "F8",
 	   "Run to the next line (skipping over subroutines)",
 	   G_CALLBACK(action_step_over) },
-	 { "finish", 0, "_Finish Subroutine", "F9",
+	 { "finish", "tilem-db-finish", "_Finish Subroutine", "F9",
 	   "Run to end of the current subroutine", G_CALLBACK(action_finish) }};
 
 static const GtkActionEntry misc_action_ents[] =

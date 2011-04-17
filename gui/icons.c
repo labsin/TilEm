@@ -31,7 +31,12 @@ static const char * const custom_icons[] = {
 	/* Disassembly icons */
 	"tilem-disasm-pc",
 	"tilem-disasm-break",
-	"tilem-disasm-break-pc"
+	"tilem-disasm-break-pc",
+
+	/* Debugger actions */
+	"tilem-db-step",
+	"tilem-db-step-over",
+	"tilem-db-finish"
 };
 
 /* Set up custom icons. */
