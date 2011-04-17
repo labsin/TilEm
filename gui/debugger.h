@@ -44,6 +44,10 @@ typedef struct _TilemDebugger {
 	int mem_start;
 	gboolean mem_logical;
 
+	/* Temporary breakpoint info */
+	int step_bp; /* Breakpoint ID */
+	dword step_next_addr; /* Target address */
+
 	dword lastwrite;
 	dword lastsp;
 	dword lastpc;

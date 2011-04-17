@@ -61,35 +61,220 @@ static const char flag_labels[][2] = {
 	"C", "N", "P", "X", "H", "Y", "Z", "S"
 };
 
+/* Cancel temporary breakpoint */
+static void cancel_step_bp(TilemDebugger *dbg)
+{
+	if (!dbg->step_bp)
+		return;
+
+	g_return_if_fail(dbg->emu->calc != NULL);
+	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_z80_remove_breakpoint(dbg->emu->calc, dbg->step_bp);
+	g_mutex_unlock(dbg->emu->calc_mutex);
+	dbg->step_bp = 0;
+}
+
 /* Actions */
 
+/* Run (but leave debugger window open) */
 static void action_run(G_GNUC_UNUSED GtkAction *a, gpointer data)
 {
 	TilemDebugger *dbg = data;
+	cancel_step_bp(dbg);
 	tilem_calc_emulator_run(dbg->emu);
 	tilem_debugger_refresh(dbg, TRUE);
 }
 
+/* Pause */
 static void action_pause(G_GNUC_UNUSED GtkAction *a, gpointer data)
 {
 	TilemDebugger *dbg = data;
 	tilem_debugger_show(dbg);
+	cancel_step_bp(dbg);
 }
 
+/* Stepping */
+
+static int bptest_step(TilemCalc *calc, dword op, G_GNUC_UNUSED void *data)
+{
+	/* Single step condition: if calculator is halted, wait until
+	   an interrupt occurs; otherwise, stop after any
+	   instruction. */
+
+	if (op != 0x76 && (op & ~0x2000) != 0xdd76)
+		/* not a HALT instruction */
+		return 1;
+	else if (calc->z80.interrupts != 0 && calc->z80.r.iff1)
+		return 1;
+	else
+		return 0;
+}
+
+static int bptest_step_over(TilemCalc *calc, dword op, void *data)
+{
+	TilemDebugger *dbg = data;
+	dword destaddr;
+
+	/* Step-over condition: behavior depends on what instruction
+	   is executed.
+
+	   For most instructions, stop when we reach the "next line"
+	   as determined by disassembly.  This means skipping over
+	   CALLs, RSTs, HALTs, and macros.
+
+	   For jump and return instructions, stop at the current PC,
+	   whatever that is.
+
+	   In both cases, wait until we actually reach the target PC,
+	   rather than halting immediately; the effect of this is that
+	   if an interrupt has occurred, we also "step over" the
+	   ISR. */
+
+	if ((op & ~0x20ff) == 0xdd00)
+		op &= 0xff;
+
+	if (op == 0xc3 /* JP */
+	    || op == 0xc9 /* RET */
+	    || op == 0xe9 /* JP HL/IX/IY */
+	    || (op & ~0x38) == 0 /* JR, DJNZ, NOP, or EX AF,AF' */
+	    || (op & ~0x38) == 0xc2 /* conditional JP */
+	    || (op & ~0x38) == 0xc0 /* conditional RET */
+	    || (op & ~0x38) == 0xed45) /* RETI/RETN */
+		destaddr = calc->z80.r.pc.d;
+	else
+		destaddr = dbg->step_next_addr;
+
+	destaddr &= 0xffff;
+
+	/* Delete this breakpoint, and replace it with a simple exec
+	   breakpoint at the target address. */
+
+	tilem_z80_remove_breakpoint(calc, dbg->step_bp);
+	dbg->step_bp = tilem_z80_add_breakpoint(calc, TILEM_BREAK_MEM_EXEC,
+	                                        destaddr, destaddr, 0xffff,
+	                                        NULL, NULL);
+	return 0;
+}
+
+static int bptest_finish(TilemCalc *calc, dword op, void *data)
+{
+	dword exitsp = TILEM_PTR_TO_DWORD(data);
+	byte f;
+
+	/* Finish condition: wait until stack pointer is greater than
+	   a certain value, and we execute a return instruction.  JP
+	   HL/IX/IY are also considered return instructions. */
+
+	if (calc->z80.r.sp.w.l <= exitsp)
+		return 0;
+
+	if ((op & ~0x20ff) == 0xdd00)
+		op &= 0xff;
+
+	f = calc->z80.r.af.b.l;
+
+	switch (op) {
+	case 0xc9: /* RET */
+	case 0xe9: /* JP HL/IX/IY */
+	case 0xed45: /* RETN */
+	case 0xed4d: /* RETI */
+	case 0xed55:
+	case 0xed5d:
+	case 0xed65:
+	case 0xed6d:
+	case 0xed75:
+	case 0xed7d:
+		return 1;
+
+	/* conditionals: check if condition was true */
+	case 0xc0: return !(f & 0x40);
+	case 0xc8: return (f & 0x40);
+	case 0xd0: return !(f & 0x01);
+	case 0xd8: return (f & 0x01);
+	case 0xe0: return !(f & 0x04);
+	case 0xe8: return (f & 0x04);
+	case 0xf0: return !(f & 0x80);
+	case 0xf8: return (f & 0x80);
+
+	default:
+		return 0;
+	}
+}
+
+static void run_with_step_condition(TilemDebugger *dbg,
+                                    TilemZ80BreakpointFunc func,
+                                    void *data)
+{
+	g_mutex_lock(dbg->emu->calc_mutex);
+	dbg->step_bp = tilem_z80_add_breakpoint(dbg->emu->calc,
+	                                        TILEM_BREAK_EXECUTE, 0, 0, 0,
+	                                        func, data);
+	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_run(dbg->emu);
+	tilem_debugger_refresh(dbg, FALSE);
+}
+
+/* Execute one instruction */
 static void action_step(G_GNUC_UNUSED GtkAction *a, gpointer data)
 {
 	TilemDebugger *dbg = data;
 
+	if (!dbg->emu->paused)
+		return;
+
 	g_return_if_fail(dbg->emu->calc != NULL);
 
-	/* FIXME: if CPU is halted, this should run until an interrupt
-	   occurs */
-	g_mutex_lock(dbg->emu->calc_mutex);
-	tilem_z80_run(dbg->emu->calc, 1, NULL);
-	g_mutex_unlock(dbg->emu->calc_mutex);
-	tilem_debugger_show(dbg);
+	cancel_step_bp(dbg);
+
+	run_with_step_condition(dbg, &bptest_step, NULL);
 }
 
+/* Skip over an instruction */
+static void action_step_over(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+
+	if (!dbg->emu->paused)
+		return;
+
+	g_return_if_fail(dbg->emu->calc != NULL);
+
+	cancel_step_bp(dbg);
+
+	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_disasm_disassemble(dbg->dasm, dbg->emu->calc, 0,
+	                         dbg->emu->calc->z80.r.pc.w.l,
+	                         &dbg->step_next_addr,
+	                         NULL, 0);
+	g_mutex_unlock(dbg->emu->calc_mutex);
+
+	run_with_step_condition(dbg, &bptest_step_over, dbg);
+}
+
+/* Run until current subroutine finishes */
+static void action_finish(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	dword sp;
+
+	if (!dbg->emu->paused)
+		return;
+
+	g_return_if_fail(dbg->emu->calc != NULL);
+
+	cancel_step_bp(dbg);
+
+	g_mutex_lock(dbg->emu->calc_mutex);
+	sp = dbg->emu->calc->z80.r.sp.w.l;
+	g_mutex_unlock(dbg->emu->calc_mutex);
+
+	run_with_step_condition(dbg, &bptest_finish,
+	                        TILEM_DWORD_TO_PTR(sp));
+}
+
+/* Step over */
+
+/* Close debugger window */
 static void action_close(G_GNUC_UNUSED GtkAction *a, gpointer data)
 {
 	TilemDebugger *dbg = data;
@@ -104,7 +289,12 @@ static const GtkActionEntry paused_action_ents[] =
 	{{ "run", GTK_STOCK_MEDIA_PLAY, "_Run", "F5",
 	   "Resume emulation", G_CALLBACK(action_run) },
 	 { "step", 0, "_Step", "F7",
-	   "Execute one instruction", G_CALLBACK(action_step) }};
+	   "Execute one instruction", G_CALLBACK(action_step) },
+	 { "step-over", 0, "Step _Over", "F8",
+	   "Run to the next line (skipping over subroutines)",
+	   G_CALLBACK(action_step_over) },
+	 { "finish", 0, "_Finish Subroutine", "F9",
+	   "Run to end of the current subroutine", G_CALLBACK(action_finish) }};
 
 static const GtkActionEntry misc_action_ents[] =
 	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
@@ -435,7 +625,10 @@ static const char uidesc[] =
 	" <menu action='debug-menu'>"
 	"  <menuitem action='run'/>"
 	"  <menuitem action='pause'/>"
+	"  <separator/>"
 	"  <menuitem action='step'/>"
+	"  <menuitem action='step-over'/>"
+	"  <menuitem action='finish'/>"
 	"  <separator/>"
 	"  <menuitem action='close'/>"
 	" </menu>"
@@ -704,9 +897,11 @@ void tilem_debugger_show(TilemDebugger *dbg)
 	g_return_if_fail(dbg != NULL);
 	g_return_if_fail(dbg->emu->calc != NULL);
 	tilem_calc_emulator_pause(dbg->emu);
+	cancel_step_bp(dbg);
 	tilem_disasm_view_go_to_address(TILEM_DISASM_VIEW(dbg->disasm_view),
 	                                dbg->emu->calc->z80.r.pc.d);
 	refresh_all(dbg, TRUE);
+	gtk_widget_grab_focus(dbg->disasm_view);
 	gtk_window_present(GTK_WINDOW(dbg->window));
 }
 
@@ -728,6 +923,8 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg)
 
 	tilem_disasm_free(dbg->dasm);
 	dbg->dasm = tilem_disasm_new();
+
+	dbg->step_bp = 0;
 
 	calc = dbg->emu->calc;
 	if (!calc)

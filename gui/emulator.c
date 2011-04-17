@@ -91,6 +91,16 @@ static gboolean refresh_lcd(gpointer data)
 	return FALSE;
 }
 
+static gboolean show_debugger(gpointer data)
+{
+	TilemCalcEmulator* emu = data;
+
+	if (emu->dbg)
+		tilem_debugger_show(emu->dbg);
+
+	return FALSE;
+}
+
 static gpointer core_thread(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -127,6 +137,11 @@ static gpointer core_thread(gpointer data)
 			g_mutex_lock(emu->lcd_mutex);
 			tilem_gray_lcd_next_frame(emu->glcd, 0);
 			g_mutex_unlock(emu->lcd_mutex);
+		}
+
+		if (emu->calc->z80.stop_reason & TILEM_STOP_BREAKPOINT) {
+			emu->paused = TRUE;
+			g_idle_add(&show_debugger, emu);
 		}
 
 		g_mutex_unlock(emu->calc_mutex);
