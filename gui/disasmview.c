@@ -69,9 +69,8 @@ static GtkTreeViewClass *parent_class;
 
 /* Convert physical to logical address; if address is not currently
    mapped, use the bank-A address */
-static dword default_ptol(TilemDisasmView *dv, dword addr)
+static dword default_ptol(TilemCalc *calc, dword addr)
 {
-	TilemCalc *calc = dv->dbg->emu->calc;
 	dword addr_l;
 
 	g_return_val_if_fail(calc != NULL, 0);
@@ -85,19 +84,22 @@ static dword default_ptol(TilemDisasmView *dv, dword addr)
 
 /* Check for a label at the given address (physical or logical
    depending on the mode of the DisasmView) */
-static const char *get_label(TilemDisasmView *dv, dword addr)
+static const char *get_label(TilemDisasmView *dv, TilemCalc *calc,
+                             dword addr)
 {
+	g_return_val_if_fail(calc != NULL, NULL);
 	g_return_val_if_fail(dv->dbg->dasm != NULL, NULL);
+
 	if (!dv->use_logical)
-		addr = default_ptol(dv, addr);
+		addr = default_ptol(calc, addr);
+
 	return tilem_disasm_get_label_at_address(dv->dbg->dasm, addr);
 }
 
 /* Disassemble a line */
-static void disassemble(TilemDisasmView *dv, dword pos,
+static void disassemble(TilemDisasmView *dv, TilemCalc *calc, dword pos,
                         dword *nextpos, char **mnemonic, char **args)
 {
-	TilemCalc *calc = dv->dbg->emu->calc;
 	dword addr = POS_TO_ADDR(pos);
 	const char *lbl;
 	char buf[500], *p;
@@ -105,7 +107,7 @@ static void disassemble(TilemDisasmView *dv, dword pos,
 	g_return_if_fail(calc != NULL);
 	g_return_if_fail(dv->dbg->dasm != NULL);
 
-	if (!(pos & 1) && (lbl = get_label(dv, addr))) {
+	if (!(pos & 1) && (lbl = get_label(dv, calc, addr))) {
 		if (mnemonic) {
 			*mnemonic = NULL;
 			*args = g_strdup_printf("%s:", lbl);
@@ -142,17 +144,16 @@ static void disassemble(TilemDisasmView *dv, dword pos,
 }
 
 /* Get "next" position */
-static dword get_next_pos(TilemDisasmView *dv, dword pos)
+static dword get_next_pos(TilemDisasmView *dv, TilemCalc *calc, dword pos)
 {
-	disassemble(dv, pos, &pos, NULL, NULL);
+	disassemble(dv, calc, pos, &pos, NULL, NULL);
 	return pos;
 }
 
 /* Get "previous" position */
-static dword get_prev_pos(TilemDisasmView *dv, dword pos)
+static dword get_prev_pos(TilemDisasmView *dv, TilemCalc *calc, dword pos)
 {
 	dword addr = POS_TO_ADDR(pos);
-	TilemCalc *calc = dv->dbg->emu->calc;
 
 	g_return_val_if_fail(calc != NULL, 0);
 
@@ -167,7 +168,7 @@ static dword get_prev_pos(TilemDisasmView *dv, dword pos)
 		else
 			addr = (calc->hw.romsize + calc->hw.ramsize - 1);
 
-		if (get_label(dv, addr))
+		if (get_label(dv, calc, addr))
 			return ADDR_TO_POS(addr) + 1;
 		else
 			return ADDR_TO_POS(addr);
@@ -175,21 +176,22 @@ static dword get_prev_pos(TilemDisasmView *dv, dword pos)
 }
 
 /* Convert physical to logical position */
-static dword pos_ptol(TilemDisasmView *dv, dword pos)
+static dword pos_ptol(TilemCalc *calc, dword pos)
 {
 	dword addr;
+
+	g_return_val_if_fail(calc != NULL, 0);
 
 	if (pos == (dword) -1)
 		return pos;
 
-	addr = default_ptol(dv, POS_TO_ADDR(pos));
+	addr = default_ptol(calc, POS_TO_ADDR(pos));
 	return ADDR_TO_POS(addr) + (pos & 1);
 }
 
 /* Convert logical to physical position */
-static dword pos_ltop(TilemDisasmView *dv, dword pos)
+static dword pos_ltop(TilemCalc *calc, dword pos)
 {
-	TilemCalc *calc = dv->dbg->emu->calc;
 	dword addr;
 
 	g_return_val_if_fail(calc != NULL, 0);
@@ -255,10 +257,10 @@ static void append_dummy_line(TilemDisasmView *dv, GtkTreeModel *model,
 }
 
 /* Append a line to the dasm model */
-static void append_dasm_line(TilemDisasmView *dv, GtkTreeModel *model,
-                             GtkTreeIter *iter, dword pos, dword *nextpos)
+static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
+                             GtkTreeModel *model, GtkTreeIter *iter,
+                             dword pos, dword *nextpos)
 {
-	TilemCalc *calc = dv->dbg->emu->calc;
 	GtkTreeIter iter1;
 	char abuf[20], *mnem, *args;
 	dword addr, page, pc;
@@ -281,10 +283,10 @@ static void append_dasm_line(TilemDisasmView *dv, GtkTreeModel *model,
 			page = addr >> 14;
 		}
 		g_snprintf(abuf, sizeof(abuf), "%02X:%04X",
-		           page, default_ptol(dv, addr));
+		           page, default_ptol(calc, addr));
 	}
 
-	disassemble(dv, pos, nextpos, &mnem, &args);
+	disassemble(dv, calc, pos, nextpos, &mnem, &args);
 
 	if (!mnem || !dv->dbg->emu->paused) {
 		icon = NULL;
@@ -326,23 +328,22 @@ static void refresh_disassembly(TilemDisasmView *dv, dword pos, int nlines,
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 	GtkTreePath *selectpath = NULL;
+	TilemCalc *calc;
 	dword nextpos;
 	int i;
 
 	model = new_dasm_model();
 
-	if (!dv->dbg->emu->calc) {
-		gtk_tree_view_set_model(GTK_TREE_VIEW(dv), model);
-		g_object_unref(model);
-		return;
-	}
-
 	dv->startpos = pos;
 
 	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	calc = dv->dbg->emu->calc;
+
+	if (!calc)
+		nlines = 0;
 
 	for (i = 0; i < nlines; i++) {
-		append_dasm_line(dv, model, &iter, pos, &nextpos);
+		append_dasm_line(dv, calc, model, &iter, pos, &nextpos);
 
 		if (pos == selectpos)
 			selectpath = gtk_tree_model_get_path(model, &iter);
@@ -516,6 +517,7 @@ static void tilem_disasm_view_style_set(GtkWidget *w, GtkStyle *oldstyle)
 /* Move up by COUNT lines */
 static gboolean move_up_lines(TilemDisasmView *dv, int count)
 {
+	TilemCalc *calc;
 	dword pos;
 	int linenum;
 
@@ -526,11 +528,12 @@ static gboolean move_up_lines(TilemDisasmView *dv, int count)
 		return FALSE;
 
 	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	calc = dv->dbg->emu->calc;
 
 	pos = dv->startpos;
 	count -= linenum;
 	while (count > 0) {
-		pos = get_prev_pos(dv, pos);
+		pos = get_prev_pos(dv, calc, pos);
 		count--;
 	}
 
@@ -544,6 +547,7 @@ static gboolean move_up_lines(TilemDisasmView *dv, int count)
 /* Move down by COUNT lines */
 static gboolean move_down_lines(TilemDisasmView *dv, int count)
 {
+	TilemCalc *calc;
 	dword startpos, selpos;
 	int linenum;
 
@@ -554,14 +558,15 @@ static gboolean move_down_lines(TilemDisasmView *dv, int count)
 		return FALSE;
 
 	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	calc = dv->dbg->emu->calc;
 
-	startpos = get_next_pos(dv, dv->startpos);
+	startpos = get_next_pos(dv, calc, dv->startpos);
 	selpos = dv->endpos;
 	count -= dv->nlines - linenum;
 
 	while (count > 0) {
-		startpos = get_next_pos(dv, startpos);
-		selpos = get_next_pos(dv, selpos);
+		startpos = get_next_pos(dv, calc, startpos);
+		selpos = get_next_pos(dv, calc, selpos);
 		count--;
 	}
 
@@ -576,7 +581,7 @@ static gboolean move_down_lines(TilemDisasmView *dv, int count)
 static void move_bytes(TilemDisasmView *dv, int count)
 {
 	dword pos, addr;
-	TilemCalc *calc = dv->dbg->emu->calc;
+	const TilemCalc *calc = dv->dbg->emu->calc;
 
 	g_return_if_fail(calc != NULL);
 
@@ -729,6 +734,7 @@ GtkWidget * tilem_disasm_view_new(TilemDebugger *dbg)
 void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical)
 {
 	dword start, curpos;
+	TilemCalc *calc;
 
 	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
 	g_return_if_fail(dv->dbg->emu->calc != NULL);
@@ -737,8 +743,9 @@ void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical)
 
 	if (logical && !dv->use_logical) {
 		g_mutex_lock(dv->dbg->emu->calc_mutex);
-		curpos = pos_ptol(dv, curpos);
-		start = pos_ptol(dv, dv->startpos);
+		calc = dv->dbg->emu->calc;
+		curpos = pos_ptol(calc, curpos);
+		start = pos_ptol(calc, dv->startpos);
 		g_mutex_unlock(dv->dbg->emu->calc_mutex);
 
 		dv->use_logical = TRUE;
@@ -746,8 +753,9 @@ void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical)
 	}
 	else if (!logical && dv->use_logical) {
 		g_mutex_lock(dv->dbg->emu->calc_mutex);
-		curpos = pos_ltop(dv, curpos);
-		start = pos_ltop(dv, dv->startpos);
+		calc = dv->dbg->emu->calc;
+		curpos = pos_ltop(calc, curpos);
+		start = pos_ltop(calc, dv->startpos);
 		g_mutex_unlock(dv->dbg->emu->calc_mutex);
 
 		dv->use_logical = FALSE;
@@ -789,17 +797,18 @@ void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
 	dword pos;
 	GtkTreeModel *model;
 	GtkTreePath *path;
+	TilemCalc *calc;
 
 	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
-	g_return_if_fail(dv->dbg->emu->calc != NULL);
 
 	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	calc = dv->dbg->emu->calc;
 
 	addr &= 0xffff;
 	if (dv->use_logical)
 		pos = ADDR_TO_POS(addr);
 	else
-		pos = pos_ltop(dv, ADDR_TO_POS(addr));
+		pos = pos_ltop(calc, ADDR_TO_POS(addr));
 
 	g_mutex_unlock(dv->dbg->emu->calc_mutex);
 
