@@ -43,7 +43,6 @@
 9319 PROGPTR
 fe6e SYMTABLE
 
-
 [romcalls]
 4000 LdHLI
 4004 _cphlde
@@ -260,4 +259,86 @@ fe6e SYMTABLE
 
 
 [flags]
-#Nothing currently
+00 gflags
+2,00 trideg
+02 plotflags
+1,02 plotloc,plotflags
+2,02 plotdisp,plotflags
+4,02  grffuncm,grfModeFlags
+5,02  grfpolarm,grfModeFlags
+6,02  grfparamm,grfModeFlags
+7,02  grfrecurm,grfModeFlags
+03 graphflags
+0,03 graphdraw,graphflags
+2,03 graphcursor,graphflags
+04 grfdbflags
+0,04 grfdot,grfdbflags
+1,04 grfsimul,grfdbflags
+2,04 grfgrid,grfdbflags
+3,04 grfpolar,grfdbflags
+4,04 grfnocoord,grfdbflags
+5,04 grfnoaxis,grfdbflags
+6,04 grflabel,grfdbflags
+05 textflags
+1,05 textEraseBelow,textflags
+2,05 textScrolled,textflags
+3,05 textInverse,textflags
+09 onFlags
+3,09 onRunnings,onFlags
+4,09 onInterrupt,onFlags
+6,09 statsvalid,statflags
+10 fmtflags
+0,0A fmtExponent,fmtflags
+1,0A fmtEng,fmtflags
+5,0A FMTREAL,nummode
+6,0A FMTRECT,nummode
+7,0A FMTPOLAR,nummode
+0c curflags
+2,0C curAble,curflags
+3,0C curOn,curflags
+4,0C curLock,curflags
+0d appflags
+1,0D appTextSave,appflags
+2,0D appAutoScroll,appflags
+11 PLOTFLAG2
+3,11 EXPR_PARAM,PLOTFLAG2
+4,11 EXPR_WRITING,PLOTFLAG2
+12 indicflags
+0,12 indicRun,indicflags
+2,12 indicOnly,indicflags
+3,12 shift2nd,shiftflags
+4,12 shiftAlpha,shiftflags
+6,12 shiftALock,shiftflags
+13 tblflags
+4,13 AutoFill,tblflags
+5,13 AutoCalc,tblflags
+14 sgrflags
+0,14 grfSplit,sgrflags
+1,14 VertSplit,sgrflags
+4,14 WRITE_ON_GRAPH,sgrflags
+7,14 textwrite,sgrflags
+21 asm_flag1
+0,21 asm_flag1_0,asm_flag1
+1,21 asm_flag1_1,asm_flag1
+2,21 asm_flag1_2,asm_flag1
+3,21 asm_flag1_3,asm_flag1
+4,21 asm_flag1_4,asm_flag1
+5,21 asm_flag1_5,asm_flag1
+6,21 asm_flag1_6,asm_flag1
+22 asm_flag1
+0,22 asm_flag2_0,asm_flag1
+1,22 asm_flag2_1,asm_flag1
+2,22 asm_flag2_2,asm_flag1
+3,22 asm_flag2_3,asm_flag1
+4,22 asm_flag2_4,asm_flag1
+5,22 asm_flag2_5,asm_flag1
+6,22 asm_flag2_6,asm_flag1
+23 asm_flag1
+0,23 asm_flag3_0,asm_flag1
+1,23 asm_flag3_1,asm_flag1
+2,23 asm_flag3_2,asm_flag1
+3,23 asm_flag3_3,asm_flag1
+4,23 asm_flag3_4,asm_flag1
+5,23 asm_flag3_5,asm_flag1
+6,23 asm_flag3_6,asm_flag1
+
