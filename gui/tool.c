@@ -54,20 +54,6 @@ static GtkWidget* new_gnome_style_frame(const gchar* label, GtkWidget* contents)
 	return frame;
 }
 
-/* A easy to use error popup */
-void popup_error(const char* msg, GLOBAL_SKIN_INFOS * gsi)
-{
-	GtkWidget *pPopup;
-
-	pPopup = gtk_message_dialog_new (GTK_WINDOW(gsi->pWindow),GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,msg);
-
-	/* Show the popup*/
-	gtk_dialog_run(GTK_DIALOG(pPopup));
-	
-	/* Destroy the popup */
-	gtk_widget_destroy(pPopup);
-}
-
 /* A popup which is used to let the user choose the model at startup */
 char choose_rom_popup(GtkWidget *parent_window, const char *filename,
                       char default_model)

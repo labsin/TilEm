@@ -38,7 +38,6 @@ void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi)
 	char *name;
 
 	/* FIXME: try fallbacks if the default skin doesn't exist */
-
 	if (!gsi->emu->cmdline->SkinFileName) {
 		name = g_strconcat(gsi->emu->calc->hw.name, ".skn", NULL);
 		gsi->emu->cmdline->SkinFileName = get_shared_file_path("skins", name, NULL);
@@ -52,20 +51,17 @@ void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi)
 	char* file_selected = NULL ;
 	DSKIN_L0_A0("\nSKINSELECTION\n");
 	
-	if(gsi->view==1) 
-	{
-		DGLOBAL_L0_A0("Use >>Switch view<< before !\n");
-		popup_error("Use >>Switch view<< before !\n", gsi);
-	} else {
 		
-		/* Show a nice chooser dialog, and get the filename selected */	
-
-		file_selected = select_file(gsi, "./skn/");
-		if(file_selected != NULL) {
-			g_free(gsi->emu->cmdline->SkinFileName);
-			gsi->emu->cmdline->SkinFileName = file_selected;
-			redraw_screen(gsi);
-		}
+	/* Show a nice chooser dialog, and get the filename selected */	
+	file_selected = select_file(gsi, get_shared_dir_path("skins", NULL));
+	if(file_selected != NULL) {
+			
+		/* If the mode is "skinless mode", switch to "skin mode" without asking user... then change skin  */	
+		if(gsi->view==1)  
+			switch_view(gsi);
+		g_free(gsi->emu->cmdline->SkinFileName);
+		gsi->emu->cmdline->SkinFileName = file_selected;
+		redraw_screen(gsi);
 	}
 }
 
