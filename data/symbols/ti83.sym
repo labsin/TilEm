@@ -260,7 +260,7 @@ fe6e SYMTABLE
 
 [flags]
 00 gflags
-2,00 trideg
+2,00 trideg,gflags
 02 plotflags
 1,02 plotloc,plotflags
 2,02 plotdisp,plotflags
