@@ -110,11 +110,17 @@ typedef struct GLOBAL_SKIN_INFOS {
 /* Detect and handle a "destroy" event */
 void on_destroy(); /* close the pWindow */
 
+/* like on_destroy but save state */
+void quit_with_save();
+
 /* Save state of current rom */
 void save_state(GLOBAL_SKIN_INFOS * gsi);
 
 /* The window about in the right_click_menu */
 void on_about(GtkWidget *pBtn);
+
+/* Dialog mesg */
+void show_about();
 
 /* Button-press event */
 gboolean mouse_press_event(GtkWidget* w, GdkEventButton *event, gpointer data);
@@ -200,17 +206,8 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi);
 
 /* ##### tool.c ##### */
 
-/* Generic popup (could be use for all kind of msg) */
-void popup_error(const char* msg, GLOBAL_SKIN_INFOS * gsi);
-
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
 char choose_rom_popup(GtkWidget *parent_window, const char *filename, char default_model);
-
-/* like on_destroy but save state */
-void quit_with_save();
-
-/* Dialog mesg */
-void show_about();
 
 /* File chooser */
 char * select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir);

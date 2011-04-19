@@ -33,13 +33,14 @@
 #include "files.h"
 
 static void on_screenshot();
-static void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-static void on_play(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
-static void on_playfrom(GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
-static void on_destroy_playview(GtkWidget* playwin);
-static void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
-static void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
+static void on_record(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+static void on_play(G_GNUC_UNUSED GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
+static void on_playfrom(G_GNUC_UNUSED GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
+static void on_destroy_playview(G_GNUC_UNUSED GtkWidget* playwin);
+static void on_destroy_screenshot(GtkWidget* screenshotanim_win);
+static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
+static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
 static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename, const char *format);
 char* find_free_filename(const char* directory, const char* filename, const char* extension);
 static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image);
@@ -48,14 +49,13 @@ static void stop_spinner(GLOBAL_SKIN_INFOS * gsi);
 static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi);
 
 /* UNUSED */
-void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 
 /* This method is called from click event */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 
 	char basename[11] = "screenshot";
 	char* folder = tilem_config_universal_getter("screenshot", "screenshot_directory");
-	printf("folder : %s\n", folder);
 	
 	/* Look for the next free filename (don't erase previous screenshots) */
 	char* filename = find_free_filename(folder, basename, ".png\0");
@@ -83,12 +83,10 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 			strcpy(filename, folder);
 			strcat(filename, "/");
 			strcat(filename, basename);
-			printf("temp : %s\n", filename);
 		} else {
 			filename = (char*) malloc((strlen(basename)+9)*sizeof(char) );
 			strcpy(filename, basename);
 		}
-		printf("temp2 : %s\n", filename);
 		sprintf(buffer,"%03d", i);
 		strcat(filename, buffer);
 		strcat(filename, extension);
@@ -96,7 +94,6 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 		if((fp = g_fopen(filename,"r"))) {
 			fclose(fp);
 		} else {
-			printf("filename : %s\n", filename);
 			return filename;
 			break;
 		}
@@ -175,7 +172,6 @@ static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi) {
 
 /* Destroy the screenshot box */
 static void on_destroy_screenshot(GtkWidget* screenshotanim_win)   {
-	
 	gtk_widget_destroy(GTK_WIDGET(screenshotanim_win));
 }
 
@@ -288,8 +284,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Callback for record button */
-static void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
+static void on_record(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	g_print("record event\n");
 	start_spinner(gsi);
 	tilem_animation_start(gsi);
@@ -297,15 +292,13 @@ static void on_record(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 
 /* Only used for testing purpose */
 /* NEVER USED  (but it works) xD */
-void on_add_frame(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
+void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	g_print("record event\n");
 	tilem_animation_add_frame(gsi);
 }
 
 /* Callback for stop button (stop the recording) */
-static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
+static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	g_print("stop event\n");
 	char* dest = NULL;
 
@@ -334,8 +327,7 @@ static void on_stop(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Callback for screenshot button (take a screenshot) */
-static void on_screenshot(GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
+static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	screenshot(gsi);
 	g_print("screenshot event\n");
 }
@@ -378,6 +370,8 @@ static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
 	if (!status) {
 		fprintf(stderr, "*** unable to save screenshot: %s\n", err->message);
 		g_error_free(err);
+	} else {
+		printf("Screenshot successfully saved as : %s\n", filename);
 	}
 
 	return status;
@@ -390,10 +384,7 @@ static void on_destroy_playview(GtkWidget* playwin)   {
 }
 
 /* Callback for play button (replay the last gif) */
-static void on_play(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
-	gsi = gsi;
-
+static void on_play(G_GNUC_UNUSED GtkWidget * win, G_GNUC_UNUSED GLOBAL_SKIN_INFOS* gsi) {
 	printf("play\n");
 	GtkWidget *fenetre = NULL;
 	GtkWidget *image = NULL;
@@ -409,8 +400,7 @@ static void on_play(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Callback for play button (replay the last gif) */
-static void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
+static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	char* src = NULL;
 	src = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
 	if(src) {
@@ -429,8 +419,7 @@ static void on_playfrom(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 }
 	 
 
-static void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
+static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot)); 
 	if(folder) 
@@ -439,8 +428,7 @@ static void on_change_screenshot_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* g
 }
 
 	
-static void on_change_animation_directory(GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
-	win = win;
+static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation)); 
 	if(folder)

@@ -155,31 +155,6 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 	return id;
 }
 
-#if 0
-/* File chooser */
-char * select_file(GLOBAL_SKIN_INFOS *gsi) {
-
-GtkWidget *dialog;
-
-
-dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(gsi->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-
-/* Launch the dialog and get the result (dialog widget is "modal") */
-if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
-	{
-		char *filename;
-		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-		printf(" filename: %s", filename);
-		return filename;
-		g_free (filename);
-	}
-
-gtk_widget_destroy (dialog);
-return "";
-
-}
-#endif
-
 /* File chooser with a different base directory */
 char* select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
 
@@ -272,9 +247,6 @@ char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 }
 
 
-
-
-
 /* File chooser with a different base directory */
 void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 
@@ -345,7 +317,6 @@ void copy_paste(const char* src, const char* dest){
 		fclose(fsrc);
 	if(fdest)
 		fclose(fdest);
-
 }
 
 

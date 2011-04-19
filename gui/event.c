@@ -184,9 +184,6 @@ void quit_with_save()
 /* Show a nice GtkAboutDialog */
 void show_about()
 {
-
-
-
 	GtkWidget *dialog = gtk_about_dialog_new();
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
@@ -358,13 +355,9 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 }
 
 
-/* Pop up context menu */
+/* Print the right click menu */
 static void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 {
-
-
-
-
 	GtkWidget* right_click_menu = build_menu(gsi);
 	create_menus(gsi->pWindow, event, right_click_menu);
 }
@@ -376,7 +369,7 @@ static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
 	In fact, gsi->macro_file must be set to NULL when you start. And gsi->isMacroRecording to 0
 	Switch isMacroRecording to 1 means : "record my key press/send file etc...
 	Switch to 0 is to stop recording
-	If macro file doesn't exist, tilem create it
+	If macro file doesn't exist, tilem creates it
 	The key press is represented as an int, separate by a comma, the int could contains 0 before to be like this 0031,0022,0012
 	*/
 
@@ -630,11 +623,9 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 	
 	if(gtk_window_get_decorated(GTK_WINDOW(gsi->pWindow)))
-	{
 		gtk_window_set_decorated(GTK_WINDOW(gsi->pWindow) , FALSE);
-	} else {
+	 else 
 		gtk_window_set_decorated(GTK_WINDOW(gsi->pWindow) , TRUE);
-	}
 }
 
 
@@ -667,7 +658,6 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 /* Load a file without file_selector */
 void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename)
 {
-	
 	tilem_calc_emulator_send_file(gsi->emu, filename);
 }
 
@@ -699,6 +689,5 @@ void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename
 
 /* Toggle limit speed */
 void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi) {
-
 	tilem_calc_emulator_set_limit_speed(gsi->emu, !gsi->emu->limit_speed);
 }
