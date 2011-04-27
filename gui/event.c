@@ -636,7 +636,7 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 	char* filename= NULL;
 
 	/* Launch and get the result of a GtkFileChooserDialog. Cancelled -> filename == NULL */
-	filename = select_file(gsi, get_sendfile_recentdir());
+	filename = select_file(gsi, tilem_config_universal_getter("upload", "sendfile_recentdir"));
 
 	/* Test if FileChooser cancelled ... */
 	if(filename != NULL) {
@@ -650,7 +650,7 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 		char* p;
 		if ((p = strrchr(filename, '/'))) {
 			strcpy(p, "\0");
-			set_sendfile_recentdir(filename);
+			tilem_config_universal_setter("upload", "sendfile_recentdir", filename);
 		}
 	}
 }

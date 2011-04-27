@@ -167,29 +167,6 @@ static void save_config(GKeyFile *gkf)
 	g_free(data);
 }
 
-/* Search and return the default skin for this model */
-char* get_defaultskin(const char* romname)
-{
-	GKeyFile * gkf;
-	char *skinname;
-
-	gkf = load_config(FALSE);
-	skinname = g_key_file_get_string(gkf, "skin", romname, NULL);
-	g_key_file_free(gkf);
-	return skinname;
-}
-
-/* Set a default skin, or add it if not exists */
-void set_defaultskin(const char* romname, const char* skinname)
-{
-	GKeyFile * gkf;
-
-	gkf = load_config(TRUE);
-	g_key_file_set_string(gkf, "skin", romname, skinname);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
-
 /* Search the most recent rom */
 char* get_recentrom(char* romname)
 {
@@ -284,7 +261,7 @@ void set_modelcalcid(const char* romname, char id)
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi)
 {
-	set_defaultskin(gsi->emu->cmdline->RomName, gsi->emu->cmdline->SkinFileName);
+	tilem_config_universal_setter("skin", gsi->emu->cmdline->RomName, gsi->emu->cmdline->SkinFileName);
 }
 
 /* search, write, and save config on right click menu */
@@ -294,28 +271,11 @@ void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi)
 }
 
 
-/* Search and return the last directory opened to send a file*/
-char* get_sendfile_recentdir()
-{
-	GKeyFile * gkf;
-	char *recentdir;
 
-	gkf = load_config(FALSE);
-	recentdir = key_file_get_filename(gkf, "upload", "sendfile_recentdir", NULL);
-	g_key_file_free(gkf);
-	return recentdir;
+char* get_defaultskin(const char* romname) {
+	return  tilem_config_universal_getter("skin", romname);
 }
 
-/* Set the last dir opened to send file */
-void set_sendfile_recentdir(const char* recentdir)
-{
-	GKeyFile * gkf;
-
-	gkf = load_config(TRUE);
-	key_file_set_filename(gkf, "upload", "sendfile_recentdir", recentdir);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
 
 /* Search the value for key into group */
 char* tilem_config_universal_getter(const char* group, const char* key)
@@ -338,56 +298,37 @@ char* tilem_config_universal_getter(const char* group, const char* key)
 	}
 }
 
-/* Set the last dir opened to send file */
-void set_loadmacro_recentdir(const char* recentdir)
+/* Search the value for key into group */
+int tilem_config_universal_getter_int(const char* group, const char* key)
 {
 	GKeyFile * gkf;
+	int value ;
+
+	gkf = load_config(FALSE);
+	if(!g_key_file_has_group(gkf, group)) {
+		messagebox02(NULL, GTK_MESSAGE_ERROR,
+			             "Unable to load settings",
+			             "An error occurred while getting %s: %s",
+			             group, key);
+		return 0;
+	} else {
+
+		value = g_key_file_get_integer(gkf, group, key, NULL);
+		g_key_file_free(gkf);
+		return value;
+	}
+}
+
+void tilem_config_universal_setter(const char* group, const char* key, const char* value) {
+GKeyFile * gkf;
 
 	gkf = load_config(TRUE);
-	key_file_set_filename(gkf, "macro", "loadmacro_recentdir", recentdir);
+	key_file_set_filename(gkf, group, key, value);
 	save_config(gkf);
 	g_key_file_free(gkf);
 }
 
-/* Set the last dir to save a animation */
-void set_screenshot_recentdir(const char* recentdir)
-{
-	GKeyFile * gkf;
-	gkf = load_config(TRUE);
-	key_file_set_filename(gkf, "screenshot", "screenshot_directory", recentdir);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
 
-/* Set the last dir to save a animation */
-void set_animation_recentdir(const char* recentdir)
-{
-	GKeyFile * gkf;
-	gkf = load_config(TRUE);
-	key_file_set_filename(gkf, "screenshot", "animation_directory", recentdir);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
-
-/* Set the last name to save a animation */
-void set_animation_recentfile(const char* recentfile)
-{
-	GKeyFile * gkf;
-	gkf = load_config(TRUE);
-	key_file_set_filename(gkf, "screenshot", "animation_recent", recentfile);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
-
-/* Set the last name to save a animation */
-void set_screenshot_recentfile(const char* recentfile)
-{
-	GKeyFile * gkf;
-	gkf = load_config(TRUE);
-	key_file_set_filename(gkf, "screenshot", "screenshot_recent", recentfile);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
 
 
 

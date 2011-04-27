@@ -151,8 +151,13 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 		emuwin = gsi->pLayout;
 
-		defwidth = gsi->si->width;
-		defheight = gsi->si->height;
+		defwidth = tilem_config_universal_getter_int("settings", "width");	
+		defheight = tilem_config_universal_getter_int("settings", "width");	
+
+		if(defwidth == 0)
+			defwidth = gsi->si->width;
+		if(defheight == 0)
+			defheight = gsi->si->height;
 
 		sx = (double) lcdwidth / screenwidth;
 		sy = (double) lcdheight / screenheight;

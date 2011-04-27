@@ -63,7 +63,7 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	if(filename)	
 		save_screenshot(gsi, filename, "png");
 	 
-	set_screenshot_recentfile(filename);
+	tilem_config_universal_setter("screenshot", "screenshot_recent", filename);
 	change_review_image(gsi, filename);
 }
 
@@ -311,7 +311,7 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	}
 
 	if(dest) {
-		set_animation_recentfile(dest);	
+		tilem_config_universal_setter("screenshot", "animation_recent", dest);
 		copy_paste("gifencod.gif", dest);
 		change_review_image(gsi, dest);
 		char* p =  strrchr(dest, '/');
@@ -320,7 +320,7 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 			strcpy(p, "\0");
 		printf("%s", dest);
 		
-		set_animation_recentdir(dest);	
+		tilem_config_universal_setter("screenshot", "animation_directory", dest);
 	}
 	delete_spinner_and_put_logo(gsi);
 	
@@ -404,7 +404,7 @@ static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	char* src = NULL;
 	src = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
 	if(src) {
-		set_animation_recentfile(src);	
+		tilem_config_universal_setter("screenshot", "animation_recent", src);
 		change_review_image(gsi, src);
 		char* p =  strrchr(src, '/');
 		printf("%s", p);
@@ -412,7 +412,7 @@ static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 			strcpy(p, "\0");
 		printf("%s", src);
 		
-		set_animation_recentdir(src);	
+		tilem_config_universal_setter("screenshot", "animation_directory", src);
 	}
 
 
@@ -423,7 +423,7 @@ static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot)); 
 	if(folder) 
-		set_screenshot_recentdir(folder);
+		tilem_config_universal_setter("screenshot", "screenshot_directory", folder);
 	
 }
 
@@ -432,6 +432,6 @@ static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation)); 
 	if(folder)
-		set_animation_recentdir(folder);
+		tilem_config_universal_setter("screenshot", "animation_directory", folder);
 	
 }
