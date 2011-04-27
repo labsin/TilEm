@@ -167,7 +167,8 @@ void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi);
 /* Build the right click menu */
 GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi);
 
-
+/* Handle drag and drop */
+gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi);
 
 /* ###### skin.c ##### */
 	
@@ -352,10 +353,13 @@ void run_with_key_slowly(TilemCalc* calc, int key);
 /* ##### args.c ##### */
 
 /* Help (usage: how to use in command line) */
-void help(char *name, int ret) ;
+void tilem_cmdline_help(char *name, int ret) ;
+
+/* Create a structure to handle cmdline args and set all fields to null */
+TilemCmdlineArgs* tilem_cmdline_new();
 
 /* Command line argument handling */
-int getargs(int argc, char* argv[], TilemCmdlineArgs* cmdline) ;
+int tilem_cmdline_get_args(int argc, char* argv[], TilemCmdlineArgs* cmdline) ;
 
 /* Create the SavName */
 void create_savname(TilemCmdlineArgs* cmdline) ;

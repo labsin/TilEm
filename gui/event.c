@@ -691,3 +691,10 @@ void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename
 void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi) {
 	tilem_calc_emulator_set_limit_speed(gsi->emu, !gsi->emu->limit_speed);
 }
+
+
+gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint             info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi) {
+	printf("drag and drop !!\n");
+	return FALSE;
+
+}

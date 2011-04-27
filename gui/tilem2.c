@@ -235,16 +235,7 @@ int main(int argc, char **argv)
 	gsi->isAnimScreenshotRecording = FALSE;
 	gsi->isDebuggerRunning=FALSE;
 	
-	/* TilemCmdlineArgs */
-	TilemCmdlineArgs *cmdline = g_new0(TilemCmdlineArgs, 1);
-	cmdline->SkinFileName = NULL;
-	cmdline->RomName = NULL;
-	cmdline->SavName = NULL;
-	cmdline->FileToLoad = NULL;
-	cmdline->SavName = NULL;
-	cmdline->MacroToPlay = NULL;
-	cmdline->isStartingSkinless = FALSE;
-
+	
 	gsi->key_queue = NULL;
 	gsi->key_queue_len = 0;
 	gsi->key_queue_timer = 0;
@@ -253,8 +244,8 @@ int main(int argc, char **argv)
 
 	gsi->emu = tilem_calc_emulator_new();
 	
-	getargs(argc, argv, cmdline);
-	
+	TilemCmdlineArgs * cmdline = tilem_cmdline_new();
+	tilem_cmdline_get_args(argc, argv, cmdline);
 	gsi->emu->cmdline = cmdline;
 
 	if (!tilem_calc_emulator_load_state(gsi->emu, cmdline->RomName)) {
@@ -300,10 +291,6 @@ int main(int argc, char **argv)
 	if(cmdline->MacroToPlay != NULL) { /* Given as parameter ? */
 		play_macro_default(gsi, cmdline->MacroToPlay); 		
 	}
-	//progress_bar_init(gsi->emu);
-	//progress_bar_init(gsi->emu);
-	//gtk_progress_bar_pulse (GTK_PROGRESS_BAR (gsi->emu->ilp_progress_bar));
-	//g_timeout_add(100, progress_bar_update_activity, gsi->emu);
 
 	gtk_main();
 

@@ -175,7 +175,9 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gtk_widget_add_events(emuwin, (GDK_BUTTON_PRESS_MASK
 	                               | GDK_BUTTON_RELEASE_MASK
 	                               | GDK_BUTTON1_MOTION_MASK
-	                               | GDK_POINTER_MOTION_HINT_MASK));
+	                               | GDK_POINTER_MOTION_HINT_MASK 
+				       | GDK_DROP_FINISHED
+				       | GDK_DRAG_MOTION));
 
 	g_signal_connect(gsi->emu->lcdwin, "expose-event",
 	                 G_CALLBACK(screen_repaint), gsi);
@@ -188,6 +190,17 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	                 G_CALLBACK(pointer_motion_event), gsi);
 	g_signal_connect(emuwin, "button-release-event",
 	                 G_CALLBACK(mouse_release_event), gsi);
+
+	static GtkTargetEntry targetentries[] =
+    	{
+      		{ "STRING", GTK_TARGET_OTHER_APP, 0 },
+    	};
+
+	
+	gtk_drag_dest_set(emuwin, GTK_DEST_DEFAULT_ALL, targetentries, 1, GDK_ACTION_MOVE );
+	g_signal_connect(emuwin, "drag-data-received",
+	                 G_CALLBACK(on_drag_and_drop), gsi);
+
 
 	/* Hint calculation assumes the emulator is the only thing in
 	   the window; if other widgets are added, this will have to

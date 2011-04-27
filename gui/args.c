@@ -32,7 +32,7 @@
 #include "gui.h"
 
 /* Print help */
-void help(char *name, int ret) 
+void tilem_cmdline_help(char *name, int ret) 
 {
         fprintf(stdout,"Usage: %s -r <rom> [OPTIONS]\n"
                         "\n\t--== TI Linux EMulator 2.00 ==--\n"
@@ -48,15 +48,32 @@ void help(char *name, int ret)
         exit(ret);
 }
 
+/* Create a structure to handle cmdline args and set all fields to null */
+TilemCmdlineArgs* tilem_cmdline_new() {
+	/* TilemCmdlineArgs */
+	TilemCmdlineArgs *cmdline = g_new0(TilemCmdlineArgs, 1);
+	cmdline->SkinFileName = NULL;
+	cmdline->RomName = NULL;
+	cmdline->SavName = NULL;
+	cmdline->FileToLoad = NULL;
+	cmdline->SavName = NULL;
+	cmdline->MacroToPlay = NULL;
+	cmdline->isStartingSkinless = FALSE;
+	
+	if(!cmdline)
+		exit(EXIT_FAILURE);	
+	return cmdline;
+}
+
 /* Get args using getopt */
-int getargs(int argc, char* argv[], TilemCmdlineArgs* cmdline) {
+int tilem_cmdline_get_args(int argc, char* argv[], TilemCmdlineArgs* cmdline) {
        	
        	char options;
 
 	if (argc <= 2)
-                help(argv[0],-1);
+                tilem_cmdline_help(argv[0],-1);
         else if (strcmp(argv[1], "--help") == 0)
-                help(argv[0],0);
+                tilem_cmdline_help(argv[0],0);
 
         while((options = getopt(argc,argv, "s:f:r:k:m:l")) != -1)
         {
@@ -94,7 +111,7 @@ int getargs(int argc, char* argv[], TilemCmdlineArgs* cmdline) {
 			
                         default :
                         fprintf(stderr,"Erreur d'option\n"); 
-                        help(argv[0],-1);
+                        tilem_cmdline_help(argv[0],-1);
                         break;
                                                                                                                    
                 }
