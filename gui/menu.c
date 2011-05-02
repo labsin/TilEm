@@ -23,7 +23,6 @@
 
 #include <stdio.h>
 #include <gtk/gtk.h>
-#include <gtk/gtk.h>
 #include <ticalcs.h>
 #include <tilem.h>
 
@@ -36,14 +35,19 @@ static GtkWidget* create_menu_item(const char* label, const char* stock_img);
 /* Build the menu */
 GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 
+	/* TODO : use create_menu_item everywhere to minimize the code :) */
 	GtkWidget* right_click_menu = gtk_menu_new ();    
 
 	/* Create the items for the menu */
+	//GtkAccelGroup* accelgrp = gtk_accel_group_new();
+	//gtk_accel_group_connect(accelgrp, gdk_keyval_from_name("F11"), GDK_SHIFT_MASK,  GTK_ACCEL_VISIBLE , g_cclosure_new(G_CALLBACK(load_file), gsi, NULL)); 
 	GtkWidget* send_file_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(send_file_item), "Load file...");
 	GtkWidget* load_skin_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(load_skin_item), "Change skin...");
-	GtkWidget* launch_debugger_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND, NULL);
+
+	/* We can easily use user defined icons like this */
+	GtkWidget* launch_debugger_item =  gtk_image_menu_item_new_from_stock("tilem-db-step", NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(launch_debugger_item), "Debugger...");
 	GtkWidget* toggle_speed_item;
 	if(gsi->emu->limit_speed) {
@@ -144,8 +148,8 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 
 
 	/* Callback */
-	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (screenshot_menu_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) gsi);
@@ -193,6 +197,7 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	return right_click_menu;
 }
 
+/* Create a menu item with an icon (stock_img) and a label (label) */
 static GtkWidget* create_menu_item(const char* label, const char* stock_img) {
 	GtkWidget* item =  gtk_image_menu_item_new_from_stock(stock_img, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);

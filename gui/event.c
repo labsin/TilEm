@@ -550,8 +550,16 @@ void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi) {
 }
 
 
-gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint             info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi) {
+gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi) {
 	printf("drag and drop !!\n");
+	char* filename = gtk_selection_data_get_text(data);
+	printf("data : %s\n", filename);
+	filename = filename + 7;
+	printf("data : %s\n", filename);
+	int size = strlen(filename);
+	filename[size - 2] = '\0';
+	printf("gsi : %s", gsi->emu->rom_file_name);
+	load_file_from_file(gsi, filename );
 	return FALSE;
 
 }

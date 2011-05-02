@@ -217,8 +217,7 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 		
 	GtkWidget* screenshot_button = gtk_button_new_with_label ("Shoot!");
 	GtkWidget* record = gtk_button_new_with_label ("Record");
-	//GtkWidget* add_frame = gtk_button_new_with_label ("Add frame (anim)");
-	GtkWidget* stop = gtk_button_new_with_label ("Stop");
+	GtkWidget* stop = gtk_button_new_with_label("Stop");
 	GtkWidget* play = gtk_button_new_with_label ("Replay (detached)");
 	GtkWidget* playfrom = gtk_button_new_with_label ("Replay (browse)");
 
