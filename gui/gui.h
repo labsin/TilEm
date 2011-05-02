@@ -122,6 +122,12 @@ void on_about(GtkWidget *pBtn);
 /* Dialog mesg */
 void show_about();
 
+/* Launch the debugger */
+void launch_debugger(GLOBAL_SKIN_INFOS * gsi);
+
+/* Reset the calc */
+void on_reset(GLOBAL_SKIN_INFOS * gsi);
+
 /* Button-press event */
 gboolean mouse_press_event(GtkWidget* w, GdkEventButton *event, gpointer data);
 
@@ -163,9 +169,6 @@ void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename
 
 /* Toggle limit speed */
 void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi);
-
-/* Build the right click menu */
-GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi);
 
 /* Handle drag and drop */
 gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi);
@@ -387,3 +390,13 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi);
 
 /* Load the keybindings */
 void tilem_keybindings_init(GLOBAL_SKIN_INFOS* gsi, const char* model);
+
+
+/* ##### menu.c ##### */
+
+/* Build the menu (do not print it) */
+GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi);
+
+/* Print the menu */
+void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event);
+
