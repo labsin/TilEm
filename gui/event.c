@@ -225,26 +225,47 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* right_click_menu = gtk_menu_new ();    
 
 	/* Create the items for the menu */
-	GtkWidget* load_skin_item = gtk_menu_item_new_with_label ("Load skin...");
-	GtkWidget* send_file_item = gtk_menu_item_new_with_label ("Send file...");
-	GtkWidget* launch_debugger_item = gtk_menu_item_new_with_label ("Launch debugger...");
-	GtkWidget* toggle_speed_item = gtk_menu_item_new_with_label ("Toggle speed");
+	GtkWidget* send_file_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(send_file_item), "Send file...");
+	GtkWidget* load_skin_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(load_skin_item), "Load skin...");
+	GtkWidget* launch_debugger_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(launch_debugger_item), "Launch debugger...");
+	GtkWidget* toggle_speed_item;
+	if(gsi->emu->limit_speed) {
+		toggle_speed_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_MEDIA_FORWARD, NULL);
+	} else {
+		toggle_speed_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_MEDIA_PLAY, NULL);
+	}
+		
+	gtk_menu_item_set_label(GTK_MENU_ITEM(toggle_speed_item), "Toggle speed");
 
 	/* >>>> Sub menu screenshot */
 	GtkWidget* screenshot_submenu = gtk_menu_new();
-	GtkWidget* screenshot_item = gtk_menu_item_new_with_label ("Screenshot...");
+	GtkWidget* screenshot_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ORIENTATION_PORTRAIT, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(screenshot_item), "Screenshot...");
 	GtkWidget* screenshot_menu_item = gtk_menu_item_new_with_label ("Screenshot menu");
 	GtkWidget* quick_screenshot_item = gtk_menu_item_new_with_label ("Quick screenshot !");
 	/* <<<< */
 	
-	GtkWidget* display_lcd_into_console_item = gtk_menu_item_new_with_label ("Display LCD into Console");
-	GtkWidget* switch_view_item = gtk_menu_item_new_with_label ("Switch view");
-	GtkWidget* switch_borderless_item = gtk_menu_item_new_with_label ("Switch borderless");
+	GtkWidget* display_lcd_into_console_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SORT_ASCENDING, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(display_lcd_into_console_item), "Display LCD into console...");
+	GtkWidget* switch_view_item;
+	if(gsi->view) {
+		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FULLSCREEN, NULL);
+		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Show skin");
+	} else {
+		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_LEAVE_FULLSCREEN, NULL);
+		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Hide skin");
+	}
+	GtkWidget* switch_borderless_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_LEAVE_FULLSCREEN, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(switch_borderless_item), "Switch borderless");
 	
 
 	/* >>>> Sub menu save */
 	GtkWidget* save_submenu = gtk_menu_new();
-	GtkWidget* save_item = gtk_menu_item_new_with_label ("Save current state/config...");
+	GtkWidget* save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(save_item), "Save current state/config...");
 	GtkWidget* set_default_model_item = gtk_menu_item_new_with_label ("Use this model as default for this rom");
 	GtkWidget* set_default_skin_item = gtk_menu_item_new_with_label ("Use this skin as default for this rom");
 	GtkWidget* save_state_item = gtk_menu_item_new_with_label ("Save state...");
@@ -252,22 +273,27 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	
 	/* >>>> Sub menu macro */
 	GtkWidget* macro_submenu = gtk_menu_new();
-	GtkWidget* macro_item = gtk_menu_item_new_with_label ("Macro...");
+	GtkWidget* macro_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(macro_item), "Macro...");
 	GtkWidget* start_record_macro_item = gtk_menu_item_new_with_label ("Start recording macro...");
 	GtkWidget* stop_record_macro_item = gtk_menu_item_new_with_label ("Stop recording macro...");
 	GtkWidget* play_item = gtk_menu_item_new_with_label ("Play macro !");
 	GtkWidget* play_from_file_item = gtk_menu_item_new_with_label ("Play macro from file");
 	/* <<<< */
 
-	GtkWidget* about_item = gtk_menu_item_new_with_label ("About");
-	GtkWidget* reset_item = gtk_menu_item_new_with_label ("Reset");
-	GtkWidget* quit_no_save_item = gtk_menu_item_new_with_label ("Exit without saving state");
-	GtkWidget* quit_with_save_item = gtk_menu_item_new_with_label ("Exit and save state");
+	GtkWidget* about_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(about_item), "About");
+	GtkWidget* reset_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_DIALOG_ERROR, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(reset_item), "Reset");
+	GtkWidget* quit_no_save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(quit_no_save_item), "Quit without saving state");
+	GtkWidget* quit_with_save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_REVERT_TO_SAVED, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(quit_with_save_item), "Exit and save state");
 
 
 	/* Add items to the menu */
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), load_skin_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), send_file_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), load_skin_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), launch_debugger_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), toggle_speed_item);
 
