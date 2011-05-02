@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <gtk/gtk.h>
 #include <ticalcs.h>
 #include <tilem.h>
 
@@ -197,3 +198,4 @@ void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 	GtkWidget* right_click_menu = build_menu(gsi);
 	create_menus(gsi->pWindow, event, right_click_menu);
 }
+

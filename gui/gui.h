@@ -394,9 +394,10 @@ void tilem_keybindings_init(GLOBAL_SKIN_INFOS* gsi, const char* model);
 
 /* ##### menu.c ##### */
 
+/* Print the menu */
+void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event);
+
 /* Build the menu (do not print it) */
 GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi);
 
-/* Print the menu */
-void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event);
 
