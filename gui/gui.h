@@ -108,10 +108,10 @@ typedef struct GLOBAL_SKIN_INFOS {
 /* ###### event.c ##### */
 
 /* Detect and handle a "destroy" event */
-void on_destroy(); /* close the pWindow */
+void on_destroy(GLOBAL_SKIN_INFOS* gsi); /* close the pWindow */
 
 /* like on_destroy but save state */
-void quit_with_save();
+void quit_with_save(GLOBAL_SKIN_INFOS* gsi);
 
 /* Save state of current rom */
 void save_state(GLOBAL_SKIN_INFOS * gsi);
@@ -172,6 +172,11 @@ void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi);
 
 /* Handle drag and drop */
 gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi);
+
+/* Save the dimension before exit for next times we use tilem */
+void save_root_window_dimension(GLOBAL_SKIN_INFOS* gsi);
+
+
 
 /* ###### skin.c ##### */
 	
@@ -265,7 +270,11 @@ char* tilem_config_universal_getter(const char* group, const char* key);
 /* Search the value for key into group */
 int tilem_config_universal_getter_int(const char* group, const char* key);
 
+/* Universal setter for string */
 void tilem_config_universal_setter(const char* group, const char* key, const char* value);
+
+/* Universal setter for integer */
+void tilem_config_universal_setter_int(const char* group, const char* key, int value);
 
 /* Test if the group exists in config_file */
 gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group);

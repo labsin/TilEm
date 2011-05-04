@@ -320,7 +320,7 @@ int tilem_config_universal_getter_int(const char* group, const char* key)
 }
 
 void tilem_config_universal_setter(const char* group, const char* key, const char* value) {
-GKeyFile * gkf;
+	GKeyFile * gkf;
 
 	gkf = load_config(TRUE);
 	key_file_set_filename(gkf, group, key, value);
@@ -328,6 +328,14 @@ GKeyFile * gkf;
 	g_key_file_free(gkf);
 }
 
+void tilem_config_universal_setter_int(const char* group, const char* key, int value) {
+	GKeyFile * gkf;
+
+	gkf = load_config(TRUE);
+	g_key_file_set_integer(gkf, group, key, value);
+	save_config(gkf);
+	g_key_file_free(gkf);
+}
 
 
 

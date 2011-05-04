@@ -1003,6 +1003,10 @@ void tilem_debugger_show(TilemDebugger *dbg)
 	refresh_all(dbg, TRUE);
 	gtk_widget_grab_focus(dbg->disasm_view);
 	gtk_window_present(GTK_WINDOW(dbg->window));
+	gint * width = g_new(gint, 1);
+	gint * height = g_new(gint, 1);
+	gtk_window_get_size(GTK_WINDOW(dbg->window), width, height);
+	printf("size : %d, %d\n", *width, *height);
 }
 
 /* Hide debugger, and resume emulation if not already running. */

@@ -60,7 +60,7 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 
 	/* >>>> Sub menu screenshot */
 	GtkWidget* screenshot_submenu = gtk_menu_new();
-	GtkWidget* screenshot_item =  create_menu_item("Screenshot menu...", GTK_STOCK_ORIENTATION_PORTRAIT);
+	GtkWidget* screenshot_item =  create_menu_item("Screenshot menu...", GTK_STOCK_ORIENTATION_LANDSCAPE);
 	GtkWidget* screenshot_menu_item = create_menu_item("Screenshot menu", GTK_STOCK_SELECT_COLOR); 
 	GtkWidget* quick_screenshot_item = create_menu_item("Quick screenshot !", GTK_STOCK_PASTE); 
 	/* <<<< */

@@ -152,7 +152,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 		emuwin = gsi->pLayout;
 
 		defwidth = tilem_config_universal_getter_int("settings", "width");	
-		defheight = tilem_config_universal_getter_int("settings", "width");	
+		defheight = tilem_config_universal_getter_int("settings", "height");	
 
 		if(defwidth == 0)
 			defwidth = gsi->si->width;
