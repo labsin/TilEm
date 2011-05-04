@@ -108,7 +108,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 /* ###### event.c ##### */
 
 /* Detect and handle a "destroy" event */
-void on_destroy(GLOBAL_SKIN_INFOS* gsi); /* close the pWindow */
+void on_destroy(); /* close the pWindow */
 
 /* like on_destroy but save state */
 void quit_with_save(GLOBAL_SKIN_INFOS* gsi);

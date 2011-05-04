@@ -417,7 +417,7 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 	/* Create the window */
 	gsi->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	
-	g_signal_connect(gsi->pWindow, "destroy", G_CALLBACK(on_destroy), gsi);
+	g_signal_connect_swapped(gsi->pWindow, "destroy", G_CALLBACK(on_destroy), gsi);
 
 	g_signal_connect_after(gsi->pWindow, "check-resize",
 	                       G_CALLBACK(set_size_hints), gsi);

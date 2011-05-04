@@ -337,6 +337,7 @@ static void action_finish(G_GNUC_UNUSED GtkAction *a, gpointer data)
 static void action_close(G_GNUC_UNUSED GtkAction *a, gpointer data)
 {
 	TilemDebugger *dbg = data;
+	save_debugger_dimension(dbg);
 	tilem_debugger_hide(dbg);
 }
 
@@ -834,6 +835,20 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	return dbg;
 }
 
+/* Save the dimension for the debugger */
+void save_debugger_dimension(TilemDebugger *dbg) {
+
+        gint width, height;
+	gtk_window_get_size(GTK_WINDOW(dbg->window), &width, &height);
+	printf("size : %d, %d\n", width, height);
+	
+	tilem_config_universal_setter_int("debugger", "width", (int)width);
+	tilem_config_universal_setter_int("debugger", "height", (int)height);
+
+
+}
+
+
 /* Free a TilemDebugger. */
 void tilem_debugger_free(TilemDebugger *dbg)
 {
@@ -841,8 +856,9 @@ void tilem_debugger_free(TilemDebugger *dbg)
 
 	if (dbg->emu && dbg->emu->dbg == dbg)
 		dbg->emu->dbg = NULL;
-	if (dbg->window)
+	if (dbg->window) {
 		gtk_widget_destroy(dbg->window);
+	}
 	if (dbg->dasm)
 		tilem_disasm_free(dbg->dasm);
 	if (dbg->run_actions)
@@ -1003,10 +1019,13 @@ void tilem_debugger_show(TilemDebugger *dbg)
 	refresh_all(dbg, TRUE);
 	gtk_widget_grab_focus(dbg->disasm_view);
 	gtk_window_present(GTK_WINDOW(dbg->window));
-	gint * width = g_new(gint, 1);
-	gint * height = g_new(gint, 1);
-	gtk_window_get_size(GTK_WINDOW(dbg->window), width, height);
-	printf("size : %d, %d\n", *width, *height);
+
+		/* Try to get the saved dimension for the debugger */
+	int defwidth = tilem_config_universal_getter_int("debugger", "width");	
+	int defheight = tilem_config_universal_getter_int("debugger", "height");	
+	if((defwidth != 0) && (defheight != 0)) 
+		gtk_window_resize(GTK_WINDOW(dbg->window), defwidth, defheight);
+
 }
 
 /* Hide debugger, and resume emulation if not already running. */

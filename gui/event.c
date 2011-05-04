@@ -151,13 +151,13 @@ static void get_device_pointer(GdkWindow *win, GdkDevice *dev,
 }
 
 /* Just close the window (freeing allocated memory maybe in the futur?)*/
-void on_destroy(GLOBAL_SKIN_INFOS* gsi)
+void on_destroy()
 {
 	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
 	SAVE_STATE=0;
 	DGLOBAL_L2_A1("*  NO (%d)                                              *\n",SAVE_STATE);
 	DGLOBAL_L2_A0("********************************************************\n\n");
-	save_root_window_dimension(gsi);
+
 	printf("\nThank you for using tilem...\n");
 	
 	gtk_main_quit();
@@ -187,13 +187,11 @@ void quit_with_save(GLOBAL_SKIN_INFOS* gsi)
 
 /* Save the dimension before exit for next times we use tilem */
 void save_root_window_dimension(GLOBAL_SKIN_INFOS* gsi) {
-	//gint * width = g_new(gint, 1);
-	//gint * height = g_new(gint, 1);
 	gint width, height;
 	gtk_window_get_size(GTK_WINDOW(gsi->pWindow), &width, &height);
-	//printf("size : %d, %d\n", width, height);
-	tilem_config_universal_setter_int("settings", "width", (int)width);
-	tilem_config_universal_setter_int("settings", "height", (int)height);
+	printf("size : %d, %d\n", width, height);
+	tilem_config_universal_setter_int("settings", "width", width);
+	tilem_config_universal_setter_int("settings", "height", height);
 }
 	
 
@@ -568,7 +566,7 @@ void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi) {
 
 gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi) {
 	printf("drag and drop !!\n");
-	char* filename = gtk_selection_data_get_text(data);
+	char* filename = (char*)gtk_selection_data_get_text(data);
 	printf("data : %s\n", filename);
 	filename = filename + 7;
 	printf("data : %s\n", filename);

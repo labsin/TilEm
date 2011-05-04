@@ -73,3 +73,6 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg);
 
 /* Update display. */
 void tilem_debugger_refresh(TilemDebugger *dbg, gboolean updatemem);
+
+/* Save the dimension for the debugger */
+void save_debugger_dimension(TilemDebugger *dbg);
