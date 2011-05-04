@@ -51,9 +51,25 @@ tilem_mem_model_get_n_columns(GtkTreeModel *model)
    strings. */
 static GType
 tilem_mem_model_get_column_type(G_GNUC_UNUSED GtkTreeModel *model,
-                                G_GNUC_UNUSED int index)
+                                int index)
 {
-	return G_TYPE_STRING;
+	index %= MM_COLUMNS_PER_BYTE;
+
+	switch (index) {
+	case MM_COL_ADDRESS_0:
+	case MM_COL_HEX_0:
+	case MM_COL_CHAR_0:
+		return G_TYPE_STRING;
+
+	case MM_COL_BYTE_PTR_0:
+		return G_TYPE_POINTER;
+
+	case MM_COL_EDITABLE_0:
+		return G_TYPE_BOOLEAN;
+
+	default:
+		g_return_val_if_reached(G_TYPE_INVALID);
+	}
 }
 
 /* Get an iterator pointing to the nth row */
@@ -178,6 +194,37 @@ static gboolean tilem_mem_model_iter_parent(G_GNUC_UNUSED GtkTreeModel *model,
 	return FALSE;
 }
 
+/* Check if a given physical address is editable (i.e., located in RAM
+   or in a non-protected Flash sector) */
+static gboolean address_editable(TilemCalc *calc, dword a)
+{
+	int start, end, i;
+
+	if (a >= calc->hw.romsize)
+		/* address is in RAM */
+		return TRUE;
+
+	if (!(calc->hw.flags & TILEM_CALC_HAS_FLASH))
+		/* calc does not use Flash */
+		return FALSE;
+
+	/* address is in Flash -> check if sector is protected */
+	start = 0;
+	end = calc->hw.nflashsectors;
+	while (start < end) {
+		i = (start + end) / 2;
+		if (a < calc->hw.flashsectors[i].start)
+			end = i;
+		else if (a > (calc->hw.flashsectors[i].start
+		              + calc->hw.flashsectors[i].size))
+			start = i + 1;
+		else
+			return calc->hw.flashsectors[i].writable;
+	}
+
+	g_return_val_if_reached(FALSE);
+}
+
 /* Retrieve value for a given column */
 static void tilem_mem_model_get_value(GtkTreeModel *model,
                                       GtkTreeIter *iter,
@@ -230,10 +277,14 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 			g_snprintf(buf, sizeof(buf), "%02X:%04X",
 			           page, addr & 0x3fff);
 		}
+		g_value_init(value, G_TYPE_STRING);
+		g_value_set_string(value, buf);
 		break;
 
 	case MM_COL_HEX_0:
 		g_snprintf(buf, sizeof(buf), "%02X", calc->mem[phys]);
+		g_value_init(value, G_TYPE_STRING);
+		g_value_set_string(value, buf);
 		break;
 
 	case MM_COL_CHAR_0:
@@ -245,10 +296,20 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 		else {
 			strcpy(buf, "\357\277\275");
 		}
-	}
+		g_value_init(value, G_TYPE_STRING);
+		g_value_set_string(value, buf);
+		break;
 
-	g_value_init(value, G_TYPE_STRING);
-	g_value_set_string(value, buf);
+	case MM_COL_BYTE_PTR_0:
+		g_value_init(value, G_TYPE_POINTER);
+		g_value_set_pointer(value, &calc->mem[phys]);
+		break;
+
+	case MM_COL_EDITABLE_0:
+		g_value_init(value, G_TYPE_BOOLEAN);
+		g_value_set_boolean(value, address_editable(calc, phys));
+		break;
+	}
 
 	g_mutex_unlock(mm->emu->calc_mutex);
 }

@@ -509,6 +509,39 @@ static gboolean delete_win(G_GNUC_UNUSED GtkWidget *w,
 	return TRUE;
 }
 
+/* Cell edited in memory view */
+static void hex_cell_edited(GtkCellRendererText *renderer,
+                            gchar *pathstr, gchar *text,
+                            gpointer data)
+{
+	TilemDebugger *dbg = data;
+	GtkTreeModel *model;
+	GtkTreePath *path;
+	GtkTreeIter iter;
+	byte *bptr = NULL;
+	int col;
+	int value;
+	char *end;
+
+	value = strtol(text, &end, 16);
+	if (end == text || *end != 0)
+		return;
+
+	col = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),
+	                                        "tilem-mem-column"));
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(dbg->mem_view));
+	path = gtk_tree_path_new_from_string(pathstr);
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_path_free(path);
+
+	gtk_tree_model_get(model, &iter, MM_COL_BYTE_PTR(col), &bptr, -1);
+	g_return_if_fail(bptr != NULL);
+
+	*bptr = (byte) value;
+	tilem_debugger_refresh(dbg, TRUE);
+}
+
 /* Create table of widgets for editing registers */
 static GtkWidget *create_registers(TilemDebugger *dbg)
 {
@@ -616,7 +649,7 @@ static GtkWidget *create_stack_view()
 }
 
 /* Create the GtkTreeView to show the memory */
-static GtkWidget *create_memory_view()
+static GtkWidget *create_memory_view(TilemDebugger *dbg)
 {
 	GtkCellRenderer     *renderer;
 	GtkTreeViewColumn   *column;
@@ -643,7 +676,15 @@ static GtkWidget *create_memory_view()
 	for (i = 0; i < 8; i++) {
 		renderer = gtk_cell_renderer_text_new ();
 		column = gtk_tree_view_column_new_with_attributes
-			(NULL, renderer, "text", MM_COL_HEX(i), NULL);
+			(NULL, renderer,
+			 "text", MM_COL_HEX(i),
+			 "editable", MM_COL_EDITABLE(i),
+			 NULL);
+
+		g_object_set_data(G_OBJECT(renderer), "tilem-mem-column",
+		                  GINT_TO_POINTER(i));
+		g_signal_connect(renderer, "edited",
+		                 G_CALLBACK(hex_cell_edited), dbg);
 
 		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
 		gtk_tree_view_column_set_fixed_width(column, 20);
@@ -762,7 +803,7 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 
 	/* Memory view */
 
-	dbg->mem_view = create_memory_view();
+	dbg->mem_view = create_memory_view(dbg);
 	sw = new_scrolled_window(dbg->mem_view);
 	gtk_paned_pack2(GTK_PANED(vpaned), sw, TRUE, TRUE);
 

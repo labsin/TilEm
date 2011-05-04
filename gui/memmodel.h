@@ -30,12 +30,16 @@ enum {
 	MM_COL_HEX_0,           /* Byte value (hexadecimal) */
 	MM_COL_CHAR_0,          /* Byte value (character, converted to
 	                           UTF-8) */
+	MM_COL_BYTE_PTR_0,	/* Pointer to corresponding memory byte */
+	MM_COL_EDITABLE_0,      /* TRUE if byte is editable */
 	MM_COLUMNS_PER_BYTE
 };
 
 #define MM_COL_ADDRESS(n) (MM_COL_ADDRESS_0 + (n) * MM_COLUMNS_PER_BYTE)
 #define MM_COL_HEX(n) (MM_COL_HEX_0 + (n) * MM_COLUMNS_PER_BYTE)
 #define MM_COL_CHAR(n) (MM_COL_CHAR_0 + (n) * MM_COLUMNS_PER_BYTE)
+#define MM_COL_BYTE_PTR(n) (MM_COL_BYTE_PTR_0 + (n) * MM_COLUMNS_PER_BYTE)
+#define MM_COL_EDITABLE(n) (MM_COL_EDITABLE_0 + (n) * MM_COLUMNS_PER_BYTE)
 
 /* GObject stuff */
 
