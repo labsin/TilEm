@@ -47,6 +47,11 @@ void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) {
 		char* dest = select_file_for_save(gsi, tilem_config_universal_getter("macro", "loadmacro_recentdir"));
 		if(dest) {
 			copy_paste("play.txt", dest);
+			tilem_config_universal_setter("macro", "loadmacro_recentfile", dest);
+			char* p = strrchr(dest, '/');
+			if(p)
+				strcpy(p,"\0");
+			printf("dest : %s\n", dest);
 			tilem_config_universal_setter("macro", "loadmacro_recentdir", dest);
 		}
 	}
