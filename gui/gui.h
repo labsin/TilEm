@@ -240,6 +240,28 @@ void copy_paste(const char* src, const char* dest);
 
 /* ##### config.c ##### */
 
+/* Retrieve settings from configuration file.  GROUP is the
+   configuration group; following arguments are a series of OPTION
+   strings, each followed by a pointer to a variable that will receive
+   the value.  The list of options is terminated by NULL.
+
+   Each OPTION is a string of the form "KEY/TYPE", where KEY is the
+   name of the configuration property, and TYPE is either 'f' for a
+   filename (char*), 's' for a UTF-8 string (char*), 'i' for an
+   integer (int), or 'r' for a real number (double).
+
+   Values that have not been set by the user are set to zero or NULL.
+   Strings returned by this function must be freed by the caller
+   (using g_free().) */
+void tilem_config_get(const char *group, const char *option, ...)
+	G_GNUC_NULL_TERMINATED;
+
+/* Save settings to the configuration file.  Arguments are a series of
+   option names, as above, each followed by the new value of the
+   option.  The list is terminated by NULL. */
+void tilem_config_set(const char *group, const char *option, ...)
+	G_GNUC_NULL_TERMINATED;
+
 /* Search and return the default skin for this model */
 char* get_defaultskin(const char* romname);
 

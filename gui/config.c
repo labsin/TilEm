@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,6 +23,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -166,6 +168,121 @@ static void save_config(GKeyFile *gkf)
 	g_free(cfname);
 	g_free(data);
 }
+
+/* Retrieve settings from the configuration file. */
+void tilem_config_get(const char *group, const char *option, ...)
+{
+	va_list ap;
+	GKeyFile *gkf;
+	const char *type;
+	char *key;
+	char **strp;
+	int *intp;
+	double *dblp;
+
+	g_return_if_fail(group != NULL);
+	g_return_if_fail(option != NULL);
+
+	gkf = load_config(FALSE);
+
+	va_start(ap, option);
+	while (option != NULL) {
+		type = strrchr(option, '/');
+		if (type == NULL || type[1] == 0 || type[2] != 0) {
+			g_critical("invalid argument\n");
+			break;
+		}
+
+		key = g_strndup(option, type - option);
+
+		if (type[1] == 'f') {
+			strp = va_arg(ap, char **);
+			*strp = key_file_get_filename(gkf, group, key, NULL);
+		}
+		else if (type[1] == 's') {
+			strp = va_arg(ap, char **);
+			*strp = g_key_file_get_string(gkf, group, key, NULL);
+		}
+		else if (type[1] == 'i') {
+			intp = va_arg(ap, int *);
+			*intp = g_key_file_get_integer(gkf, group, key, NULL);
+		}
+		else if (type[1] == 'r') {
+			dblp = va_arg(ap, double *);
+			*dblp = g_key_file_get_double(gkf, group, key, NULL);
+		}
+		else {
+			g_critical("invalid argument\n");
+			g_free(key);
+			break;
+		}
+
+		g_free(key);
+		option = va_arg(ap, const char *);
+	}
+	va_end(ap);
+
+	g_key_file_free(gkf);
+}
+
+/* Save settings to the configuration file. */
+void tilem_config_set(const char *group, const char *option, ...)
+{
+	va_list ap;
+	GKeyFile *gkf;
+	const char *type;
+	char *key;
+	const char *strv;
+	int intv;
+	double dblv;
+
+	g_return_if_fail(group != NULL);
+	g_return_if_fail(option != NULL);
+
+	gkf = load_config(TRUE);
+
+	va_start(ap, option);
+	while (option != NULL) {
+		type = strrchr(option, '/');
+		if (type == NULL || type[1] == 0 || type[2] != 0) {
+			g_critical("invalid argument\n");
+			break;
+		}
+
+		key = g_strndup(option, type - option);
+
+		if (type[1] == 'f') {
+			strv = va_arg(ap, const char *);
+			key_file_set_filename(gkf, group, key, strv);
+		}
+		else if (type[1] == 's') {
+			strv = va_arg(ap, const char *);
+			g_key_file_set_string(gkf, group, key, strv);
+		}
+		else if (type[1] == 'i') {
+			intv = va_arg(ap, int);
+			g_key_file_set_integer(gkf, group, key, intv);
+		}
+		else if (type[1] == 'r') {
+			dblv = va_arg(ap, double);
+			g_key_file_set_double(gkf, group, key, dblv);
+		}
+		else {
+			g_critical("invalid argument\n");
+			g_free(key);
+			break;
+		}
+
+		g_free(key);
+
+		option = va_arg(ap, const char *);
+	}
+	va_end(ap);
+
+	save_config(gkf);
+	g_key_file_free(gkf);
+}
+
 
 /* Search the most recent rom */
 char* get_recentrom(char* romname)
