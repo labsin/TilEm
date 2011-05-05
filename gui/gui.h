@@ -274,17 +274,8 @@ char* get_recentrom(char* romname);
 /* Set a default skin, or add it if not exists */
 void set_recentrom(const char* romname);
 
-/* get the model */
-int get_modelcalcid(const char* romname);
-
-/* Set model calc id */
-void set_modelcalcid(const char* romname, char id);
-
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
-
-/* search, write, and save config on right click menu */
-void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi);
 
 /* Get a key from a group from config file */
 char* tilem_config_universal_getter(const char* group, const char* key);

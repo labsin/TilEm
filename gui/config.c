@@ -341,50 +341,10 @@ void set_recentrom(const char* romname)
 	g_key_file_free(gkf);
 }
 
-/* Get the saved model for a rom */
-int get_modelcalcid(const char* romname)
-{
-	GKeyFile * gkf;
-	gkf = load_config(FALSE);
-	
-	char* pcalc_id = g_key_file_get_string(gkf, "model", romname, NULL);
-	if(pcalc_id == NULL) {
-		printf("Not found :\n");
-		return 0;
-	}
-	
-	g_key_file_free(gkf);
-	//printf("calc_id : %s\n", pcalc_id);
-	return pcalc_id[0];
-}
-
-/* Set model calc id */
-void set_modelcalcid(const char* romname, char id)
-{
-	GKeyFile * gkf;
-	char idstr[2];
-
-	gkf = load_config(TRUE);
-
-	idstr[0] = id;
-	idstr[1] = '\0';
-	g_key_file_set_string(gkf, "model", romname, idstr);
-	
-	/* Save the config */
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
-
 /* search, write, and save config on right click menu */
 void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi)
 {
 	tilem_config_universal_setter("skin", gsi->emu->cmdline->RomName, gsi->emu->cmdline->SkinFileName);
-}
-
-/* search, write, and save config on right click menu */
-void add_or_modify_defaultmodel(GLOBAL_SKIN_INFOS* gsi)
-{
-	set_modelcalcid(gsi->emu->cmdline->RomName, gsi->emu->calc->hw.model_id);
 }
 
 

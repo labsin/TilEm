@@ -313,16 +313,11 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		g_free(savname);
 		return FALSE;
 	}
-	g_free(savname);
 
 	/* Determine model from state file, if possible */
 
 	if (savfile)
 		model = tilem_get_sav_type(savfile);
-
-	/* Second chance, maybe user already defines model into the config file (using right click menu) */	
-
-	model = get_modelcalcid(filename);
 
 	/* Otherwise, guess from ROM file; ask user if ambiguous */
 
@@ -346,6 +341,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	if (!model) {
 		fclose(romfile);
 		if (savfile) fclose(savfile);
+		g_free(savname);
 		return FALSE;
 	}
 
@@ -358,7 +354,15 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		             "The specified ROM or state file is invalid.");
 		fclose(romfile);
 		if (savfile) fclose(savfile);
+		g_free(savname);
 		return FALSE;
+	}
+
+	if (!savfile) {
+		/* save model as default for the future */
+		savfile = g_fopen(savname, "wb");
+		if (savfile)
+			fprintf(savfile, "MODEL = %s\n", calc->hw.name);
 	}
 
 	fclose(romfile);
@@ -386,6 +390,8 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	if (emu->rom_file_name)
 		g_free(emu->rom_file_name);
 	emu->rom_file_name = g_strdup(filename);
+
+	g_free(savname);
 
 	return TRUE;
 }
