@@ -836,18 +836,15 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 }
 
 /* Save the dimension for the debugger */
-void save_debugger_dimension(TilemDebugger *dbg) {
-
-        gint width, height;
+void save_debugger_dimension(TilemDebugger *dbg)
+{
+	gint width, height;
 	gtk_window_get_size(GTK_WINDOW(dbg->window), &width, &height);
-	printf("size : %d, %d\n", width, height);
-	
-	tilem_config_universal_setter_int("debugger", "width", (int)width);
-	tilem_config_universal_setter_int("debugger", "height", (int)height);
-
-
+	tilem_config_set("debugger",
+	                 "width/i", width,
+	                 "height/i", height,
+	                 NULL);
 }
-
 
 /* Free a TilemDebugger. */
 void tilem_debugger_free(TilemDebugger *dbg)
@@ -1010,6 +1007,8 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 /* Show debugger, and pause emulator if not already paused. */
 void tilem_debugger_show(TilemDebugger *dbg)
 {
+	int defwidth, defheight;
+
 	g_return_if_fail(dbg != NULL);
 	g_return_if_fail(dbg->emu->calc != NULL);
 	tilem_calc_emulator_pause(dbg->emu);
@@ -1021,8 +1020,11 @@ void tilem_debugger_show(TilemDebugger *dbg)
 	gtk_window_present(GTK_WINDOW(dbg->window));
 
 		/* Try to get the saved dimension for the debugger */
-	int defwidth = tilem_config_universal_getter_int("debugger", "width");	
-	int defheight = tilem_config_universal_getter_int("debugger", "height");	
+	tilem_config_get("debugger",
+	                 "width/i", &defwidth,
+	                 "height/i", &defheight,
+	                 NULL);
+
 	if((defwidth != 0) && (defheight != 0)) 
 		gtk_window_resize(GTK_WINDOW(dbg->window), defwidth, defheight);
 

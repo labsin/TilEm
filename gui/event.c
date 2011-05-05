@@ -186,12 +186,14 @@ void quit_with_save(GLOBAL_SKIN_INFOS* gsi)
 }
 
 /* Save the dimension before exit for next times we use tilem */
-void save_root_window_dimension(GLOBAL_SKIN_INFOS* gsi) {
+void save_root_window_dimension(GLOBAL_SKIN_INFOS* gsi)
+{
 	gint width, height;
 	gtk_window_get_size(GTK_WINDOW(gsi->pWindow), &width, &height);
-	printf("size : %d, %d\n", width, height);
-	tilem_config_universal_setter_int("settings", "width", width);
-	tilem_config_universal_setter_int("settings", "height", height);
+	tilem_config_set("settings",
+	                 "width/i", width,
+	                 "height/i", height,
+	                 NULL);
 }
 	
 
@@ -504,13 +506,17 @@ void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 /* Load a file */
 void load_file(GLOBAL_SKIN_INFOS *gsi)
 {
-	char* filename= NULL;
+	char *filename, *dir;
 
 	/* Launch and get the result of a GtkFileChooserDialog. Cancelled -> filename == NULL */
-	filename = select_file(gsi, tilem_config_universal_getter("upload", "sendfile_recentdir"));
+	tilem_config_get("upload",
+	                 "sendfile_recentdir/f", &dir,
+	                 NULL);
+	filename = select_file(gsi, dir);
+	g_free(dir);
 
 	/* Test if FileChooser cancelled ... */
-	if(filename != NULL) {
+	if (filename != NULL) {
 		//printf("filename = %s", filename);
 		load_file_from_file(gsi, filename);
 
@@ -518,12 +524,14 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 			add_load_file_in_macro_file(gsi, strlen(filename), filename);
 
 		/* Search the directory and save it into the config file (for the next open file) */
-		char* p;
-		if ((p = strrchr(filename, '/'))) {
-			strcpy(p, "\0");
-			tilem_config_universal_setter("upload", "sendfile_recentdir", filename);
-		}
+		dir = g_path_get_dirname(filename);
+		tilem_config_set("upload",
+		                 "sendfile_recentdir/f", dir,
+		                 NULL);
+		g_free(dir);
 	}
+
+	g_free(filename);
 }
 
 /* Load a file without file_selector */

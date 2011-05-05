@@ -55,16 +55,29 @@ void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 
 	char basename[11] = "screenshot";
-	char* folder = tilem_config_universal_getter("screenshot", "screenshot_directory");
-	
+	char* folder, *filename;
+
+	/* FIXME: not really sure what the intention is here.
+	   Presumably what we'd like to do is to use the filename
+	   found by find_free_filename() as a *default*, but then
+	   prompt the user using a GtkFileChooser, and save the chosen
+	   directory back in the config file for the future. */
+
 	/* Look for the next free filename (don't erase previous screenshots) */
-	char* filename = find_free_filename(folder, basename, ".png\0");
+	tilem_config_get("screenshot",
+	                 "screenshot_directory/f", &folder,
+	                 NULL);
+	if (!folder)
+		folder = g_get_current_dir();
+	filename = find_free_filename(folder, basename, ".png\0");
+	g_free(folder);
 
 	if(filename)	
 		save_screenshot(gsi, filename, "png");
-	 
-	tilem_config_universal_setter("screenshot", "screenshot_recent", filename);
+
+	/*tilem_config_universal_setter("screenshot", "screenshot_recent", filename);*/
 	change_review_image(gsi, filename);
+	/* FIXME: memory leak */
 }
 
 
@@ -74,6 +87,13 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 	FILE * fp;
 	int i;
 	char* filename;
+
+	/* FIXME: this has a bunch of problems - it's leaking memory,
+	   and it's checking whether files are readable when what we
+	   want is simply to test whether they exist.  It's also just
+	   plain messy.  This should be rewritten using, e.g.,
+	   g_strdup_printf(), g_build_filename(), and
+	   g_file_test(). */
 
 	/* Complicated method just to find a free filename (do not save more than 999 screenshots ! I know this is stupid) */
 	for(i=0; i<999; i++) {
@@ -241,10 +261,19 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget * animation_dir_label = gtk_label_new("Animations folder :");
 
 	/* GtkFileChooserButton */
+	char *ssdir, *animdir;
+
+	tilem_config_get("screenshot",
+	                 "screenshot_directory/f", &ssdir,
+	                 "animation_directory/f", &animdir,
+	                 NULL);
+
 	gsi->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot), tilem_config_universal_getter("screenshot", "screenshot_directory"));	
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot), ssdir);
 	gsi->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation), tilem_config_universal_getter("screenshot", "animation_directory"));	
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation), animdir);
+	g_free(ssdir);
+	g_free(animdir);
 
 	gtk_box_pack_start (GTK_BOX (hboxc1), screenshot_dir_label, 2, 3, 4);
 	gtk_box_pack_end (GTK_BOX (hboxc1), gsi->folder_chooser_screenshot, 2, 3, 4);
@@ -299,30 +328,35 @@ void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 /* Callback for stop button (stop the recording) */
 static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 	g_print("stop event\n");
-	char* dest = NULL;
+	char* dest = NULL, *dir;
 
 	tilem_animation_stop(gsi) ;
 	
 	if(gsi->isAnimScreenshotRecording) {
 		gsi->isAnimScreenshotRecording = FALSE;
 		stop_spinner(gsi);
-		dest = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
+
+		tilem_config_get("screenshot",
+		                 "animation_directory/f", &dir,
+		                 NULL);
+		dest = select_file_for_save(gsi, dir);
+		g_free(dir);
 	}
 
 	if(dest) {
-		tilem_config_universal_setter("screenshot", "animation_recent", dest);
+		dir = g_path_get_dirname(dest);
+		tilem_config_set("screenshot",
+		                 "animation_recent/f", dest,
+		                 "animation_directory/f", dir,
+		                 NULL);
+		g_free(dir);
+
 		copy_paste("gifencod.gif", dest);
 		change_review_image(gsi, dest);
-		char* p =  strrchr(dest, '/');
-		printf("%s", p);
-		if(p)
-			strcpy(p, "\0");
-		printf("%s", dest);
-		
-		tilem_config_universal_setter("screenshot", "animation_directory", dest);
 	}
+	g_free(dest);
+
 	delete_spinner_and_put_logo(gsi);
-	
 }
 
 /* Callback for screenshot button (take a screenshot) */
@@ -387,34 +421,46 @@ static void on_play(G_GNUC_UNUSED GtkWidget * win, G_GNUC_UNUSED GLOBAL_SKIN_INF
 	printf("play\n");
 	GtkWidget *fenetre = NULL;
 	GtkWidget *image = NULL;
+	char *filename;
+
+	tilem_config_get("screenshot",
+	                 "animation_recent/f", &filename,
+	                 NULL);
+	if (!filename)
+		return;
 
 	fenetre = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(fenetre),"destroy",G_CALLBACK(on_destroy_playview), NULL);
 
-	image = gtk_image_new_from_file(tilem_config_universal_getter("screenshot", "animation_recent"));
+	image = gtk_image_new_from_file(filename);
 	gtk_container_add(GTK_CONTAINER(fenetre),image);
 
 	gtk_widget_show_all(fenetre);
-
+	g_free(filename);
 }
 
 /* Callback for play button (replay the last gif) */
 static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
-	char* src = NULL;
-	src = select_file_for_save(gsi, tilem_config_universal_getter("screenshot", "animation_directory"));
+	char* src = NULL, *dir;
+
+	tilem_config_get("screenshot",
+	                 "animation_directory/f", &dir,
+	                 NULL);
+
+	src = select_file_for_save(gsi, dir);
+	g_free(dir);
 	if(src) {
-		tilem_config_universal_setter("screenshot", "animation_recent", src);
+		dir = g_path_get_dirname(src);
+		tilem_config_set("screenshot",
+		                 "animation_recent/f", src,
+		                 "animation_directory/f", dir,
+		                 NULL);
+		g_free(dir);
+
 		change_review_image(gsi, src);
-		char* p =  strrchr(src, '/');
-		printf("%s", p);
-		if(p)
-			strcpy(p, "\0");
-		printf("%s", src);
-		
-		tilem_config_universal_setter("screenshot", "animation_directory", src);
 	}
 
-
+	g_free(src);
 }
 	 
 
@@ -422,8 +468,10 @@ static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot)); 
 	if(folder) 
-		tilem_config_universal_setter("screenshot", "screenshot_directory", folder);
-	
+		tilem_config_set("screenshot",
+		                 "screenshot_directory/f", folder,
+		                 NULL);
+	g_free(folder);
 }
 
 	
@@ -431,6 +479,8 @@ static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_
 	char* folder = NULL;
 	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation)); 
 	if(folder)
-		tilem_config_universal_setter("screenshot", "animation_directory", folder);
-	
+		tilem_config_set("screenshot",
+		                 "animation_directory/f", folder,
+		                 NULL);
+	g_free(folder);
 }

@@ -37,25 +37,31 @@ void start_record_macro(GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Turn off recording macro */
-void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) {
+void stop_record_macro(GLOBAL_SKIN_INFOS* gsi)
+{
+	char *dir, *dest;
 	
 	if(gsi->isMacroRecording == 1) {
 		gsi->isMacroRecording = 0;
 		if(gsi->macro_file != NULL)
 			fclose(gsi->macro_file);
-		
-		char* dest = select_file_for_save(gsi, tilem_config_universal_getter("macro", "loadmacro_recentdir"));
-		if(dest) {
+
+		tilem_config_get("macro",
+		                 "loadmacro_recentdir/f", &dir,
+		                 NULL);
+		dest = select_file_for_save(gsi, dir);
+		g_free(dir);
+
+		if (dest) {
 			copy_paste("play.txt", dest);
-			tilem_config_universal_setter("macro", "loadmacro_recentfile", dest);
-			char* p = strrchr(dest, '/');
-			if(p)
-				strcpy(p,"\0");
-			printf("dest : %s\n", dest);
-			tilem_config_universal_setter("macro", "loadmacro_recentdir", dest);
+			dir = g_path_get_dirname(dest);
+			tilem_config_set("macro",
+			                 "loadmacro_recentdir/f", dir,
+			                 NULL);
+			g_free(dir);
+			g_free(dest);
 		}
 	}
-	
 }
 	
 /* Create the macro file */
@@ -147,9 +153,18 @@ void play_macro(GLOBAL_SKIN_INFOS* gsi) {
 
 /* Callback signal (rightclick menu) */
 void play_macro_from_file(GLOBAL_SKIN_INFOS* gsi) {
-	char* filename = select_file(gsi, tilem_config_universal_getter("macro", "loadmacro_recentdir"));
+	char *dir, *filename;
+
+	tilem_config_get("macro",
+	                 "loadmacro_recentdir/f", &dir,
+	                 NULL);
+
+	filename = select_file(gsi, dir);
 	if(filename)
 		play_macro_default(gsi, filename);
+
+	g_free(dir);
+	g_free(filename);
 }
 	
 
