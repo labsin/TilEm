@@ -114,7 +114,12 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	}
 
 	gsi->si = g_new0(SKIN_INFOS, 1);
-	skin_load(gsi->si, gsi->emu->cmdline->SkinFileName);
+
+	if (!gsi->skin_disabled) {
+		if (!gsi->emu->cmdline->SkinFileName
+		    || skin_load(gsi->si, gsi->emu->cmdline->SkinFileName))
+			gsi->skin_disabled = 1;
+	}
 
 	lcdwidth = gsi->emu->calc->hw.lcdwidth;
 	lcdheight = gsi->emu->calc->hw.lcdheight;
@@ -130,7 +135,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gsi->emu->lcdwin = gtk_drawing_area_new();
 
 	/* create background image and layout */
-	if (gsi->view == 0) {
+	if (!gsi->skin_disabled) {
 		gsi->pLayout = gtk_layout_new(NULL, NULL);
 
 		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
@@ -236,7 +241,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 /* Switch between skin and LCD-only mode */
 void switch_view(GLOBAL_SKIN_INFOS * gsi)
 {
-	gsi->view = !gsi->view;
+	gsi->skin_disabled = !gsi->skin_disabled;
 	redraw_screen(gsi);
 }
 
@@ -314,7 +319,7 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	int r_light, g_light, b_light;
 	double gamma = 2.2;
 
-	if (gsi->view == 1 || !gsi->si) {
+	if (gsi->skin_disabled || !gsi->si) {
 		/* no skin -> use standard GTK colors */
 
 		style = gtk_widget_get_style(w);
@@ -414,8 +419,6 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items)
 
 GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)  
 {
-	gsi->view = 0;
-
 	/* Create the window */
 	gsi->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	

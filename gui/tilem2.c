@@ -84,6 +84,9 @@ int main(int argc, char **argv)
 	if(cmdline->SkinFileName == NULL)
 		tilem_choose_skin_filename_by_default(gsi);
 
+	if(cmdline->isStartingSkinless) /* Given as parameter ? */
+		gsi->skin_disabled = 1;
+
 	/* Draw skin */	
 	gsi->pWindow=draw_screen(gsi);
 
@@ -94,8 +97,6 @@ int main(int argc, char **argv)
 		
 	if(cmdline->FileToLoad != NULL) /* Given as parameter ? */
 		tilem_load_file_from_file_at_startup(gsi, cmdline->FileToLoad);
-	if(cmdline->isStartingSkinless) /* Given as parameter ? */
-		switch_view(gsi); /* Start without skin */
 	if(cmdline->MacroToPlay != NULL) { /* Given as parameter ? */
 		play_macro_default(gsi, cmdline->MacroToPlay); 		
 	}

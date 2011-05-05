@@ -102,11 +102,9 @@ void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi)
 	g_free(default_dir);
 
 	if (file_selected != NULL) {
-		/* If the mode is "skinless mode", switch to "skin mode" without asking user... then change skin  */	
-		if(gsi->view==1)  
-			switch_view(gsi);
 		g_free(gsi->emu->cmdline->SkinFileName);
 		gsi->emu->cmdline->SkinFileName = file_selected;
+		gsi->skin_disabled = 0;
 		redraw_screen(gsi);
 
 		/* if file is stored in shared skins directory, save

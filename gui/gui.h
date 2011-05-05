@@ -53,7 +53,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	/* General informations */
 	TilemCalcEmulator *emu; /* The very important  TilemCalcEmulator struct */
 	char calc_id; /* The model id */ 
-	int view;  	/* A flag to know if skinless or not */
+	int skin_disabled; /* A flag to know if skinless or not */
 
 	/* Skin infos  */
 	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
