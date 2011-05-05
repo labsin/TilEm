@@ -211,6 +211,10 @@ void tilem_config_get(const char *group, const char *option, ...)
 			dblp = va_arg(ap, double *);
 			*dblp = g_key_file_get_double(gkf, group, key, NULL);
 		}
+		else if (type[1] == 'b') {
+			intp = va_arg(ap, int *);
+			*intp = g_key_file_get_boolean(gkf, group, key, NULL);
+		}
 		else {
 			g_critical("invalid argument\n");
 			g_free(key);
@@ -266,6 +270,10 @@ void tilem_config_set(const char *group, const char *option, ...)
 		else if (type[1] == 'r') {
 			dblv = va_arg(ap, double);
 			g_key_file_set_double(gkf, group, key, dblv);
+		}
+		else if (type[1] == 'b') {
+			intv = va_arg(ap, int);
+			g_key_file_set_boolean(gkf, group, key, !!intv);
 		}
 		else {
 			g_critical("invalid argument\n");

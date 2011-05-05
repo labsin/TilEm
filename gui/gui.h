@@ -248,7 +248,8 @@ void copy_paste(const char* src, const char* dest);
    Each OPTION is a string of the form "KEY/TYPE", where KEY is the
    name of the configuration property, and TYPE is either 'f' for a
    filename (char*), 's' for a UTF-8 string (char*), 'i' for an
-   integer (int), or 'r' for a real number (double).
+   integer (int), 'r' for a real number (double), or 'b' for a boolean
+   (int).
 
    Values that have not been set by the user are set to zero or NULL.
    Strings returned by this function must be freed by the caller

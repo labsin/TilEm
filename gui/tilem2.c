@@ -81,10 +81,14 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A0("********************************************************\n");
 	
 
-	if(cmdline->SkinFileName == NULL)
+	if (cmdline->SkinFileName == NULL) {
 		tilem_choose_skin_filename_by_default(gsi);
+		tilem_config_get("settings",
+		                 "skin_disabled/b", &gsi->skin_disabled,
+		                 NULL);
+	}
 
-	if(cmdline->isStartingSkinless) /* Given as parameter ? */
+	if (cmdline->isStartingSkinless)
 		gsi->skin_disabled = 1;
 
 	/* Draw skin */	

@@ -241,8 +241,14 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 /* Switch between skin and LCD-only mode */
 void switch_view(GLOBAL_SKIN_INFOS * gsi)
 {
-	gsi->skin_disabled = !gsi->skin_disabled;
+	int mode;
+	gsi->skin_disabled = mode = !gsi->skin_disabled;
 	redraw_screen(gsi);
+
+	if (gsi->skin_disabled == mode)
+		tilem_config_set("settings",
+		                 "skin_disabled/b", mode,
+		                 NULL);
 }
 
 /* Display the lcd image into the terminal */
