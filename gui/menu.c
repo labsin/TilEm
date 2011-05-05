@@ -84,7 +84,6 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(save_item), "Save current state/config...");
 	GtkWidget* save_state_item = create_menu_item ("Save state...", GTK_STOCK_SAVE);
-	GtkWidget* set_default_skin_item = create_menu_item ("Use this skin as default for this rom" ,GTK_STOCK_APPLY);
 	/* <<<< */
 	
 	/* >>>> Sub menu macro */
@@ -125,7 +124,6 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 
 	/* Sub menu save */
 	gtk_menu_shell_append (GTK_MENU_SHELL (save_submenu), save_state_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (save_submenu), set_default_skin_item);
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(save_item), save_submenu);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), save_item);
 	/* <<<< */
@@ -155,7 +153,6 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (set_default_skin_item), "activate", G_CALLBACK (add_or_modify_defaultskin), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (save_state_item), "activate", G_CALLBACK (save_state), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (start_record_macro_item), "activate", G_CALLBACK (start_record_macro), (gpointer) gsi);
 	g_signal_connect_swapped (GTK_OBJECT (stop_record_macro_item), "activate", G_CALLBACK (stop_record_macro), (gpointer) gsi);
@@ -178,7 +175,6 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	gtk_widget_show (switch_view_item);
 	gtk_widget_show (switch_borderless_item);
 	gtk_widget_show (save_item);
-	gtk_widget_show (set_default_skin_item);
 	gtk_widget_show (save_state_item);
 	gtk_widget_show (macro_item);
 	gtk_widget_show (start_record_macro_item);

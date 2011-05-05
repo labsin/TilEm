@@ -262,20 +262,11 @@ void tilem_config_get(const char *group, const char *option, ...)
 void tilem_config_set(const char *group, const char *option, ...)
 	G_GNUC_NULL_TERMINATED;
 
-/* Search and return the default skin for this model */
-char* get_defaultskin(const char* romname);
-
-/* Set a default skin, or add it if not exists */
-void set_defaultskin(const char* romname, const char* skinname);
-
 /* Search the most recent rom */
 char* get_recentrom(char* romname);
 
 /* Set a default skin, or add it if not exists */
 void set_recentrom(const char* romname);
-
-/* search, write, and save config on right click menu */
-void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi);
 
 /* Get a key from a group from config file */
 char* tilem_config_universal_getter(const char* group, const char* key);
