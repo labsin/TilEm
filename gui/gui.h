@@ -262,27 +262,6 @@ void tilem_config_get(const char *group, const char *option, ...)
 void tilem_config_set(const char *group, const char *option, ...)
 	G_GNUC_NULL_TERMINATED;
 
-/* Search the most recent rom */
-char* get_recentrom(char* romname);
-
-/* Set a default skin, or add it if not exists */
-void set_recentrom(const char* romname);
-
-/* Get a key from a group from config file */
-char* tilem_config_universal_getter(const char* group, const char* key);
-
-/* Search the value for key into group */
-int tilem_config_universal_getter_int(const char* group, const char* key);
-
-/* Universal setter for string */
-void tilem_config_universal_setter(const char* group, const char* key, const char* value);
-
-/* Universal setter for integer */
-void tilem_config_universal_setter_int(const char* group, const char* key, int value);
-
-/* Test if the group exists in config_file */
-gboolean tilem_test_group_exist_from_config_file(char* config_file, char* group);
-
 
 
 /* ##### link.c ##### */

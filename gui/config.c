@@ -283,6 +283,7 @@ void tilem_config_set(const char *group, const char *option, ...)
 	g_key_file_free(gkf);
 }
 
+#if 0
 
 /* Search the most recent rom */
 char* get_recentrom(char* romname)
@@ -341,79 +342,4 @@ void set_recentrom(const char* romname)
 	g_key_file_free(gkf);
 }
 
-/* search, write, and save config on right click menu */
-void add_or_modify_defaultskin(GLOBAL_SKIN_INFOS* gsi)
-{
-	tilem_config_universal_setter("skin", gsi->emu->cmdline->RomName, gsi->emu->cmdline->SkinFileName);
-}
-
-
-
-char* get_defaultskin(const char* romname) {
-	return  tilem_config_universal_getter("skin", romname);
-}
-
-
-/* Search the value for key into group */
-char* tilem_config_universal_getter(const char* group, const char* key)
-{
-	GKeyFile * gkf;
-	char *string;
-
-	gkf = load_config(FALSE);
-	if(!g_key_file_has_group(gkf, group)) {
-		messagebox02(NULL, GTK_MESSAGE_ERROR,
-			             "Unable to load settings",
-			             "An error occurred while getting %s: %s",
-			             group, key);
-		return NULL;
-	} else {
-
-		string = g_key_file_get_string(gkf, group, key, NULL);
-		g_key_file_free(gkf);
-		return string;
-	}
-}
-
-/* Search the value for key into group */
-int tilem_config_universal_getter_int(const char* group, const char* key)
-{
-	GKeyFile * gkf;
-	int value ;
-
-	gkf = load_config(FALSE);
-	if(!g_key_file_has_group(gkf, group)) {
-		messagebox02(NULL, GTK_MESSAGE_ERROR,
-			             "Unable to load settings",
-			             "An error occurred while getting %s: %s",
-			             group, key);
-		return 0;
-	} else {
-
-		value = g_key_file_get_integer(gkf, group, key, NULL);
-		g_key_file_free(gkf);
-		return value;
-	}
-}
-
-void tilem_config_universal_setter(const char* group, const char* key, const char* value) {
-	GKeyFile * gkf;
-
-	gkf = load_config(TRUE);
-	key_file_set_filename(gkf, group, key, value);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
-
-void tilem_config_universal_setter_int(const char* group, const char* key, int value) {
-	GKeyFile * gkf;
-
-	gkf = load_config(TRUE);
-	g_key_file_set_integer(gkf, group, key, value);
-	save_config(gkf);
-	g_key_file_free(gkf);
-}
-
-
-
-
+#endif
