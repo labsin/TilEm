@@ -54,7 +54,7 @@ void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
 /* This method is called from click event */
 void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 
-	char basename[11] = "screenshot";
+	char* basename = g_strdup("screenshot");
 	char* folder, *filename;
 
 	/* FIXME: not really sure what the intention is here.
@@ -63,6 +63,16 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	   prompt the user using a GtkFileChooser, and save the chosen
 	   directory back in the config file for the future. */
 
+	/* Taking screenshot (png not gif) should be really easyi and quickly done.
+	   That's why I don't ask user for the filename.
+	   The directory could be modified using the GtkFileChooserDialog in the screenshot menu.
+	   I prefer do not ask for the filename because it's waste of time I think.
+	   This is not the same thing for animated gif, because user probably do animation.
+	   not so often than simple screenshot. So in this case tilem ask for filename.
+	   But if you prefer to ask filename no problem ;)
+	*/
+	
+	
 	/* Look for the next free filename (don't erase previous screenshots) */
 	tilem_config_get("screenshot",
 	                 "screenshot_directory/f", &folder,
@@ -70,54 +80,47 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	if (!folder)
 		folder = g_get_current_dir();
 	filename = find_free_filename(folder, basename, ".png\0");
-	g_free(folder);
+	printf("filename test : %s\n", filename);
 
 	if(filename)	
 		save_screenshot(gsi, filename, "png");
 
 	/*tilem_config_universal_setter("screenshot", "screenshot_recent", filename);*/
 	change_review_image(gsi, filename);
-	/* FIXME: memory leak */
+	g_free(filename);
+	g_free(folder);
+	g_free(basename);
+	
 }
 
-
+/* Look for a free filename by testing [folder]/[basename]000.[extension] to [folder]/[basename]999.[extension]
+   Return a newly allocated string if success
+   Return null if no filename found */
 char* find_free_filename(const char* folder, const char* basename, const char* extension) {
 	
-	char *buffer;
-	FILE * fp;
 	int i;
 	char* filename;
 
-	/* FIXME: this has a bunch of problems - it's leaking memory,
-	   and it's checking whether files are readable when what we
-	   want is simply to test whether they exist.  It's also just
-	   plain messy.  This should be rewritten using, e.g.,
-	   g_strdup_printf(), g_build_filename(), and
-	   g_file_test(). */
-
-	/* Complicated method just to find a free filename (do not save more than 999 screenshots ! I know this is stupid) */
+	/* I do not use a while and limit number to 1000 because for any reason, if there's a problem in this scope
+	   I don't want to freeze tilem (if tilem don't find a free filename and never return anything)
+	   Limit to 1000 prevent this problem but if you prefer we could use a while wich wait a valid filename... */
 	for(i=0; i<999; i++) {
-		buffer = (char*) malloc(3);
 		if(folder) {
-			filename = (char*) malloc((strlen(folder) + strlen(basename) + 9)*sizeof(char));
-			strcpy(filename, folder);
-			strcat(filename, "/");
-			strcat(filename, basename);
+			filename = g_build_filename(folder, basename, NULL);	
+			/*printf("path : %s\n", filename); */
 		} else {
-			filename = (char*) malloc((strlen(basename)+9)*sizeof(char) );
-			strcpy(filename, basename);
+			filename = g_build_filename(basename, NULL);	
+			/*printf("path : %s\n", filename);*/
 		}
-		sprintf(buffer,"%03d", i);
-		strcat(filename, buffer);
-		strcat(filename, extension);
+		filename = g_strdup_printf("%s%03d%s", filename, i,  extension );
+		/*printf("path : %s\n", filename); */
 		
-		if((fp = g_fopen(filename,"r"))) {
-			fclose(fp);
-		} else {
+		if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
 			return filename;
 			break;
 		}
 	}
+	
 	return NULL;
 }
 
@@ -129,7 +132,6 @@ static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
 	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
 		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
 		if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
-			printf("is spinner\n");
 			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
 		}
 		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
@@ -162,29 +164,28 @@ static void start_spinner(GLOBAL_SKIN_INFOS * gsi) {
 
 static void stop_spinner(GLOBAL_SKIN_INFOS * gsi) {
 	
-		if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
-			printf("is spinner\n");
-			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
-			gtk_widget_hide(GTK_WIDGET(gsi->screenshot_preview_image));
-		}
+	if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
+		gtk_widget_hide(GTK_WIDGET(gsi->screenshot_preview_image));
+	}
 }
 
 static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi) {
 	
-		if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
-			printf("is spinner\n");
-			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
-			GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
-			gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
-			char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
-			if(tilem_logo)
-				gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+	if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+		char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
+		if(tilem_logo)
 			gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
-			gtk_widget_show(gsi->screenshot_preview_image);
-			gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->screenshot_preview_image, 10, 10);
-			gtk_widget_show(screenshot_preview);
-			
-		}
+		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+		g_free(tilem_logo);
+		gtk_widget_show(gsi->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->screenshot_preview_image, 10, 10);
+		gtk_widget_show(screenshot_preview);
+		
+	}
 }
 
 
@@ -219,13 +220,14 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	
 	/* Print the nice logo (from old tilem) 
 	   Maybe try to load the most recent gif/screenshot could be a good idea... (as it was done before)
-	   But I think it's good like this, because we don't really need to see last session screenshot */ 
+	   But I think it's good like this, because we don't really need to see last session screenshot.
+	   And maybe it doesn't exist or saved filename is bad...*/ 
 	char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
 	if(tilem_logo)
 		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 	else 
 		gsi->screenshot_preview_image = gtk_image_new();
-
+	g_free(tilem_logo);
 	gtk_layout_put(GTK_LAYOUT(layout), gsi->screenshot_preview_image, 10, 10);
 	gtk_container_add(GTK_CONTAINER(screenshot_preview), layout);
 
@@ -321,7 +323,7 @@ static void on_record(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 /* Only used for testing purpose */
 /* NEVER USED  (but it works) xD */
 void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
-	g_print("record event\n");
+	g_print("add_frame event\n");
 	tilem_animation_add_frame(gsi);
 }
 
