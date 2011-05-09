@@ -46,13 +46,14 @@ int main(int argc, char **argv)
 	init_custom_icons();
 
 	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
-	gsi->pWindow = NULL;
 	
 
 
 	/* TilemCalcEmu part */
 	gsi->emu = tilem_calc_emulator_new();
 
+	gsi->emu->guiwidget = g_new0(TilemGuiWidget, 1);
+	gsi->emu->guiwidget->pWindow = NULL;
 	gsi->si=NULL;
 	gsi->emu->macro_file = NULL;
 	gsi->emu->keyhandle = g_new0(TilemKeyHandle, 1);
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 		gsi->emu->guiflags->isSkinDisabled = TRUE;
 
 	/* Draw skin */	
-	gsi->pWindow=draw_screen(gsi);
+	gsi->emu->guiwidget->pWindow=draw_screen(gsi);
 
 	tilem_calc_emulator_run(gsi->emu);
 

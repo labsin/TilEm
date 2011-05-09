@@ -129,15 +129,15 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
 
 	/* Test if the widget exists (should exists), if not don't try to change the image */
-	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
-		if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
-			gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
+	if(GTK_IS_WIDGET(gsi->emu->guiwidget->screenshot_preview_image)) {
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
+		if(GTK_IS_SPINNER(gsi->emu->guiwidget->screenshot_preview_image)) {
+			gtk_spinner_stop(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));
 		}
-		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
-		gsi->screenshot_preview_image = gtk_image_new_from_file(new_image);
-		gtk_widget_show(gsi->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->screenshot_preview_image, 10, 10);
+		gtk_object_destroy(GTK_OBJECT(gsi->emu->guiwidget->screenshot_preview_image));
+		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(new_image);
+		gtk_widget_show(gsi->emu->guiwidget->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->emu->guiwidget->screenshot_preview_image, 10, 10);
 		gtk_widget_show(screenshot_preview);
 	}
 
@@ -148,41 +148,41 @@ static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
 static void start_spinner(GLOBAL_SKIN_INFOS * gsi) {
 
 	/* Test if the widget exists (should exists), if not don't try to change the image */
-	if(GTK_IS_WIDGET(gsi->screenshot_preview_image)) {
+	if(GTK_IS_WIDGET(gsi->emu->guiwidget->screenshot_preview_image)) {
 
-		GtkWidget * layout = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+		GtkWidget * layout = gtk_widget_get_parent(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(gsi->emu->guiwidget->screenshot_preview_image));
 		
-		gsi->screenshot_preview_image = gtk_spinner_new();
-		gtk_spinner_start(GTK_SPINNER(gsi->screenshot_preview_image));	
+		gsi->emu->guiwidget->screenshot_preview_image = gtk_spinner_new();
+		gtk_spinner_start(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));	
 		
-		gtk_widget_show(gsi->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(layout), gsi->screenshot_preview_image, 100, 60);
+		gtk_widget_show(gsi->emu->guiwidget->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(layout), gsi->emu->guiwidget->screenshot_preview_image, 100, 60);
 		gtk_widget_show(layout);
 	}
 }
 
 static void stop_spinner(GLOBAL_SKIN_INFOS * gsi) {
 	
-	if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
-		gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
-		gtk_widget_hide(GTK_WIDGET(gsi->screenshot_preview_image));
+	if(GTK_IS_SPINNER(gsi->emu->guiwidget->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));
+		gtk_widget_hide(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
 	}
 }
 
 static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi) {
 	
-	if(GTK_IS_SPINNER(gsi->screenshot_preview_image)) {
-		gtk_spinner_stop(GTK_SPINNER(gsi->screenshot_preview_image));
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(gsi->screenshot_preview_image));
+	if(GTK_IS_SPINNER(gsi->emu->guiwidget->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(gsi->emu->guiwidget->screenshot_preview_image));
 		char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
 		if(tilem_logo)
-			gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
-		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+			gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 		g_free(tilem_logo);
-		gtk_widget_show(gsi->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->screenshot_preview_image, 10, 10);
+		gtk_widget_show(gsi->emu->guiwidget->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->emu->guiwidget->screenshot_preview_image, 10, 10);
 		gtk_widget_show(screenshot_preview);
 		
 	}
@@ -224,11 +224,11 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	   And maybe it doesn't exist or saved filename is bad...*/ 
 	char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
 	if(tilem_logo)
-		gsi->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 	else 
-		gsi->screenshot_preview_image = gtk_image_new();
+		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new();
 	g_free(tilem_logo);
-	gtk_layout_put(GTK_LAYOUT(layout), gsi->screenshot_preview_image, 10, 10);
+	gtk_layout_put(GTK_LAYOUT(layout), gsi->emu->guiwidget->screenshot_preview_image, 10, 10);
 	gtk_container_add(GTK_CONTAINER(screenshot_preview), layout);
 
 	gtk_container_add(GTK_CONTAINER(screenshotanim_win), parent_vbox);
@@ -270,21 +270,21 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	                 "animation_directory/f", &animdir,
 	                 NULL);
 
-	gsi->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot), ssdir);
-	gsi->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation), animdir);
+	gsi->emu->guiwidget->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_screenshot), ssdir);
+	gsi->emu->guiwidget->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_animation), animdir);
 	g_free(ssdir);
 	g_free(animdir);
 
 	gtk_box_pack_start (GTK_BOX (hboxc1), screenshot_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc1), gsi->folder_chooser_screenshot, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc1), gsi->emu->guiwidget->folder_chooser_screenshot, 2, 3, 4);
 	gtk_box_pack_start (GTK_BOX (hboxc2), animation_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc2), gsi->folder_chooser_animation, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc2), gsi->emu->guiwidget->folder_chooser_animation, 2, 3, 4);
 	gtk_widget_show(screenshot_dir_label);
 	gtk_widget_show(animation_dir_label);
-	gtk_widget_show(gsi->folder_chooser_animation);
-	gtk_widget_show(gsi->folder_chooser_screenshot);
+	gtk_widget_show(gsi->emu->guiwidget->folder_chooser_animation);
+	gtk_widget_show(gsi->emu->guiwidget->folder_chooser_screenshot);
 	/* <<<< */	
 	
 	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, FALSE, 3, 4);
@@ -308,8 +308,8 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), gsi);
 	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), gsi);
 	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), gsi);
-	g_signal_connect(GTK_OBJECT(gsi->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), gsi);
-	g_signal_connect(GTK_OBJECT(gsi->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), gsi);
+	g_signal_connect(GTK_OBJECT(gsi->emu->guiwidget->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), gsi);
+	g_signal_connect(GTK_OBJECT(gsi->emu->guiwidget->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), gsi);
 	gtk_widget_show_all(screenshotanim_win);
 }
 
@@ -468,7 +468,7 @@ static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 
 static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_screenshot)); 
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_screenshot)); 
 	if(folder) 
 		tilem_config_set("screenshot",
 		                 "screenshot_directory/f", folder,
@@ -479,7 +479,7 @@ static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL
 	
 static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->folder_chooser_animation)); 
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_animation)); 
 	if(folder)
 		tilem_config_set("screenshot",
 		                 "animation_directory/f", folder,

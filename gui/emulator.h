@@ -46,7 +46,7 @@ typedef struct _TilemKeyBinding {
 	byte *scancodes;         /* calculator scancodes */
 } TilemKeyBinding;
 
-
+/* Key press related stuff */
 typedef struct _TilemKeyHandle {
 	int mouse_key;		/* Key currently pressed by mouse button */
 
@@ -61,6 +61,23 @@ typedef struct _TilemKeyHandle {
 	int key_queue_timer;
 	int key_queue_pressed;
 } TilemKeyHandle;
+
+/* Widgets  and some related things */
+typedef struct _TilemGuiWidget {
+	GtkWidget *pWindow; /* The top level window */
+	GtkWidget *pLayout; /* Layout */
+	gchar* FileSelected; /* The filename selected in the file chooser */
+	GtkFileChooser *pFileChooser; /* The file chooser widget (open or save) */
+	gint FileChooserResult; /* The result of the file chooser widget (cancel or OK) */ 
+
+	/* Screenshot menu */
+	GtkWidget* screenshot_preview_image; /* Review pixbuf */
+	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
+	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
+
+} TilemGuiWidget;
+
+
 
 
 typedef struct _TilemCalcEmulator {
@@ -80,11 +97,14 @@ typedef struct _TilemCalcEmulator {
 	char *rom_file_name;
 
 	struct _TilemDebugger *dbg;
-	
+
+	/* This struct contains some useful gui widget */	
+	TilemGuiWidget * guiwidget;
 	TilemGuiStateFlags *guiflags;
 	/* new struct to handle cmd line args */
 	TilemCmdlineArgs *cmdline;
 
+	/* New structure to group all key press relating stuff (maybe we should add TilemkeyBindings inside?) */
 	TilemKeyHandle * keyhandle;
 	
 	/* List of key bindings */

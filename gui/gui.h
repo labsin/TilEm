@@ -26,7 +26,7 @@
 #include "gtk-compat.h"
  
 /* A global boolean to say "save the state" */
-int SAVE_STATE;
+gboolean SAVE_STATE;
 
 #define LABEL_X_ALIGN 0.0
 
@@ -42,23 +42,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	/* Skin infos  */
 	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
 
-	/* Widgets  and some related things */
-	GtkWidget *pWindow; /* The top level window */
-	GtkWidget *pLayout; /* Layout */
-	gchar* FileSelected; /* The filename selected in the file chooser */
-	GtkFileChooser *pFileChooser; /* The file chooser widget (open or save) */
-	gint FileChooserResult; /* The result of the file chooser widget (cancel or OK) */ 
-
-	
-	/* Animated gif */
-	GtkWidget* screenshot_preview_image;
-	GtkWidget* folder_chooser_screenshot;
-	GtkWidget* folder_chooser_animation;
-	FILE * animation_file; // The animated gif file */
-	
-		
-
-}GLOBAL_SKIN_INFOS;
+	}GLOBAL_SKIN_INFOS;
 
 
 /* ###### event.c ##### */

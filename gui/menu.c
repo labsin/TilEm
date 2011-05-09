@@ -200,6 +200,6 @@ static GtkWidget* create_menu_item(const char* label, const char* stock_img) {
 void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
 {
 	GtkWidget* right_click_menu = build_menu(gsi);
-	create_menus(gsi->pWindow, event, right_click_menu);
+	create_menus(gsi->emu->guiwidget->pWindow, event, right_click_menu);
 }
 

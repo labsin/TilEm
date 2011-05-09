@@ -128,18 +128,18 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 		gtk_widget_destroy(gsi->emu->lcdwin);
 	if (gsi->emu->background)
 		gtk_widget_destroy(gsi->emu->background);
-	if (gsi->pLayout)
-		gtk_widget_destroy(gsi->pLayout);
+	if (gsi->emu->guiwidget->pLayout)
+		gtk_widget_destroy(gsi->emu->guiwidget->pLayout);
 
 	/* create LCD widget */
 	gsi->emu->lcdwin = gtk_drawing_area_new();
 
 	/* create background image and layout */
 	if (!gsi->emu->guiflags->isSkinDisabled) {
-		gsi->pLayout = gtk_layout_new(NULL, NULL);
+		gsi->emu->guiwidget->pLayout = gtk_layout_new(NULL, NULL);
 
 		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
-		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), pImage, 0, 0);
+		gtk_layout_put(GTK_LAYOUT(gsi->emu->guiwidget->pLayout), pImage, 0, 0);
 		gsi->emu->background = pImage;
 
 		screenwidth = gsi->si->lcd_pos.right - gsi->si->lcd_pos.left;
@@ -147,14 +147,14 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 		gtk_widget_set_size_request(gsi->emu->lcdwin,
 		                            screenwidth, screenheight);
-		gtk_layout_put(GTK_LAYOUT(gsi->pLayout), gsi->emu->lcdwin,
+		gtk_layout_put(GTK_LAYOUT(gsi->emu->guiwidget->pLayout), gsi->emu->lcdwin,
 		               gsi->si->lcd_pos.left,
 		               gsi->si->lcd_pos.top);
 
-		g_signal_connect(gsi->pLayout, "size-allocate",
+		g_signal_connect(gsi->emu->guiwidget->pLayout, "size-allocate",
 		                 G_CALLBACK(skin_size_allocate), gsi);
 
-		emuwin = gsi->pLayout;
+		emuwin = gsi->emu->guiwidget->pLayout;
 
 		tilem_config_get("settings",
 		                 "width/i", &defwidth,
@@ -173,7 +173,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 		minheight = defheight * s + 0.5;
 	}
 	else {
-		gsi->pLayout = NULL;
+		gsi->emu->guiwidget->pLayout = NULL;
 		gsi->emu->background = NULL;
 
 		emuwin = gsi->emu->lcdwin;
@@ -229,13 +229,13 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	/* If the window is already realized, set the hints now, so
 	   that the WM will see the new hints before we try to resize
 	   the window */
-	set_size_hints(gsi->pWindow, gsi);
+	set_size_hints(gsi->emu->guiwidget->pWindow, gsi);
 
 	gtk_widget_set_size_request(emuwin, minwidth, minheight);
-	gtk_container_add(GTK_CONTAINER(gsi->pWindow), emuwin);
-	gtk_window_resize(GTK_WINDOW(gsi->pWindow), defwidth, defheight);
+	gtk_container_add(GTK_CONTAINER(gsi->emu->guiwidget->pWindow), emuwin);
+	gtk_window_resize(GTK_WINDOW(gsi->emu->guiwidget->pWindow), defwidth, defheight);
 
-	gtk_widget_show_all(gsi->pWindow);
+	gtk_widget_show_all(gsi->emu->guiwidget->pWindow);
 }
 
 /* Switch between skin and LCD-only mode */
@@ -426,19 +426,19 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items)
 GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)  
 {
 	/* Create the window */
-	gsi->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gsi->emu->guiwidget->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	
-	g_signal_connect_swapped(gsi->pWindow, "destroy", G_CALLBACK(on_destroy), gsi);
+	g_signal_connect_swapped(gsi->emu->guiwidget->pWindow, "destroy", G_CALLBACK(on_destroy), gsi);
 
-	g_signal_connect_after(gsi->pWindow, "check-resize",
+	g_signal_connect_after(gsi->emu->guiwidget->pWindow, "check-resize",
 	                       G_CALLBACK(set_size_hints), gsi);
 
-	gtk_widget_add_events(gsi->pWindow, (GDK_KEY_PRESS_MASK
+	gtk_widget_add_events(gsi->emu->guiwidget->pWindow, (GDK_KEY_PRESS_MASK
 	                                | GDK_KEY_RELEASE_MASK));
 
-	g_signal_connect(gsi->pWindow, "key-press-event",
+	g_signal_connect(gsi->emu->guiwidget->pWindow, "key-press-event",
 	                 G_CALLBACK(key_press_event), gsi);
-	g_signal_connect(gsi->pWindow, "key-release-event",
+	g_signal_connect(gsi->emu->guiwidget->pWindow, "key-release-event",
 	                 G_CALLBACK(key_release_event), gsi);
 
 	/* Create emulator widget */
@@ -446,5 +446,5 @@ GtkWidget* draw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	g_timeout_add(100, tilem_animation_record,  gsi);
 
-	return gsi->pWindow;
+	return gsi->emu->guiwidget->pWindow;
 }

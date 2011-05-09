@@ -189,7 +189,7 @@ void quit_with_save(GLOBAL_SKIN_INFOS* gsi)
 void save_root_window_dimension(GLOBAL_SKIN_INFOS* gsi)
 {
 	gint width, height;
-	gtk_window_get_size(GTK_WINDOW(gsi->pWindow), &width, &height);
+	gtk_window_get_size(GTK_WINDOW(gsi->emu->guiwidget->pWindow), &width, &height);
 	tilem_config_set("settings",
 	                 "width/i", width,
 	                 "height/i", height,
@@ -495,10 +495,10 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */
 void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
 	
-	if(gtk_window_get_decorated(GTK_WINDOW(gsi->pWindow)))
-		gtk_window_set_decorated(GTK_WINDOW(gsi->pWindow) , FALSE);
+	if(gtk_window_get_decorated(GTK_WINDOW(gsi->emu->guiwidget->pWindow)))
+		gtk_window_set_decorated(GTK_WINDOW(gsi->emu->guiwidget->pWindow) , FALSE);
 	 else 
-		gtk_window_set_decorated(GTK_WINDOW(gsi->pWindow) , TRUE);
+		gtk_window_set_decorated(GTK_WINDOW(gsi->emu->guiwidget->pWindow) , TRUE);
 }
 
 
