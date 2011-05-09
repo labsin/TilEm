@@ -133,7 +133,7 @@ static gboolean parse_binding(TilemKeyBinding *kb,
 }
 
 /* Parse a group (model) in the keybindings file */
-static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
+static void parse_binding_group(TilemCalcEmulator *emu, GKeyFile *gkf,
                                 const char *group)
 {
 	gchar **keys;
@@ -149,8 +149,8 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 	for (i = 0; keys[i]; i++)
 		;
 
-	n = gsi->emu->nkeybindings;
-	gsi->emu->keybindings = g_renew(TilemKeyBinding, gsi->emu->keybindings, n + i);
+	n = emu->nkeybindings;
+	emu->keybindings = g_renew(TilemKeyBinding, emu->keybindings, n + i);
 
 	for(i = 0; keys[i]; i++) {
 		k = keys[i];
@@ -158,7 +158,7 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 		if (!v)
 			continue;
 
-		if (parse_binding(&gsi->emu->keybindings[n], k, v, gsi->emu->calc))
+		if (parse_binding(&emu->keybindings[n], k, v, emu->calc))
 			n++;
 		else
 			g_printerr("syntax error in key bindings: '%s=%s'\n",
@@ -166,22 +166,22 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 		g_free(v);
 	}
 
-	gsi->emu->nkeybindings = n;
+	emu->nkeybindings = n;
 
 	g_strfreev(keys);
 }
 
 /* Init the keybindings struct and open the keybindings file */
-void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
+void tilem_keybindings_init(TilemCalcEmulator *emu, const char *model)
 {
 	char *kfname = get_shared_file_path("keybindings.ini", NULL);
 	char *dname;
 	GKeyFile *gkf;
 	GError *err = NULL;
 
-	g_return_if_fail(gsi != NULL);
-	g_return_if_fail(gsi->emu != NULL);
-	g_return_if_fail(gsi->emu->calc != NULL);
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(emu->calc != NULL);
 
 	if (kfname == NULL) {
 		messagebox00(NULL, GTK_MESSAGE_ERROR,
@@ -204,11 +204,11 @@ void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 		return;
 	}
 
-	g_free(gsi->emu->keybindings);
-	gsi->emu->keybindings = NULL;
-	gsi->emu->nkeybindings = 0;
+	g_free(emu->keybindings);
+	emu->keybindings = NULL;
+	emu->nkeybindings = 0;
 
-	parse_binding_group(gsi, gkf, model);
+	parse_binding_group(emu, gkf, model);
 
 	g_key_file_free(gkf);
 	g_free(kfname);

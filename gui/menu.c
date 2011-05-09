@@ -33,14 +33,14 @@ static GtkWidget* create_menu_item(const char* label, const char* stock_img);
 
 
 /* Build the menu */
-GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
+GtkWidget * build_menu(TilemCalcEmulator* emu) {
 
 	/* TODO : use create_menu_item everywhere to minimize the code :) */
 	GtkWidget* right_click_menu = gtk_menu_new ();    
 
 	/* Create the items for the menu */
 	//GtkAccelGroup* accelgrp = gtk_accel_group_new();
-	//gtk_accel_group_connect(accelgrp, gdk_keyval_from_name("F11"), GDK_SHIFT_MASK,  GTK_ACCEL_VISIBLE , g_cclosure_new(G_CALLBACK(load_file), gsi, NULL)); 
+	//gtk_accel_group_connect(accelgrp, gdk_keyval_from_name("F11"), GDK_SHIFT_MASK,  GTK_ACCEL_VISIBLE , g_cclosure_new(G_CALLBACK(load_file), emu, NULL)); 
 	GtkWidget* send_file_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(send_file_item), "Load file...");
 	GtkWidget* load_skin_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
@@ -50,7 +50,7 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* launch_debugger_item =  gtk_image_menu_item_new_from_stock("tilem-db-step", NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(launch_debugger_item), "Debugger...");
 	GtkWidget* toggle_speed_item;
-	if(gsi->emu->limit_speed) {
+	if(emu->limit_speed) {
 		toggle_speed_item =  create_menu_item("Toggle speed limit", GTK_STOCK_MEDIA_FORWARD);
 	} else {
 		toggle_speed_item =  create_menu_item("Toggle speed limit", GTK_STOCK_MEDIA_PLAY);
@@ -68,7 +68,7 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* display_lcd_into_console_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SORT_ASCENDING, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(display_lcd_into_console_item), "Display LCD into console...");
 	GtkWidget* switch_view_item;
-	if(gsi->emu->guiflags->isSkinDisabled) {
+	if(emu->guiflags->isSkinDisabled) {
 		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FULLSCREEN, NULL);
 		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Show skin");
 	} else {
@@ -144,24 +144,24 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 
 
 	/* Callback */
-	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (screenshot_menu_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (quick_screenshot_item), "activate", G_CALLBACK (screenshot), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (save_state_item), "activate", G_CALLBACK (save_state), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (start_record_macro_item), "activate", G_CALLBACK (start_record_macro), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (stop_record_macro_item), "activate", G_CALLBACK (stop_record_macro), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (play_item), "activate", G_CALLBACK (play_macro), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (play_from_file_item), "activate", G_CALLBACK (play_macro_from_file), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (about_item), "activate", G_CALLBACK (show_about), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (reset_item), "activate", G_CALLBACK (on_reset), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (quit_no_save_item), "activate", G_CALLBACK (on_destroy), (gpointer) gsi);
-	g_signal_connect_swapped (GTK_OBJECT (quit_with_save_item), "activate", G_CALLBACK (quit_with_save), (gpointer) gsi);
+	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (screenshot_menu_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (quick_screenshot_item), "activate", G_CALLBACK (screenshot), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (save_state_item), "activate", G_CALLBACK (save_state), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (start_record_macro_item), "activate", G_CALLBACK (start_record_macro), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (stop_record_macro_item), "activate", G_CALLBACK (stop_record_macro), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (play_item), "activate", G_CALLBACK (play_macro), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (play_from_file_item), "activate", G_CALLBACK (play_macro_from_file), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (about_item), "activate", G_CALLBACK (show_about), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (reset_item), "activate", G_CALLBACK (on_reset), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (quit_no_save_item), "activate", G_CALLBACK (on_destroy), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (quit_with_save_item), "activate", G_CALLBACK (quit_with_save), (gpointer) emu);
 	
 	/* Show the items */
 	gtk_widget_show (load_skin_item);
@@ -197,9 +197,9 @@ static GtkWidget* create_menu_item(const char* label, const char* stock_img) {
 }	
 
 /* Print the right click menu */
-void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event)
+void show_popup_menu(TilemCalcEmulator* emu, GdkEvent* event)
 {
-	GtkWidget* right_click_menu = build_menu(gsi);
-	create_menus(gsi->emu->guiwidget->pWindow, event, right_click_menu);
+	GtkWidget* right_click_menu = build_menu(emu);
+	create_menus(emu->guiwidget->pWindow, event, right_click_menu);
 }
 

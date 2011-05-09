@@ -36,8 +36,7 @@
 
 int main(int argc, char **argv)
 {
-	GLOBAL_SKIN_INFOS *gsi;
-
+	TilemCalcEmulator* emu ;
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
 
@@ -45,78 +44,73 @@ int main(int argc, char **argv)
 
 	init_custom_icons();
 
-	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
-	
+	emu = tilem_calc_emulator_new();
 
-
-	/* TilemCalcEmu part */
-	gsi->emu = tilem_calc_emulator_new();
-
-	gsi->emu->guiwidget = g_new0(TilemGuiWidget, 1);
-	gsi->emu->guiwidget->pWindow = NULL;
-	gsi->emu->si=NULL;
-	gsi->emu->macro_file = NULL;
-	gsi->emu->keyhandle = g_new0(TilemKeyHandle, 1);
-	gsi->emu->keyhandle->mouse_key = 0;
-	gsi->emu->keyhandle->key_queue = NULL;
-	gsi->emu->keyhandle->key_queue_len = 0;
-	gsi->emu->keyhandle->key_queue_timer = 0;
-	gsi->emu->guiflags = g_new0(TilemGuiStateFlags, 1);
-	gsi->emu->guiflags->isMacroRecording = FALSE;
-	gsi->emu->guiflags->isAnimScreenshotRecording = FALSE;
-	gsi->emu->guiflags->isDebuggerRunning=FALSE;
+	emu->guiwidget = g_new0(TilemGuiWidget, 1);
+	emu->guiwidget->pWindow = NULL;
+	emu->si=NULL;
+	emu->macro_file = NULL;
+	emu->keyhandle = g_new0(TilemKeyHandle, 1);
+	emu->keyhandle->mouse_key = 0;
+	emu->keyhandle->key_queue = NULL;
+	emu->keyhandle->key_queue_len = 0;
+	emu->keyhandle->key_queue_timer = 0;
+	emu->guiflags = g_new0(TilemGuiStateFlags, 1);
+	emu->guiflags->isMacroRecording = FALSE;
+	emu->guiflags->isAnimScreenshotRecording = FALSE;
+	emu->guiflags->isDebuggerRunning=FALSE;
 
 	TilemCmdlineArgs * cmdline = tilem_cmdline_new();
 	tilem_cmdline_get_args(argc, argv, cmdline);
-	gsi->emu->cmdline = cmdline;
+	emu->cmdline = cmdline;
 	
 
-	if (!tilem_calc_emulator_load_state(gsi->emu, cmdline->RomName)) {
-		tilem_calc_emulator_free(gsi->emu);
+	if (!tilem_calc_emulator_load_state(emu, cmdline->RomName)) {
+		tilem_calc_emulator_free(emu);
 		return 1;
 	}
 
 	DGLOBAL_L0_A0("**************** fct : main ****************************\n");
-	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",gsi->calc_id);
-	DGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",gsi->emu->calc->hw.model_id);	
-	DGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",gsi->emu->calc->hw.name);		
-	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",gsi->emu->calc->hw.name[3]);
+	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",calc_id);
+	DGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",emu->calc->hw.model_id);	
+	DGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",emu->calc->hw.name);		
+	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",emu->calc->hw.name[3]);
 	DGLOBAL_L0_A0("********************************************************\n");
 	
 
 	if (cmdline->SkinFileName == NULL) {
-		tilem_choose_skin_filename_by_default(gsi);
+		tilem_choose_skin_filename_by_default(emu);
 		tilem_config_get("settings",
-		                 "skin_disabled/b", &gsi->emu->guiflags->isSkinDisabled,
+		                 "skin_disabled/b", &emu->guiflags->isSkinDisabled,
 		                 NULL);
 	}
 
 	if (cmdline->isStartingSkinless)
-		gsi->emu->guiflags->isSkinDisabled = TRUE;
+		emu->guiflags->isSkinDisabled = TRUE;
 
 	/* Draw skin */	
-	gsi->emu->guiwidget->pWindow=draw_screen(gsi);
+	emu->guiwidget->pWindow=draw_screen(emu);
 
-	tilem_calc_emulator_run(gsi->emu);
+	tilem_calc_emulator_run(emu);
 
 	
-	tilem_keybindings_init(gsi, gsi->emu->calc->hw.name);
+	tilem_keybindings_init(emu, emu->calc->hw.name);
 		
 	if(cmdline->FileToLoad != NULL) /* Given as parameter ? */
-		tilem_load_file_from_file_at_startup(gsi, cmdline->FileToLoad);
+		tilem_load_file_from_file_at_startup(emu, cmdline->FileToLoad);
 	if(cmdline->MacroToPlay != NULL) { /* Given as parameter ? */
-		play_macro_default(gsi, cmdline->MacroToPlay); 		
+		play_macro_default(emu, cmdline->MacroToPlay); 		
 	}
 
 	gtk_main();
 
-	tilem_calc_emulator_pause(gsi->emu);
+	tilem_calc_emulator_pause(emu);
 	
 	/* Save the state */
 	if(SAVE_STATE==1)
-		tilem_calc_emulator_save_state(gsi->emu);
+		tilem_calc_emulator_save_state(emu);
 
-	tilem_calc_emulator_free(gsi->emu);
+	tilem_calc_emulator_free(emu);
 
 	return 0;
 }

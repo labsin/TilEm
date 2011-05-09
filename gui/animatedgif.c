@@ -25,11 +25,10 @@
 #include <gtk/gtk.h>
 #include <ticalcs.h>
 #include <tilem.h>
-
 #include "gui.h"
 
 /* Create an empty gif and add the first frame */ 
-void tilem_animation_start(GLOBAL_SKIN_INFOS* gsi) {
+void tilem_animation_start(TilemCalcEmulator* emu) {
 	
 	/* The 11th byte is a set of flags  : 
 	bit 0:    Global Color Table Flag (GCTF)
@@ -52,14 +51,14 @@ void tilem_animation_start(GLOBAL_SKIN_INFOS* gsi) {
 	guchar* lcddata;
 	int k;
 	int x, y;
-	width = gsi->emu->calc->hw.lcdwidth;
-	height = gsi->emu->calc->hw.lcdheight;
+	width = emu->calc->hw.lcdwidth;
+	height = emu->calc->hw.lcdheight;
 	
 	/* Alloc mmem */
 	lcddata = g_new(guchar, (width / 8) * height);
 		
 	/* Get the lcd content using the function 's pointer from Benjamin's core */
-	(*gsi->emu->calc->hw.get_lcd)(gsi->emu->calc, lcddata);
+	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
 
 
 
@@ -114,25 +113,25 @@ void tilem_animation_start(GLOBAL_SKIN_INFOS* gsi) {
 		GifEncode(fp, q , 1, (width*height));
 		fwrite(end, 1, 1,fp);	/* Write end of the frame */
 		fclose(fp);
-		gsi->emu->guiflags->isAnimScreenshotRecording = TRUE;
+		emu->guiflags->isAnimScreenshotRecording = TRUE;
 	}
 }
     
 
 /* Add a frame to an existing animated gif */
-void tilem_animation_add_frame(GLOBAL_SKIN_INFOS* gsi) {
+void tilem_animation_add_frame(TilemCalcEmulator* emu) {
 	
 	printf("GIFENCODER addframe\n");
 	int width, height;
 	guchar* lcddata;
 	int x, y;
-	width = gsi->emu->calc->hw.lcdwidth;
-	height = gsi->emu->calc->hw.lcdheight;
+	width = emu->calc->hw.lcdwidth;
+	height = emu->calc->hw.lcdheight;
 	/* Alloc mmem */
 	lcddata = g_new(guchar, (width / 8) * height);
 		
 	/* Get the lcd content using the function 's pointer from Benjamin's core */
-	(*gsi->emu->calc->hw.get_lcd)(gsi->emu->calc, lcddata);
+	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
 
 
 	FILE* fp;
@@ -170,11 +169,11 @@ void tilem_animation_add_frame(GLOBAL_SKIN_INFOS* gsi) {
 }
 
 /* Stop recording animations */
-void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi) {
+void tilem_animation_stop(TilemCalcEmulator* emu) {
 	
 	
     	char trailer[1] = { 0x3b};
-	if(gsi->emu->guiflags->isAnimScreenshotRecording) {
+	if(emu->guiflags->isAnimScreenshotRecording) {
 		FILE* fp;
 		fp = fopen("gifencod.gif", "a");
 		fwrite(trailer, 1, 1,fp);
@@ -186,10 +185,10 @@ void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi) {
 
 /* Add frames to the animations */
 gboolean tilem_animation_record(gpointer data) {
-	GLOBAL_SKIN_INFOS * gsi = (GLOBAL_SKIN_INFOS*) data;
+	TilemCalcEmulator * emu = (TilemCalcEmulator*) data;
 	
-	if(gsi->emu->guiflags->isAnimScreenshotRecording) 
-		tilem_animation_add_frame(gsi);
+	if(emu->guiflags->isAnimScreenshotRecording) 
+		tilem_animation_add_frame(emu);
 	return TRUE;
 
 }

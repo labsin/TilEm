@@ -202,5 +202,6 @@
 * - Add drag and drop support for loading files :) :) :) :) :) (code is currently really ugly)
 * ---09/05/11---
 * - Create a new TilemGuiStateFlags structure ot group the running state of the gui (skinless, recording macro, etc...) and export it into TilemCalcEmu instead GLOBAL_SKIN_INFOS.
+* - Completely remove GLOBAL_SKIN_INFOS structure from tilem2.
 */
 

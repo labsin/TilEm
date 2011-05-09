@@ -165,31 +165,31 @@ void on_destroy()
 
 
 /* Save state */
-void save_state(GLOBAL_SKIN_INFOS * gsi)
+void save_state(TilemCalcEmulator * emu)
 {
 	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
 	DGLOBAL_L2_A1("*  YES (%d)                                             *\n",SAVE_STATE);
 	DGLOBAL_L2_A0("********************************************************\n\n");
-	tilem_calc_emulator_save_state(gsi->emu);
+	tilem_calc_emulator_save_state(emu);
 }
 
 /* Save tilem and save state */
-void quit_with_save(GLOBAL_SKIN_INFOS* gsi)
+void quit_with_save(TilemCalcEmulator* emu)
 {
 	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
 	SAVE_STATE=1;
 	DGLOBAL_L2_A1("*  YES (%d)                                             *\n",SAVE_STATE);
 	DGLOBAL_L2_A0("********************************************************\n\n");
-	save_root_window_dimension(gsi);
+	save_root_window_dimension(emu);
 	printf("\nThank you for using tilem...\n");
 	gtk_main_quit();
 }
 
 /* Save the dimension before exit for next times we use tilem */
-void save_root_window_dimension(GLOBAL_SKIN_INFOS* gsi)
+void save_root_window_dimension(TilemCalcEmulator* emu)
 {
 	gint width, height;
-	gtk_window_get_size(GTK_WINDOW(gsi->emu->guiwidget->pWindow), &width, &height);
+	gtk_window_get_size(GTK_WINDOW(emu->guiwidget->pWindow), &width, &height);
 	tilem_config_set("settings",
 	                 "width/i", width,
 	                 "height/i", height,
@@ -220,26 +220,26 @@ void show_about()
 }
 
 /* Reset the calc */
-void on_reset(GLOBAL_SKIN_INFOS * gsi)
+void on_reset(TilemCalcEmulator * emu)
 {
-	g_mutex_lock(gsi->emu->calc_mutex);
-	tilem_calc_reset(gsi->emu->calc);
-	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
-	g_mutex_unlock(gsi->emu->calc_mutex);
+	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_reset(emu->calc);
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
 }
 
-void launch_debugger(GLOBAL_SKIN_INFOS * gsi)
+void launch_debugger(TilemCalcEmulator * emu)
 {
-	if (!gsi->emu->dbg)
-		gsi->emu->dbg = tilem_debugger_new(gsi->emu);
-	tilem_debugger_show(gsi->emu->dbg);
+	if (!emu->dbg)
+		emu->dbg = tilem_debugger_new(emu);
+	tilem_debugger_show(emu->dbg);
 }
 
 /* If currently recording a macro, record a keypress */
-static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
+static void record_key(TilemCalcEmulator* emu, int code)
 {
 	/* This WAS seriously broken ;)
-	In fact, gsi->macro_file must be set to NULL when you start. And gsi->isMacroRecording to 0
+	In fact, macro_file must be set to NULL when you start. And isMacroRecording to 0
 	Switch isMacroRecording to 1 means : "record my key press/send file etc...
 	Switch to 0 is to stop recording
 	If macro file doesn't exist, tilem creates it
@@ -248,10 +248,10 @@ static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
 
 	char* codechar;
 
-	if(gsi->emu->guiflags->isMacroRecording) {     
+	if(emu->guiflags->isMacroRecording) {     
 		codechar= (char*) malloc(sizeof(int));
 		sprintf(codechar, "%04d", code);
-		add_event_in_macro_file(gsi, codechar);     
+		add_event_in_macro_file(emu, codechar);     
 		free(codechar);
 	}
 }
@@ -262,56 +262,56 @@ static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
 
    FIXME: on multi-pointer displays, allow each input device to act
    separately */
-static void press_mouse_key(GLOBAL_SKIN_INFOS* gsi, int key)
+static void press_mouse_key(TilemCalcEmulator* emu, int key)
 {
-	if (gsi->emu->keyhandle->mouse_key == key)
+	if (emu->keyhandle->mouse_key == key)
 		return;
 
-	g_mutex_lock(gsi->emu->calc_mutex);
+	g_mutex_lock(emu->calc_mutex);
 
-	if (gsi->emu->keyhandle->mouse_key)
-		tilem_keypad_release_key(gsi->emu->calc, gsi->emu->keyhandle->mouse_key);
-
-	if (key)
-		tilem_keypad_press_key(gsi->emu->calc, key);
-
-	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
-	g_mutex_unlock(gsi->emu->calc_mutex);
+	if (emu->keyhandle->mouse_key)
+		tilem_keypad_release_key(emu->calc, emu->keyhandle->mouse_key);
 
 	if (key)
-		record_key(gsi, key);
+		tilem_keypad_press_key(emu->calc, key);
 
-	gsi->emu->keyhandle->mouse_key = key;
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
+
+	if (key)
+		record_key(emu, key);
+
+	emu->keyhandle->mouse_key = key;
 }
 
 /* Mouse button pressed */
 gboolean mouse_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
                            gpointer data)
 {  	
-	GLOBAL_SKIN_INFOS* gsi = data;
+	TilemCalcEmulator* emu = data;
 	int key;
 
-	key = scan_click(gsi->emu->si, event->x, event->y);
+	key = scan_click(emu->si, event->x, event->y);
 
 	if (event->button == 1) {
 		/* button 1: press key until button is released or pointer moves away */
-		press_mouse_key(gsi, key);
+		press_mouse_key(emu, key);
 		return TRUE;
 	}
 	else if (event->button == 2) {
 		/* button 2: hold key down permanently */
 		if (key) {
-			g_mutex_lock(gsi->emu->calc_mutex);
-			tilem_keypad_press_key(gsi->emu->calc, key);
-			g_cond_broadcast(gsi->emu->calc_wakeup_cond);
-			g_mutex_unlock(gsi->emu->calc_mutex);
-			record_key(gsi, key);
+			g_mutex_lock(emu->calc_mutex);
+			tilem_keypad_press_key(emu->calc, key);
+			g_cond_broadcast(emu->calc_wakeup_cond);
+			g_mutex_unlock(emu->calc_mutex);
+			record_key(emu, key);
 		}
 		return TRUE;
 	}
 	else if (event->button == 3) {
 		/* button 3: popup menu */
-		show_popup_menu(gsi, (GdkEvent*) event);
+		show_popup_menu(emu, (GdkEvent*) event);
 		return TRUE;
 	}
 	else
@@ -322,7 +322,7 @@ gboolean mouse_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 gboolean pointer_motion_event(G_GNUC_UNUSED GtkWidget* w, GdkEventMotion *event,
                               gpointer data)
 {
-	GLOBAL_SKIN_INFOS* gsi = data;
+	TilemCalcEmulator* emu = data;
 	int key;
 
 	if (event->is_hint)
@@ -330,11 +330,11 @@ gboolean pointer_motion_event(G_GNUC_UNUSED GtkWidget* w, GdkEventMotion *event,
 		                   &event->x, &event->y, &event->state);
 
 	if (event->state & GDK_BUTTON1_MASK)
-		key = scan_click(gsi->emu->si, event->x, event->y);
+		key = scan_click(emu->si, event->x, event->y);
 	else
 		key = 0;
 
-	press_mouse_key(gsi, key);
+	press_mouse_key(emu, key);
 
 	return FALSE;
 }
@@ -343,10 +343,10 @@ gboolean pointer_motion_event(G_GNUC_UNUSED GtkWidget* w, GdkEventMotion *event,
 gboolean mouse_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
                              gpointer data)
 {
-	GLOBAL_SKIN_INFOS* gsi = data;
+	TilemCalcEmulator* emu = data;
 
 	if (event->button == 1)
-		press_mouse_key(gsi, 0);
+		press_mouse_key(emu, 0);
 
 	return FALSE;
 }
@@ -354,26 +354,26 @@ gboolean mouse_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 /* Timer callback for key sequences */
 static void tmr_key_queue(TilemCalc* calc, void* data)
 {
-	GLOBAL_SKIN_INFOS *gsi = data;
-	int nextkey = gsi->emu->keyhandle->key_queue[gsi->emu->keyhandle->key_queue_len - 1];
+	TilemCalcEmulator *emu = data;
+	int nextkey = emu->keyhandle->key_queue[emu->keyhandle->key_queue_len - 1];
 
-	if (gsi->emu->keyhandle->key_queue_pressed) {
+	if (emu->keyhandle->key_queue_pressed) {
 		tilem_keypad_release_key(calc, nextkey);
-		gsi->emu->keyhandle->key_queue_len--;
-		if (gsi->emu->keyhandle->key_queue_len == 0) {
-			tilem_z80_remove_timer(calc, gsi->emu->keyhandle->key_queue_timer);
-			gsi->emu->keyhandle->key_queue_timer = 0;
+		emu->keyhandle->key_queue_len--;
+		if (emu->keyhandle->key_queue_len == 0) {
+			tilem_z80_remove_timer(calc, emu->keyhandle->key_queue_timer);
+			emu->keyhandle->key_queue_timer = 0;
 		}
 	}
 	else {
 		tilem_keypad_press_key(calc, nextkey);
 	}
 
-	gsi->emu->keyhandle->key_queue_pressed = !gsi->emu->keyhandle->key_queue_pressed;
+	emu->keyhandle->key_queue_pressed = !emu->keyhandle->key_queue_pressed;
 }
 
 /* Find key binding matching the given event */
-static TilemKeyBinding* find_key_binding(GLOBAL_SKIN_INFOS* gsi,
+static TilemKeyBinding* find_key_binding(TilemCalcEmulator* emu,
                                          GdkEventKey* event)
 {
 	GdkDisplay *dpy;
@@ -394,10 +394,10 @@ static TilemKeyBinding* find_key_binding(GLOBAL_SKIN_INFOS* gsi,
 	mods = (event->state & ~consumed
 	        & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK));
 
-	for (i = 0; i < gsi->emu->nkeybindings; i++)
-		if (keyval == gsi->emu->keybindings[i].keysym
-		    && mods == gsi->emu->keybindings[i].modifiers)
-			return &gsi->emu->keybindings[i];
+	for (i = 0; i < emu->nkeybindings; i++)
+		if (keyval == emu->keybindings[i].keysym
+		    && mods == emu->keybindings[i].modifiers)
+			return &emu->keybindings[i];
 
 	return NULL;
 }
@@ -406,7 +406,7 @@ static TilemKeyBinding* find_key_binding(GLOBAL_SKIN_INFOS* gsi,
 gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
                          gpointer data)
 {
-	GLOBAL_SKIN_INFOS *gsi = data;
+	TilemCalcEmulator *emu = data;
 	TilemKeyBinding *kb;
 	byte *q;
 	int i, key;
@@ -414,53 +414,53 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 
 	/* Ignore repeating keys */
 	for (i = 0; i < 64; i++)
-		if (gsi->emu->keyhandle->keypress_keycodes[i] == event->hardware_keycode)
+		if (emu->keyhandle->keypress_keycodes[i] == event->hardware_keycode)
 			return FALSE;
-	if (gsi->emu->keyhandle->sequence_keycode == event->hardware_keycode)
+	if (emu->keyhandle->sequence_keycode == event->hardware_keycode)
 		return FALSE;
 
-	if (!(kb = find_key_binding(gsi, event)))
+	if (!(kb = find_key_binding(emu, event)))
 		return FALSE;
 
-	g_mutex_lock(gsi->emu->calc_mutex);
+	g_mutex_lock(emu->calc_mutex);
 
-	if (gsi->emu->keyhandle->key_queue_len == 0 && kb->nscancodes == 1) {
+	if (emu->keyhandle->key_queue_len == 0 && kb->nscancodes == 1) {
 		/* press single key */
 		key = kb->scancodes[0];
-		tilem_keypad_press_key(gsi->emu->calc, key);
-		gsi->emu->keyhandle->keypress_keycodes[key] = event->hardware_keycode;
-		record_key(gsi, key);
+		tilem_keypad_press_key(emu->calc, key);
+		emu->keyhandle->keypress_keycodes[key] = event->hardware_keycode;
+		record_key(emu, key);
 	}
 	else {
 		/* add key sequence to queue */
-		q = g_new(byte, kb->nscancodes + gsi->emu->keyhandle->key_queue_len);
+		q = g_new(byte, kb->nscancodes + emu->keyhandle->key_queue_len);
 
 		for (i = 0; i < kb->nscancodes; i++) {
 			q[kb->nscancodes - i - 1] = kb->scancodes[i];
-			record_key(gsi, kb->scancodes[i]);
+			record_key(emu, kb->scancodes[i]);
 		}
 
-		if (gsi->emu->keyhandle->key_queue_len)
-			memcpy(q + kb->nscancodes, gsi->emu->keyhandle->key_queue,
-			       gsi->emu->keyhandle->key_queue_len);
+		if (emu->keyhandle->key_queue_len)
+			memcpy(q + kb->nscancodes, emu->keyhandle->key_queue,
+			       emu->keyhandle->key_queue_len);
 
-		g_free(gsi->emu->keyhandle->key_queue);
-		gsi->emu->keyhandle->key_queue = q;
-		gsi->emu->keyhandle->key_queue_len += kb->nscancodes;
+		g_free(emu->keyhandle->key_queue);
+		emu->keyhandle->key_queue = q;
+		emu->keyhandle->key_queue_len += kb->nscancodes;
 
-		if (!gsi->emu->keyhandle->key_queue_timer) {
-			gsi->emu->keyhandle->key_queue_timer
-				= tilem_z80_add_timer(gsi->emu->calc,
+		if (!emu->keyhandle->key_queue_timer) {
+			emu->keyhandle->key_queue_timer
+				= tilem_z80_add_timer(emu->calc,
 				                      1, 50000, 1,
-				                      &tmr_key_queue, gsi);
-			gsi->emu->keyhandle->key_queue_pressed = 0;
+				                      &tmr_key_queue, emu);
+			emu->keyhandle->key_queue_pressed = 0;
 		}
 
-		gsi->emu->keyhandle->sequence_keycode = event->hardware_keycode;
+		emu->keyhandle->sequence_keycode = event->hardware_keycode;
 	}
 
-	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
-	g_mutex_unlock(gsi->emu->calc_mutex);
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
 
 	return TRUE;
 }
@@ -469,7 +469,7 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
                            gpointer data)
 {
-	GLOBAL_SKIN_INFOS *gsi = data;
+	TilemCalcEmulator *emu = data;
 	int i;
 
 	/* Check if the key that was just released was one that
@@ -477,34 +477,34 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	   event->keyval; modifiers may have changed since the key was
 	   pressed.) */
 	for (i = 0; i < 64; i++) {
-		if (gsi->emu->keyhandle->keypress_keycodes[i] == event->hardware_keycode) {
-			g_mutex_lock(gsi->emu->calc_mutex);
-			tilem_keypad_release_key(gsi->emu->calc, i);
-			g_cond_broadcast(gsi->emu->calc_wakeup_cond);
-			g_mutex_unlock(gsi->emu->calc_mutex);
-			gsi->emu->keyhandle->keypress_keycodes[i] = 0;
+		if (emu->keyhandle->keypress_keycodes[i] == event->hardware_keycode) {
+			g_mutex_lock(emu->calc_mutex);
+			tilem_keypad_release_key(emu->calc, i);
+			g_cond_broadcast(emu->calc_wakeup_cond);
+			g_mutex_unlock(emu->calc_mutex);
+			emu->keyhandle->keypress_keycodes[i] = 0;
 		}
 	}
 
-	if (gsi->emu->keyhandle->sequence_keycode == event->hardware_keycode)
-		gsi->emu->keyhandle->sequence_keycode = 0;
+	if (emu->keyhandle->sequence_keycode == event->hardware_keycode)
+		emu->keyhandle->sequence_keycode = 0;
 
 	return FALSE;
 }
 
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */
-void switch_borderless(GLOBAL_SKIN_INFOS* gsi) {
+void switch_borderless(TilemCalcEmulator* emu) {
 	
-	if(gtk_window_get_decorated(GTK_WINDOW(gsi->emu->guiwidget->pWindow)))
-		gtk_window_set_decorated(GTK_WINDOW(gsi->emu->guiwidget->pWindow) , FALSE);
+	if(gtk_window_get_decorated(GTK_WINDOW(emu->guiwidget->pWindow)))
+		gtk_window_set_decorated(GTK_WINDOW(emu->guiwidget->pWindow) , FALSE);
 	 else 
-		gtk_window_set_decorated(GTK_WINDOW(gsi->emu->guiwidget->pWindow) , TRUE);
+		gtk_window_set_decorated(GTK_WINDOW(emu->guiwidget->pWindow) , TRUE);
 }
 
 
 
 /* Load a file */
-void load_file(GLOBAL_SKIN_INFOS *gsi)
+void load_file(TilemCalcEmulator *emu)
 {
 	char *filename, *dir;
 
@@ -512,16 +512,16 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 	tilem_config_get("upload",
 	                 "sendfile_recentdir/f", &dir,
 	                 NULL);
-	filename = select_file(gsi, dir);
+	filename = select_file(emu, dir);
 	g_free(dir);
 
 	/* Test if FileChooser cancelled ... */
 	if (filename != NULL) {
 		//printf("filename = %s", filename);
-		load_file_from_file(gsi, filename);
+		load_file_from_file(emu, filename);
 
-		if(gsi->emu->guiflags->isMacroRecording)
-			add_load_file_in_macro_file(gsi, strlen(filename), filename);
+		if(emu->guiflags->isMacroRecording)
+			add_load_file_in_macro_file(emu, strlen(filename), filename);
 
 		/* Search the directory and save it into the config file (for the next open file) */
 		dir = g_path_get_dirname(filename);
@@ -535,13 +535,13 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 }
 
 /* Load a file without file_selector */
-void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename)
+void load_file_from_file(TilemCalcEmulator *emu, char* filename)
 {
-	tilem_calc_emulator_send_file(gsi->emu, filename);
+	tilem_calc_emulator_send_file(emu, filename);
 }
 
 /* Load a file without file_selector old method without thread */
-void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename)
+void tilem_load_file_from_file_at_startup(TilemCalcEmulator *emu, char* filename)
 {
 		CableHandle* cbl;
 	
@@ -551,11 +551,11 @@ void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename
 		ticalcs_library_init();
 		
 		/* Create cable (here an internal an dvirtual cabla) */
-		cbl = internal_link_handle_new(gsi->emu);
+		cbl = internal_link_handle_new(emu);
 		if (!cbl) 
 			fprintf(stderr, "Cannot create ilp handle\n");
 		
-		send_file(gsi->emu, cbl, filename); /* See link.c for send_file function */
+		send_file(emu, cbl, filename); /* See link.c for send_file function */
 		
 		ticables_handle_del(cbl);
 
@@ -567,12 +567,12 @@ void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename
 }
 
 /* Toggle limit speed */
-void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi) {
-	tilem_calc_emulator_set_limit_speed(gsi->emu, !gsi->emu->limit_speed);
+void tilem_change_speed(TilemCalcEmulator *emu) {
+	tilem_calc_emulator_set_limit_speed(emu, !emu->limit_speed);
 }
 
 /* Callback function for the drag and drop event */
-gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi) {
+gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, TilemCalcEmulator * emu) {
 	
 	/* FIXME : this should really be refactorised because it just a "proof of concept" currently :)
 	   The string returned by gtk_selection_data_get_text look like "file:///[path]\r\0" that's why we should use 
@@ -584,8 +584,8 @@ gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragCon
 	printf("data : %s\n", filename);
 	int size = strlen(filename);
 	filename[size - 2] = '\0';
-	printf("gsi : %s", gsi->emu->rom_file_name);
-	load_file_from_file(gsi, filename );
+	printf("emu : %s", emu->rom_file_name);
+	load_file_from_file(emu, filename );
 	return FALSE;
 
 }

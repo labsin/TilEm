@@ -156,14 +156,14 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 }
 
 /* File chooser with a different base directory */
-char* select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
+char* select_file(TilemCalcEmulator *emu, const char* basedir) {
 
 	GtkWidget *dialog;
 	GtkFileChooser *pFileChooser;
 	char* filename = NULL;
 	gint result;
 
-	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(gsi->emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	pFileChooser=GTK_FILE_CHOOSER(dialog);
 
 	if(basedir != NULL)
@@ -187,14 +187,14 @@ char* select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
 
 
 /* Folder chooser with a different base directory */
-char* select_dir(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
+char* select_dir(TilemCalcEmulator *emu, const char* basedir) {
 
 	GtkWidget *dialog;
 	GtkFileChooser *pFileChooser;
 	char* filename = NULL;
 	gint result;
 
-	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(gsi->emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	pFileChooser=GTK_FILE_CHOOSER(dialog);
 
 	if(basedir != NULL)
@@ -217,14 +217,14 @@ char* select_dir(GLOBAL_SKIN_INFOS *gsi, const char* basedir) {
 }
 
 /* File chooser for saving file */
-char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
+char* select_file_for_save(TilemCalcEmulator *emu, char* basedir) {
 
 	GtkWidget *dialog;
 	GtkFileChooser *pFileChooser;
 	char* filename = NULL;
 	gint result;
 
-	dialog = gtk_file_chooser_dialog_new ("Save File", GTK_WINDOW(gsi->emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+	dialog = gtk_file_chooser_dialog_new ("Save File", GTK_WINDOW(emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
 	pFileChooser=GTK_FILE_CHOOSER(dialog);
 
 	if(basedir != NULL)
@@ -248,49 +248,49 @@ char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
 
 
 /* File chooser with a different base directory */
-void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir) {
+void select_file_with_basedir(TilemCalcEmulator *emu, char* basedir) {
 
 	GtkWidget *dialog;
 
 
-	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(gsi->emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-	gsi->emu->guiwidget->pFileChooser=GTK_FILE_CHOOSER(dialog);
+	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(emu->guiwidget->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	emu->guiwidget->pFileChooser=GTK_FILE_CHOOSER(dialog);
 
 	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), basedir);
-	gsi->emu->guiwidget->FileChooserResult = gtk_dialog_run (GTK_DIALOG (dialog)); 
+	emu->guiwidget->FileChooserResult = gtk_dialog_run (GTK_DIALOG (dialog)); 
 
-	printf("filechooserResult : %d", gsi->emu->guiwidget->FileChooserResult);
+	printf("filechooserResult : %d", emu->guiwidget->FileChooserResult);
 	printf("GTK_RESPONSE_OK : %d", GTK_RESPONSE_OK);
 	printf("GTK_RESPONSE_ACCEPT : %d\n", GTK_RESPONSE_ACCEPT);
-	if(gsi->emu->guiwidget->FileChooserResult == GTK_RESPONSE_ACCEPT)
+	if(emu->guiwidget->FileChooserResult == GTK_RESPONSE_ACCEPT)
 	{
-		gsi->emu->guiwidget->FileSelected=(gchar*)gtk_file_chooser_get_filename(gsi->emu->guiwidget->pFileChooser);
-		printf("get_selected_file:  FileSelected : %s\n",gsi->emu->guiwidget->FileSelected);
+		emu->guiwidget->FileSelected=(gchar*)gtk_file_chooser_get_filename(emu->guiwidget->pFileChooser);
+		printf("get_selected_file:  FileSelected : %s\n",emu->guiwidget->FileSelected);
 	} else {
 		printf("Cancelled ...\n");		
 	}	
 
-	gtk_widget_destroy(GTK_WIDGET(gsi->emu->guiwidget->pFileChooser));
+	gtk_widget_destroy(GTK_WIDGET(emu->guiwidget->pFileChooser));
 	
 
 }
 
 /* Get the selected file (used by select_file) */
-void get_selected_file(GLOBAL_SKIN_INFOS *gsi) {
+void get_selected_file(TilemCalcEmulator *emu) {
 
 	/* Just get the file wich was selected */
-	printf("filechooserResult : %d", gsi->emu->guiwidget->FileChooserResult);
+	printf("filechooserResult : %d", emu->guiwidget->FileChooserResult);
 	printf("GTK_RESPONSE_OK : %d", GTK_RESPONSE_OK);
 	printf("GTK_RESPONSE_ACCEPT : %d", GTK_RESPONSE_ACCEPT);
-	if(gsi->emu->guiwidget->FileChooserResult == GTK_RESPONSE_ACCEPT)
+	if(emu->guiwidget->FileChooserResult == GTK_RESPONSE_ACCEPT)
 	{
-		gsi->emu->guiwidget->FileSelected=(gchar*)gtk_file_chooser_get_filename(gsi->emu->guiwidget->pFileChooser);
+		emu->guiwidget->FileSelected=(gchar*)gtk_file_chooser_get_filename(emu->guiwidget->pFileChooser);
 		printf("ACCEPT !!");
-		printf("get_selected_file:  FileSelected : %s\n",gsi->emu->guiwidget->FileSelected);
+		printf("get_selected_file:  FileSelected : %s\n",emu->guiwidget->FileSelected);
 	} else {
 		printf("Cancelled ...\n");		
 	}	
-	gtk_widget_destroy(GTK_WIDGET(gsi->emu->guiwidget->pFileChooser));
+	gtk_widget_destroy(GTK_WIDGET(emu->guiwidget->pFileChooser));
 }
 
 /* Simply cp src to dest */

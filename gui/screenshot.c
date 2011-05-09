@@ -33,26 +33,26 @@
 #include "files.h"
 
 static void on_screenshot();
-static void on_record(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
-static void on_play(G_GNUC_UNUSED GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
-static void on_playfrom(G_GNUC_UNUSED GtkWidget* win,GLOBAL_SKIN_INFOS* gsi);
+static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
+static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
+static void on_play(G_GNUC_UNUSED GtkWidget* win,TilemCalcEmulator* emu);
+static void on_playfrom(G_GNUC_UNUSED GtkWidget* win,TilemCalcEmulator* emu);
 static void on_destroy_playview(G_GNUC_UNUSED GtkWidget* playwin);
 static void on_destroy_screenshot(GtkWidget* screenshotanim_win);
-static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
-static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi);
-static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename, const char *format);
+static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu);
+static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu);
+static gboolean save_screenshot(TilemCalcEmulator *emu, const char *filename, const char *format);
 char* find_free_filename(const char* directory, const char* filename, const char* extension);
-static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image);
-static void start_spinner(GLOBAL_SKIN_INFOS * gsi);
-static void stop_spinner(GLOBAL_SKIN_INFOS * gsi);
-static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi);
+static void change_review_image(TilemCalcEmulator * emu, char * new_image);
+static void start_spinner(TilemCalcEmulator * emu);
+static void stop_spinner(TilemCalcEmulator * emu);
+static void delete_spinner_and_put_logo(TilemCalcEmulator * emu);
 
 /* UNUSED */
-void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi);
+void on_add_frame(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
 
 /* This method is called from click event */
-void screenshot(GLOBAL_SKIN_INFOS *gsi) {
+void screenshot(TilemCalcEmulator *emu) {
 
 	char* basename = g_strdup("screenshot");
 	char* folder, *filename;
@@ -83,10 +83,10 @@ void screenshot(GLOBAL_SKIN_INFOS *gsi) {
 	printf("filename test : %s\n", filename);
 
 	if(filename)	
-		save_screenshot(gsi, filename, "png");
+		save_screenshot(emu, filename, "png");
 
 	/*tilem_config_universal_setter("screenshot", "screenshot_recent", filename);*/
-	change_review_image(gsi, filename);
+	change_review_image(emu, filename);
 	g_free(filename);
 	g_free(folder);
 	g_free(basename);
@@ -126,18 +126,18 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 
 
 /* Replace the current logo/review image by the recent shot/animation */
-static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
+static void change_review_image(TilemCalcEmulator * emu, char * new_image) {
 
 	/* Test if the widget exists (should exists), if not don't try to change the image */
-	if(GTK_IS_WIDGET(gsi->emu->guiwidget->screenshot_preview_image)) {
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
-		if(GTK_IS_SPINNER(gsi->emu->guiwidget->screenshot_preview_image)) {
-			gtk_spinner_stop(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));
+	if(GTK_IS_WIDGET(emu->guiwidget->screenshot_preview_image)) {
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(emu->guiwidget->screenshot_preview_image));
+		if(GTK_IS_SPINNER(emu->guiwidget->screenshot_preview_image)) {
+			gtk_spinner_stop(GTK_SPINNER(emu->guiwidget->screenshot_preview_image));
 		}
-		gtk_object_destroy(GTK_OBJECT(gsi->emu->guiwidget->screenshot_preview_image));
-		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(new_image);
-		gtk_widget_show(gsi->emu->guiwidget->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->emu->guiwidget->screenshot_preview_image, 10, 10);
+		gtk_object_destroy(GTK_OBJECT(emu->guiwidget->screenshot_preview_image));
+		emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(new_image);
+		gtk_widget_show(emu->guiwidget->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), emu->guiwidget->screenshot_preview_image, 10, 10);
 		gtk_widget_show(screenshot_preview);
 	}
 
@@ -145,44 +145,44 @@ static void change_review_image(GLOBAL_SKIN_INFOS * gsi, char * new_image) {
 
 
 /* Replace the current logo/review image by the recent shot/animation */
-static void start_spinner(GLOBAL_SKIN_INFOS * gsi) {
+static void start_spinner(TilemCalcEmulator * emu) {
 
 	/* Test if the widget exists (should exists), if not don't try to change the image */
-	if(GTK_IS_WIDGET(gsi->emu->guiwidget->screenshot_preview_image)) {
+	if(GTK_IS_WIDGET(emu->guiwidget->screenshot_preview_image)) {
 
-		GtkWidget * layout = gtk_widget_get_parent(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(gsi->emu->guiwidget->screenshot_preview_image));
+		GtkWidget * layout = gtk_widget_get_parent(GTK_WIDGET(emu->guiwidget->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(emu->guiwidget->screenshot_preview_image));
 		
-		gsi->emu->guiwidget->screenshot_preview_image = gtk_spinner_new();
-		gtk_spinner_start(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));	
+		emu->guiwidget->screenshot_preview_image = gtk_spinner_new();
+		gtk_spinner_start(GTK_SPINNER(emu->guiwidget->screenshot_preview_image));	
 		
-		gtk_widget_show(gsi->emu->guiwidget->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(layout), gsi->emu->guiwidget->screenshot_preview_image, 100, 60);
+		gtk_widget_show(emu->guiwidget->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(layout), emu->guiwidget->screenshot_preview_image, 100, 60);
 		gtk_widget_show(layout);
 	}
 }
 
-static void stop_spinner(GLOBAL_SKIN_INFOS * gsi) {
+static void stop_spinner(TilemCalcEmulator * emu) {
 	
-	if(GTK_IS_SPINNER(gsi->emu->guiwidget->screenshot_preview_image)) {
-		gtk_spinner_stop(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));
-		gtk_widget_hide(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
+	if(GTK_IS_SPINNER(emu->guiwidget->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(emu->guiwidget->screenshot_preview_image));
+		gtk_widget_hide(GTK_WIDGET(emu->guiwidget->screenshot_preview_image));
 	}
 }
 
-static void delete_spinner_and_put_logo(GLOBAL_SKIN_INFOS * gsi) {
+static void delete_spinner_and_put_logo(TilemCalcEmulator * emu) {
 	
-	if(GTK_IS_SPINNER(gsi->emu->guiwidget->screenshot_preview_image)) {
-		gtk_spinner_stop(GTK_SPINNER(gsi->emu->guiwidget->screenshot_preview_image));
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(gsi->emu->guiwidget->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(gsi->emu->guiwidget->screenshot_preview_image));
+	if(GTK_IS_SPINNER(emu->guiwidget->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(emu->guiwidget->screenshot_preview_image));
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(emu->guiwidget->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(emu->guiwidget->screenshot_preview_image));
 		char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
 		if(tilem_logo)
-			gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
-		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+			emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+		emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 		g_free(tilem_logo);
-		gtk_widget_show(gsi->emu->guiwidget->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(screenshot_preview), gsi->emu->guiwidget->screenshot_preview_image, 10, 10);
+		gtk_widget_show(emu->guiwidget->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), emu->guiwidget->screenshot_preview_image, 10, 10);
 		gtk_widget_show(screenshot_preview);
 		
 	}
@@ -197,7 +197,7 @@ static void on_destroy_screenshot(GtkWidget* screenshotanim_win)   {
 }
 
 /* Create the screenshot menu */
-void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
+void create_screenshot_window(TilemCalcEmulator* emu) {
 	GtkWidget* screenshotanim_win;
 	screenshotanim_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(screenshotanim_win), "Screenshot");
@@ -224,11 +224,11 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	   And maybe it doesn't exist or saved filename is bad...*/ 
 	char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
 	if(tilem_logo)
-		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+		emu->guiwidget->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 	else 
-		gsi->emu->guiwidget->screenshot_preview_image = gtk_image_new();
+		emu->guiwidget->screenshot_preview_image = gtk_image_new();
 	g_free(tilem_logo);
-	gtk_layout_put(GTK_LAYOUT(layout), gsi->emu->guiwidget->screenshot_preview_image, 10, 10);
+	gtk_layout_put(GTK_LAYOUT(layout), emu->guiwidget->screenshot_preview_image, 10, 10);
 	gtk_container_add(GTK_CONTAINER(screenshot_preview), layout);
 
 	gtk_container_add(GTK_CONTAINER(screenshotanim_win), parent_vbox);
@@ -270,21 +270,21 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 	                 "animation_directory/f", &animdir,
 	                 NULL);
 
-	gsi->emu->guiwidget->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_screenshot), ssdir);
-	gsi->emu->guiwidget->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_animation), animdir);
+	emu->guiwidget->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(emu->guiwidget->folder_chooser_screenshot), ssdir);
+	emu->guiwidget->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(emu->guiwidget->folder_chooser_animation), animdir);
 	g_free(ssdir);
 	g_free(animdir);
 
 	gtk_box_pack_start (GTK_BOX (hboxc1), screenshot_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc1), gsi->emu->guiwidget->folder_chooser_screenshot, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc1), emu->guiwidget->folder_chooser_screenshot, 2, 3, 4);
 	gtk_box_pack_start (GTK_BOX (hboxc2), animation_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc2), gsi->emu->guiwidget->folder_chooser_animation, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc2), emu->guiwidget->folder_chooser_animation, 2, 3, 4);
 	gtk_widget_show(screenshot_dir_label);
 	gtk_widget_show(animation_dir_label);
-	gtk_widget_show(gsi->emu->guiwidget->folder_chooser_animation);
-	gtk_widget_show(gsi->emu->guiwidget->folder_chooser_screenshot);
+	gtk_widget_show(emu->guiwidget->folder_chooser_animation);
+	gtk_widget_show(emu->guiwidget->folder_chooser_screenshot);
 	/* <<<< */	
 	
 	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, FALSE, 3, 4);
@@ -302,46 +302,46 @@ void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi) {
 
 	gtk_box_pack_end (GTK_BOX (parent_vbox), config_expander, FALSE, 3, 4);
 	
-	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), gsi);
-	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), gsi);
-	//g_signal_connect(GTK_OBJECT(add_frame), "clicked", G_CALLBACK(on_add_frame), gsi);
-	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), gsi);
-	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), gsi);
-	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), gsi);
-	g_signal_connect(GTK_OBJECT(gsi->emu->guiwidget->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), gsi);
-	g_signal_connect(GTK_OBJECT(gsi->emu->guiwidget->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), gsi);
+	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), emu);
+	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), emu);
+	//g_signal_connect(GTK_OBJECT(add_frame), "clicked", G_CALLBACK(on_add_frame), emu);
+	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), emu);
+	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), emu);
+	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), emu);
+	g_signal_connect(GTK_OBJECT(emu->guiwidget->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), emu);
+	g_signal_connect(GTK_OBJECT(emu->guiwidget->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), emu);
 	gtk_widget_show_all(screenshotanim_win);
 }
 
 /* Callback for record button */
-static void on_record(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	g_print("record event\n");
-	start_spinner(gsi);
-	tilem_animation_start(gsi);
+	start_spinner(emu);
+	tilem_animation_start(emu);
 }
 
 /* Only used for testing purpose */
 /* NEVER USED  (but it works) xD */
-void on_add_frame(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+void on_add_frame(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	g_print("add_frame event\n");
-	tilem_animation_add_frame(gsi);
+	tilem_animation_add_frame(emu);
 }
 
 /* Callback for stop button (stop the recording) */
-static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	g_print("stop event\n");
 	char* dest = NULL, *dir;
 
-	tilem_animation_stop(gsi) ;
+	tilem_animation_stop(emu) ;
 	
-	if(gsi->emu->guiflags->isAnimScreenshotRecording) {
-		gsi->emu->guiflags->isAnimScreenshotRecording = FALSE;
-		stop_spinner(gsi);
+	if(emu->guiflags->isAnimScreenshotRecording) {
+		emu->guiflags->isAnimScreenshotRecording = FALSE;
+		stop_spinner(emu);
 
 		tilem_config_get("screenshot",
 		                 "animation_directory/f", &dir,
 		                 NULL);
-		dest = select_file_for_save(gsi, dir);
+		dest = select_file_for_save(emu, dir);
 		g_free(dir);
 	}
 
@@ -354,26 +354,26 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 		g_free(dir);
 
 		copy_paste("gifencod.gif", dest);
-		change_review_image(gsi, dest);
+		change_review_image(emu, dest);
 	}
 	g_free(dest);
 
-	delete_spinner_and_put_logo(gsi);
+	delete_spinner_and_put_logo(emu);
 }
 
 /* Callback for screenshot button (take a screenshot) */
-static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
-	screenshot(gsi);
+static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
+	screenshot(emu);
 	g_print("screenshot event\n");
 }
 
 
 /* Screenshot saver */
-static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
+static gboolean save_screenshot(TilemCalcEmulator *emu, const char *filename,
                                 const char *format)
 {
-	int width = gsi->emu->calc->hw.lcdwidth * 2;
-	int height = gsi->emu->calc->hw.lcdheight * 2;
+	int width = emu->calc->hw.lcdwidth * 2;
+	int height = emu->calc->hw.lcdheight * 2;
 	guchar *buffer;
 	dword *palette;
 	GdkPixbuf *pb;
@@ -386,11 +386,11 @@ static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
 	   might want the option to save images in skinned colors. */
 	palette = tilem_color_palette_new(255, 255, 255, 0, 0, 0, 2.2);
 
-	g_mutex_lock(gsi->emu->lcd_mutex);
-	tilem_draw_lcd_image_rgb(gsi->emu->lcd_buffer, buffer,
+	g_mutex_lock(emu->lcd_mutex);
+	tilem_draw_lcd_image_rgb(emu->lcd_buffer, buffer,
 	                         width, height, width * 3, 3,
 	                         palette, TILEM_SCALE_SMOOTH);
-	g_mutex_unlock(gsi->emu->lcd_mutex);
+	g_mutex_unlock(emu->lcd_mutex);
 
 	tilem_free(palette);
 
@@ -419,7 +419,7 @@ static void on_destroy_playview(GtkWidget* playwin)   {
 }
 
 /* Callback for play button (replay the last gif) */
-static void on_play(G_GNUC_UNUSED GtkWidget * win, G_GNUC_UNUSED GLOBAL_SKIN_INFOS* gsi) {
+static void on_play(G_GNUC_UNUSED GtkWidget * win, G_GNUC_UNUSED TilemCalcEmulator* emu) {
 	printf("play\n");
 	GtkWidget *fenetre = NULL;
 	GtkWidget *image = NULL;
@@ -442,14 +442,14 @@ static void on_play(G_GNUC_UNUSED GtkWidget * win, G_GNUC_UNUSED GLOBAL_SKIN_INF
 }
 
 /* Callback for play button (replay the last gif) */
-static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 	char* src = NULL, *dir;
 
 	tilem_config_get("screenshot",
 	                 "animation_directory/f", &dir,
 	                 NULL);
 
-	src = select_file_for_save(gsi, dir);
+	src = select_file_for_save(emu, dir);
 	g_free(dir);
 	if(src) {
 		dir = g_path_get_dirname(src);
@@ -459,16 +459,16 @@ static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
 		                 NULL);
 		g_free(dir);
 
-		change_review_image(gsi, src);
+		change_review_image(emu, src);
 	}
 
 	g_free(src);
 }
 	 
 
-static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_screenshot)); 
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(emu->guiwidget->folder_chooser_screenshot)); 
 	if(folder) 
 		tilem_config_set("screenshot",
 		                 "screenshot_directory/f", folder,
@@ -477,9 +477,9 @@ static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL
 }
 
 	
-static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, GLOBAL_SKIN_INFOS* gsi) {
+static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(gsi->emu->guiwidget->folder_chooser_animation)); 
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(emu->guiwidget->folder_chooser_animation)); 
 	if(folder)
 		tilem_config_set("screenshot",
 		                 "animation_directory/f", folder,

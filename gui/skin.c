@@ -33,12 +33,12 @@
 #include "msgbox.h"
 
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
-void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi)
+void tilem_choose_skin_filename_by_default(TilemCalcEmulator *emu)
 {
-	const char *model = gsi->emu->calc->hw.name;
+	const char *model = emu->calc->hw.name;
 	char *name = NULL, *path;
 
-	g_free(gsi->emu->cmdline->SkinFileName);
+	g_free(emu->cmdline->SkinFileName);
 
 	tilem_config_get(model,
 	                 "skin/f", &name,
@@ -49,11 +49,11 @@ void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi)
 
 	if (!g_path_is_absolute(name)) {
 		path = get_shared_file_path("skins", name, NULL);
-		gsi->emu->cmdline->SkinFileName = path;
+		emu->cmdline->SkinFileName = path;
 		g_free(name);
 	}
 	else {
-		gsi->emu->cmdline->SkinFileName = name;
+		emu->cmdline->SkinFileName = name;
 	}
 }
 
@@ -91,21 +91,21 @@ static char *canonicalize_filename(const char *name)
 }
 
 /* GtkFileSelection */
-void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi)
+void tilem_user_change_skin(TilemCalcEmulator *emu)
 {
-	const char *model = gsi->emu->calc->hw.name;
+	const char *model = emu->calc->hw.name;
 	char *file_selected = NULL, *default_dir, *base, *shared, *canon;
 
 	/* Show a nice chooser dialog, and get the filename selected */	
 	default_dir = get_shared_dir_path("skins", NULL);
-	file_selected = select_file(gsi, default_dir);
+	file_selected = select_file(emu, default_dir);
 	g_free(default_dir);
 
 	if (file_selected != NULL) {
-		g_free(gsi->emu->cmdline->SkinFileName);
-		gsi->emu->cmdline->SkinFileName = file_selected;
-		gsi->emu->guiflags->isSkinDisabled = FALSE;
-		redraw_screen(gsi);
+		g_free(emu->cmdline->SkinFileName);
+		emu->cmdline->SkinFileName = file_selected;
+		emu->guiflags->isSkinDisabled = FALSE;
+		redraw_screen(emu);
 
 		/* if file is stored in shared skins directory, save
 		   only the relative path; otherwise, save the

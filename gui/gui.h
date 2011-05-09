@@ -30,29 +30,16 @@ gboolean SAVE_STATE;
 
 #define LABEL_X_ALIGN 0.0
 
-/* FIXME : I plan to change all this stuff to use TilemCalcEmu struct instead
-Idem for macros and gif */
-
-/* Internal data structure for gui */
-typedef struct GLOBAL_SKIN_INFOS {
-
-	/* General informations */
-	TilemCalcEmulator *emu; /* The very important  TilemCalcEmulator struct */
-
-
-}GLOBAL_SKIN_INFOS;
-
-
 /* ###### event.c ##### */
 
 /* Detect and handle a "destroy" event */
 void on_destroy(); /* close the pWindow */
 
 /* like on_destroy but save state */
-void quit_with_save(GLOBAL_SKIN_INFOS* gsi);
+void quit_with_save(TilemCalcEmulator* emu);
 
 /* Save state of current rom */
-void save_state(GLOBAL_SKIN_INFOS * gsi);
+void save_state(TilemCalcEmulator * emu);
 
 /* The window about in the right_click_menu */
 void on_about(GtkWidget *pBtn);
@@ -61,10 +48,10 @@ void on_about(GtkWidget *pBtn);
 void show_about();
 
 /* Launch the debugger */
-void launch_debugger(GLOBAL_SKIN_INFOS * gsi);
+void launch_debugger(TilemCalcEmulator * emu);
 
 /* Reset the calc */
-void on_reset(GLOBAL_SKIN_INFOS * gsi);
+void on_reset(TilemCalcEmulator * emu);
 
 /* Button-press event */
 gboolean mouse_press_event(GtkWidget* w, GdkEventButton *event, gpointer data);
@@ -82,63 +69,63 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 
 /* Switch view to lcd only or skin + lcd */
-void switch_view(GLOBAL_SKIN_INFOS * gsi) ;
+void switch_view(TilemCalcEmulator * emu) ;
 
 /* Switch borderless. */
-void switch_borderless(GLOBAL_SKIN_INFOS* gsi); 
+void switch_borderless(TilemCalcEmulator* emu); 
 
 /* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget *items);
 
 /* Adapt the style */
-void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
+void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,TilemCalcEmulator * emu);
 
 /* Resize screen */
-void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, GLOBAL_SKIN_INFOS * gsi);
+void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, TilemCalcEmulator * emu);
 
 /* Load a file from PC to TI */
-void load_file(GLOBAL_SKIN_INFOS *gsi);
+void load_file(TilemCalcEmulator *emu);
 
 /* Load the file designed by filename */
-void load_file_from_file(GLOBAL_SKIN_INFOS *gsi, char* filename) ;
+void load_file_from_file(TilemCalcEmulator *emu, char* filename) ;
 
 /* Load a file at startup using old method (no thread) */
-void tilem_load_file_from_file_at_startup(GLOBAL_SKIN_INFOS *gsi, char* filename);
+void tilem_load_file_from_file_at_startup(TilemCalcEmulator *emu, char* filename);
 
 /* Toggle limit speed */
-void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi);
+void tilem_change_speed(TilemCalcEmulator *emu);
 
 /* Handle drag and drop */
-gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi);
+gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, TilemCalcEmulator * emu);
 
 /* Save the dimension before exit for next times we use tilem */
-void save_root_window_dimension(GLOBAL_SKIN_INFOS* gsi);
+void save_root_window_dimension(TilemCalcEmulator* emu);
 
 
 
 /* ###### skin.c ##### */
 	
 /* Create the SKIN file selector */
-void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi);
+void tilem_user_change_skin(TilemCalcEmulator *emu);
 
 /* Choose automatically wich skin tilem must load */
-void tilem_choose_skin_filename_by_default(GLOBAL_SKIN_INFOS *gsi);
+void tilem_choose_skin_filename_by_default(TilemCalcEmulator *emu);
 
 
 
 /* ###### screen.c ##### */
 
 /* Create Screen (skin and lcd) */
-GtkWidget* draw_screen(GLOBAL_SKIN_INFOS * gsi) ;
+GtkWidget* draw_screen(TilemCalcEmulator * emu) ;
 
 /* Redraw_screen when modify the skin */
-void redraw_screen(GLOBAL_SKIN_INFOS *gsi);
+void redraw_screen(TilemCalcEmulator *emu);
 
 /* Create the lcd area */
-GtkWidget * create_draw_area(GLOBAL_SKIN_INFOS * gsi);
+GtkWidget * create_draw_area(TilemCalcEmulator * emu);
 
 /* Repaint another skin */
-gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNUSED,GLOBAL_SKIN_INFOS * gsi);
+gboolean screen_repaint(GtkWidget* w G_GNUC_UNUSED,GdkEventExpose* ev G_GNUC_UNUSED,TilemCalcEmulator * emu);
 
 /* update the screen.Repaint the drawing_area widget */
 gboolean screen_update(gpointer data);
@@ -147,7 +134,7 @@ gboolean screen_update(gpointer data);
 void update_lcdimage(TilemCalcEmulator *emu);
 
 /* Display the lcd image into the terminal */
-void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi);
+void display_lcdimage_into_terminal(TilemCalcEmulator* emu);
 
 
 
@@ -157,19 +144,19 @@ void display_lcdimage_into_terminal(GLOBAL_SKIN_INFOS* gsi);
 char choose_rom_popup(GtkWidget *parent_window, const char *filename, char default_model);
 
 /* File chooser */
-char * select_file(GLOBAL_SKIN_INFOS *gsi, const char* basedir);
+char * select_file(TilemCalcEmulator *emu, const char* basedir);
 
 /* Folder chooser with a different base directory */
-char* select_dir(GLOBAL_SKIN_INFOS *gsi, const char* basedir);
+char* select_dir(TilemCalcEmulator *emu, const char* basedir);
 
 /* File chooser with a different folder */
-void select_file_with_basedir(GLOBAL_SKIN_INFOS *gsi, char* basedir);
+void select_file_with_basedir(TilemCalcEmulator *emu, char* basedir);
 
 /* Get the skin file selected */
-void get_selected_file(GLOBAL_SKIN_INFOS *gsi);
+void get_selected_file(TilemCalcEmulator *emu);
 
 /* Choose a filename to save */
-char* select_file_for_save(GLOBAL_SKIN_INFOS *gsi, char* basedir);
+char* select_file_for_save(TilemCalcEmulator *emu, char* basedir);
 
 /* Copy paste a file */
 void copy_paste(const char* src, const char* dest);
@@ -238,31 +225,31 @@ void progress_bar_update_activity(TilemCalcEmulator* emu);
 /* ##### macro.c ##### */
 
 /* Create the macro_file */
-void create_or_replace_macro_file(GLOBAL_SKIN_INFOS* gsi) ;
+void create_or_replace_macro_file(TilemCalcEmulator* emu) ;
 
 /* Recording macro */
-void add_event_in_macro_file(GLOBAL_SKIN_INFOS* gsi, char* string) ;
+void add_event_in_macro_file(TilemCalcEmulator* emu, char* string) ;
 
 /* Add a load file */
-void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filename) ;
+void add_load_file_in_macro_file(TilemCalcEmulator* emu, int length, char* filename) ;
 
 /* Not used ...? */
-void save_macro_file(GLOBAL_SKIN_INFOS* gsi) ;
+void save_macro_file(TilemCalcEmulator* emu) ;
 
 /* Play it ! And play it again ! */
-void play_macro(GLOBAL_SKIN_INFOS* gsi) ;
+void play_macro(TilemCalcEmulator* emu) ;
 
 /* Play it ! And play it again ! */
-void play_macro_from_file(GLOBAL_SKIN_INFOS* gsi) ;
+void play_macro_from_file(TilemCalcEmulator* emu) ;
 
 /* Play it ! And play it again ! */
-int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) ;
+int play_macro_default(TilemCalcEmulator* emu, char* macro_name) ;
 
 /* Turn on the recording */
-void start_record_macro(GLOBAL_SKIN_INFOS* gsi) ;
+void start_record_macro(TilemCalcEmulator* emu) ;
 
 /* Turn off the recording */
-void stop_record_macro(GLOBAL_SKIN_INFOS* gsi) ;
+void stop_record_macro(TilemCalcEmulator* emu) ;
 
 /* Run slowly to play macro */
 void run_with_key_slowly(TilemCalc* calc, int key);
@@ -288,16 +275,16 @@ void create_savname(TilemCmdlineArgs* cmdline) ;
 /* ##### animatedgif.c ##### */
 
 /* Create a animated screenshot */
-void tilem_animation_start(GLOBAL_SKIN_INFOS* gsi) ;
+void tilem_animation_start(TilemCalcEmulator* emu) ;
 
 /* Add a frame to animation */
-void tilem_animation_add_frame(GLOBAL_SKIN_INFOS* gsi) ;
+void tilem_animation_add_frame(TilemCalcEmulator* emu) ;
 
 /* Record the screenshot  (called in screen.c by a timer)*/
 gboolean tilem_animation_record(gpointer data);
 
 /* Stop recording screenshot */
-void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi);
+void tilem_animation_stop(TilemCalcEmulator* emu);
 
 
 
@@ -311,24 +298,24 @@ void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
 /* ##### screenshot.c ##### */
 
 /* create the screenshot popup */
-void create_screenshot_window(GLOBAL_SKIN_INFOS* gsi);
+void create_screenshot_window(TilemCalcEmulator* emu);
 
 /* Take a single screenshot */
-void screenshot(GLOBAL_SKIN_INFOS *gsi);
+void screenshot(TilemCalcEmulator *emu);
 
 
 /* ##### keybindings.c ##### */
 
 /* Load the keybindings */
-void tilem_keybindings_init(GLOBAL_SKIN_INFOS* gsi, const char* model);
+void tilem_keybindings_init(TilemCalcEmulator* emu, const char* model);
 
 
 /* ##### menu.c ##### */
 
 /* Print the menu */
-void show_popup_menu(GLOBAL_SKIN_INFOS* gsi, GdkEvent* event);
+void show_popup_menu(TilemCalcEmulator* emu, GdkEvent* event);
 
 /* Build the menu (do not print it) */
-GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi);
+GtkWidget * build_menu(TilemCalcEmulator* emu);
 
 
