@@ -208,7 +208,35 @@ void tilem_keybindings_init(TilemCalcEmulator *emu, const char *model)
 	emu->keybindings = NULL;
 	emu->nkeybindings = 0;
 
-	parse_binding_group(emu, gkf, model);
+
+	/* To avoid giving the same keybindings for each models, 
+	   keybindings are grouped into categories...
+	   "all" : all the models
+	   "all-alpha" : all models with alpha key
+	   "all-except-ti73" : all models ... except ti73
+	*/
+	parse_binding_group(emu, gkf, "all");
+	
+	if((strcmp(model, "ti73") !=0)) {
+		printf("all-with-alpha\n");
+		parse_binding_group(emu, gkf, "all-with-alpha");
+	}
+
+	if(strcmp(model, "ti73") != 0){
+		printf("all-except-ti73\n");
+		parse_binding_group(emu, gkf, "all-except-ti73");
+	}
+	
+	if((strcmp(model, "ti82") == 0) || (strcmp(model, "ti83") == 0) || (strcmp(model, "ti83+") == 0) ) {
+		printf("ti82-ti83(+)-ti84+\n");
+		parse_binding_group(emu, gkf, "ti82-ti83(+)-ti84+");
+	} else if((strcmp(model, "ti85") == 0) || (strcmp(model, "ti86") == 0)) { 
+		printf("ti85-ti86\n");
+		parse_binding_group(emu, gkf, "ti85-ti86");
+	} else {	 
+		printf("%s\n", model);
+		parse_binding_group(emu, gkf, model);
+	}
 
 	g_key_file_free(gkf);
 	g_free(kfname);

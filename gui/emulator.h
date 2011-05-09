@@ -21,7 +21,7 @@
 #include "skinops.h"
 
 /* This struct is used to handle cmd line args */
-typedef struct TilemCmdlineArg {
+typedef struct _TilemCmdlineArg {
 	char *SkinFileName;
 	char *RomName;  
 	char *SavName; 
@@ -108,7 +108,7 @@ typedef struct _TilemCalcEmulator {
 	/* This struct handle command line arguments */
 	TilemCmdlineArgs *cl;
 
-	/* New structure to group all key press relating stuff (maybe we should add TilemkeyBindings inside?) */
+	/* All key press relating stuff (maybe we should add TilemkeyBindings inside?) */
 	TilemKeyHandle * kh;
 	
 	/* List of key bindings */
