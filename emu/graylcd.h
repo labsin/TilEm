@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2010 Benjamin Moody
+ * Copyright (C) 2010-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -46,16 +46,12 @@ struct _TilemGrayLCD {
 
 	dword *tchange;		/* Time when pixels changed */
 	dword *tframestart;	/* Time at start of frame */
+	dword *framestamp;	/* LCD update time at start of frame */
 
 	TilemGrayLCDPixel *curpixels; /* Current pixel counters */
 	TilemGrayLCDPixel *framebasepixels; /* Pixel counters as of
 					       the start of each
 					       frame */
-
-	byte *levelbuf;		/* Buffer of resulting gray levels */
-
-	int scalebufsize;	/* Size of scalebuf */
-	void *scalebuf;		/* Buffer for scaling image */
 };
 
 #endif

@@ -135,7 +135,7 @@ static gpointer core_thread(gpointer data)
 		ticks--;
 		if (!ticks) {
 			g_mutex_lock(emu->lcd_mutex);
-			tilem_gray_lcd_next_frame(emu->glcd, 0);
+			tilem_gray_lcd_get_frame(emu->glcd, emu->lcd_buffer);
 			g_mutex_unlock(emu->lcd_mutex);
 		}
 
@@ -233,6 +233,8 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 
 	g_free(emu->link_update);
 
+	if (emu->lcd_buffer)
+		tilem_lcd_buffer_free(emu->lcd_buffer);
 	if (emu->glcd)
 		tilem_gray_lcd_free(emu->glcd);
 	if (emu->calc)
@@ -381,6 +383,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		tilem_calc_free(emu->calc);
 
 	emu->calc = calc;
+	emu->lcd_buffer = tilem_lcd_buffer_new();
 	emu->glcd = tilem_gray_lcd_new(calc, GRAY_WINDOW_SIZE,
 	                               GRAY_SAMPLE_INT);
 

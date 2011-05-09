@@ -42,6 +42,7 @@ typedef struct _TilemCalcEmulator {
 	gboolean limit_speed;   /* limit to actual speed */
 
 	GMutex *lcd_mutex;
+	TilemLCDBuffer *lcd_buffer;
 	TilemGrayLCD *glcd;
 
 	char *rom_file_name;

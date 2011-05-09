@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "tilem.h"
-#include "graylcd.h"
 
 /* Scale the input buffer, multiply by F * INCOUNT, and add to the
    output buffer (which must be an exact multiple of the size of the
@@ -170,95 +169,156 @@ static void scale2d_fast(const byte * restrict in,
 	}
 }
 
-#define GETSCALEBUF(ttt, www, hhh) \
-	((ttt *) alloc_scalebuf(glcd, (www) * (hhh) * sizeof(ttt)))
-
-static void* alloc_scalebuf(TilemGrayLCD *glcd, int size)
+/* Determine range of linear pixel values corresponding to a given
+   contrast level. */
+static void get_contrast_settings(unsigned int contrast,
+                                  int *cbase, int *cfact)
 {
-	if (size > glcd->scalebufsize) {
-		glcd->scalebufsize = size;
-		tilem_free(glcd->scalebuf);
-		glcd->scalebuf = tilem_malloc_atomic(size);
+	if (contrast < 32) {
+		*cbase = 0;
+		*cfact = contrast * 8;
 	}
-
-	return glcd->scalebuf;
+	else {
+		*cbase = (contrast - 32) * 8;
+		*cfact = 255 - *cbase;
+	}
 }
 
-void tilem_gray_lcd_draw_image_indexed(TilemGrayLCD *glcd,
-				       byte * restrict buffer,
-				       int imgwidth, int imgheight,
-				       int rowstride, int scaletype)
+#define GETSCALEBUF(ttt, www, hhh) \
+	((ttt *) alloc_scalebuf(buf, (www) * (hhh) * sizeof(ttt)))
+
+static void* alloc_scalebuf(TilemLCDBuffer *buf, unsigned int size)
 {
-	int dwidth = glcd->calc->hw.lcdwidth;
-	int dheight = glcd->calc->hw.lcdheight;
-	int i, j;
-	unsigned int *ibuf;
+	if (TILEM_UNLIKELY(size > buf->tmpbufsize)) {
+		buf->tmpbufsize = size;
+		tilem_free(buf->tmpbuf);
+		buf->tmpbuf = tilem_malloc_atomic(size);
+	}
+
+	return buf->tmpbuf;
+}
+
+void tilem_draw_lcd_image_indexed(TilemLCDBuffer * restrict buf,
+                                  byte * restrict buffer,
+                                  int imgwidth, int imgheight,
+                                  int rowstride, int scaletype)
+{
+	int dwidth = buf->width;
+	int dheight = buf->height;
+	int i, j, v;
+	unsigned int * restrict ibuf;
+	int cbase, cfact;
+	byte cindex[129];
+
+	if (dwidth == 0 || dheight == 0 || buf->contrast == 0) {
+		for (i = 0; i < imgheight; i++) {
+			for (j = 0; j < imgwidth; j++)
+				buffer[j] = 0;
+			buffer += rowstride;
+		}
+		return;
+	}
+
+	get_contrast_settings(buf->contrast, &cbase, &cfact);
+
+	for (i = 0; i <= 128; i++)
+		cindex[i] = ((i * cfact) >> 7) + cbase;
 
 	if (scaletype == TILEM_SCALE_FAST
 	    || (imgwidth % dwidth == 0 && imgheight % dheight == 0)) {
-		scale2d_fast(glcd->levelbuf, dwidth, dheight, glcd->bwidth * 8,
-			     buffer, imgwidth, imgheight, rowstride);
+		scale2d_fast(buf->data, dwidth, dheight, buf->rowstride,
+		             buffer, imgwidth, imgheight, rowstride);
+
+		for (i = 0; i < imgwidth * imgheight; i++)
+			buffer[i] = cindex[buffer[i]];
 	}
 	else {
 		ibuf = GETSCALEBUF(unsigned int, imgwidth, imgheight);
 
-		scale2d_smooth(glcd->levelbuf, dwidth, dheight,
-			       glcd->bwidth * 8,
-			       ibuf, imgwidth, imgheight, imgwidth);
+		scale2d_smooth(buf->data, dwidth, dheight, buf->rowstride,
+		               ibuf, imgwidth, imgheight, imgwidth);
 
 		for (i = 0; i < imgheight; i++) {
-			for (j = 0; j < imgwidth; j++)
-				buffer[j] = ibuf[j] / (dwidth * dheight);
+			for (j = 0; j < imgwidth; j++) {
+				v = ibuf[j] / (dwidth * dheight);
+				buffer[j] = cindex[v];
+			}
 			ibuf += imgwidth;
 			buffer += rowstride;
 		}
 	}
 }
 
-void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * restrict buffer,
-				   int imgwidth, int imgheight, int rowstride,
-				   int pixbytes, const dword * restrict palette,
-				   int scaletype)
+void tilem_draw_lcd_image_rgb(TilemLCDBuffer * restrict buf,
+                              byte * restrict buffer,
+                              int imgwidth, int imgheight, int rowstride,
+                              int pixbytes, const dword * restrict palette,
+                              int scaletype)
 {
-	int dwidth =  glcd->calc->hw.lcdwidth;
-	int dheight = glcd->calc->hw.lcdheight;
+	int dwidth = buf->width;
+	int dheight = buf->height;
 	int i, j, v;
-	unsigned int *ibuf;
-	byte *bbuf;
+	int padbytes = rowstride - (imgwidth * pixbytes);
+	byte * restrict bbuf;
+	unsigned int * restrict ibuf;
+	int cbase, cfact;
+	dword cpalette[129];
+
+	if (dwidth == 0 || dheight == 0 || buf->contrast == 0) {
+		for (i = 0; i < imgheight; i++) {
+			for (j = 0; j < imgwidth; j++) {
+				buffer[0] = palette[0] >> 16;
+				buffer[1] = palette[0] >> 8;
+				buffer[2] = palette[0];
+				buffer += pixbytes;
+			}
+			buffer += padbytes;
+		}
+		return;
+	}
+
+	get_contrast_settings(buf->contrast, &cbase, &cfact);
+
+	for (i = 0; i <= 128; i++) {
+		v = ((i * cfact) >> 7) + cbase;
+		cpalette[i] = palette[v];
+	}
 
 	if (scaletype == TILEM_SCALE_FAST
 	    || (imgwidth % dwidth == 0 && imgheight % dheight == 0)) {
 		bbuf = GETSCALEBUF(byte, imgwidth, imgheight);
 
-		scale2d_fast(glcd->levelbuf, dwidth, dheight, glcd->bwidth * 8,
-			     bbuf, imgwidth, imgheight, imgwidth);
+		scale2d_fast(buf->data, dwidth, dheight, buf->rowstride,
+		             bbuf, imgwidth, imgheight, imgwidth);
 
 		for (i = 0; i < imgheight; i++) {
 			for (j = 0; j < imgwidth; j++) {
 				v = bbuf[j];
-				buffer[j * pixbytes] = palette[v] >> 16;
-				buffer[j * pixbytes + 1] = palette[v] >> 8;
-				buffer[j * pixbytes + 2] = palette[v];
+				buffer[0] = cpalette[v] >> 16;
+				buffer[1] = cpalette[v] >> 8;
+				buffer[2] = cpalette[v];
+				buffer += pixbytes;
 			}
 			bbuf += imgwidth;
-			buffer += rowstride;
+			buffer += padbytes;
 		}
 	}
 	else {
 		ibuf = GETSCALEBUF(unsigned int, imgwidth, imgheight);
 
-		scale2d_smooth(glcd->levelbuf, dwidth, dheight, glcd->bwidth * 8,
+		scale2d_smooth(buf->data, dwidth, dheight, buf->rowstride,
 			       ibuf, imgwidth, imgheight, imgwidth);
 
 		for (i = 0; i < imgheight; i++) {
 			for (j = 0; j < imgwidth; j++) {
-				v = ibuf[j] / (dwidth * dheight);
-				buffer[j * pixbytes] = palette[v] >> 16;
-				buffer[j * pixbytes + 1] = palette[v] >> 8;
-				buffer[j * pixbytes + 2] = palette[v];
+				v = (ibuf[j] / (dwidth * dheight));
+				buffer[0] = cpalette[v] >> 16;
+				buffer[1] = cpalette[v] >> 8;
+				buffer[2] = cpalette[v];
+				buffer += pixbytes;
 			}
 			ibuf += imgwidth;
-			buffer += rowstride;
+			buffer += padbytes;
 		}
 	}
 }

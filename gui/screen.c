@@ -387,9 +387,9 @@ gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	/* Draw LCD contents into the image buffer */
 
 	g_mutex_lock(emu->lcd_mutex);
-	tilem_gray_lcd_draw_image_indexed(emu->glcd, emu->lcd_image_buf,
-	                                  alloc.width, alloc.height, alloc.width,
-					  TILEM_SCALE_SMOOTH);
+	tilem_draw_lcd_image_indexed(emu->lcd_buffer, emu->lcd_image_buf,
+	                             alloc.width, alloc.height, alloc.width,
+	                             TILEM_SCALE_SMOOTH);
 	g_mutex_unlock(emu->lcd_mutex);
 
 	/* Render buffer to the screen */

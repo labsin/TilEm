@@ -387,9 +387,9 @@ static gboolean save_screenshot(GLOBAL_SKIN_INFOS *gsi, const char *filename,
 	palette = tilem_color_palette_new(255, 255, 255, 0, 0, 0, 2.2);
 
 	g_mutex_lock(gsi->emu->lcd_mutex);
-	tilem_gray_lcd_draw_image_rgb(gsi->emu->glcd, buffer,
-	                              width, height, width * 3, 3,
-	                              palette, TILEM_SCALE_SMOOTH);
+	tilem_draw_lcd_image_rgb(gsi->emu->lcd_buffer, buffer,
+	                         width, height, width * 3, 3,
+	                         palette, TILEM_SCALE_SMOOTH);
 	g_mutex_unlock(gsi->emu->lcd_mutex);
 
 	tilem_free(palette);

@@ -78,7 +78,7 @@ static void tmr_screen_update(TilemCalc *calc, void *data)
 TilemGrayLCD* tilem_gray_lcd_new(TilemCalc *calc, int windowsize, int sampleint)
 {
 	TilemGrayLCD *glcd = tilem_new(TilemGrayLCD, 1);
-	int nbytes, npixels;
+	int nbytes, npixels, i;
 
 	glcd->bwidth = (calc->hw.lcdwidth + 7) / 8;
 	glcd->height = calc->hw.lcdheight;
@@ -89,10 +89,10 @@ TilemGrayLCD* tilem_gray_lcd_new(TilemCalc *calc, int windowsize, int sampleint)
 	glcd->newbits = tilem_new_atomic(byte, nbytes);
 	glcd->tchange = tilem_new_atomic(dword, npixels);
 	glcd->tframestart = tilem_new_atomic(dword, windowsize);
+	glcd->framestamp = tilem_new_atomic(dword, windowsize);
 	glcd->curpixels = tilem_new_atomic(TilemGrayLCDPixel, npixels);
 	glcd->framebasepixels = tilem_new_atomic(TilemGrayLCDPixel,
 						 npixels * windowsize);
-	glcd->levelbuf = tilem_new_atomic(byte, npixels);
 
 	memset(glcd->oldbits, 0, nbytes);
 	memset(glcd->tchange, 0, npixels * sizeof(dword));
@@ -105,14 +105,16 @@ TilemGrayLCD* tilem_gray_lcd_new(TilemCalc *calc, int windowsize, int sampleint)
 	glcd->timer_id = tilem_z80_add_timer(calc, sampleint / 2, sampleint, 1,
 					     &tmr_screen_update, glcd);
 
+	/* assign arbitrary but unique timestamps to the initial n
+	   frames */
+	for (i = 0; i < windowsize; i++)
+		glcd->framestamp[i] = calc->z80.lastlcdwrite - i;
+
 	glcd->lcdupdatetime = calc->z80.lastlcdwrite - 1;
 	glcd->t = 0;
 	glcd->windowsize = windowsize;
 	glcd->sampleint = sampleint;
 	glcd->framenum = 0;
-
-	glcd->scalebufsize = 0;
-	glcd->scalebuf = NULL;
 
 	return glcd;
 }
@@ -127,72 +129,97 @@ void tilem_gray_lcd_free(TilemGrayLCD *glcd)
 	tilem_free(glcd->tframestart);
 	tilem_free(glcd->curpixels);
 	tilem_free(glcd->framebasepixels);
-	tilem_free(glcd->levelbuf);
-	tilem_free(glcd->scalebuf);
 	tilem_free(glcd);
-}
-
-/* Update levelbuf with the current, exact pixel values from LCD
-   memory */
-static void update_levels_mono(TilemGrayLCD* glcd, int min, int max)
-{
-	int i, j;
-	byte *bp, *op;
-
-	(*glcd->calc->hw.get_lcd)(glcd->calc, glcd->newbits);
-	bp = glcd->newbits;
-	op = glcd->levelbuf;
-
-	for (i = 0; i < glcd->bwidth * glcd->height; i++) {
-		for (j = 0; j < 8; j++) {
-			if (*bp & (0x80 >> j))
-				*op = max;
-			else
-				*op = min;
-			op++;
-		}
-		bp++;
-	}
 }
 
 /* Update levelbuf with values based on the accumulated grayscale
    data */
-static void update_levels_gray(TilemGrayLCD *glcd, int min, int max)
+void tilem_gray_lcd_get_frame(TilemGrayLCD * restrict glcd,
+                              TilemLCDBuffer * restrict buf)
 {
 	int i, j, n;
 	unsigned int current, delta, fd, fl;
 	word ndark, nlight, ndarkseg, nlightseg;
-	byte *bp, *op;
-	TilemGrayLCDPixel *pix, *basepix;
-	int d = max - min;
 	dword tbase, tlimit;
+	byte * restrict bp;
+	byte * restrict op;
+	TilemGrayLCDPixel * restrict pix;
+	TilemGrayLCDPixel * restrict basepix;
+	dword * restrict tchange;
 
-	(*glcd->calc->hw.get_lcd)(glcd->calc, glcd->newbits);
+	if (TILEM_UNLIKELY(buf->height != glcd->height
+	                   || buf->rowstride != glcd->bwidth * 8)) {
+		/* reallocate data buffer */
+		tilem_free(buf->data);
+		buf->data = tilem_new_atomic(byte,
+		                             glcd->height * glcd->bwidth * 8);
+		buf->rowstride = glcd->bwidth * 8;
+		buf->height = glcd->height;
+	}
+
+	buf->width = glcd->calc->hw.lcdwidth;
+
+	if (!glcd->calc->lcd.active
+	    || (glcd->calc->z80.halted && !glcd->calc->poweronhalt)) {
+		/* screen is turned off */
+		buf->stamp = glcd->calc->z80.lastlcdwrite;
+		buf->contrast = 0;
+		return;
+	}
+
+	buf->contrast = glcd->calc->lcd.contrast;
+
+	/* "timestamp" for the frame is the time when LCD memory last
+	   changed prior to the start of the window; this means that
+	   if LCD remains unchanged, new frames continue to use the
+	   same timestamp */
+	buf->stamp = glcd->framestamp[glcd->framenum];
+	glcd->framestamp[glcd->framenum] = glcd->calc->z80.lastlcdwrite + 1;
+
+	/* set tbase to the sample number where the window began; this
+	   is used to limit the weight of unchanging pixels */
+	tbase = glcd->tframestart[glcd->framenum];
+	glcd->tframestart[glcd->framenum] = glcd->t;
+	tlimit = glcd->t - tbase; /* number of samples per window */
+
 	bp = glcd->newbits;
-	op = glcd->levelbuf;
+	op = buf->data;
 	pix = glcd->curpixels;
 	basepix = glcd->framebasepixels + (glcd->framenum * glcd->height
 					   * glcd->bwidth * 8);
-	n = 0;
+	tchange = glcd->tchange;
 
-	tbase = glcd->tframestart[glcd->framenum];
-	glcd->tframestart[glcd->framenum] = glcd->t;
-	tlimit = glcd->t - tbase;
+	(*glcd->calc->hw.get_lcd)(glcd->calc, bp);
+
+	n = 0;
 
 	for (i = 0; i < glcd->bwidth * glcd->height; i++) {
 		for (j = 0; j < 8; j++) {
+			/* check if pixel is currently set */
 			current = *bp & (0x80 >> j);
 
+			/* compute number of dark and light samples
+			   within the window */
 			ndark = pix[n].ndark - basepix[n].ndark;
 			nlight = pix[n].nlight - basepix[n].nlight;
+
+			/* compute number of dark and light segments
+			   within the window */
 			ndarkseg = pix[n].ndarkseg - basepix[n].ndarkseg;
 			nlightseg = pix[n].nlightseg - basepix[n].nlightseg;
 
-			if (glcd->tchange[n] - tbase > tlimit) {
-				glcd->tchange[n] = tbase;
+			/* average light segment in this window is
+			   (nlight / nlightseg); average dark segment
+			   is (ndark / ndarkseg) */
+
+			/* ensure tchange is later than or equal to tbase */
+			if (tchange[n] - tbase > tlimit) {
+				tchange[n] = tbase;
 			}
 
-			delta = glcd->t - glcd->tchange[n];
+			/* if current segment is longer than average,
+			   count it as well */
+			delta = glcd->t - tchange[n];
 
 			if (current) {
 				if (delta * ndarkseg >= ndark) {
@@ -211,9 +238,9 @@ static void update_levels_gray(TilemGrayLCD *glcd, int min, int max)
 			fl = nlight * ndarkseg;
 
 			if (fd + fl == 0)
-				*op = (ndark ? max : min);
+				*op = (ndark ? 128 : 0);
 			else
-				*op = min + ((d * fd) / (fd + fl));
+				*op = ((fd * 128) / (fd + fl));
 
 			n++;
 			op++;
@@ -223,29 +250,6 @@ static void update_levels_gray(TilemGrayLCD *glcd, int min, int max)
 
 	memcpy(basepix, pix, (glcd->height * glcd->bwidth * 8
 			      * sizeof(TilemGrayLCDPixel)));
-}
-
-void tilem_gray_lcd_next_frame(TilemGrayLCD *glcd, int mono)
-{
-	int min, max;
-
-	if (!glcd->calc->lcd.active
-	    || (glcd->calc->z80.halted && !glcd->calc->poweronhalt)) {
-		min = max = 0;
-	}
-	else if (glcd->calc->lcd.contrast < 32) {
-		min = 0;
-		max = glcd->calc->lcd.contrast * 8;
-	}
-	else {
-		min = (glcd->calc->lcd.contrast - 32) * 8;
-		max = 255;
-	}
-
-	if (mono)
-		update_levels_mono(glcd, min, max);
-	else
-		update_levels_gray(glcd, min, max);
 
 	glcd->framenum = (glcd->framenum + 1) % glcd->windowsize;
 }

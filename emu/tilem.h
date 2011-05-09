@@ -186,7 +186,7 @@ enum {
 	TILEM_INTERRUPT_LINK_ACTIVE = 512, /* Link port state changed */
 	TILEM_INTERRUPT_LINK_READ = 1024,  /* Link assist read a byte */
 	TILEM_INTERRUPT_LINK_IDLE = 2048,  /* Link assist is idle */
-	TILEM_INTERRUPT_LINK_ERROR = 4096, /* Link assist failed */
+	TILEM_INTERRUPT_LINK_ERROR = 4096  /* Link assist failed */
 };
 
 /* Constant hardware timer IDs */
@@ -454,7 +454,7 @@ enum {
 	TILEM_LINK_ASSIST_READ_BUSY   = 2, /* Assisted read in progress */
 	TILEM_LINK_ASSIST_READ_ERROR  = 4, /* Assisted read failed */
 	TILEM_LINK_ASSIST_WRITE_BUSY  = 8, /* Assisted write in progress */
-	TILEM_LINK_ASSIST_WRITE_ERROR = 16, /* Assisted write failed */
+	TILEM_LINK_ASSIST_WRITE_ERROR = 16 /* Assisted write failed */
 };
 
 /* Link emulation mode */
@@ -607,14 +607,14 @@ enum {
 	TILEM_MD5_REG_C = 2,	/* 'c' value */
 	TILEM_MD5_REG_D = 3,	/* 'd' value */
 	TILEM_MD5_REG_X = 4,	/* 'X' (or 'T') value */
-	TILEM_MD5_REG_T = 5,	/* 'T' (or 'X') value */
+	TILEM_MD5_REG_T = 5	/* 'T' (or 'X') value */
 };
 
 enum {
 	TILEM_MD5_FUNC_FF = 0,
 	TILEM_MD5_FUNC_GG = 1,
 	TILEM_MD5_FUNC_HH = 2,
-	TILEM_MD5_FUNC_II = 3,
+	TILEM_MD5_FUNC_II = 3
 };
 
 typedef struct _TilemMD5Assist {
@@ -810,9 +810,7 @@ int tilem_calc_load_state(TilemCalc* calc, FILE* romfile, FILE* savfile);
 int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile);
 
 
-/* Grayscale LCD simulation */
-
-typedef struct _TilemGrayLCD TilemGrayLCD;
+/* LCD image conversion/scaling */
 
 /* Scaling algorithms */
 enum {
@@ -826,45 +824,51 @@ enum {
 				   an integer factor */
 };
 
-/* Create a new LCD and attach to a calculator.  Sampling for
-   grayscale is done across WINDOWSIZE frames, with samples taken
-   every SAMPLEINT microseconds. */
-TilemGrayLCD* tilem_gray_lcd_new(TilemCalc *calc, int windowsize,
-				 int sampleint);
+/* Buffer representing a snapshot of the LCD state */
+typedef struct _TilemLCDBuffer {
+	byte width;             /* Width of LCD */
+	byte height;            /* Height of LCD */
+	byte rowstride;         /* Offset between rows in buffer */
+	byte contrast;          /* Contrast value (0-63) */
+	dword stamp;            /* Timestamp */
+	dword tmpbufsize;       /* Size of temporary buffer */
+	byte *data;             /* Image data (rowstride*height bytes) */
+	void *tmpbuf;           /* Temporary buffer used for scaling */
+} TilemLCDBuffer;
 
-/* Detach and free an LCD. */
-void tilem_gray_lcd_free(TilemGrayLCD *glcd);
+/* Create new TilemLCDBuffer. */
+TilemLCDBuffer* tilem_lcd_buffer_new(void)
+	TILEM_ATTR_MALLOC;
 
-/* Update LCD image for next frame, based on current calculator
-   state. */
-void tilem_gray_lcd_next_frame(TilemGrayLCD *glcd, int mono);
+/* Free  a TilemLCDBuffer. */
+void tilem_lcd_buffer_free(TilemLCDBuffer *buf);
 
-/* Draw current LCD contents to an 8-bit indexed image buffer.
-   IMGWIDTH and IMGHEIGHT are the width and height of the output
-   image, ROWSTRIDE the number of bytes from the start of one row to
-   the next (often equal to IMGWIDTH), and SCALETYPE the scaling
-   algorithm to use.  (This function uses the result produced by
-   tilem_gray_lcd_next_frame(), but does not interact with the
-   calculator itself; thus, this function can run concurrently with
-   tilem_z80_run(), but not with tilem_gray_lcd_next_frame().)  */
-void tilem_gray_lcd_draw_image_indexed(TilemGrayLCD *glcd,
-				       byte * restrict buffer,
-				       int imgwidth, int imgheight,
-				       int rowstride, int scaletype);
+/* Convert current LCD memory contents to a TilemLCDBuffer (i.e., a
+   monochrome snapshot.) */
+void tilem_lcd_get_frame(TilemCalc * restrict calc,
+                         TilemLCDBuffer * restrict buf);
 
-/* Draw current LCD contents to a 24-bit RGB or 32-bit RGBA image
+/* Convert and scale image to an 8-bit indexed image buffer.  IMGWIDTH
+   and IMGHEIGHT are the width and height of the output image,
+   ROWSTRIDE the number of bytes from the start of one row to the next
+   (often equal to IMGWIDTH), and SCALETYPE the scaling algorithm to
+   use. */
+void tilem_draw_lcd_image_indexed(TilemLCDBuffer * restrict frm,
+                                  byte * restrict buffer,
+                                  int imgwidth, int imgheight,
+                                  int rowstride, int scaletype);
+
+/* Convert and scale image to a 24-bit RGB or 32-bit RGBA image
    buffer.  IMGWIDTH and IMGHEIGHT are the width and height of the
    output image, ROWSTRIDE the number of bytes from the start of one
    row to the next (often equal to 3 * IMGWIDTH), PIXBYTES the number
    of bytes per pixel (3 or 4), and SCALETYPE the scaling algorithm to
-   use.  PALETTE is an array of 256 color values.  (As with
-   tilem_gray_lcd_draw_image_indexed(), this function can run
-   concurrently with tilem_z80_run(), but not with
-   tilem_gray_lcd_next_frame().) */
-void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * restrict buffer,
-				   int imgwidth, int imgheight, int rowstride,
-				   int pixbytes, const dword * restrict palette,
-				   int scaletype);
+   use.  PALETTE is an array of 256 color values. */
+void tilem_draw_lcd_image_rgb(TilemLCDBuffer * restrict frm,
+                              byte * restrict buffer,
+                              int imgwidth, int imgheight, int rowstride,
+                              int pixbytes, const dword * restrict palette,
+                              int scaletype);
 
 /* Calculate a color palette for use with the above functions.
    RLIGHT, GLIGHT, BLIGHT are the RGB components (0 to 255) of the
@@ -873,8 +877,29 @@ void tilem_gray_lcd_draw_image_rgb(TilemGrayLCD *glcd, byte * restrict buffer,
    output device (2.2 for most current computer displays and image
    file formats.) */
 dword* tilem_color_palette_new(int rlight, int glight, int blight,
-			       int rdark, int gdark, int bdark,
-			       double gamma);
+                               int rdark, int gdark, int bdark,
+                               double gamma);
+
+
+/* Grayscale LCD simulation */
+
+typedef struct _TilemGrayLCD TilemGrayLCD;
+
+/* Create a new LCD and attach to a calculator.  Sampling for
+   grayscale is done across WINDOWSIZE frames, with samples taken
+   every SAMPLEINT microseconds. */
+TilemGrayLCD* tilem_gray_lcd_new(TilemCalc *calc, int windowsize,
+                                 int sampleint);
+
+/* Detach and free an LCD. */
+void tilem_gray_lcd_free(TilemGrayLCD *glcd);
+
+/* Generate a grayscale image for the next frame, based on current
+   calculator state.  This function also updates the frame counter and
+   internal state; for proper grayscale behavior, this function needs
+   to be called at regular intervals. */
+void tilem_gray_lcd_get_frame(TilemGrayLCD * restrict glcd,
+                              TilemLCDBuffer * restrict frm);
 
 
 /* Miscellaneous functions */
