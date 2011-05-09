@@ -48,17 +48,18 @@ int main(int argc, char **argv)
 	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
 	gsi->pWindow = NULL;
 	
-	gsi->mouse_key = 0;
-	gsi->macro_file = NULL;
 
-	gsi->key_queue = NULL;
-	gsi->key_queue_len = 0;
-	gsi->key_queue_timer = 0;
 
 	/* TilemCalcEmu part */
 	gsi->emu = tilem_calc_emulator_new();
 
 	gsi->si=NULL;
+	gsi->emu->macro_file = NULL;
+	gsi->emu->keyhandle = g_new0(TilemKeyHandle, 1);
+	gsi->emu->keyhandle->mouse_key = 0;
+	gsi->emu->keyhandle->key_queue = NULL;
+	gsi->emu->keyhandle->key_queue_len = 0;
+	gsi->emu->keyhandle->key_queue_timer = 0;
 	gsi->emu->guiflags = g_new0(TilemGuiStateFlags, 1);
 	gsi->emu->guiflags->isMacroRecording = FALSE;
 	gsi->emu->guiflags->isAnimScreenshotRecording = FALSE;

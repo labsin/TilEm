@@ -30,8 +30,6 @@ int SAVE_STATE;
 
 #define LABEL_X_ALIGN 0.0
 
-
-
 /* FIXME : I plan to change all this stuff to use TilemCalcEmu struct instead
 Idem for macros and gif */
 
@@ -51,8 +49,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 	GtkFileChooser *pFileChooser; /* The file chooser widget (open or save) */
 	gint FileChooserResult; /* The result of the file chooser widget (cancel or OK) */ 
 
-	/* Macros */
-	FILE * macro_file;	/* The macro file */
 	
 	/* Animated gif */
 	GtkWidget* screenshot_preview_image;
@@ -60,20 +56,7 @@ typedef struct GLOBAL_SKIN_INFOS {
 	GtkWidget* folder_chooser_animation;
 	FILE * animation_file; // The animated gif file */
 	
-	int mouse_key;		/* Key currently pressed by mouse button */
-
-
-	/* Host keycode used to activate each key, if any */
-	int keypress_keycodes[64];
-	int sequence_keycode;
-
-	/* Sequence of keys to be pressed
-	   (used by core thread; guarded by calc_mutex) */
-	byte *key_queue;
-	int key_queue_len;
-	int key_queue_timer;
-	int key_queue_pressed;
-	
+		
 
 }GLOBAL_SKIN_INFOS;
 

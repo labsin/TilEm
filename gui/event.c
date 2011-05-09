@@ -264,13 +264,13 @@ static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
    separately */
 static void press_mouse_key(GLOBAL_SKIN_INFOS* gsi, int key)
 {
-	if (gsi->mouse_key == key)
+	if (gsi->emu->keyhandle->mouse_key == key)
 		return;
 
 	g_mutex_lock(gsi->emu->calc_mutex);
 
-	if (gsi->mouse_key)
-		tilem_keypad_release_key(gsi->emu->calc, gsi->mouse_key);
+	if (gsi->emu->keyhandle->mouse_key)
+		tilem_keypad_release_key(gsi->emu->calc, gsi->emu->keyhandle->mouse_key);
 
 	if (key)
 		tilem_keypad_press_key(gsi->emu->calc, key);
@@ -281,7 +281,7 @@ static void press_mouse_key(GLOBAL_SKIN_INFOS* gsi, int key)
 	if (key)
 		record_key(gsi, key);
 
-	gsi->mouse_key = key;
+	gsi->emu->keyhandle->mouse_key = key;
 }
 
 /* Mouse button pressed */
@@ -355,21 +355,21 @@ gboolean mouse_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 static void tmr_key_queue(TilemCalc* calc, void* data)
 {
 	GLOBAL_SKIN_INFOS *gsi = data;
-	int nextkey = gsi->key_queue[gsi->key_queue_len - 1];
+	int nextkey = gsi->emu->keyhandle->key_queue[gsi->emu->keyhandle->key_queue_len - 1];
 
-	if (gsi->key_queue_pressed) {
+	if (gsi->emu->keyhandle->key_queue_pressed) {
 		tilem_keypad_release_key(calc, nextkey);
-		gsi->key_queue_len--;
-		if (gsi->key_queue_len == 0) {
-			tilem_z80_remove_timer(calc, gsi->key_queue_timer);
-			gsi->key_queue_timer = 0;
+		gsi->emu->keyhandle->key_queue_len--;
+		if (gsi->emu->keyhandle->key_queue_len == 0) {
+			tilem_z80_remove_timer(calc, gsi->emu->keyhandle->key_queue_timer);
+			gsi->emu->keyhandle->key_queue_timer = 0;
 		}
 	}
 	else {
 		tilem_keypad_press_key(calc, nextkey);
 	}
 
-	gsi->key_queue_pressed = !gsi->key_queue_pressed;
+	gsi->emu->keyhandle->key_queue_pressed = !gsi->emu->keyhandle->key_queue_pressed;
 }
 
 /* Find key binding matching the given event */
@@ -414,9 +414,9 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 
 	/* Ignore repeating keys */
 	for (i = 0; i < 64; i++)
-		if (gsi->keypress_keycodes[i] == event->hardware_keycode)
+		if (gsi->emu->keyhandle->keypress_keycodes[i] == event->hardware_keycode)
 			return FALSE;
-	if (gsi->sequence_keycode == event->hardware_keycode)
+	if (gsi->emu->keyhandle->sequence_keycode == event->hardware_keycode)
 		return FALSE;
 
 	if (!(kb = find_key_binding(gsi, event)))
@@ -424,39 +424,39 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 
 	g_mutex_lock(gsi->emu->calc_mutex);
 
-	if (gsi->key_queue_len == 0 && kb->nscancodes == 1) {
+	if (gsi->emu->keyhandle->key_queue_len == 0 && kb->nscancodes == 1) {
 		/* press single key */
 		key = kb->scancodes[0];
 		tilem_keypad_press_key(gsi->emu->calc, key);
-		gsi->keypress_keycodes[key] = event->hardware_keycode;
+		gsi->emu->keyhandle->keypress_keycodes[key] = event->hardware_keycode;
 		record_key(gsi, key);
 	}
 	else {
 		/* add key sequence to queue */
-		q = g_new(byte, kb->nscancodes + gsi->key_queue_len);
+		q = g_new(byte, kb->nscancodes + gsi->emu->keyhandle->key_queue_len);
 
 		for (i = 0; i < kb->nscancodes; i++) {
 			q[kb->nscancodes - i - 1] = kb->scancodes[i];
 			record_key(gsi, kb->scancodes[i]);
 		}
 
-		if (gsi->key_queue_len)
-			memcpy(q + kb->nscancodes, gsi->key_queue,
-			       gsi->key_queue_len);
+		if (gsi->emu->keyhandle->key_queue_len)
+			memcpy(q + kb->nscancodes, gsi->emu->keyhandle->key_queue,
+			       gsi->emu->keyhandle->key_queue_len);
 
-		g_free(gsi->key_queue);
-		gsi->key_queue = q;
-		gsi->key_queue_len += kb->nscancodes;
+		g_free(gsi->emu->keyhandle->key_queue);
+		gsi->emu->keyhandle->key_queue = q;
+		gsi->emu->keyhandle->key_queue_len += kb->nscancodes;
 
-		if (!gsi->key_queue_timer) {
-			gsi->key_queue_timer
+		if (!gsi->emu->keyhandle->key_queue_timer) {
+			gsi->emu->keyhandle->key_queue_timer
 				= tilem_z80_add_timer(gsi->emu->calc,
 				                      1, 50000, 1,
 				                      &tmr_key_queue, gsi);
-			gsi->key_queue_pressed = 0;
+			gsi->emu->keyhandle->key_queue_pressed = 0;
 		}
 
-		gsi->sequence_keycode = event->hardware_keycode;
+		gsi->emu->keyhandle->sequence_keycode = event->hardware_keycode;
 	}
 
 	g_cond_broadcast(gsi->emu->calc_wakeup_cond);
@@ -477,17 +477,17 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	   event->keyval; modifiers may have changed since the key was
 	   pressed.) */
 	for (i = 0; i < 64; i++) {
-		if (gsi->keypress_keycodes[i] == event->hardware_keycode) {
+		if (gsi->emu->keyhandle->keypress_keycodes[i] == event->hardware_keycode) {
 			g_mutex_lock(gsi->emu->calc_mutex);
 			tilem_keypad_release_key(gsi->emu->calc, i);
 			g_cond_broadcast(gsi->emu->calc_wakeup_cond);
 			g_mutex_unlock(gsi->emu->calc_mutex);
-			gsi->keypress_keycodes[i] = 0;
+			gsi->emu->keyhandle->keypress_keycodes[i] = 0;
 		}
 	}
 
-	if (gsi->sequence_keycode == event->hardware_keycode)
-		gsi->sequence_keycode = 0;
+	if (gsi->emu->keyhandle->sequence_keycode == event->hardware_keycode)
+		gsi->emu->keyhandle->sequence_keycode = 0;
 
 	return FALSE;
 }

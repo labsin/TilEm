@@ -33,7 +33,7 @@
 /* Turn on recording macro */
 void start_record_macro(GLOBAL_SKIN_INFOS* gsi) {
 	gsi->emu->guiflags->isMacroRecording = TRUE;
-	gsi->macro_file = NULL;
+	gsi->emu->macro_file = NULL;
 }
 
 /* Turn off recording macro */
@@ -43,8 +43,8 @@ void stop_record_macro(GLOBAL_SKIN_INFOS* gsi)
 	
 	if(gsi->emu->guiflags->isMacroRecording == TRUE) {
 		gsi->emu->guiflags->isMacroRecording = FALSE;
-		if(gsi->macro_file != NULL)
-			fclose(gsi->macro_file);
+		if(gsi->emu->macro_file != NULL)
+			fclose(gsi->emu->macro_file);
 
 		tilem_config_get("macro",
 		                 "loadmacro_recentdir/f", &dir,
@@ -76,21 +76,21 @@ void create_or_replace_macro_file(GLOBAL_SKIN_INFOS* gsi) {
 	
 
 	macro_file = g_fopen("play.txt", "a+");
-	gsi->macro_file= macro_file;
+	gsi->emu->macro_file= macro_file;
 }
 
 /* Recording */
 void add_event_in_macro_file(GLOBAL_SKIN_INFOS* gsi, char * string) {
 	
 	/* First time ? So create the file */
-	if(gsi->macro_file == NULL) {
+	if(gsi->emu->macro_file == NULL) {
 		create_or_replace_macro_file(gsi);
 	} else {
 		/* Write the comma to seperate */
-		fwrite(",", 1, 1, gsi->macro_file);
+		fwrite(",", 1, 1, gsi->emu->macro_file);
 	}
 	/* Write the event */
-	fwrite(string, 1, sizeof(int), gsi->macro_file);
+	fwrite(string, 1, sizeof(int), gsi->emu->macro_file);
 	
 }
 
@@ -106,19 +106,19 @@ void add_load_file_in_macro_file(GLOBAL_SKIN_INFOS* gsi, int length, char* filen
 	DMACRO_L0_A2("* filename = %s, length = %d                *\n", filename, length);	
 	
 	/* First time ? So create the file */
-	if(gsi->macro_file == NULL) {
+	if(gsi->emu->macro_file == NULL) {
 		create_or_replace_macro_file(gsi);
 	} else {
-		fwrite(",", 1, 1, gsi->macro_file);
+		fwrite(",", 1, 1, gsi->emu->macro_file);
 	}
 	/* Write  title */
-	fwrite("file=", 1, 5, gsi->macro_file);
+	fwrite("file=", 1, 5, gsi->emu->macro_file);
 	sprintf(lengthchar, "%04d",length);
 	/* Write length */
-	fwrite(lengthchar, 1, sizeof(int), gsi->macro_file);
-	fwrite("-", 1, 1, gsi->macro_file);
+	fwrite(lengthchar, 1, sizeof(int), gsi->emu->macro_file);
+	fwrite("-", 1, 1, gsi->emu->macro_file);
 	/* Write path */
-	fwrite(filename, 1, length, gsi->macro_file);
+	fwrite(filename, 1, length, gsi->emu->macro_file);
 	
 	DMACRO_L0_A0("***************************************************\n");	
 	/* Write the comma to seperate */
@@ -135,7 +135,7 @@ int open_macro_file(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 	} 
 
 	if((macro_file = g_fopen(macro_name, "r")) != NULL) {
-		gsi->macro_file= macro_file;
+		gsi->emu->macro_file= macro_file;
 	} else {
 		return 1;
 	}
@@ -146,9 +146,9 @@ int open_macro_file(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 /* Callback signal (rightclick menu) */
 void play_macro(GLOBAL_SKIN_INFOS* gsi) {
 	play_macro_default(gsi, NULL);
-	if(gsi->macro_file != NULL)
-		fclose(gsi->macro_file);
-	//	gsi->macro_file = NULL;
+	if(gsi->emu->macro_file != NULL)
+		fclose(gsi->emu->macro_file);
+	//	gsi->emu->macro_file = NULL;
 }
 
 /* Callback signal (rightclick menu) */
@@ -188,19 +188,19 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 	while(c != EOF) {	
 		codechar= (char*) malloc(4 * sizeof(char) + 1);
 		memset(codechar, 0, 5);
-		fread(codechar, 1, 4, gsi->macro_file);
+		fread(codechar, 1, 4, gsi->emu->macro_file);
 		
 		if(strcmp(codechar, "file") == 0 ) {
-			c = fgetc(gsi->macro_file); /* Drop the "="*/
+			c = fgetc(gsi->emu->macro_file); /* Drop the "="*/
 			lengthchar= (char*) malloc(4 * sizeof(char) + 1);
 			memset(lengthchar, 0, 5);
-			fread(lengthchar, 1, 4, gsi->macro_file);
-			c = fgetc(gsi->macro_file); /* Drop the "-"*/
+			fread(lengthchar, 1, 4, gsi->emu->macro_file);
+			c = fgetc(gsi->emu->macro_file); /* Drop the "-"*/
 			length= atoi(lengthchar);
 			DMACRO_L0_A2("* lengthchar = %s,    length = %d         *\n", lengthchar, length);
 			filename= (char*) malloc(length * sizeof(char)+1);
 			memset(filename, 0, length + 1);
-			fread(filename, 1, length, gsi->macro_file);
+			fread(filename, 1, length, gsi->emu->macro_file);
 			load_file_from_file(gsi, filename);
 			DMACRO_L0_A1("* send file = %s               *\n", filename);
 		} else {
@@ -214,7 +214,7 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 		}
 
 
-		c = fgetc(gsi->macro_file);
+		c = fgetc(gsi->emu->macro_file);
 	}
 	/* Turn off the macro playing state */
 	gsi->emu->guiflags->isMacroPlaying = FALSE;

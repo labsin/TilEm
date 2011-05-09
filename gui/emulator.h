@@ -47,6 +47,22 @@ typedef struct _TilemKeyBinding {
 } TilemKeyBinding;
 
 
+typedef struct _TilemKeyHandle {
+	int mouse_key;		/* Key currently pressed by mouse button */
+
+	/* Host keycode used to activate each key, if any */
+	int keypress_keycodes[64];
+	int sequence_keycode;
+
+	/* Sequence of keys to be pressed
+	   (used by core thread; guarded by calc_mutex) */
+	byte *key_queue;
+	int key_queue_len;
+	int key_queue_timer;
+	int key_queue_pressed;
+} TilemKeyHandle;
+
+
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
 
@@ -68,10 +84,15 @@ typedef struct _TilemCalcEmulator {
 	TilemGuiStateFlags *guiflags;
 	/* new struct to handle cmd line args */
 	TilemCmdlineArgs *cmdline;
+
+	TilemKeyHandle * keyhandle;
 	
 	/* List of key bindings */
 	TilemKeyBinding *keybindings;
 	int nkeybindings;
+
+	/* Macros */
+	FILE * macro_file;	/* The macro file */
 
 	GtkProgressBar* ilp_progress_bar1; /* progress bar (current item) */
 	GtkProgressBar* ilp_progress_bar2; /* progress bar (total) */
