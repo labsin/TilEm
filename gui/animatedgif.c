@@ -113,7 +113,7 @@ void tilem_animation_start(TilemCalcEmulator* emu) {
 		GifEncode(fp, q , 1, (width*height));
 		fwrite(end, 1, 1,fp);	/* Write end of the frame */
 		fclose(fp);
-		emu->guiflags->isAnimScreenshotRecording = TRUE;
+		emu->gf->isAnimScreenshotRecording = TRUE;
 	}
 }
     
@@ -173,7 +173,7 @@ void tilem_animation_stop(TilemCalcEmulator* emu) {
 	
 	
     	char trailer[1] = { 0x3b};
-	if(emu->guiflags->isAnimScreenshotRecording) {
+	if(emu->gf->isAnimScreenshotRecording) {
 		FILE* fp;
 		fp = fopen("gifencod.gif", "a");
 		fwrite(trailer, 1, 1,fp);
@@ -187,7 +187,7 @@ void tilem_animation_stop(TilemCalcEmulator* emu) {
 gboolean tilem_animation_record(gpointer data) {
 	TilemCalcEmulator * emu = (TilemCalcEmulator*) data;
 	
-	if(emu->guiflags->isAnimScreenshotRecording) 
+	if(emu->gf->isAnimScreenshotRecording) 
 		tilem_animation_add_frame(emu);
 	return TRUE;
 

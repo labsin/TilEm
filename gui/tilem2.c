@@ -46,23 +46,23 @@ int main(int argc, char **argv)
 
 	emu = tilem_calc_emulator_new();
 
-	emu->guiwidget = g_new0(TilemGuiWidget, 1);
-	emu->guiwidget->pWindow = NULL;
+	emu->gw = g_new0(TilemGuiWidget, 1);
+	emu->gw->pWindow = NULL;
 	emu->si=NULL;
 	emu->macro_file = NULL;
-	emu->keyhandle = g_new0(TilemKeyHandle, 1);
-	emu->keyhandle->mouse_key = 0;
-	emu->keyhandle->key_queue = NULL;
-	emu->keyhandle->key_queue_len = 0;
-	emu->keyhandle->key_queue_timer = 0;
-	emu->guiflags = g_new0(TilemGuiStateFlags, 1);
-	emu->guiflags->isMacroRecording = FALSE;
-	emu->guiflags->isAnimScreenshotRecording = FALSE;
-	emu->guiflags->isDebuggerRunning=FALSE;
+	emu->kh = g_new0(TilemKeyHandle, 1);
+	emu->kh->mouse_key = 0;
+	emu->kh->key_queue = NULL;
+	emu->kh->key_queue_len = 0;
+	emu->kh->key_queue_timer = 0;
+	emu->gf = g_new0(TilemGuiStateFlags, 1);
+	emu->gf->isMacroRecording = FALSE;
+	emu->gf->isAnimScreenshotRecording = FALSE;
+	emu->gf->isDebuggerRunning=FALSE;
 
 	TilemCmdlineArgs * cmdline = tilem_cmdline_new();
 	tilem_cmdline_get_args(argc, argv, cmdline);
-	emu->cmdline = cmdline;
+	emu->cl = cmdline;
 	
 
 	if (!tilem_calc_emulator_load_state(emu, cmdline->RomName)) {
@@ -81,15 +81,15 @@ int main(int argc, char **argv)
 	if (cmdline->SkinFileName == NULL) {
 		tilem_choose_skin_filename_by_default(emu);
 		tilem_config_get("settings",
-		                 "skin_disabled/b", &emu->guiflags->isSkinDisabled,
+		                 "skin_disabled/b", &emu->gf->isSkinDisabled,
 		                 NULL);
 	}
 
 	if (cmdline->isStartingSkinless)
-		emu->guiflags->isSkinDisabled = TRUE;
+		emu->gf->isSkinDisabled = TRUE;
 
 	/* Draw skin */	
-	emu->guiwidget->pWindow=draw_screen(emu);
+	emu->gw->pWindow=draw_screen(emu);
 
 	tilem_calc_emulator_run(emu);
 

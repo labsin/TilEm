@@ -38,7 +38,7 @@ void tilem_choose_skin_filename_by_default(TilemCalcEmulator *emu)
 	const char *model = emu->calc->hw.name;
 	char *name = NULL, *path;
 
-	g_free(emu->cmdline->SkinFileName);
+	g_free(emu->cl->SkinFileName);
 
 	tilem_config_get(model,
 	                 "skin/f", &name,
@@ -49,11 +49,11 @@ void tilem_choose_skin_filename_by_default(TilemCalcEmulator *emu)
 
 	if (!g_path_is_absolute(name)) {
 		path = get_shared_file_path("skins", name, NULL);
-		emu->cmdline->SkinFileName = path;
+		emu->cl->SkinFileName = path;
 		g_free(name);
 	}
 	else {
-		emu->cmdline->SkinFileName = name;
+		emu->cl->SkinFileName = name;
 	}
 }
 
@@ -102,9 +102,9 @@ void tilem_user_change_skin(TilemCalcEmulator *emu)
 	g_free(default_dir);
 
 	if (file_selected != NULL) {
-		g_free(emu->cmdline->SkinFileName);
-		emu->cmdline->SkinFileName = file_selected;
-		emu->guiflags->isSkinDisabled = FALSE;
+		g_free(emu->cl->SkinFileName);
+		emu->cl->SkinFileName = file_selected;
+		emu->gf->isSkinDisabled = FALSE;
 		redraw_screen(emu);
 
 		/* if file is stored in shared skins directory, save

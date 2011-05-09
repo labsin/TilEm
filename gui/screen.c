@@ -115,10 +115,10 @@ void redraw_screen(TilemCalcEmulator *emu)
 
 	emu->si = g_new0(SKIN_INFOS, 1);
 
-	if (!emu->guiflags->isSkinDisabled) {
-		if (!emu->cmdline->SkinFileName
-		    || skin_load(emu->si, emu->cmdline->SkinFileName))
-			emu->guiflags->isSkinDisabled = 1;
+	if (!emu->gf->isSkinDisabled) {
+		if (!emu->cl->SkinFileName
+		    || skin_load(emu->si, emu->cl->SkinFileName))
+			emu->gf->isSkinDisabled = 1;
 	}
 
 	lcdwidth = emu->calc->hw.lcdwidth;
@@ -128,18 +128,18 @@ void redraw_screen(TilemCalcEmulator *emu)
 		gtk_widget_destroy(emu->lcdwin);
 	if (emu->background)
 		gtk_widget_destroy(emu->background);
-	if (emu->guiwidget->pLayout)
-		gtk_widget_destroy(emu->guiwidget->pLayout);
+	if (emu->gw->pLayout)
+		gtk_widget_destroy(emu->gw->pLayout);
 
 	/* create LCD widget */
 	emu->lcdwin = gtk_drawing_area_new();
 
 	/* create background image and layout */
-	if (!emu->guiflags->isSkinDisabled) {
-		emu->guiwidget->pLayout = gtk_layout_new(NULL, NULL);
+	if (!emu->gf->isSkinDisabled) {
+		emu->gw->pLayout = gtk_layout_new(NULL, NULL);
 
 		pImage = gtk_image_new_from_pixbuf(emu->si->image);
-		gtk_layout_put(GTK_LAYOUT(emu->guiwidget->pLayout), pImage, 0, 0);
+		gtk_layout_put(GTK_LAYOUT(emu->gw->pLayout), pImage, 0, 0);
 		emu->background = pImage;
 
 		screenwidth = emu->si->lcd_pos.right - emu->si->lcd_pos.left;
@@ -147,14 +147,14 @@ void redraw_screen(TilemCalcEmulator *emu)
 
 		gtk_widget_set_size_request(emu->lcdwin,
 		                            screenwidth, screenheight);
-		gtk_layout_put(GTK_LAYOUT(emu->guiwidget->pLayout), emu->lcdwin,
+		gtk_layout_put(GTK_LAYOUT(emu->gw->pLayout), emu->lcdwin,
 		               emu->si->lcd_pos.left,
 		               emu->si->lcd_pos.top);
 
-		g_signal_connect(emu->guiwidget->pLayout, "size-allocate",
+		g_signal_connect(emu->gw->pLayout, "size-allocate",
 		                 G_CALLBACK(skin_size_allocate), emu);
 
-		emuwin = emu->guiwidget->pLayout;
+		emuwin = emu->gw->pLayout;
 
 		tilem_config_get("settings",
 		                 "width/i", &defwidth,
@@ -173,7 +173,7 @@ void redraw_screen(TilemCalcEmulator *emu)
 		minheight = defheight * s + 0.5;
 	}
 	else {
-		emu->guiwidget->pLayout = NULL;
+		emu->gw->pLayout = NULL;
 		emu->background = NULL;
 
 		emuwin = emu->lcdwin;
@@ -229,23 +229,23 @@ void redraw_screen(TilemCalcEmulator *emu)
 	/* If the window is already realized, set the hints now, so
 	   that the WM will see the new hints before we try to resize
 	   the window */
-	set_size_hints(emu->guiwidget->pWindow, emu);
+	set_size_hints(emu->gw->pWindow, emu);
 
 	gtk_widget_set_size_request(emuwin, minwidth, minheight);
-	gtk_container_add(GTK_CONTAINER(emu->guiwidget->pWindow), emuwin);
-	gtk_window_resize(GTK_WINDOW(emu->guiwidget->pWindow), defwidth, defheight);
+	gtk_container_add(GTK_CONTAINER(emu->gw->pWindow), emuwin);
+	gtk_window_resize(GTK_WINDOW(emu->gw->pWindow), defwidth, defheight);
 
-	gtk_widget_show_all(emu->guiwidget->pWindow);
+	gtk_widget_show_all(emu->gw->pWindow);
 }
 
 /* Switch between skin and LCD-only mode */
 void switch_view(TilemCalcEmulator * emu)
 {
 	int mode;
-	emu->guiflags->isSkinDisabled = mode = !emu->guiflags->isSkinDisabled;
+	emu->gf->isSkinDisabled = mode = !emu->gf->isSkinDisabled;
 	redraw_screen(emu);
 
-	if (emu->guiflags->isSkinDisabled == mode)
+	if (emu->gf->isSkinDisabled == mode)
 		tilem_config_set("settings",
 		                 "skin_disabled/b", mode,
 		                 NULL);
@@ -324,7 +324,7 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	int r_light, g_light, b_light;
 	double gamma = 2.2;
 
-	if (emu->guiflags->isSkinDisabled || !emu->si) {
+	if (emu->gf->isSkinDisabled || !emu->si) {
 		/* no skin -> use standard GTK colors */
 
 		style = gtk_widget_get_style(w);
@@ -424,19 +424,19 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items)
 GtkWidget* draw_screen(TilemCalcEmulator *emu)  
 {
 	/* Create the window */
-	emu->guiwidget->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	emu->gw->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	
-	g_signal_connect_swapped(emu->guiwidget->pWindow, "destroy", G_CALLBACK(on_destroy), emu);
+	g_signal_connect_swapped(emu->gw->pWindow, "destroy", G_CALLBACK(on_destroy), emu);
 
-	g_signal_connect_after(emu->guiwidget->pWindow, "check-resize",
+	g_signal_connect_after(emu->gw->pWindow, "check-resize",
 	                       G_CALLBACK(set_size_hints), emu);
 
-	gtk_widget_add_events(emu->guiwidget->pWindow, (GDK_KEY_PRESS_MASK
+	gtk_widget_add_events(emu->gw->pWindow, (GDK_KEY_PRESS_MASK
 	                                | GDK_KEY_RELEASE_MASK));
 
-	g_signal_connect(emu->guiwidget->pWindow, "key-press-event",
+	g_signal_connect(emu->gw->pWindow, "key-press-event",
 	                 G_CALLBACK(key_press_event), emu);
-	g_signal_connect(emu->guiwidget->pWindow, "key-release-event",
+	g_signal_connect(emu->gw->pWindow, "key-release-event",
 	                 G_CALLBACK(key_release_event), emu);
 
 	/* Create emulator widget */
@@ -444,5 +444,5 @@ GtkWidget* draw_screen(TilemCalcEmulator *emu)
 
 	g_timeout_add(100, tilem_animation_record,  emu);
 
-	return emu->guiwidget->pWindow;
+	return emu->gw->pWindow;
 }

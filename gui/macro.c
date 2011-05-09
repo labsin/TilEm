@@ -32,7 +32,7 @@
 
 /* Turn on recording macro */
 void start_record_macro(TilemCalcEmulator* emu) {
-	emu->guiflags->isMacroRecording = TRUE;
+	emu->gf->isMacroRecording = TRUE;
 	emu->macro_file = NULL;
 }
 
@@ -41,8 +41,8 @@ void stop_record_macro(TilemCalcEmulator* emu)
 {
 	char *dir, *dest;
 	
-	if(emu->guiflags->isMacroRecording == TRUE) {
-		emu->guiflags->isMacroRecording = FALSE;
+	if(emu->gf->isMacroRecording == TRUE) {
+		emu->gf->isMacroRecording = FALSE;
 		if(emu->macro_file != NULL)
 			fclose(emu->macro_file);
 
@@ -178,7 +178,7 @@ int play_macro_default(TilemCalcEmulator* emu, char* macro_name) {
 	char* filename;
 	
 	/* Turn on the macro playing state */
-	emu->guiflags->isMacroPlaying = TRUE;
+	emu->gf->isMacroPlaying = TRUE;
 
 	/* Test if play.txt exists ? */
 	if(open_macro_file(emu, macro_name)==1) 
@@ -217,7 +217,7 @@ int play_macro_default(TilemCalcEmulator* emu, char* macro_name) {
 		c = fgetc(emu->macro_file);
 	}
 	/* Turn off the macro playing state */
-	emu->guiflags->isMacroPlaying = FALSE;
+	emu->gf->isMacroPlaying = FALSE;
 	
 	DMACRO_L0_A0("***************************************\n");	
 	

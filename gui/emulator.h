@@ -67,9 +67,6 @@ typedef struct _TilemKeyHandle {
 typedef struct _TilemGuiWidget {
 	GtkWidget *pWindow; /* The top level window */
 	GtkWidget *pLayout; /* Layout */
-	gchar* FileSelected; /* The filename selected in the file chooser */
-	GtkFileChooser *pFileChooser; /* The file chooser widget (open or save) */
-	gint FileChooserResult; /* The result of the file chooser widget (cancel or OK) */ 
 
 	/* Screenshot menu */
 	GtkWidget* screenshot_preview_image; /* Review pixbuf */
@@ -103,16 +100,16 @@ typedef struct _TilemCalcEmulator {
 	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
 
 	/* This struct contains some useful gui widget */	
-	TilemGuiWidget * guiwidget;
+	TilemGuiWidget * gw;
 
 	/* The gui flags */
-	TilemGuiStateFlags *guiflags;
+	TilemGuiStateFlags *gf;
 
 	/* This struct handle command line arguments */
-	TilemCmdlineArgs *cmdline;
+	TilemCmdlineArgs *cl;
 
 	/* New structure to group all key press relating stuff (maybe we should add TilemkeyBindings inside?) */
-	TilemKeyHandle * keyhandle;
+	TilemKeyHandle * kh;
 	
 	/* List of key bindings */
 	TilemKeyBinding *keybindings;
