@@ -47,7 +47,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 
 	/* General informations */
 	TilemCalcEmulator *emu; /* The very important  TilemCalcEmulator struct */
-	char calc_id; /* The model id */ 
 
 	/* Skin infos  */
 	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
@@ -55,14 +54,9 @@ typedef struct GLOBAL_SKIN_INFOS {
 	/* Widgets  and some related things */
 	GtkWidget *pWindow; /* The top level window */
 	GtkWidget *pLayout; /* Layout */
-	GtkWidget *pFrame;   
 	gchar* FileSelected; /* The filename selected in the file chooser */
 	GtkFileChooser *pFileChooser; /* The file chooser widget (open or save) */
 	gint FileChooserResult; /* The result of the file chooser widget (cancel or OK) */ 
-	GtkWidget *pRadio; /* The radio button of the choose_rom_popup */
-
-	/* Debgugger */ 
-	GtkWidget* stack_treeview;	
 
 	/* Macros */
 	FILE * macro_file;	/* The macro file */
