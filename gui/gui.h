@@ -19,7 +19,7 @@
  */
 
 #include "emulator.h"
-#include "skinops.h"
+//#include "skinops.h"
 #include "debuginfo.h"
 #include "debugger.h"
 
@@ -39,10 +39,8 @@ typedef struct GLOBAL_SKIN_INFOS {
 	/* General informations */
 	TilemCalcEmulator *emu; /* The very important  TilemCalcEmulator struct */
 
-	/* Skin infos  */
-	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
 
-	}GLOBAL_SKIN_INFOS;
+}GLOBAL_SKIN_INFOS;
 
 
 /* ###### event.c ##### */

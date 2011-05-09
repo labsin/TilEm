@@ -60,35 +60,35 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
 	int lcdleft, lcdright, lcdtop, lcdbottom;
 	double rx, ry;
 
-	g_return_if_fail(gsi->si != NULL);
+	g_return_if_fail(gsi->emu->si != NULL);
 
-	if (gsi->si->width == alloc->width && gsi->si->height == alloc->height)
+	if (gsi->emu->si->width == alloc->width && gsi->emu->si->height == alloc->height)
 		return;
 
-	gsi->si->width = alloc->width;
-	gsi->si->height = alloc->height;
+	gsi->emu->si->width = alloc->width;
+	gsi->emu->si->height = alloc->height;
 
-	rawwidth = gdk_pixbuf_get_width(gsi->si->raw);
-	rawheight = gdk_pixbuf_get_height(gsi->si->raw);
+	rawwidth = gdk_pixbuf_get_width(gsi->emu->si->raw);
+	rawheight = gdk_pixbuf_get_height(gsi->emu->si->raw);
 
 	rx = (double) alloc->width / rawwidth;
 	ry = (double) alloc->height / rawheight;
-	gsi->si->sx = (double) rawwidth / alloc->width;
-	gsi->si->sy = (double) rawheight / alloc->height;
+	gsi->emu->si->sx = (double) rawwidth / alloc->width;
+	gsi->emu->si->sy = (double) rawheight / alloc->height;
 
-	if (gsi->si->image)
-		g_object_unref(gsi->si->image);
-	gsi->si->image = gdk_pixbuf_scale_simple(gsi->si->raw,
+	if (gsi->emu->si->image)
+		g_object_unref(gsi->emu->si->image);
+	gsi->emu->si->image = gdk_pixbuf_scale_simple(gsi->emu->si->raw,
 	                                         alloc->width, alloc->height,
 	                                         GDK_INTERP_BILINEAR);
 
 	gtk_image_set_from_pixbuf(GTK_IMAGE(gsi->emu->background),
-	                          gsi->si->image);
+	                          gsi->emu->si->image);
 
-	lcdleft = gsi->si->lcd_pos.left * rx + 0.5;
-	lcdright = gsi->si->lcd_pos.right * rx + 0.5;
-	lcdtop = gsi->si->lcd_pos.top * ry + 0.5;
-	lcdbottom = gsi->si->lcd_pos.bottom * ry + 0.5;
+	lcdleft = gsi->emu->si->lcd_pos.left * rx + 0.5;
+	lcdright = gsi->emu->si->lcd_pos.right * rx + 0.5;
+	lcdtop = gsi->emu->si->lcd_pos.top * ry + 0.5;
+	lcdbottom = gsi->emu->si->lcd_pos.bottom * ry + 0.5;
 
 	gtk_widget_set_size_request(gsi->emu->lcdwin,
 	                            MAX(lcdright - lcdleft, 1),
@@ -108,16 +108,16 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	int minwidth, minheight, defwidth, defheight;
 	double sx, sy, s, a1, a2;
 
-	if (gsi->si) {
-		skin_unload(gsi->si);
-		g_free(gsi->si);
+	if (gsi->emu->si) {
+		skin_unload(gsi->emu->si);
+		g_free(gsi->emu->si);
 	}
 
-	gsi->si = g_new0(SKIN_INFOS, 1);
+	gsi->emu->si = g_new0(SKIN_INFOS, 1);
 
 	if (!gsi->emu->guiflags->isSkinDisabled) {
 		if (!gsi->emu->cmdline->SkinFileName
-		    || skin_load(gsi->si, gsi->emu->cmdline->SkinFileName))
+		    || skin_load(gsi->emu->si, gsi->emu->cmdline->SkinFileName))
 			gsi->emu->guiflags->isSkinDisabled = 1;
 	}
 
@@ -138,18 +138,18 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	if (!gsi->emu->guiflags->isSkinDisabled) {
 		gsi->emu->guiwidget->pLayout = gtk_layout_new(NULL, NULL);
 
-		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
+		pImage = gtk_image_new_from_pixbuf(gsi->emu->si->image);
 		gtk_layout_put(GTK_LAYOUT(gsi->emu->guiwidget->pLayout), pImage, 0, 0);
 		gsi->emu->background = pImage;
 
-		screenwidth = gsi->si->lcd_pos.right - gsi->si->lcd_pos.left;
-		screenheight = gsi->si->lcd_pos.bottom - gsi->si->lcd_pos.top;
+		screenwidth = gsi->emu->si->lcd_pos.right - gsi->emu->si->lcd_pos.left;
+		screenheight = gsi->emu->si->lcd_pos.bottom - gsi->emu->si->lcd_pos.top;
 
 		gtk_widget_set_size_request(gsi->emu->lcdwin,
 		                            screenwidth, screenheight);
 		gtk_layout_put(GTK_LAYOUT(gsi->emu->guiwidget->pLayout), gsi->emu->lcdwin,
-		               gsi->si->lcd_pos.left,
-		               gsi->si->lcd_pos.top);
+		               gsi->emu->si->lcd_pos.left,
+		               gsi->emu->si->lcd_pos.top);
 
 		g_signal_connect(gsi->emu->guiwidget->pLayout, "size-allocate",
 		                 G_CALLBACK(skin_size_allocate), gsi);
@@ -162,9 +162,9 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 		                 NULL);
 
 		if(defwidth == 0)
-			defwidth = gsi->si->width;
+			defwidth = gsi->emu->si->width;
 		if(defheight == 0)
-			defheight = gsi->si->height;
+			defheight = gsi->emu->si->height;
 
 		sx = (double) lcdwidth / screenwidth;
 		sy = (double) lcdheight / screenheight;
@@ -325,7 +325,7 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	int r_light, g_light, b_light;
 	double gamma = 2.2;
 
-	if (gsi->emu->guiflags->isSkinDisabled || !gsi->si) {
+	if (gsi->emu->guiflags->isSkinDisabled || !gsi->emu->si) {
 		/* no skin -> use standard GTK colors */
 
 		style = gtk_widget_get_style(w);
@@ -341,13 +341,13 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	else {
 		/* use skin colors */
 
-		r_dark = ((gsi->si->lcd_black >> 16) & 0xff);
-		g_dark = ((gsi->si->lcd_black >> 8) & 0xff);
-		b_dark = (gsi->si->lcd_black & 0xff);
+		r_dark = ((gsi->emu->si->lcd_black >> 16) & 0xff);
+		g_dark = ((gsi->emu->si->lcd_black >> 8) & 0xff);
+		b_dark = (gsi->emu->si->lcd_black & 0xff);
 
-		r_light = ((gsi->si->lcd_white >> 16) & 0xff);
-		g_light = ((gsi->si->lcd_white >> 8) & 0xff);
-		b_light = (gsi->si->lcd_white & 0xff);
+		r_light = ((gsi->emu->si->lcd_white >> 16) & 0xff);
+		g_light = ((gsi->emu->si->lcd_white >> 8) & 0xff);
+		b_light = (gsi->emu->si->lcd_white & 0xff);
 	}
 
 	/* Generate a new palette, and convert it into GDK format */

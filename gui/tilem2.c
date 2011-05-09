@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
 	gsi->emu->guiwidget = g_new0(TilemGuiWidget, 1);
 	gsi->emu->guiwidget->pWindow = NULL;
-	gsi->si=NULL;
+	gsi->emu->si=NULL;
 	gsi->emu->macro_file = NULL;
 	gsi->emu->keyhandle = g_new0(TilemKeyHandle, 1);
 	gsi->emu->keyhandle->mouse_key = 0;

@@ -291,7 +291,7 @@ gboolean mouse_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 	GLOBAL_SKIN_INFOS* gsi = data;
 	int key;
 
-	key = scan_click(gsi->si, event->x, event->y);
+	key = scan_click(gsi->emu->si, event->x, event->y);
 
 	if (event->button == 1) {
 		/* button 1: press key until button is released or pointer moves away */
@@ -330,7 +330,7 @@ gboolean pointer_motion_event(G_GNUC_UNUSED GtkWidget* w, GdkEventMotion *event,
 		                   &event->x, &event->y, &event->state);
 
 	if (event->state & GDK_BUTTON1_MASK)
-		key = scan_click(gsi->si, event->x, event->y);
+		key = scan_click(gsi->emu->si, event->x, event->y);
 	else
 		key = 0;
 

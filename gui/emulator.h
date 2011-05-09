@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "skinops.h"
 
 /* This struct is used to handle cmd line args */
 typedef struct TilemCmdlineArg {
@@ -98,10 +99,16 @@ typedef struct _TilemCalcEmulator {
 
 	struct _TilemDebugger *dbg;
 
+	/* Skin infos  */
+	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
+
 	/* This struct contains some useful gui widget */	
 	TilemGuiWidget * guiwidget;
+
+	/* The gui flags */
 	TilemGuiStateFlags *guiflags;
-	/* new struct to handle cmd line args */
+
+	/* This struct handle command line arguments */
 	TilemCmdlineArgs *cmdline;
 
 	/* New structure to group all key press relating stuff (maybe we should add TilemkeyBindings inside?) */
