@@ -394,10 +394,10 @@ static TilemKeyBinding* find_key_binding(GLOBAL_SKIN_INFOS* gsi,
 	mods = (event->state & ~consumed
 	        & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK));
 
-	for (i = 0; i < gsi->nkeybindings; i++)
-		if (keyval == gsi->keybindings[i].keysym
-		    && mods == gsi->keybindings[i].modifiers)
-			return &gsi->keybindings[i];
+	for (i = 0; i < gsi->emu->nkeybindings; i++)
+		if (keyval == gsi->emu->keybindings[i].keysym
+		    && mods == gsi->emu->keybindings[i].modifiers)
+			return &gsi->emu->keybindings[i];
 
 	return NULL;
 }

@@ -149,8 +149,8 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 	for (i = 0; keys[i]; i++)
 		;
 
-	n = gsi->nkeybindings;
-	gsi->keybindings = g_renew(TilemKeyBinding, gsi->keybindings, n + i);
+	n = gsi->emu->nkeybindings;
+	gsi->emu->keybindings = g_renew(TilemKeyBinding, gsi->emu->keybindings, n + i);
 
 	for(i = 0; keys[i]; i++) {
 		k = keys[i];
@@ -158,7 +158,7 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 		if (!v)
 			continue;
 
-		if (parse_binding(&gsi->keybindings[n], k, v, gsi->emu->calc))
+		if (parse_binding(&gsi->emu->keybindings[n], k, v, gsi->emu->calc))
 			n++;
 		else
 			g_printerr("syntax error in key bindings: '%s=%s'\n",
@@ -166,7 +166,7 @@ static void parse_binding_group(GLOBAL_SKIN_INFOS *gsi, GKeyFile *gkf,
 		g_free(v);
 	}
 
-	gsi->nkeybindings = n;
+	gsi->emu->nkeybindings = n;
 
 	g_strfreev(keys);
 }
@@ -204,9 +204,9 @@ void tilem_keybindings_init(GLOBAL_SKIN_INFOS *gsi, const char *model)
 		return;
 	}
 
-	g_free(gsi->keybindings);
-	gsi->keybindings = NULL;
-	gsi->nkeybindings = 0;
+	g_free(gsi->emu->keybindings);
+	gsi->emu->keybindings = NULL;
+	gsi->emu->nkeybindings = 0;
 
 	parse_binding_group(gsi, gkf, model);
 

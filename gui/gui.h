@@ -31,13 +31,6 @@ int SAVE_STATE;
 #define LABEL_X_ALIGN 0.0
 
 
-typedef struct _TilemKeyBinding {
-	unsigned int keysym;     /* host keysym value */
-	unsigned int modifiers;  /* modifier mask */
-	int nscancodes;          /* number of calculator scancodes */
-	byte *scancodes;         /* calculator scancodes */
-} TilemKeyBinding;
-
 
 /* FIXME : I plan to change all this stuff to use TilemCalcEmu struct instead
 Idem for macros and gif */
@@ -69,9 +62,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 	
 	int mouse_key;		/* Key currently pressed by mouse button */
 
-	/* List of key bindings */
-	TilemKeyBinding *keybindings;
-	int nkeybindings;
 
 	/* Host keycode used to activate each key, if any */
 	int keypress_keycodes[64];

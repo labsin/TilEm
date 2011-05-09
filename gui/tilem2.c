@@ -46,7 +46,6 @@ int main(int argc, char **argv)
 	init_custom_icons();
 
 	gsi = g_new0(GLOBAL_SKIN_INFOS, 1);
-	gsi->si=NULL;
 	gsi->pWindow = NULL;
 	
 	gsi->mouse_key = 0;
@@ -59,6 +58,7 @@ int main(int argc, char **argv)
 	/* TilemCalcEmu part */
 	gsi->emu = tilem_calc_emulator_new();
 
+	gsi->si=NULL;
 	gsi->emu->guiflags = g_new0(TilemGuiStateFlags, 1);
 	gsi->emu->guiflags->isMacroRecording = FALSE;
 	gsi->emu->guiflags->isAnimScreenshotRecording = FALSE;

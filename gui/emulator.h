@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 /* This struct is used to handle cmd line args */
 typedef struct TilemCmdlineArg {
 	char *SkinFileName;
@@ -37,6 +38,13 @@ typedef struct _TilemGuiStateFlags {
 	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
 	gboolean isDebuggerRunning; /* A flag to know if debugger is runnig */
 } TilemGuiStateFlags;
+
+typedef struct _TilemKeyBinding {
+	unsigned int keysym;     /* host keysym value */
+	unsigned int modifiers;  /* modifier mask */
+	int nscancodes;          /* number of calculator scancodes */
+	byte *scancodes;         /* calculator scancodes */
+} TilemKeyBinding;
 
 
 typedef struct _TilemCalcEmulator {
@@ -60,6 +68,10 @@ typedef struct _TilemCalcEmulator {
 	TilemGuiStateFlags *guiflags;
 	/* new struct to handle cmd line args */
 	TilemCmdlineArgs *cmdline;
+	
+	/* List of key bindings */
+	TilemKeyBinding *keybindings;
+	int nkeybindings;
 
 	GtkProgressBar* ilp_progress_bar1; /* progress bar (current item) */
 	GtkProgressBar* ilp_progress_bar2; /* progress bar (total) */
