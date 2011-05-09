@@ -114,7 +114,7 @@ void tilem_animation_start(GLOBAL_SKIN_INFOS* gsi) {
 		GifEncode(fp, q , 1, (width*height));
 		fwrite(end, 1, 1,fp);	/* Write end of the frame */
 		fclose(fp);
-		gsi->isAnimScreenshotRecording = TRUE;
+		gsi->emu->guiflags->isAnimScreenshotRecording = TRUE;
 	}
 }
     
@@ -174,7 +174,7 @@ void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi) {
 	
 	
     	char trailer[1] = { 0x3b};
-	if(gsi->isAnimScreenshotRecording) {
+	if(gsi->emu->guiflags->isAnimScreenshotRecording) {
 		FILE* fp;
 		fp = fopen("gifencod.gif", "a");
 		fwrite(trailer, 1, 1,fp);
@@ -188,7 +188,7 @@ void tilem_animation_stop(GLOBAL_SKIN_INFOS* gsi) {
 gboolean tilem_animation_record(gpointer data) {
 	GLOBAL_SKIN_INFOS * gsi = (GLOBAL_SKIN_INFOS*) data;
 	
-	if(gsi->isAnimScreenshotRecording) 
+	if(gsi->emu->guiflags->isAnimScreenshotRecording) 
 		tilem_animation_add_frame(gsi);
 	return TRUE;
 

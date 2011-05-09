@@ -30,6 +30,14 @@ typedef struct TilemCmdlineArg {
 } TilemCmdlineArgs;
 
 
+typedef struct _TilemGuiStateFlags {
+	gboolean isSkinDisabled; /* A flag to know if skinless or not */
+	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
+	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */
+	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
+	gboolean isDebuggerRunning; /* A flag to know if debugger is runnig */
+} TilemGuiStateFlags;
+
 
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
@@ -49,6 +57,7 @@ typedef struct _TilemCalcEmulator {
 
 	struct _TilemDebugger *dbg;
 	
+	TilemGuiStateFlags *guiflags;
 	/* new struct to handle cmd line args */
 	TilemCmdlineArgs *cmdline;
 

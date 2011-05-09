@@ -115,10 +115,10 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 
 	gsi->si = g_new0(SKIN_INFOS, 1);
 
-	if (!gsi->skin_disabled) {
+	if (!gsi->emu->guiflags->isSkinDisabled) {
 		if (!gsi->emu->cmdline->SkinFileName
 		    || skin_load(gsi->si, gsi->emu->cmdline->SkinFileName))
-			gsi->skin_disabled = 1;
+			gsi->emu->guiflags->isSkinDisabled = 1;
 	}
 
 	lcdwidth = gsi->emu->calc->hw.lcdwidth;
@@ -135,7 +135,7 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 	gsi->emu->lcdwin = gtk_drawing_area_new();
 
 	/* create background image and layout */
-	if (!gsi->skin_disabled) {
+	if (!gsi->emu->guiflags->isSkinDisabled) {
 		gsi->pLayout = gtk_layout_new(NULL, NULL);
 
 		pImage = gtk_image_new_from_pixbuf(gsi->si->image);
@@ -242,10 +242,10 @@ void redraw_screen(GLOBAL_SKIN_INFOS *gsi)
 void switch_view(GLOBAL_SKIN_INFOS * gsi)
 {
 	int mode;
-	gsi->skin_disabled = mode = !gsi->skin_disabled;
+	gsi->emu->guiflags->isSkinDisabled = mode = !gsi->emu->guiflags->isSkinDisabled;
 	redraw_screen(gsi);
 
-	if (gsi->skin_disabled == mode)
+	if (gsi->emu->guiflags->isSkinDisabled == mode)
 		tilem_config_set("settings",
 		                 "skin_disabled/b", mode,
 		                 NULL);
@@ -325,7 +325,7 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	int r_light, g_light, b_light;
 	double gamma = 2.2;
 
-	if (gsi->skin_disabled || !gsi->si) {
+	if (gsi->emu->guiflags->isSkinDisabled || !gsi->si) {
 		/* no skin -> use standard GTK colors */
 
 		style = gtk_widget_get_style(w);

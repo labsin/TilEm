@@ -51,22 +51,23 @@ int main(int argc, char **argv)
 	
 	gsi->mouse_key = 0;
 	gsi->macro_file = NULL;
-	gsi->isMacroRecording = 0;
-	gsi->isAnimScreenshotRecording = FALSE;
-	gsi->isDebuggerRunning=FALSE;
-	
-	
+
 	gsi->key_queue = NULL;
 	gsi->key_queue_len = 0;
 	gsi->key_queue_timer = 0;
 
-
-
+	/* TilemCalcEmu part */
 	gsi->emu = tilem_calc_emulator_new();
-	
+
+	gsi->emu->guiflags = g_new0(TilemGuiStateFlags, 1);
+	gsi->emu->guiflags->isMacroRecording = FALSE;
+	gsi->emu->guiflags->isAnimScreenshotRecording = FALSE;
+	gsi->emu->guiflags->isDebuggerRunning=FALSE;
+
 	TilemCmdlineArgs * cmdline = tilem_cmdline_new();
 	tilem_cmdline_get_args(argc, argv, cmdline);
 	gsi->emu->cmdline = cmdline;
+	
 
 	if (!tilem_calc_emulator_load_state(gsi->emu, cmdline->RomName)) {
 		tilem_calc_emulator_free(gsi->emu);
@@ -84,12 +85,12 @@ int main(int argc, char **argv)
 	if (cmdline->SkinFileName == NULL) {
 		tilem_choose_skin_filename_by_default(gsi);
 		tilem_config_get("settings",
-		                 "skin_disabled/b", &gsi->skin_disabled,
+		                 "skin_disabled/b", &gsi->emu->guiflags->isSkinDisabled,
 		                 NULL);
 	}
 
 	if (cmdline->isStartingSkinless)
-		gsi->skin_disabled = 1;
+		gsi->emu->guiflags->isSkinDisabled = TRUE;
 
 	/* Draw skin */	
 	gsi->pWindow=draw_screen(gsi);

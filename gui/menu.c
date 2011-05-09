@@ -68,7 +68,7 @@ GtkWidget * build_menu(GLOBAL_SKIN_INFOS* gsi) {
 	GtkWidget* display_lcd_into_console_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SORT_ASCENDING, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(display_lcd_into_console_item), "Display LCD into console...");
 	GtkWidget* switch_view_item;
-	if(gsi->skin_disabled) {
+	if(gsi->emu->guiflags->isSkinDisabled) {
 		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FULLSCREEN, NULL);
 		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Show skin");
 	} else {

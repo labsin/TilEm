@@ -248,7 +248,7 @@ static void record_key(GLOBAL_SKIN_INFOS* gsi, int code)
 
 	char* codechar;
 
-	if(gsi->isMacroRecording) {     
+	if(gsi->emu->guiflags->isMacroRecording) {     
 		codechar= (char*) malloc(sizeof(int));
 		sprintf(codechar, "%04d", code);
 		add_event_in_macro_file(gsi, codechar);     
@@ -520,7 +520,7 @@ void load_file(GLOBAL_SKIN_INFOS *gsi)
 		//printf("filename = %s", filename);
 		load_file_from_file(gsi, filename);
 
-		if(gsi->isMacroRecording)
+		if(gsi->emu->guiflags->isMacroRecording)
 			add_load_file_in_macro_file(gsi, strlen(filename), filename);
 
 		/* Search the directory and save it into the config file (for the next open file) */
@@ -571,8 +571,12 @@ void tilem_change_speed(GLOBAL_SKIN_INFOS *gsi) {
 	tilem_calc_emulator_set_limit_speed(gsi->emu, !gsi->emu->limit_speed);
 }
 
-
+/* Callback function for the drag and drop event */
 gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, GLOBAL_SKIN_INFOS * gsi) {
+	
+	/* FIXME : this should really be refactorised because it just a "proof of concept" currently :)
+	   The string returned by gtk_selection_data_get_text look like "file:///[path]\r\0" that's why we should use 
+	   a glib function to clean the "\r" and "file:///" but I don't know wich function will do that ? */
 	printf("drag and drop !!\n");
 	char* filename = (char*)gtk_selection_data_get_text(data);
 	printf("data : %s\n", filename);

@@ -15,8 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -32,7 +32,7 @@
 
 /* Turn on recording macro */
 void start_record_macro(GLOBAL_SKIN_INFOS* gsi) {
-	gsi->isMacroRecording = 1;
+	gsi->emu->guiflags->isMacroRecording = TRUE;
 	gsi->macro_file = NULL;
 }
 
@@ -41,8 +41,8 @@ void stop_record_macro(GLOBAL_SKIN_INFOS* gsi)
 {
 	char *dir, *dest;
 	
-	if(gsi->isMacroRecording == 1) {
-		gsi->isMacroRecording = 0;
+	if(gsi->emu->guiflags->isMacroRecording == TRUE) {
+		gsi->emu->guiflags->isMacroRecording = FALSE;
 		if(gsi->macro_file != NULL)
 			fclose(gsi->macro_file);
 
@@ -178,7 +178,7 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 	char* filename;
 	
 	/* Turn on the macro playing state */
-	gsi->isMacroPlaying = 1;
+	gsi->emu->guiflags->isMacroPlaying = TRUE;
 
 	/* Test if play.txt exists ? */
 	if(open_macro_file(gsi, macro_name)==1) 
@@ -217,7 +217,7 @@ int play_macro_default(GLOBAL_SKIN_INFOS* gsi, char* macro_name) {
 		c = fgetc(gsi->macro_file);
 	}
 	/* Turn off the macro playing state */
-	gsi->isMacroPlaying = 0;
+	gsi->emu->guiflags->isMacroPlaying = FALSE;
 	
 	DMACRO_L0_A0("***************************************\n");	
 	

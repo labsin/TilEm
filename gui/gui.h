@@ -30,11 +30,6 @@ int SAVE_STATE;
 
 #define LABEL_X_ALIGN 0.0
 
-/* This struct contains the registers for the debugger window */
-typedef struct _TilemDebuggerRegister {
-	GtkWidget* reg[12]; /* The debugger registers */
-	
-} TilemDebuggerRegister;
 
 typedef struct _TilemKeyBinding {
 	unsigned int keysym;     /* host keysym value */
@@ -43,8 +38,8 @@ typedef struct _TilemKeyBinding {
 	byte *scancodes;         /* calculator scancodes */
 } TilemKeyBinding;
 
+
 /* FIXME : I plan to change all this stuff to use TilemCalcEmu struct instead
-Debugger struff will be grouped in its own struct
 Idem for macros and gif */
 
 /* Internal data structure for gui */
@@ -53,7 +48,6 @@ typedef struct GLOBAL_SKIN_INFOS {
 	/* General informations */
 	TilemCalcEmulator *emu; /* The very important  TilemCalcEmulator struct */
 	char calc_id; /* The model id */ 
-	int skin_disabled; /* A flag to know if skinless or not */
 
 	/* Skin infos  */
 	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
@@ -68,21 +62,16 @@ typedef struct GLOBAL_SKIN_INFOS {
 	GtkWidget *pRadio; /* The radio button of the choose_rom_popup */
 
 	/* Debgugger */ 
-	TilemDebuggerRegister *reg_entry; /* A structure wich contains the register */
-	gboolean isDebuggerRunning; /* A flag to know if debugger is runnig */
 	GtkWidget* stack_treeview;	
 
 	/* Macros */
 	FILE * macro_file;	/* The macro file */
-	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */
-	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
 	
 	/* Animated gif */
 	GtkWidget* screenshot_preview_image;
 	GtkWidget* folder_chooser_screenshot;
 	GtkWidget* folder_chooser_animation;
 	FILE * animation_file; // The animated gif file */
-	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
 	
 	int mouse_key;		/* Key currently pressed by mouse button */
 

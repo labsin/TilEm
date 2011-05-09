@@ -334,8 +334,8 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, GLOBAL_SKIN_INFOS* gsi) {
 
 	tilem_animation_stop(gsi) ;
 	
-	if(gsi->isAnimScreenshotRecording) {
-		gsi->isAnimScreenshotRecording = FALSE;
+	if(gsi->emu->guiflags->isAnimScreenshotRecording) {
+		gsi->emu->guiflags->isAnimScreenshotRecording = FALSE;
 		stop_spinner(gsi);
 
 		tilem_config_get("screenshot",

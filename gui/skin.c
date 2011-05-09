@@ -104,7 +104,7 @@ void tilem_user_change_skin(GLOBAL_SKIN_INFOS *gsi)
 	if (file_selected != NULL) {
 		g_free(gsi->emu->cmdline->SkinFileName);
 		gsi->emu->cmdline->SkinFileName = file_selected;
-		gsi->skin_disabled = 0;
+		gsi->emu->guiflags->isSkinDisabled = FALSE;
 		redraw_screen(gsi);
 
 		/* if file is stored in shared skins directory, save

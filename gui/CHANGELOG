@@ -196,9 +196,11 @@
 * - I've added a ti83 symbol file (but it could contains some mistakes...). Flags are correctly printed for my loved ti83 regular ;)
 * ---27/04/11---
 * - Root window size could be forced (but the ratio could be strand if you specify stanges values ... Because ration is calculated on the start width and heigth).
-* ---02/04/11---
+* ---02/05/11---
 * - Add the icons for the right click menu (stock icons currently).
 * - Export all menu related code in a separate file called menu.c. It could maybe be done by UI in the future, but it works fine as it for the moment ;)
 * - Add drag and drop support for loading files :) :) :) :) :) (code is currently really ugly)
+* ---09/05/11---
+* - Create a new TilemGuiStateFlags structure ot group the running state of the gui (skinless, recording macro, etc...) and export it into TilemCalcEmu instead GLOBAL_SKIN_INFOS.
 */
 
