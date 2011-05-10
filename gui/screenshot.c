@@ -91,6 +91,7 @@ void screenshot(TilemCalcEmulator *emu) {
 	g_free(filename);
 	g_free(folder);
 	g_free(basename);
+	g_free(format);
 	
 }
 
