@@ -435,7 +435,7 @@ static gboolean pbar_start(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
 
-	if (!emu->ilp_progress_win)
+	if (!emu->gw->pb->ilp_progress_win)
 		progress_bar_init(emu);
 
 	return FALSE;
@@ -446,12 +446,12 @@ static gboolean pbar_stop(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
 
-	if (emu->ilp_progress_win) {
-		gtk_widget_destroy(emu->ilp_progress_win);
-		emu->ilp_progress_win = NULL;
-		emu->ilp_progress_bar1 = NULL;
-		emu->ilp_progress_bar2 = NULL;
-		emu->ilp_progress_label = NULL;
+	if (emu->gw->pb->ilp_progress_win) {
+		gtk_widget_destroy(emu->gw->pb->ilp_progress_win);
+		emu->gw->pb->ilp_progress_win = NULL;
+		emu->gw->pb->ilp_progress_bar1 = NULL;
+		emu->gw->pb->ilp_progress_bar2 = NULL;
+		emu->gw->pb->ilp_progress_label = NULL;
 	}
 
 	return FALSE;
@@ -462,7 +462,7 @@ static gboolean pbar_update(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
 
-	if (emu->ilp_progress_win)
+	if (emu->gw->pb->ilp_progress_win)
 		progress_bar_update_activity(emu);
 
 	return FALSE;

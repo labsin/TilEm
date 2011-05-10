@@ -47,25 +47,28 @@ int main(int argc, char **argv)
 	emu = tilem_calc_emulator_new();
 
 	emu->gw = g_new0(TilemGuiWidget, 1);
-	emu->gw->pWindow = NULL;
 	emu->si=NULL;
-	emu->macro_file = NULL;
 	emu->kh = g_new0(TilemKeyHandle, 1);
 	emu->kh->mouse_key = 0;
 	emu->kh->key_queue = NULL;
 	emu->kh->key_queue_len = 0;
 	emu->kh->key_queue_timer = 0;
-	emu->gf = g_new0(TilemGuiStateFlags, 1);
-	emu->gf->isMacroRecording = FALSE;
-	emu->gf->isAnimScreenshotRecording = FALSE;
-	emu->gf->isDebuggerRunning=FALSE;
+	emu->gw = g_new0(TilemGuiWidget, 1);
+	emu->gw->tw = g_new(TilemTopWindow, 1);
+	emu->gw->tw->pWindow = NULL;
+	emu->gw->pb = g_new(TilemIlpProgress, 1);
+	emu->gw->ss = g_new(TilemScreenshot, 1);
+	emu->gw->ss->isAnimScreenshotRecording = FALSE;
+	//emu->gw->pb = g_new(TilemIlpProgress, 1);
+	emu->gw->mc = g_new(TilemMacro, 1);
+	emu->gw->mc->macro_file = NULL;
+	emu->gw->mc->isMacroRecording = FALSE;
 
-	TilemCmdlineArgs * cmdline = tilem_cmdline_new();
-	tilem_cmdline_get_args(argc, argv, cmdline);
-	emu->cl = cmdline;
+	emu->cl = tilem_cmdline_new();
+	tilem_cmdline_get_args(argc, argv, emu->cl);
 	
 
-	if (!tilem_calc_emulator_load_state(emu, cmdline->RomName)) {
+	if (!tilem_calc_emulator_load_state(emu, emu->cl->RomName)) {
 		tilem_calc_emulator_free(emu);
 		return 1;
 	}
@@ -78,28 +81,28 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A0("********************************************************\n");
 	
 
-	if (cmdline->SkinFileName == NULL) {
+	if (emu->cl->SkinFileName == NULL) {
 		tilem_choose_skin_filename_by_default(emu);
 		tilem_config_get("settings",
-		                 "skin_disabled/b", &emu->gf->isSkinDisabled,
+		                 "skin_disabled/b", &emu->gw->tw->isSkinDisabled,
 		                 NULL);
 	}
 
-	if (cmdline->isStartingSkinless)
-		emu->gf->isSkinDisabled = TRUE;
+	if (emu->cl->isStartingSkinless)
+		emu->gw->tw->isSkinDisabled = TRUE;
 
 	/* Draw skin */	
-	emu->gw->pWindow=draw_screen(emu);
+	emu->gw->tw->pWindow=draw_screen(emu);
 
 	tilem_calc_emulator_run(emu);
 
 	
 	tilem_keybindings_init(emu, emu->calc->hw.name);
 		
-	if(cmdline->FileToLoad != NULL) /* Given as parameter ? */
-		tilem_load_file_from_file_at_startup(emu, cmdline->FileToLoad);
-	if(cmdline->MacroToPlay != NULL) { /* Given as parameter ? */
-		play_macro_default(emu, cmdline->MacroToPlay); 		
+	if(emu->cl->FileToLoad != NULL) /* Given as parameter ? */
+		tilem_load_file_from_file_at_startup(emu, emu->cl->FileToLoad);
+	if(emu->cl->MacroToPlay != NULL) { /* Given as parameter ? */
+		play_macro_default(emu, emu->cl->MacroToPlay); 		
 	}
 
 	gtk_main();

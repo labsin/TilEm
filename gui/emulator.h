@@ -31,15 +31,33 @@ typedef struct _TilemCmdlineArg {
 	gboolean isStartingSkinless; 
 } TilemCmdlineArgs;
 
-
-typedef struct _TilemGuiStateFlags {
-	gboolean isSkinDisabled; /* A flag to know if skinless or not */
-	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
+/* Macro view (FILE and flags) */
+typedef struct _TilemMacro {
+	FILE * macro_file;	/* The macro file */
 	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */
 	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
-	gboolean isDebuggerRunning; /* A flag to know if debugger is runnig */
-} TilemGuiStateFlags;
+} TilemMacro;
 
+/* Root window view (widgets and flags) */
+typedef struct _TilemTopWindow {
+	GtkWidget *pWindow; /* The top level window */
+	GtkWidget *pLayout; /* Layout */
+	/* Flags */
+	gboolean isSkinDisabled; /* A flag to know if skinless or not */
+} TilemTopWindow;
+
+/* Screenshot view (widgets and flags) */
+typedef struct _TilemScreenshot {
+	/* Screenshot menu */
+	GtkWidget* screenshot_preview_image; /* Review pixbuf */
+	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
+	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
+
+	/* Flags */
+	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
+} TilemScreenshot;
+
+/* List of loaded keybindings */
 typedef struct _TilemKeyBinding {
 	unsigned int keysym;     /* host keysym value */
 	unsigned int modifiers;  /* modifier mask */
@@ -63,20 +81,21 @@ typedef struct _TilemKeyHandle {
 	int key_queue_pressed;
 } TilemKeyHandle;
 
-/* Widgets  and some related things */
+/* Handle the ilp progress stuff */
+typedef struct _TilemIlpProgress {
+	GtkProgressBar* ilp_progress_bar1; /* progress bar (current item) */
+	GtkProgressBar* ilp_progress_bar2; /* progress bar (total) */
+	GtkLabel* ilp_progress_label; /* status message */
+	GtkWidget* ilp_progress_win;
+} TilemIlpProgress;
+
+/* A structure which contains widget/flags/data grouped by view */
 typedef struct _TilemGuiWidget {
-	GtkWidget *pWindow; /* The top level window */
-	GtkWidget *pLayout; /* Layout */
-
-	/* Screenshot menu */
-	GtkWidget* screenshot_preview_image; /* Review pixbuf */
-	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
-	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
-
+	struct _TilemTopWindow *tw;
+	struct _TilemScreenshot *ss;
+	struct _TilemIlpProgress *pb;
+	struct _TilemMacro *mc;
 } TilemGuiWidget;
-
-
-
 
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
@@ -99,30 +118,23 @@ typedef struct _TilemCalcEmulator {
 	/* Skin infos  */
 	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
 
-	/* This struct contains some useful gui widget */	
+	/* This struct contains a lot of sub structure which contains widget/flags/data (very few data) */	
 	TilemGuiWidget * gw;
 
-	/* The gui flags */
-	TilemGuiStateFlags *gf;
-
 	/* This struct handle command line arguments */
-	TilemCmdlineArgs *cl;
+	TilemCmdlineArgs * cl;
 
 	/* All key press relating stuff (maybe we should add TilemkeyBindings inside?) */
-	TilemKeyHandle * kh;
+	struct _TilemKeyHandle * kh;
 	
 	/* List of key bindings */
-	TilemKeyBinding *keybindings;
+	struct _TilemKeyBinding *keybindings;
 	int nkeybindings;
 
-	/* Macros */
-	FILE * macro_file;	/* The macro file */
-
-	GtkProgressBar* ilp_progress_bar1; /* progress bar (current item) */
-	GtkProgressBar* ilp_progress_bar2; /* progress bar (total) */
-	GtkLabel* ilp_progress_label; /* status message */
-	GtkWidget* ilp_progress_win;
-
+	/* These following lines need maybe to be a part of a new struture (TilemLink?) */
+	/* Adding it to TilemIlpProgress is not very good because TilemIlpProgress is more 
+	   "gui oriented" */
+ 
 	gboolean ilp_active;       /* internal link cable active */
 	GCond *ilp_finished_cond;  /* used to signal when transfer finishes */
 	gboolean ilp_error;        /* error (collision or timeout) */

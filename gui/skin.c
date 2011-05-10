@@ -104,7 +104,7 @@ void tilem_user_change_skin(TilemCalcEmulator *emu)
 	if (file_selected != NULL) {
 		g_free(emu->cl->SkinFileName);
 		emu->cl->SkinFileName = file_selected;
-		emu->gf->isSkinDisabled = FALSE;
+		emu->gw->tw->isSkinDisabled = FALSE;
 		redraw_screen(emu);
 
 		/* if file is stored in shared skins directory, save

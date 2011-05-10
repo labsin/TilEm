@@ -203,5 +203,7 @@
 * ---09/05/11---
 * - Create a new TilemGuiStateFlags structure ot group the running state of the gui (skinless, recording macro, etc...) and export it into TilemCalcEmu instead GLOBAL_SKIN_INFOS.
 * - Completely remove GLOBAL_SKIN_INFOS structure from tilem2.
+* ---10/05/11---
+* - Change strutures to look like a object oriented model. But in some case it's not really well implemented.
 */
 

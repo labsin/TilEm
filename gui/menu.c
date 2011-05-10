@@ -68,7 +68,7 @@ GtkWidget * build_menu(TilemCalcEmulator* emu) {
 	GtkWidget* display_lcd_into_console_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SORT_ASCENDING, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(display_lcd_into_console_item), "Display LCD into console...");
 	GtkWidget* switch_view_item;
-	if(emu->gf->isSkinDisabled) {
+	if(emu->gw->tw->isSkinDisabled) {
 		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FULLSCREEN, NULL);
 		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Show skin");
 	} else {
@@ -200,6 +200,6 @@ static GtkWidget* create_menu_item(const char* label, const char* stock_img) {
 void show_popup_menu(TilemCalcEmulator* emu, GdkEvent* event)
 {
 	GtkWidget* right_click_menu = build_menu(emu);
-	create_menus(emu->gw->pWindow, event, right_click_menu);
+	create_menus(emu->gw->tw->pWindow, event, right_click_menu);
 }
 

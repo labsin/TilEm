@@ -189,7 +189,7 @@ void quit_with_save(TilemCalcEmulator* emu)
 void save_root_window_dimension(TilemCalcEmulator* emu)
 {
 	gint width, height;
-	gtk_window_get_size(GTK_WINDOW(emu->gw->pWindow), &width, &height);
+	gtk_window_get_size(GTK_WINDOW(emu->gw->tw->pWindow), &width, &height);
 	tilem_config_set("settings",
 	                 "width/i", width,
 	                 "height/i", height,
@@ -248,7 +248,7 @@ static void record_key(TilemCalcEmulator* emu, int code)
 
 	char* codechar;
 
-	if(emu->gf->isMacroRecording) {     
+	if(emu->gw->mc->isMacroRecording) {     
 		codechar= (char*) malloc(sizeof(int));
 		sprintf(codechar, "%04d", code);
 		add_event_in_macro_file(emu, codechar);     
@@ -495,10 +495,10 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */
 void switch_borderless(TilemCalcEmulator* emu) {
 	
-	if(gtk_window_get_decorated(GTK_WINDOW(emu->gw->pWindow)))
-		gtk_window_set_decorated(GTK_WINDOW(emu->gw->pWindow) , FALSE);
+	if(gtk_window_get_decorated(GTK_WINDOW(emu->gw->tw->pWindow)))
+		gtk_window_set_decorated(GTK_WINDOW(emu->gw->tw->pWindow) , FALSE);
 	 else 
-		gtk_window_set_decorated(GTK_WINDOW(emu->gw->pWindow) , TRUE);
+		gtk_window_set_decorated(GTK_WINDOW(emu->gw->tw->pWindow) , TRUE);
 }
 
 
@@ -520,7 +520,7 @@ void load_file(TilemCalcEmulator *emu)
 		//printf("filename = %s", filename);
 		load_file_from_file(emu, filename);
 
-		if(emu->gf->isMacroRecording)
+		if(emu->gw->mc->isMacroRecording)
 			add_load_file_in_macro_file(emu, strlen(filename), filename);
 
 		/* Search the directory and save it into the config file (for the next open file) */
