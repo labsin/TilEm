@@ -52,6 +52,7 @@ typedef struct _TilemScreenshot {
 	GtkWidget* screenshot_preview_image; /* Review pixbuf */
 	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
 	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
+	GtkWidget* ss_ext_combo; /* Folder chooser dialog (animated gif)*/
 
 	/* Flags */
 	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
