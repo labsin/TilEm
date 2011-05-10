@@ -274,6 +274,9 @@ void create_savname(TilemCmdlineArgs* cmdline) ;
 
 /* ##### animatedgif.c ##### */
 
+/* Save a static screenshot in gif format */
+void static_screenshot_save(TilemCalcEmulator* emu, char* filename);
+
 /* Create a animated screenshot */
 void tilem_animation_start(TilemCalcEmulator* emu) ;
 

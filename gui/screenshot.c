@@ -84,7 +84,10 @@ void screenshot(TilemCalcEmulator *emu) {
 	printf("filename test : %s\n", filename);
 
 	if(filename)	
-		save_screenshot(emu, filename, format);
+		if(strcmp(format, "gif") == 0)
+			static_screenshot_save(emu, filename);
+		else
+			save_screenshot(emu, filename, format);
 
 	/*tilem_config_universal_setter("screenshot", "screenshot_recent", filename);*/
 	change_review_image(emu, filename);

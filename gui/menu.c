@@ -102,7 +102,7 @@ GtkWidget * build_menu(TilemCalcEmulator* emu) {
 	gtk_menu_item_set_label(GTK_MENU_ITEM(reset_item), "Reset");
 	GtkWidget* quit_with_save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_REVERT_TO_SAVED, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(quit_with_save_item), "Exit and save state");
-	GtkWidget* quit_no_save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
+	GtkWidget* quit_no_save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(quit_no_save_item), "Quit without saving state");
 
 
