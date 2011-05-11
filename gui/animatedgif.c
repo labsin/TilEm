@@ -125,6 +125,7 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	char trailer[1] = { 0x3b};
 
     
+	//static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
     	/* Extension block introduced by 0x21 ('!'), size before extension_block_terminator, flag byte, delay (10/100) 2 bytes   */
 	char extension_block_header[2] = {0x21, 0xf9};
 	/* Size before extension_block_terminator */
@@ -132,12 +133,18 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	/* Flag (unknown) */
 	char extension_block_flag[1] = {5} ;
 	/* Delay (x/100 sec) on 2 bytes*/
-	char extension_block_delay[2] = {10, 0} ;
+	char extension_block_delay[2] = {11, 0} ;
 	/* The index designed by this variable become transparent even if palette gives a black(or something else) color. */ 
-	char extension_block_transparent_index[1] = {0x06};
+	char extension_block_transparent_index[1] = {0x0f};
 	/* End of extension block */
 	char extension_block_terminator[1] = {0x00};
-	char img_header[] = { 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
+
+	char image_block_header[] = { 0x2c};
+	/* Left corner x (2 bytes), left corner y (2 bytes), width (2 bytes), height (2 bytes) */
+	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
+	/* Flag */
+	char image_block_flag[] = {0};
+	
     
         
 	fwrite(global_header_magic_number, 6, 1, fp);
@@ -145,18 +152,23 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	fwrite(global_header_flag, 1, 1, fp);
 	fwrite(global_header_background_index, 1, 1, fp);
 	fwrite(global_header_aspect_pixel_ratio, 1, 1, fp);
+
 	fwrite(palette_start, 3, 1, fp);
 		for(k = 0; k < 254; k++) {
 			fwrite(padding, 3, 1, fp);
 		}
 	fwrite(palette_end, 3, 1, fp);
+
     	fwrite(extension_block_header, 2, 1, fp);
     	fwrite(extension_block_size, 1, 1, fp);
     	fwrite(extension_block_flag, 1, 1, fp);
     	fwrite(extension_block_delay, 2, 1, fp);
     	fwrite(extension_block_transparent_index, 1, 1, fp);
     	fwrite(extension_block_terminator, 1, 1, fp);
-    	fwrite(img_header, 10, 1, fp);
+
+    	fwrite(image_block_header, 1, 1, fp);
+    	fwrite(image_block_canvas, 8, 1, fp);
+    	fwrite(image_block_flag, 1, 1, fp);
     	
 	
 	unsigned char q[(96*64)];
