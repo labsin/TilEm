@@ -31,6 +31,7 @@
 
 void static_screenshot_save(TilemCalcEmulator* emu, char* filename) {
 	
+	long i= 0;
 	int width, height;
 	guchar* lcddata;
 	int x, y;
@@ -59,15 +60,11 @@ void static_screenshot_save(TilemCalcEmulator* emu, char* filename) {
 	static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
 	//static unsigned char example[] = { 0x01, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01};
     
-    	char end[1] = { 0x00};
-        
 	fwrite(magic_number, 6, 1, fp);
     	fwrite(canvas, 7, 1, fp);
     	fwrite(palette, 6, 1, fp);
     	fwrite(gif_img, 18, 1, fp);
     	
-	//fwrite(example, 19, 1, fp);
-	long i= 0;
 	
 	unsigned char q[(96*64)];
 
@@ -92,6 +89,97 @@ void static_screenshot_save(TilemCalcEmulator* emu, char* filename) {
 	char trailer[1] = { 0x3b};
 	fwrite(trailer, 1, 1,fp);
 	//fwrite(end, 1, 1,fp);
+	fclose(fp);
+}
+
+void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename) {
+	
+	int x, y, k;
+	long i= 0;
+	int width = emu->calc->hw.lcdwidth;
+	int height = emu->calc->hw.lcdheight;
+	guchar *lcddata = g_new(guchar, (width / 8) * height);
+	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
+
+
+	printf("GIF ENCODER\n");
+	FILE *fp = fopen(filename, "w");
+
+    	/* Magic number for Gif file format */
+    	char global_header_magic_number[] = {'G', 'I', 'F', '8', '9', 'a'};
+    	/* Size of canvas width on 2 bytes, heigth on 2 bytes */
+	char global_header_canvas[] = {96, 0, 64, 0 };
+	/* Flag , bg color i (place dans la palette ici c'est blanc) , aspect pixel ratio */
+    	char global_header_flag[] = { 0xf7 };
+	/* The index in global color table */
+	char global_header_background_index[] = {0x00};
+	/* Aspect pixel ratio (unknown) */
+	char global_header_aspect_pixel_ratio[] = {0x00};
+	
+   
+	char palette_start[] = { 0xff, 0xff, 0xff};
+	char padding[] = { 0x0f, 0xf0, 0x00};
+	char palette_end[] = { 0x00, 0x00, 0x00};
+
+	char end[1] = {0x00};
+	char trailer[1] = { 0x3b};
+
+    
+    	/* Extension block introduced by 0x21 ('!'), size before extension_block_terminator, flag byte, delay (10/100) 2 bytes   */
+	char extension_block_header[2] = {0x21, 0xf9};
+	/* Size before extension_block_terminator */
+	char extension_block_size[1] = {4} ;
+	/* Flag (unknown) */
+	char extension_block_flag[1] = {5} ;
+	/* Delay (x/100 sec) on 2 bytes*/
+	char extension_block_delay[2] = {10, 0} ;
+	/* The index designed by this variable become transparent even if palette gives a black(or something else) color. */ 
+	char extension_block_transparent_index[1] = {0x06};
+	/* End of extension block */
+	char extension_block_terminator[1] = {0x00};
+	char img_header[] = { 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
+    
+        
+	fwrite(global_header_magic_number, 6, 1, fp);
+	fwrite(global_header_canvas, 4, 1, fp);
+	fwrite(global_header_flag, 1, 1, fp);
+	fwrite(global_header_background_index, 1, 1, fp);
+	fwrite(global_header_aspect_pixel_ratio, 1, 1, fp);
+	fwrite(palette_start, 3, 1, fp);
+		for(k = 0; k < 254; k++) {
+			fwrite(padding, 3, 1, fp);
+		}
+	fwrite(palette_end, 3, 1, fp);
+    	fwrite(extension_block_header, 2, 1, fp);
+    	fwrite(extension_block_size, 1, 1, fp);
+    	fwrite(extension_block_flag, 1, 1, fp);
+    	fwrite(extension_block_delay, 2, 1, fp);
+    	fwrite(extension_block_transparent_index, 1, 1, fp);
+    	fwrite(extension_block_terminator, 1, 1, fp);
+    	fwrite(img_header, 10, 1, fp);
+    	
+	
+	unsigned char q[(96*64)];
+
+
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+			if (lcddata[(y * width + x) / 8] & (0x80 >> (x % 8))) {
+				/* BLACK */
+				q[i] = 0x01;
+				i++;
+			} else {
+				/* WHITE */
+				q[i] = 0x00;
+				i++;
+			}
+		}
+	}	
+	
+	
+	GifEncode(fp, q , 1, (96*64));
+	fwrite(end, 1, 1,fp);
+	fwrite(trailer, 1, 1,fp);
 	fclose(fp);
 }
 

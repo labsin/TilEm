@@ -83,12 +83,12 @@ void screenshot(TilemCalcEmulator *emu) {
 	filename = find_free_filename(folder, basename, format);
 	printf("filename test : %s\n", filename);
 
-	if(filename)	
+	if(filename) {
 		if(strcmp(format, "gif") == 0)
-			static_screenshot_save(emu, filename);
+			static_screenshot_save_with_parameters(emu, filename);
 		else
 			save_screenshot(emu, filename, format);
-
+	}
 	/*tilem_config_universal_setter("screenshot", "screenshot_recent", filename);*/
 	change_review_image(emu, filename);
 	g_free(filename);
@@ -276,7 +276,7 @@ void create_screenshot_window(TilemCalcEmulator* emu) {
 	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), "jpeg");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), "bmp");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), "gif");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), 3);
 
 	/* GtkFileChooserButton */
 	char *ssdir, *animdir;
