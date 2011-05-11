@@ -109,9 +109,9 @@ byte* tilem_color_palette_new1(int rlight, int glight, int blight,
 		j++;
 	}
 
-	pal[765] = 0xAB;//rdark;
-	pal[766] = 0xCD;//gdark;
-	pal[767] = 0xEF;//bdark;
+	pal[765] = rdark;
+	pal[766] = gdark;
+	pal[767] = bdark;
 
 	return pal;
 }
