@@ -111,7 +111,7 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
     	char global_header_magic_number[] = {'G', 'I', 'F', '8', '9', 'a'};
     	/* Size of canvas width on 2 bytes, heigth on 2 bytes */
 	char global_header_canvas[] = {96, 0, 64, 0 };
-	/* Flag , bg color i (place dans la palette ici c'est blanc) , aspect pixel ratio */
+	/* Flag */
     	char global_header_flag[] = { 0xf7 };
 	/* The index in global color table */
 	char global_header_background_index[] = {0x00};
@@ -139,7 +139,7 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	/* Left corner x (2 bytes), left corner y (2 bytes), width (2 bytes), height (2 bytes) */
 	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
 	/* Flag */
-	char image_block_flag[] = {0};
+	char image_block_flag[] = { 0x29};
 	//char image_block_lzw[] = {0};
 	/* Give an end to the image block */	
 	char image_block_end[1] = {0x00};
@@ -190,7 +190,7 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 		for (x = 0; x < width; x++) {
 			if (lcddata[(y * width + x) / 8] & (0x80 >> (x % 8))) {
 				/* BLACK */
-				q[i] = 1;
+				q[i] = 128;
 				i++;
 			} else {
 				/* WHITE */

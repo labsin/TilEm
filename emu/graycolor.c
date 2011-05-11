@@ -88,7 +88,7 @@ byte* tilem_color_palette_new1(int rlight, int glight, int blight,
 	pal[2] = blight;
 
 	int j = 3;
-	for (i = 3; i < 255; i++) {
+	for (i = 1; i < 255; i++) {
 		r = pow(r0 + i * dr, igamma) * 255.0 + 0.5;
 		if (r < 0) r = 0;
 		if (r > 255) r = 255;
