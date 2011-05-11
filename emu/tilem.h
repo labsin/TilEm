@@ -848,6 +848,12 @@ void tilem_lcd_buffer_free(TilemLCDBuffer *buf);
 void tilem_lcd_get_frame(TilemCalc * restrict calc,
                          TilemLCDBuffer * restrict buf);
 
+/* Convert current LCD memory contents to a TilemLCDBuffer (i.e., a
+   monochrome snapshot.) 
+   Output is only 0 and 1 */
+void tilem_lcd_get_frame1(TilemCalc * restrict calc,
+                         TilemLCDBuffer * restrict buf);
+
 /* Convert and scale image to an 8-bit indexed image buffer.  IMGWIDTH
    and IMGHEIGHT are the width and height of the output image,
    ROWSTRIDE the number of bytes from the start of one row to the next
@@ -877,6 +883,12 @@ void tilem_draw_lcd_image_rgb(TilemLCDBuffer * restrict frm,
    output device (2.2 for most current computer displays and image
    file formats.) */
 dword* tilem_color_palette_new(int rlight, int glight, int blight,
+                               int rdark, int gdark, int bdark,
+                               double gamma);
+
+
+/* Calculate a palette and returns a byte *. Palette is easy to use like this */ 
+byte* tilem_color_palette_new1(int rlight, int glight, int blight,
                                int rdark, int gdark, int bdark,
                                double gamma);
 

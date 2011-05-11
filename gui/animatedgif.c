@@ -94,12 +94,14 @@ void static_screenshot_save(TilemCalcEmulator* emu, char* filename) {
 
 void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename) {
 	
-	int x, y, k;
+	int x, y; //, k;
 	long i= 0;
 	int width = emu->calc->hw.lcdwidth;
 	int height = emu->calc->hw.lcdheight;
 	guchar *lcddata = g_new(guchar, (width / 8) * height);
 	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
+	TilemLCDBuffer * lcdbuf = tilem_lcd_buffer_new();
+	tilem_lcd_get_frame1(emu->calc, lcdbuf);
 
 
 	printf("GIF ENCODER\n");
@@ -117,13 +119,7 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	char global_header_aspect_pixel_ratio[] = {0x00};
 	
    
-	char palette_start[] = { 0xff, 0xff, 0xff};
-	char padding[] = { 0x0f, 0xf0, 0x00};
-	char palette_end[] = { 0x00, 0x00, 0x00};
-
-	char end[1] = {0x00};
-	char trailer[1] = { 0x3b};
-
+	
     
 	//static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
     	/* Extension block introduced by 0x21 ('!'), size before extension_block_terminator, flag byte, delay (10/100) 2 bytes   */
@@ -144,7 +140,11 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
 	/* Flag */
 	char image_block_flag[] = {0};
-	
+	//char image_block_lzw[] = {0};
+	/* Give an end to the image block */	
+	char image_block_end[1] = {0x00};
+	/* End file */
+	char footer_trailer[1] = { 0x3b};
     
         
 	fwrite(global_header_magic_number, 6, 1, fp);
@@ -153,11 +153,22 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	fwrite(global_header_background_index, 1, 1, fp);
 	fwrite(global_header_aspect_pixel_ratio, 1, 1, fp);
 
+	
+	byte* palette = tilem_color_palette_new1(255, 255, 255, 0, 0, 0, 2.2);
+
+	
+	char palette_start[] = { 0xff, 0xff, 0xff};
+	char padding[] = { 0x0f, 0x0f, 0x0f};
+	char palette_end[] = { 0x00, 0x00, 0x00};
+
+	int k;
 	fwrite(palette_start, 3, 1, fp);
 		for(k = 0; k < 254; k++) {
 			fwrite(padding, 3, 1, fp);
 		}
 	fwrite(palette_end, 3, 1, fp);
+	
+	//fwrite(palette, 256 * 3, 1, fp);
 
     	fwrite(extension_block_header, 2, 1, fp);
     	fwrite(extension_block_size, 1, 1, fp);
@@ -169,6 +180,7 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
     	fwrite(image_block_header, 1, 1, fp);
     	fwrite(image_block_canvas, 8, 1, fp);
     	fwrite(image_block_flag, 1, 1, fp);
+    	//fwrite(image_block_lzw, 1, 1, fp);
     	
 	
 	unsigned char q[(96*64)];
@@ -178,20 +190,20 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 		for (x = 0; x < width; x++) {
 			if (lcddata[(y * width + x) / 8] & (0x80 >> (x % 8))) {
 				/* BLACK */
-				q[i] = 0x01;
+				q[i] = 1;
 				i++;
 			} else {
 				/* WHITE */
-				q[i] = 0x00;
+				q[i] = 0;
 				i++;
 			}
 		}
 	}	
 	
 	
-	GifEncode(fp, q , 1, (96*64));
-	fwrite(end, 1, 1,fp);
-	fwrite(trailer, 1, 1,fp);
+	GifEncode(fp, lcdbuf->data , 1, (96*64));
+	fwrite(image_block_end, 1, 1,fp);
+	fwrite(footer_trailer, 1, 1,fp);
 	fclose(fp);
 }
 
