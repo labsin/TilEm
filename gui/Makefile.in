@@ -43,6 +43,7 @@ objects = tilem2.o \
 	disasmview.o \
 	emulator.o \
 	event.o \
+	filedlg.o \
 	files.o \
 	gifencod.o \
 	icons.o \
@@ -169,7 +170,9 @@ keybindings.o: keybindings.c files.h $(common_headers)
 menu.o: menu.c $(common_headers)
 	$(compile) -c $(srcdir)/menu.c
 
-
+# File open/save dialogs
+filedlg.o: filedlg.c filedlg.h
+	$(compile) -c $(srcdir)/filedlg.c
 
 # TI-81 program file functions
 ti81prg.o: ti81prg.c ti81prg.h ../emu/tilem.h
