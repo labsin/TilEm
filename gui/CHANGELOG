@@ -205,5 +205,9 @@
 * - Completely remove GLOBAL_SKIN_INFOS structure from tilem2.
 * ---10/05/11---
 * - Change strutures to look like a object oriented model. But in some case it's not really well implemented.
+* ---11/05/11---
+* - Refactor a lot of gif header's code.
+* ---12/05/11---
+* - I finally found what's wrong in my gif creation. So I can do multicolor gif now.
 */
 

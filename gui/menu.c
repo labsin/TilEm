@@ -201,5 +201,8 @@ void show_popup_menu(TilemCalcEmulator* emu, GdkEvent* event)
 {
 	GtkWidget* right_click_menu = build_menu(emu);
 	create_menus(emu->gw->tw->pWindow, event, right_click_menu);
+	
+	
 }
+
 
