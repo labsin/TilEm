@@ -32,6 +32,7 @@
 
 #include "gui.h"
 #include "files.h"
+#include "filedlg.h"
 
 /* Table for translating skin-file key number (based on actual
    position, and defined by the VTI/TiEmu file formats) into a
@@ -506,32 +507,52 @@ void switch_borderless(TilemCalcEmulator* emu) {
 /* Load a file */
 void load_file(TilemCalcEmulator *emu)
 {
-	char *filename, *dir;
+	char **filenames, *dir;
+	int i;
 
-	/* Launch and get the result of a GtkFileChooserDialog. Cancelled -> filename == NULL */
 	tilem_config_get("upload",
 	                 "sendfile_recentdir/f", &dir,
 	                 NULL);
-	filename = select_file(emu, dir);
+
+	/* FIXME: the default filter should select files that are
+	   presumed compatible with the current model.  Should exclude
+	   filters for types that make no sense whatsoever (e.g. prg
+	   files on anything but a TI-81.)  Maybe the
+	   prompt_open_files API should be changed to make this
+	   easier */
+
+	filenames = prompt_open_files("Send File",
+	                              GTK_WINDOW(emu->gw->tw->pWindow),
+	                              dir,
+	                              "TI-73 Files", "*.73?",
+	                              "TI-81 Files", "*.prg",
+	                              "TI-82 Files", "*.82?",
+	                              "TI-83 Files", "*.83?",
+	                              "TI-83 Plus Files", "*.8x?",
+	                              "TI-85 Files", "*.85?",
+	                              "TI-86 Files", "*.86?",
+	                              "Group Files", "*.tig",
+	                              "All Files", "*",
+	                              NULL);
+
 	g_free(dir);
 
-	/* Test if FileChooser cancelled ... */
-	if (filename != NULL) {
-		//printf("filename = %s", filename);
-		load_file_from_file(emu, filename);
-
-		if(emu->gw->mc->isMacroRecording)
-			add_load_file_in_macro_file(emu, strlen(filename), filename);
-
-		/* Search the directory and save it into the config file (for the next open file) */
-		dir = g_path_get_dirname(filename);
+	if (filenames && filenames[0]) {
+		dir = g_path_get_dirname(filenames[0]);
 		tilem_config_set("upload",
 		                 "sendfile_recentdir/f", dir,
 		                 NULL);
 		g_free(dir);
 	}
 
-	g_free(filename);
+	for (i = 0; filenames && filenames[i]; i++) {
+		load_file_from_file(emu, filenames[i]);
+
+		if(emu->gw->mc->isMacroRecording)
+			add_load_file_in_macro_file(emu, strlen(filenames[i]), filenames[i]);
+	}
+
+	g_strfreev(filenames);
 }
 
 /* Load a file without file_selector */

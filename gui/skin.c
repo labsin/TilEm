@@ -31,6 +31,7 @@
 #include "gui.h"
 #include "files.h"
 #include "msgbox.h"
+#include "filedlg.h"
 
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
 void tilem_choose_skin_filename_by_default(TilemCalcEmulator *emu)
@@ -98,7 +99,12 @@ void tilem_user_change_skin(TilemCalcEmulator *emu)
 
 	/* Show a nice chooser dialog, and get the filename selected */	
 	default_dir = get_shared_dir_path("skins", NULL);
-	file_selected = select_file(emu, default_dir);
+	file_selected = prompt_open_file("Open Skin",
+	                                 GTK_WINDOW(emu->gw->tw->pWindow),
+	                                 default_dir,
+	                                 "Skin Files", "*.skn",
+	                                 "All Files", "*",
+	                                 NULL);
 	g_free(default_dir);
 
 	if (file_selected != NULL) {

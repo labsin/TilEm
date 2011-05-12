@@ -29,6 +29,7 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "filedlg.h"
 
 /* Turn on recording macro */
 void start_record_macro(TilemCalcEmulator* emu) {
@@ -49,7 +50,12 @@ void stop_record_macro(TilemCalcEmulator* emu)
 		tilem_config_get("macro",
 		                 "loadmacro_recentdir/f", &dir,
 		                 NULL);
-		dest = select_file_for_save(emu, dir);
+		dest = prompt_save_file("Save Macro",
+		                        GTK_WINDOW(emu->gw->tw->pWindow),
+		                        dir, "macro.txt",
+		                        "Text Files", "*.txt",
+		                        "All Files", "*",
+		                        NULL);
 		g_free(dir);
 
 		if (dest) {
@@ -159,7 +165,12 @@ void play_macro_from_file(TilemCalcEmulator* emu) {
 	                 "loadmacro_recentdir/f", &dir,
 	                 NULL);
 
-	filename = select_file(emu, dir);
+	filename = prompt_open_file("Play Macro",
+	                            GTK_WINDOW(emu->gw->tw->pWindow),
+	                            dir,
+	                            "Text Files", "*.txt",
+	                            "All Files", "*",
+	                            NULL);
 	if(filename)
 		play_macro_default(emu, filename);
 
