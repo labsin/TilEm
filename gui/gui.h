@@ -278,7 +278,7 @@ void create_savname(TilemCmdlineArgs* cmdline) ;
 void static_screenshot_save(TilemCalcEmulator* emu, char* filename);
 
 /* Save a static screenshot with parameters */
-void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename);
+void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename, int width, int height);
 
 /* Create a animated screenshot */
 void tilem_animation_start(TilemCalcEmulator* emu) ;

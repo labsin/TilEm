@@ -63,7 +63,7 @@ void screenshot(TilemCalcEmulator *emu) {
 	   prompt the user using a GtkFileChooser, and save the chosen
 	   directory back in the config file for the future. */
 
-	/* Taking screenshot (png not gif) should be really easyi and quickly done.
+	/* Taking screenshot (png not gif) should be really easy and quickly done.
 	   That's why I don't ask user for the filename.
 	   The directory could be modified using the GtkFileChooserDialog in the screenshot menu.
 	   I prefer do not ask for the filename because it's waste of time I think.
@@ -85,7 +85,7 @@ void screenshot(TilemCalcEmulator *emu) {
 
 	if(filename) {
 		if(strcmp(format, "gif") == 0)
-			static_screenshot_save_with_parameters(emu, filename);
+			static_screenshot_save_with_parameters(emu, filename, 96, 64);
 		else
 			save_screenshot(emu, filename, format);
 	}

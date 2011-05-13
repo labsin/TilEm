@@ -28,78 +28,8 @@
 #include "gui.h"
 
 
-
-void static_screenshot_save(TilemCalcEmulator* emu, char* filename) {
+void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename, int width, int height) {
 	
-	long i= 0;
-	int width, height;
-	guchar* lcddata;
-	int x, y;
-	width = emu->calc->hw.lcdwidth;
-	height = emu->calc->hw.lcdheight;
-	/* Alloc mmem */
-	lcddata = g_new(guchar, (width / 8) * height);
-		
-	/* Get the lcd content using the function 's pointer from Benjamin's core */
-	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
-
-
-	printf("GIF ENCODER\n");
-	FILE* fp;
-	fp = fopen(filename, "w");
-    	/* Magic number for Gif file format */
-    	char magic_number[] = {'G', 'I', 'F', '8', '9', 'a'};
-    	/* Size of canvas width on 2 bytes, heigth on 2 bytes, GCT , bg color i (place dans la palette ici c'est blanc) , aspect pixel ratio */
-    	char canvas[] = { 96, 0, 64, 0, 0x80, 0x0f, 0x00};
-   
-    	/* GCT, multiple de 2 */ 
-    	char palette[] = { 0xff, 0xff, 0xff, 0x00, 0x00, 0x00};
-
-    
-    	/* Extension block introduced by 0x21 ('!'), and an img introduced by 0x2c (',') followed by coordinate corner(0,0), canvas 4 bytes, no local color table */
-	static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
-	//static unsigned char example[] = { 0x01, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01};
-    
-	fwrite(magic_number, 6, 1, fp);
-    	fwrite(canvas, 7, 1, fp);
-    	fwrite(palette, 6, 1, fp);
-    	fwrite(gif_img, 18, 1, fp);
-    	
-	
-	unsigned char q[(96*64)];
-
-
-	for (y = 0; y < height; y++) {
-		for (x = 0; x < width; x++) {
-			if (lcddata[(y * width + x) / 8] & (0x80 >> (x % 8))) {
-				//printf("i = %d", i);
-				q[i] = 0x01;
-				i++;
-			} else {
-				q[i] = 0x00;
-				i++;
-			}
-		}
-	}	
-	
-	
-
-	printf("toto");
-	GifEncode(fp, q , 1, (96*64));
-	char trailer[1] = { 0x3b};
-	fwrite(trailer, 1, 1,fp);
-	//fwrite(end, 1, 1,fp);
-	fclose(fp);
-}
-
-void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename) {
-	
-	int x, y; //, k;
-	long i= 0;
-	int width = emu->calc->hw.lcdwidth;
-	int height = emu->calc->hw.lcdheight;
-	guchar *lcddata = g_new(guchar, (width / 8) * height);
-	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
 	TilemLCDBuffer * lcdbuf = tilem_lcd_buffer_new();
 	tilem_lcd_get_frame(emu->calc, lcdbuf);
 
@@ -140,7 +70,6 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
 	/* Flag */
 	char image_block_flag[] = { 0x09};
-	//char image_block_lzw[] = {0};
 	/* Give an end to the image block */	
 	char image_block_end[1] = {0x00};
 
@@ -157,18 +86,6 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	
 	byte* palette = tilem_color_palette_new1(255, 255, 255, 0, 0, 0, 0.5);
 
-	
-	char palette_start[] = { 0xff, 0xff, 0xff};
-	char padding[] = { 0x0f, 0x0f, 0x0f};
-	char palette_end[] = { 0x00, 0x00, 0x00};
-
-	/*int k;
-	fwrite(palette_start, 3, 1, fp);
-		for(k = 0; k < 254; k++) {
-			fwrite(padding, 3, 1, fp);
-		}
-	fwrite(palette_end, 3, 1, fp);
-	*/
 	fwrite(palette, 256 * 3, 1, fp);
 
     	fwrite(extension_block_header, 2, 1, fp);
@@ -181,28 +98,9 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
     	fwrite(image_block_header, 1, 1, fp);
     	fwrite(image_block_canvas, 8, 1, fp);
     	fwrite(image_block_flag, 1, 1, fp);
-    	//fwrite(image_block_lzw, 1, 1, fp);
     	
 	
-	unsigned char q[(96*64)];
-
-
-	for (y = 0; y < height; y++) {
-		for (x = 0; x < width; x++) {
-			if (lcddata[(y * width + x) / 8] & (0x80 >> (x % 8))) {
-				/* BLACK */
-				q[i] = 128;
-				i++;
-			} else {
-				/* WHITE */
-				q[i] = 5;
-				i++;
-			}
-		}
-	}	
-	
-	
-	GifEncode(fp, lcdbuf->data , 8, (96*64));
+	GifEncode(fp, lcdbuf->data , 8, (width*height));
 	fwrite(image_block_end, 1, 1,fp);
 	fwrite(footer_trailer, 1, 1,fp);
 	fclose(fp);

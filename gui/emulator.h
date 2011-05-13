@@ -92,10 +92,10 @@ typedef struct _TilemIlpProgress {
 
 /* A structure which contains widget/flags/data grouped by view */
 typedef struct _TilemGuiWidget {
-	struct _TilemTopWindow *tw;
-	struct _TilemScreenshot *ss;
-	struct _TilemIlpProgress *pb;
-	struct _TilemMacro *mc;
+	TilemTopWindow *tw;
+	TilemScreenshot *ss;
+	TilemIlpProgress *pb;
+	TilemMacro *mc;
 } TilemGuiWidget;
 
 typedef struct _TilemCalcEmulator {
