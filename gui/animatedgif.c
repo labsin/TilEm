@@ -31,7 +31,9 @@
 void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename, int width, int height) {
 	
 	TilemLCDBuffer * lcdbuf = tilem_lcd_buffer_new();
+	byte* buffer = g_new(byte, width * height);
 	tilem_lcd_get_frame(emu->calc, lcdbuf);
+	tilem_draw_lcd_image_indexed(lcdbuf, buffer, width, height, width, TILEM_SCALE_SMOOTH);
 
 
 	printf("GIF ENCODER\n");
@@ -41,6 +43,9 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
     	char global_header_magic_number[] = {'G', 'I', 'F', '8', '7', 'a'};
     	/* Size of canvas width on 2 bytes, heigth on 2 bytes */
 	char global_header_canvas[] = {96, 0, 64, 0 };
+	global_header_canvas[0] = width; 
+	global_header_canvas[2] = height; 
+
 	/* Flag */
     	char global_header_flag[] = { 0xf7 };
 	/* The index in global color table */
@@ -68,6 +73,10 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	char image_block_header[] = { 0x2c};
 	/* Left corner x (2 bytes), left corner y (2 bytes), width (2 bytes), height (2 bytes) */
 	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
+	image_block_canvas[4] = width;
+	image_block_canvas[6] = height;
+	
+	
 	/* Flag */
 	char image_block_flag[] = { 0x09};
 	/* Give an end to the image block */	
@@ -100,7 +109,7 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
     	fwrite(image_block_flag, 1, 1, fp);
     	
 	
-	GifEncode(fp, lcdbuf->data , 8, (width*height));
+	GifEncode(fp, buffer , 8, (width*height));
 	fwrite(image_block_end, 1, 1,fp);
 	fwrite(footer_trailer, 1, 1,fp);
 	fclose(fp);

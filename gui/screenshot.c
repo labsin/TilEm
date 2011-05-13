@@ -85,7 +85,7 @@ void screenshot(TilemCalcEmulator *emu) {
 
 	if(filename) {
 		if(strcmp(format, "gif") == 0)
-			static_screenshot_save_with_parameters(emu, filename, 96, 64);
+			static_screenshot_save_with_parameters(emu, filename, 192, 128);
 		else
 			save_screenshot(emu, filename, format);
 	}
