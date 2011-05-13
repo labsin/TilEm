@@ -141,6 +141,7 @@ void tilem_gray_lcd_get_frame(TilemGrayLCD * restrict glcd,
 	unsigned int current, delta, fd, fl;
 	word ndark, nlight, ndarkseg, nlightseg;
 	dword tbase, tlimit;
+	dword lastwrite;
 	byte * restrict bp;
 	byte * restrict op;
 	TilemGrayLCDPixel * restrict pix;
@@ -169,12 +170,18 @@ void tilem_gray_lcd_get_frame(TilemGrayLCD * restrict glcd,
 
 	buf->contrast = glcd->calc->lcd.contrast;
 
-	/* "timestamp" for the frame is the time when LCD memory last
-	   changed prior to the start of the window; this means that
-	   if LCD remains unchanged, new frames continue to use the
-	   same timestamp */
-	buf->stamp = glcd->framestamp[glcd->framenum];
-	glcd->framestamp[glcd->framenum] = glcd->calc->z80.lastlcdwrite + 1;
+	/* If LCD remains unchanged throughout the window, set
+	   timestamp to the time when the LCD was last changed, so
+	   that consecutive frames have the same timestamp.  If LCD
+	   has changed during the window, values of gray pixels will
+	   vary from one frame to another, so use a unique timestamp
+	   for each frame */
+	lastwrite = glcd->calc->z80.lastlcdwrite;
+	if (glcd->framestamp[glcd->framenum] == lastwrite)
+		buf->stamp = lastwrite;
+	else
+		buf->stamp = glcd->calc->z80.clock + 0x80000000;
+	glcd->framestamp[glcd->framenum] = lastwrite;
 
 	/* set tbase to the sample number where the window began; this
 	   is used to limit the weight of unchanging pixels */
