@@ -72,8 +72,10 @@ void screenshot(TilemCalcEmulator *emu) {
 	   But if you prefer to ask filename no problem ;)
 	*/
 	
+	char* format = g_strdup("gif");
+	if(GTK_IS_COMBO_BOX(emu->gw->ss->ss_ext_combo))
+		format = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo));
 	
-	char* format = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo));
 	/* Look for the next free filename (don't erase previous screenshots) */
 	tilem_config_get("screenshot",
 	                 "screenshot_directory/f", &folder,

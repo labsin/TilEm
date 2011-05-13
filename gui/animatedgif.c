@@ -28,6 +28,12 @@
 #include "gui.h"
 
 
+static void write_global_header(FILE* fout, int width, int height);
+static void write_global_footer(FILE* fp);
+static void write_extension_block(FILE* fout, word delay);
+static void write_image_block_start(FILE *fp, int width, int height);
+static void write_image_block_end(FILE *fp);
+
 void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename, int width, int height) {
 	
 	TilemLCDBuffer * lcdbuf = tilem_lcd_buffer_new();
@@ -38,11 +44,24 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 
 	printf("GIF ENCODER\n");
 	FILE *fp = fopen(filename, "w");
+	
+	write_global_header(fp, width, height);
+	write_extension_block(fp, 10);	
+	write_image_block_start(fp, width, height);	
+	GifEncode(fp, buffer , 8, (width*height));
+	write_image_block_end(fp);
+	write_global_footer(fp);
+	fclose(fp);
+}
 
-    	/* Magic number for Gif file format */
+static void write_global_header(FILE* fp, int width, int height) {
+	
+	/* Magic number for Gif file format */
     	char global_header_magic_number[] = {'G', 'I', 'F', '8', '7', 'a'};
     	/* Size of canvas width on 2 bytes, heigth on 2 bytes */
 	char global_header_canvas[] = {96, 0, 64, 0 };
+
+	/* FIXME : allow size superior to 256 */
 	global_header_canvas[0] = width; 
 	global_header_canvas[2] = height; 
 
@@ -53,11 +72,30 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	/* Aspect pixel ratio (unknown) */
 	char global_header_aspect_pixel_ratio[] = {0x00};
 	
-   
 	
-    
-	//static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
-    	/* Extension block introduced by 0x21 ('!'), size before extension_block_terminator, flag byte, delay (10/100) 2 bytes   */
+	fwrite(global_header_magic_number, 6, 1, fp);
+	fwrite(global_header_canvas, 4, 1, fp);
+	fwrite(global_header_flag, 1, 1, fp);
+	fwrite(global_header_background_index, 1, 1, fp);
+	fwrite(global_header_aspect_pixel_ratio, 1, 1, fp);
+	
+	byte* palette = tilem_color_palette_new1(255, 255, 255, 0, 0, 0, 0.5);
+	
+	fwrite(palette, 256 * 3, 1, fp);
+}
+
+static void write_global_footer(FILE* fp) {
+
+	/* This value means end of gif file */	
+	char footer_trailer[1] = { 0x3b};
+	
+	fwrite(footer_trailer, 1, 1,fp);
+}
+
+
+static void write_extension_block(FILE* fp, word delay) {
+
+	/* Extension block introduced by 0x21 ('!'), size before extension_block_terminator, flag byte, delay (10/100) 2 bytes   */
 	char extension_block_header[2] = {0x21, 0xf9};
 	/* Size before extension_block_terminator */
 	char extension_block_size[1] = { 0x04} ;
@@ -65,55 +103,46 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	char extension_block_flag[1] = { 0x00} ;
 	/* Delay (x/100 sec) on 2 bytes*/
 	char extension_block_delay[2] = {10, 0} ;
+	extension_block_delay[0] = delay;
 	/* The index designed by this variable become transparent even if palette gives a black(or something else) color. */ 
 	char extension_block_transparent_index[1] = {0xff};
 	/* End of extension block */
 	char extension_block_terminator[1] = {0x00};
 
-	char image_block_header[] = { 0x2c};
-	/* Left corner x (2 bytes), left corner y (2 bytes), width (2 bytes), height (2 bytes) */
-	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
-	image_block_canvas[4] = width;
-	image_block_canvas[6] = height;
-	
-	
-	/* Flag */
-	char image_block_flag[] = { 0x09};
-	/* Give an end to the image block */	
-	char image_block_end[1] = {0x00};
-
-	/* End file */
-	char footer_trailer[1] = { 0x3b};
-    
-        
-	fwrite(global_header_magic_number, 6, 1, fp);
-	fwrite(global_header_canvas, 4, 1, fp);
-	fwrite(global_header_flag, 1, 1, fp);
-	fwrite(global_header_background_index, 1, 1, fp);
-	fwrite(global_header_aspect_pixel_ratio, 1, 1, fp);
-
-	
-	byte* palette = tilem_color_palette_new1(255, 255, 255, 0, 0, 0, 0.5);
-
-	fwrite(palette, 256 * 3, 1, fp);
-
-    	fwrite(extension_block_header, 2, 1, fp);
+	fwrite(extension_block_header, 2, 1, fp);
     	fwrite(extension_block_size, 1, 1, fp);
     	fwrite(extension_block_flag, 1, 1, fp);
     	fwrite(extension_block_delay, 2, 1, fp);
     	fwrite(extension_block_transparent_index, 1, 1, fp);
     	fwrite(extension_block_terminator, 1, 1, fp);
 
-    	fwrite(image_block_header, 1, 1, fp);
+}
+
+static void write_image_block_start(FILE *fp, int width, int height) {
+
+	/* Header */
+	char image_block_header[] = { 0x2c};
+	/* Left corner x (2 bytes), left corner y (2 bytes), width (2 bytes), height (2 bytes) */
+	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
+	image_block_canvas[4] = width;
+	image_block_canvas[6] = height;
+	/* Flag */
+	char image_block_flag[] = { 0x09};
+
+        fwrite(image_block_header, 1, 1, fp);
     	fwrite(image_block_canvas, 8, 1, fp);
     	fwrite(image_block_flag, 1, 1, fp);
-    	
-	
-	GifEncode(fp, buffer , 8, (width*height));
-	fwrite(image_block_end, 1, 1,fp);
-	fwrite(footer_trailer, 1, 1,fp);
-	fclose(fp);
+
 }
+
+static void write_image_block_end(FILE *fp) {
+	
+ 	/* Give an end to the image block */
+	char image_block_end[1] = {0x00};
+
+	fwrite(image_block_end, 1, 1,fp);
+}
+
 
 
 /* Create an empty gif and add the first frame */ 
@@ -132,9 +161,7 @@ void tilem_animation_start(TilemCalcEmulator* emu) {
 	char gif_header[13] = {'G', 'I', 'F', '8', '9', 'a', 96, 0, 64, 0, 0xf7, 0x00, 0};
     	/* Introduce the block 3bytes, netscape (type of gif : animation), a new block comment */
 	char gif_infos[31] = {
-        0x21, 0xff, 0x0b, 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0', 3, 1, 0, 0, 0,
-	0x21, 0xfe, 8, 'T', 'i', 'l', 'E', 'm', '2', 0, 0, 0
-	};
+        0x21, 0xff, 0x0b, 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0', 3, 1, 0xff, 0xff, 0x00	};
 	
 	int width, height;
 	guchar* lcddata;
@@ -175,7 +202,7 @@ void tilem_animation_start(TilemCalcEmulator* emu) {
 			fwrite(padding, 3, 1, fp);
 		}
 		fwrite(palette_end, 3, 1, fp);
-		fwrite(gif_infos, 31, 1, fp);
+		fwrite(gif_infos, 19, 1, fp);
 		fwrite(gif_img, 18, 1, fp);
 		
 		long i= 0;
