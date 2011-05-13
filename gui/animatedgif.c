@@ -35,6 +35,7 @@ static void write_image_block_start(FILE *fp, int width, int height);
 static void write_image_block_end(FILE *fp);
 static void write_comment(FILE* fp);
 static void write_image_block(TilemCalcEmulator *emu, FILE *fp, int width, int height);
+static void write_application_extension(FILE * fp) ;
 
 void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename, int width, int height) {
 	
@@ -165,46 +166,34 @@ static void write_comment(FILE* fp) {
 	fwrite(comment, 12, 1, fp);
 }
 
-/* Create an empty gif and add the first frame */ 
-void tilem_animation_start(TilemCalcEmulator* emu) {
-	
-	
+static void write_application_extension(FILE * fp) {
 
     	/* Introduce the block 3bytes, netscape (type of gif : animation), a new block comment */
 	char gif_infos[31] = {
         0x21, 0xff, 0x0b, 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0', 3, 1, 0xff, 0xff, 0x00	};
+
+	fwrite(gif_infos, 19, 1, fp);
+}
+
+/* Create an empty gif and add the first frame */ 
+void tilem_animation_start(TilemCalcEmulator* emu) {
 	
 	int width, height;
-	guchar* lcddata;
 	width = emu->calc->hw.lcdwidth;
 	height = emu->calc->hw.lcdheight;
-	
-	/* Alloc mmem */
-	lcddata = g_new(guchar, (width / 8) * height);
-		
-	/* Get the lcd content using the function 's pointer from Benjamin's core */
-	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
-
-
 
 	printf("GIF ENCODER\n");
 	FILE* fp;
 	fp = fopen("gifencod.gif", "w");
   	if(fp) { 
-			
-	    
-		/* Extension block introduced by 0x21 ('!'), and an img introduced by 0x2c (',') followed by coordinate corner(0,0), canvas 4 bytes, no local color table */
-		static char gif_img[18] = {0x21, 0xf9, 4, 5, 11, 0, 0x0f, 0, 0x2c, 0, 0, 0, 0, 96, 0, 64, 0, 0};
-	    
-		char end[1] = { 0x00};
-		
-		write_global_header(fp, 96, 64)	;
-		fwrite(gif_infos, 19, 1, fp);
+		write_global_header(fp, width, height)	;
+		write_application_extension(fp);
 		write_comment(fp);
-		fwrite(gif_img, 18, 1, fp);
+		write_extension_block(fp, 16);
+		write_image_block_start(fp, width, height);
 		
 		write_image_block(emu, fp, width, height);
-		fwrite(end, 1, 1,fp);	/* Write end of the frame */
+		write_image_block_end(fp);
 		fclose(fp);
 		emu->gw->ss->isAnimScreenshotRecording = TRUE;
 	}
