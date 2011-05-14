@@ -37,6 +37,7 @@ DEF_SHARE_DIR = -DSHARE_DIR=\"$(pkgdatadir)\" \
 
 objects = tilem2.o \
 	animatedgif.o \
+	animation.o \
 	args.o \
 	config.o \
 	debugger.o \
@@ -152,6 +153,10 @@ screenshot.o: screenshot.c $(common_headers)
 # Progress bar widget
 pbar.o: pbar.c $(common_headers)
 	$(compile) -c $(srcdir)/pbar.c
+
+# Screenshot/animation recording
+animation.o: animation.c animation.h $(common_headers)
+	$(compile) -c $(srcdir)/animation.c
 
 
 # Shared/configuration files
