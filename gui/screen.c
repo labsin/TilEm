@@ -203,13 +203,9 @@ void redraw_screen(TilemCalcEmulator *emu)
 	g_signal_connect(emuwin, "button-release-event",
 	                 G_CALLBACK(mouse_release_event), emu);
 
-	static GtkTargetEntry targetentries[] =
-    	{
-      		{ "STRING", GTK_TARGET_OTHER_APP, 0 },
-    	};
-
-	
-	gtk_drag_dest_set(emuwin, GTK_DEST_DEFAULT_ALL, targetentries, 1, GDK_ACTION_MOVE );
+	gtk_drag_dest_set(emuwin, GTK_DEST_DEFAULT_ALL,
+	                  NULL, 0, GDK_ACTION_COPY);
+	gtk_drag_dest_add_uri_targets(emuwin);
 	g_signal_connect(emuwin, "drag-data-received",
 	                 G_CALLBACK(on_drag_and_drop), emu);
 
