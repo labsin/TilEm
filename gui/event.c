@@ -190,7 +190,7 @@ void quit_with_save(TilemEmulatorWindow *ewin)
 void save_root_window_dimension(TilemEmulatorWindow *ewin)
 {
 	gint width, height;
-	gtk_window_get_size(GTK_WINDOW(ewin->pWindow), &width, &height);
+	gtk_window_get_size(GTK_WINDOW(ewin->window), &width, &height);
 	tilem_config_set("settings",
 	                 "width/i", width,
 	                 "height/i", height,
@@ -497,10 +497,10 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 /* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */
 void switch_borderless(TilemEmulatorWindow *ewin)
 {
-	if(gtk_window_get_decorated(GTK_WINDOW(ewin->pWindow)))
-		gtk_window_set_decorated(GTK_WINDOW(ewin->pWindow) , FALSE);
+	if(gtk_window_get_decorated(GTK_WINDOW(ewin->window)))
+		gtk_window_set_decorated(GTK_WINDOW(ewin->window) , FALSE);
 	 else 
-		gtk_window_set_decorated(GTK_WINDOW(ewin->pWindow) , TRUE);
+		gtk_window_set_decorated(GTK_WINDOW(ewin->window) , TRUE);
 }
 
 #define PAT_TI81       "*.prg"
@@ -608,7 +608,7 @@ void load_file(TilemEmulatorWindow *ewin)
 	                 NULL);
 
 	filenames = prompt_link_files("Send File",
-	                              GTK_WINDOW(ewin->pWindow),
+	                              GTK_WINDOW(ewin->window),
 	                              dir, ewin->emu->calc->hw.model_id);
 	g_free(dir);
 
@@ -665,7 +665,7 @@ void tilem_load_file_from_file_at_startup(TilemCalcEmulator *emu, char* filename
 /* Toggle limit speed */
 void tilem_change_speed(TilemEmulatorWindow *ewin)
 {
-	tilem_calc_emulator_set_limit_speed(ewin, !ewin->emu->limit_speed);
+	tilem_calc_emulator_set_limit_speed(ewin->emu, !ewin->emu->limit_speed);
 }
 
 /* Callback function for the drag and drop event */

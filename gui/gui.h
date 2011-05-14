@@ -21,6 +21,7 @@
 #include "emulator.h"
 #include "skinops.h"
 #include "debuginfo.h"
+#include "emuwin.h"
 #include "debugger.h"
 
 #include "gtk-compat.h"
@@ -35,35 +36,6 @@ typedef struct _TilemCmdlineArg {
 	/* Flags */
 	gboolean isStartingSkinless; 
 } TilemCmdlineArgs;
-
-/* Root window view (widgets and flags) */
-typedef struct _TilemEmulatorWindow {
-	TilemCalcEmulator *emu;
-
-	GtkWidget *pWindow; /* The top level window */
-	GtkWidget *pLayout; /* Layout */
-	GtkWidget* lcdwin;
-	GtkWidget* background;
-
-	GdkGeometry geomhints;
-	GdkWindowHints geomhintmask;
-
-	byte* lcd_image_buf;
-	int lcd_image_width;
-	int lcd_image_height;
-	GdkRgbCmap* lcd_cmap;
-
-	char *skin_file_name;
-	SKIN_INFOS *skin;
-	gboolean isSkinDisabled; /* A flag to know if skinless or not */
-
-	int mouse_key;		/* Key currently pressed by mouse button */
-
-	/* Host keycode used to activate each key, if any */
-	int keypress_keycodes[64];
-	int sequence_keycode;
-
-} TilemEmulatorWindow;
 
 /* Screenshot view (widgets and flags) */
 typedef struct _TilemScreenshotDialog {
@@ -132,20 +104,11 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 /* Key-release event */
 gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 
-/* Switch view to lcd only or skin + lcd */
-void switch_view(TilemEmulatorWindow *ewin);
-
 /* Switch borderless. */
 void switch_borderless(TilemEmulatorWindow *ewin);
 
 /* Create the right click menu */
 void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget *items);
-
-/* Adapt the style */
-void screen_restyle(GtkWidget* w, GtkStyle* oldstyle, TilemEmulatorWindow *ewin);
-
-/* Resize screen */
-void screen_resize(GtkWidget* w G_GNUC_UNUSED,GtkAllocation* alloc, TilemCalcEmulator * emu);
 
 /* Load a file from PC to TI */
 void load_file(TilemEmulatorWindow *ewin);
@@ -178,24 +141,6 @@ void tilem_choose_skin_filename_by_default(TilemEmulatorWindow *ewin);
 
 
 /* ###### screen.c ##### */
-
-/* Create Screen (skin and lcd) */
-GtkWidget* draw_screen(TilemEmulatorWindow *ewin);
-
-/* Redraw_screen when modify the skin */
-void redraw_screen(TilemEmulatorWindow *ewin);
-
-/* Create the lcd area */
-GtkWidget * create_draw_area(TilemCalcEmulator * emu);
-
-/* Repaint another skin */
-gboolean screen_repaint(GtkWidget* w, GdkEventExpose* ev, TilemEmulatorWindow *ewin);
-
-/* update the screen.Repaint the drawing_area widget */
-gboolean screen_update(gpointer data);
-
-/* refresh the lcd content */
-void update_lcdimage(TilemCalcEmulator *emu);
 
 /* Display the lcd image into the terminal */
 void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin);

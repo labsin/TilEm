@@ -85,8 +85,8 @@ static gboolean refresh_lcd(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
 
-	if (emu->ewin->lcdwin)
-		gtk_widget_queue_draw(emu->ewin->lcdwin);
+	if (emu->ewin)
+		tilem_emulator_window_refresh_lcd(emu->ewin);
 
 	return FALSE;
 }
@@ -172,7 +172,7 @@ static gpointer core_thread(gpointer data)
 static GtkWidget *get_toplevel(TilemCalcEmulator *emu)
 {
 	if (emu->ewin)
-		return emu->ewin->pWindow;
+		return emu->ewin->window;
 	else
 		return NULL;
 }

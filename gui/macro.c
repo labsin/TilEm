@@ -51,7 +51,7 @@ void stop_record_macro(TilemEmulatorWindow *ewin)
 		                 "loadmacro_recentdir/f", &dir,
 		                 NULL);
 		dest = prompt_save_file("Save Macro",
-		                        GTK_WINDOW(ewin->pWindow),
+		                        GTK_WINDOW(ewin->window),
 		                        dir, "macro.txt",
 		                        "Text files", "*.txt",
 		                        "All files", "*",
@@ -166,7 +166,7 @@ void play_macro_from_file(TilemEmulatorWindow *ewin) {
 	                 NULL);
 
 	filename = prompt_open_file("Play Macro",
-	                            GTK_WINDOW(ewin->pWindow),
+	                            GTK_WINDOW(ewin->window),
 	                            dir,
 	                            "Text files", "*.txt",
 	                            "All files", "*",

@@ -33,31 +33,6 @@
 #include "msgbox.h"
 #include "filedlg.h"
 
-/* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
-void tilem_choose_skin_filename_by_default(TilemEmulatorWindow *ewin)
-{
-	const char *model = ewin->emu->calc->hw.name;
-	char *name = NULL, *path;
-
-	g_free(ewin->skin_file_name);
-
-	tilem_config_get(model,
-	                 "skin/f", &name,
-	                 NULL);
-
-	if (!name)
-		name = g_strdup_printf("%s.skn", model);
-
-	if (!g_path_is_absolute(name)) {
-		path = get_shared_file_path("skins", name, NULL);
-		ewin->skin_file_name = path;
-		g_free(name);
-	}
-	else {
-		ewin->skin_file_name = name;
-	}
-}
-
 /* Convert to an absolute path */
 static char *canonicalize_filename(const char *name)
 {
@@ -100,7 +75,7 @@ void tilem_user_change_skin(TilemEmulatorWindow *ewin)
 	/* Show a nice chooser dialog, and get the filename selected */	
 	default_dir = get_shared_dir_path("skins", NULL);
 	file_selected = prompt_open_file("Open Skin",
-	                                 GTK_WINDOW(ewin->pWindow),
+	                                 GTK_WINDOW(ewin->window),
 	                                 default_dir,
 	                                 "Skin files", "*.skn",
 	                                 "All files", "*",
@@ -108,10 +83,8 @@ void tilem_user_change_skin(TilemEmulatorWindow *ewin)
 	g_free(default_dir);
 
 	if (file_selected != NULL) {
-		g_free(ewin->skin_file_name);
-		ewin->skin_file_name = file_selected;
-		ewin->isSkinDisabled = FALSE;
-		redraw_screen(ewin);
+		tilem_emulator_window_set_skin(ewin, file_selected);
+		tilem_emulator_window_set_skin_disabled(ewin, FALSE);
 
 		/* if file is stored in shared skins directory, save
 		   only the relative path; otherwise, save the

@@ -43,6 +43,7 @@ objects = tilem2.o \
 	debugger.o \
 	disasmview.o \
 	emulator.o \
+	emuwin.o \
 	event.o \
 	filedlg.o \
 	files.o \
@@ -54,7 +55,6 @@ objects = tilem2.o \
 	memmodel.o \
 	memory.o \
 	pbar.o \
-	screen.o \
 	screenshot.o \
 	skin.o \
 	skinops.o \
@@ -71,7 +71,7 @@ compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(DEFS) \
 link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
 
 common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
-	gui.h emulator.h debugger.h skinops.h debuginfo.h gtk-compat.h msgbox.h
+	gui.h emulator.h emuwin.h debugger.h skinops.h debuginfo.h gtk-compat.h msgbox.h
 
 all: tilem2@EXEEXT@
 
@@ -103,8 +103,8 @@ emulator.o: emulator.c $(common_headers)
 	$(compile) -c $(srcdir)/emulator.c
 
 # Print the skin and add the events. 
-screen.o: screen.c $(common_headers)
-	$(compile) -c $(srcdir)/screen.c
+emuwin.o: emuwin.c $(common_headers)
+	$(compile) -c $(srcdir)/emuwin.c
 
 # Handle events
 event.o: event.c $(common_headers)

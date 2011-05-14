@@ -48,8 +48,6 @@ int main(int argc, char **argv)
 
 	emu = tilem_calc_emulator_new();
 
-	emu->ewin = g_slice_new0(TilemEmulatorWindow);
-	emu->ewin->emu = emu;
 	emu->ssdlg = g_slice_new0(TilemScreenshotDialog);
 	emu->ssdlg->emu = emu;
 	emu->linkpb = g_slice_new0(TilemLinkProgress);
@@ -70,24 +68,17 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",emu->calc->hw.name[3]);
 	DGLOBAL_L0_A0("********************************************************\n");
 
-	if (cl->SkinFileName) {
-		emu->ewin->skin_file_name = g_strdup(cl->SkinFileName);
-	}
-	else {
-		tilem_choose_skin_filename_by_default(emu->ewin);
-		tilem_config_get("settings",
-		                 "skin_disabled/b", &emu->ewin->isSkinDisabled,
-		                 NULL);
-	}
+	emu->ewin = tilem_emulator_window_new(emu);
+
+	if (cl->SkinFileName)
+		tilem_emulator_window_set_skin(emu->ewin, cl->SkinFileName);
 
 	if (cl->isStartingSkinless)
-		emu->ewin->isSkinDisabled = TRUE;
+		tilem_emulator_window_set_skin_disabled(emu->ewin, TRUE);
 
-	/* Draw skin */	
-	draw_screen(emu->ewin);
+	gtk_widget_show(emu->ewin->window);
 
 	tilem_calc_emulator_run(emu);
-
 	
 	tilem_keybindings_init(emu, emu->calc->hw.name);
 		
@@ -105,6 +96,7 @@ int main(int argc, char **argv)
 	if(SAVE_STATE==1)
 		tilem_calc_emulator_save_state(emu);
 
+	tilem_emulator_window_free(emu->ewin);
 	tilem_calc_emulator_free(emu);
 
 	return 0;

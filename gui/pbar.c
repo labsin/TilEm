@@ -72,7 +72,7 @@ void progress_bar_init(TilemCalcEmulator* emu)
 	g_return_if_fail(emu != NULL);
 
 	if (emu->ewin)
-		parent = emu->ewin->pWindow;
+		parent = emu->ewin->window;
 	else
 		parent = NULL;
 
