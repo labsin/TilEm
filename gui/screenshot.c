@@ -52,8 +52,9 @@ static void delete_spinner_and_put_logo(TilemCalcEmulator * emu);
 void on_add_frame(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
 
 /* This method is called from click event */
-void screenshot(TilemCalcEmulator *emu) {
-
+void screenshot(TilemEmulatorWindow *ewin)
+{
+	TilemCalcEmulator *emu = ewin->emu;
 	char* basename = g_strdup("screenshot");
 	char* folder, *filename;
 
@@ -73,8 +74,8 @@ void screenshot(TilemCalcEmulator *emu) {
 	*/
 	
 	char* format = g_strdup("gif");
-	if(GTK_IS_COMBO_BOX(emu->gw->ss->ss_ext_combo))
-		format = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo));
+	if(GTK_IS_COMBO_BOX(emu->ssdlg->ss_ext_combo))
+		format = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo));
 	
 	/* Look for the next free filename (don't erase previous screenshots) */
 	tilem_config_get("screenshot",
@@ -136,15 +137,15 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 static void change_review_image(TilemCalcEmulator * emu, char * new_image) {
 
 	/* Test if the widget exists (should exists), if not don't try to change the image */
-	if(GTK_IS_WIDGET(emu->gw->ss->screenshot_preview_image)) {
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(emu->gw->ss->screenshot_preview_image));
-		if(GTK_IS_SPINNER(emu->gw->ss->screenshot_preview_image)) {
-			gtk_spinner_stop(GTK_SPINNER(emu->gw->ss->screenshot_preview_image));
+	if(GTK_IS_WIDGET(emu->ssdlg->screenshot_preview_image)) {
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(emu->ssdlg->screenshot_preview_image));
+		if(GTK_IS_SPINNER(emu->ssdlg->screenshot_preview_image)) {
+			gtk_spinner_stop(GTK_SPINNER(emu->ssdlg->screenshot_preview_image));
 		}
-		gtk_object_destroy(GTK_OBJECT(emu->gw->ss->screenshot_preview_image));
-		emu->gw->ss->screenshot_preview_image = gtk_image_new_from_file(new_image);
-		gtk_widget_show(emu->gw->ss->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(screenshot_preview), emu->gw->ss->screenshot_preview_image, 10, 10);
+		gtk_object_destroy(GTK_OBJECT(emu->ssdlg->screenshot_preview_image));
+		emu->ssdlg->screenshot_preview_image = gtk_image_new_from_file(new_image);
+		gtk_widget_show(emu->ssdlg->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), emu->ssdlg->screenshot_preview_image, 10, 10);
 		gtk_widget_show(screenshot_preview);
 	}
 
@@ -155,16 +156,16 @@ static void change_review_image(TilemCalcEmulator * emu, char * new_image) {
 static void start_spinner(TilemCalcEmulator * emu) {
 
 	/* Test if the widget exists (should exists), if not don't try to change the image */
-	if(GTK_IS_WIDGET(emu->gw->ss->screenshot_preview_image)) {
+	if(GTK_IS_WIDGET(emu->ssdlg->screenshot_preview_image)) {
 
-		GtkWidget * layout = gtk_widget_get_parent(GTK_WIDGET(emu->gw->ss->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(emu->gw->ss->screenshot_preview_image));
+		GtkWidget * layout = gtk_widget_get_parent(GTK_WIDGET(emu->ssdlg->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(emu->ssdlg->screenshot_preview_image));
 		
-		emu->gw->ss->screenshot_preview_image = gtk_spinner_new();
-		gtk_spinner_start(GTK_SPINNER(emu->gw->ss->screenshot_preview_image));	
+		emu->ssdlg->screenshot_preview_image = gtk_spinner_new();
+		gtk_spinner_start(GTK_SPINNER(emu->ssdlg->screenshot_preview_image));	
 		
-		gtk_widget_show(emu->gw->ss->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(layout), emu->gw->ss->screenshot_preview_image, 100, 60);
+		gtk_widget_show(emu->ssdlg->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(layout), emu->ssdlg->screenshot_preview_image, 100, 60);
 		gtk_widget_show(layout);
 	}
 }
@@ -172,26 +173,26 @@ static void start_spinner(TilemCalcEmulator * emu) {
 /* Stop the spinner animation */
 static void stop_spinner(TilemCalcEmulator * emu) {
 	
-	if(GTK_IS_SPINNER(emu->gw->ss->screenshot_preview_image)) {
-		gtk_spinner_stop(GTK_SPINNER(emu->gw->ss->screenshot_preview_image));
-		gtk_widget_hide(GTK_WIDGET(emu->gw->ss->screenshot_preview_image));
+	if(GTK_IS_SPINNER(emu->ssdlg->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(emu->ssdlg->screenshot_preview_image));
+		gtk_widget_hide(GTK_WIDGET(emu->ssdlg->screenshot_preview_image));
 	}
 }
 
 /* Stop the spinner animation and put tilem logo (if no review to display) */
 static void delete_spinner_and_put_logo(TilemCalcEmulator * emu) {
 	
-	if(GTK_IS_SPINNER(emu->gw->ss->screenshot_preview_image)) {
-		gtk_spinner_stop(GTK_SPINNER(emu->gw->ss->screenshot_preview_image));
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(emu->gw->ss->screenshot_preview_image));
-		gtk_object_destroy(GTK_OBJECT(emu->gw->ss->screenshot_preview_image));
+	if(GTK_IS_SPINNER(emu->ssdlg->screenshot_preview_image)) {
+		gtk_spinner_stop(GTK_SPINNER(emu->ssdlg->screenshot_preview_image));
+		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(emu->ssdlg->screenshot_preview_image));
+		gtk_object_destroy(GTK_OBJECT(emu->ssdlg->screenshot_preview_image));
 		char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
 		if(tilem_logo)
-			emu->gw->ss->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
-		emu->gw->ss->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+			emu->ssdlg->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+		emu->ssdlg->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 		g_free(tilem_logo);
-		gtk_widget_show(emu->gw->ss->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(screenshot_preview), emu->gw->ss->screenshot_preview_image, 10, 10);
+		gtk_widget_show(emu->ssdlg->screenshot_preview_image);
+		gtk_layout_put(GTK_LAYOUT(screenshot_preview), emu->ssdlg->screenshot_preview_image, 10, 10);
 		gtk_widget_show(screenshot_preview);
 		
 	}
@@ -203,7 +204,9 @@ static void on_destroy_screenshot(GtkWidget* screenshotanim_win)   {
 }
 
 /* Create the screenshot menu */
-void create_screenshot_window(TilemCalcEmulator* emu) {
+void create_screenshot_window(TilemEmulatorWindow* ewin)
+{
+	TilemCalcEmulator *emu = ewin->emu;
 	GtkWidget* screenshotanim_win;
 	screenshotanim_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(screenshotanim_win), "Screenshot");
@@ -230,11 +233,11 @@ void create_screenshot_window(TilemCalcEmulator* emu) {
 	   And maybe it doesn't exist or saved filename is bad...*/ 
 	char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
 	if(tilem_logo)
-		emu->gw->ss->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
+		emu->ssdlg->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
 	else 
-		emu->gw->ss->screenshot_preview_image = gtk_image_new();
+		emu->ssdlg->screenshot_preview_image = gtk_image_new();
 	g_free(tilem_logo);
-	gtk_layout_put(GTK_LAYOUT(layout), emu->gw->ss->screenshot_preview_image, 10, 10);
+	gtk_layout_put(GTK_LAYOUT(layout), emu->ssdlg->screenshot_preview_image, 10, 10);
 	gtk_container_add(GTK_CONTAINER(screenshot_preview), layout);
 
 	gtk_container_add(GTK_CONTAINER(screenshotanim_win), parent_vbox);
@@ -273,12 +276,12 @@ void create_screenshot_window(TilemCalcEmulator* emu) {
 
 	/* FIXME : USE DEPRECATED SYMBOLS */
 	GtkWidget * screenshot_extension = gtk_label_new("Screenshot extension :");
-	emu->gw->ss->ss_ext_combo = gtk_combo_box_new_text(); 
-	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), "png");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), "jpeg");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), "bmp");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), "gif");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(emu->gw->ss->ss_ext_combo), 3);
+	emu->ssdlg->ss_ext_combo = gtk_combo_box_new_text(); 
+	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo), "png");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo), "jpeg");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo), "bmp");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo), "gif");
+	gtk_combo_box_set_active(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo), 3);
 
 	/* GtkFileChooserButton */
 	char *ssdir, *animdir;
@@ -288,23 +291,23 @@ void create_screenshot_window(TilemCalcEmulator* emu) {
 	                 "animation_directory/f", &animdir,
 	                 NULL);
 
-	emu->gw->ss->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(emu->gw->ss->folder_chooser_screenshot), ssdir);
-	emu->gw->ss->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(emu->gw->ss->folder_chooser_animation), animdir);
+	emu->ssdlg->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(emu->ssdlg->folder_chooser_screenshot), ssdir);
+	emu->ssdlg->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(emu->ssdlg->folder_chooser_animation), animdir);
 	g_free(ssdir);
 	g_free(animdir);
 
 	gtk_box_pack_start (GTK_BOX (hboxc0), screenshot_extension, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc0), emu->gw->ss->ss_ext_combo, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc0), emu->ssdlg->ss_ext_combo, 2, 3, 4);
 	gtk_box_pack_start (GTK_BOX (hboxc1), screenshot_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc1), emu->gw->ss->folder_chooser_screenshot, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc1), emu->ssdlg->folder_chooser_screenshot, 2, 3, 4);
 	gtk_box_pack_start (GTK_BOX (hboxc2), animation_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc2), emu->gw->ss->folder_chooser_animation, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc2), emu->ssdlg->folder_chooser_animation, 2, 3, 4);
 	gtk_widget_show(screenshot_dir_label);
 	gtk_widget_show(animation_dir_label);
-	gtk_widget_show(emu->gw->ss->folder_chooser_animation);
-	gtk_widget_show(emu->gw->ss->folder_chooser_screenshot);
+	gtk_widget_show(emu->ssdlg->folder_chooser_animation);
+	gtk_widget_show(emu->ssdlg->folder_chooser_screenshot);
 	/* <<<< */	
 	
 	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, FALSE, 3, 4);
@@ -328,8 +331,8 @@ void create_screenshot_window(TilemCalcEmulator* emu) {
 	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), emu);
 	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), emu);
 	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), emu);
-	g_signal_connect(GTK_OBJECT(emu->gw->ss->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), emu);
-	g_signal_connect(GTK_OBJECT(emu->gw->ss->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), emu);
+	g_signal_connect(GTK_OBJECT(emu->ssdlg->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), emu);
+	g_signal_connect(GTK_OBJECT(emu->ssdlg->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), emu);
 	gtk_widget_show_all(screenshotanim_win);
 }
 
@@ -354,8 +357,8 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 
 	tilem_animation_stop(emu) ;
 	
-	if(emu->gw->ss->isAnimScreenshotRecording) {
-		emu->gw->ss->isAnimScreenshotRecording = FALSE;
+	if(emu->ssdlg->isAnimScreenshotRecording) {
+		emu->ssdlg->isAnimScreenshotRecording = FALSE;
 		stop_spinner(emu);
 
 		tilem_config_get("screenshot",
@@ -383,7 +386,7 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 
 /* Callback for screenshot button (take a screenshot) */
 static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
-	screenshot(emu);
+	screenshot(emu->ewin);
 	g_print("screenshot event\n");
 }
 
@@ -488,7 +491,7 @@ static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 
 static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(emu->gw->ss->folder_chooser_screenshot)); 
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(emu->ssdlg->folder_chooser_screenshot)); 
 	if(folder) 
 		tilem_config_set("screenshot",
 		                 "screenshot_directory/f", folder,
@@ -499,7 +502,7 @@ static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemC
 	
 static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(emu->gw->ss->folder_chooser_animation)); 
+	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(emu->ssdlg->folder_chooser_animation)); 
 	if(folder)
 		tilem_config_set("screenshot",
 		                 "animation_directory/f", folder,

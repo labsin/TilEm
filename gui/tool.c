@@ -163,7 +163,7 @@ char* select_file(TilemCalcEmulator *emu, const char* basedir) {
 	char* filename = NULL;
 	gint result;
 
-	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(emu->gw->tw->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(emu->ewin->pWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	pFileChooser=GTK_FILE_CHOOSER(dialog);
 
 	if(basedir != NULL)
@@ -194,7 +194,7 @@ char* select_dir(TilemCalcEmulator *emu, const char* basedir) {
 	char* filename = NULL;
 	gint result;
 
-	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(emu->gw->tw->pWindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(emu->ewin->pWindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	pFileChooser=GTK_FILE_CHOOSER(dialog);
 
 	if(basedir != NULL)
@@ -224,7 +224,7 @@ char* select_file_for_save(TilemCalcEmulator *emu, char* basedir) {
 	char* filename = NULL;
 	gint result;
 
-	dialog = gtk_file_chooser_dialog_new ("Save File", GTK_WINDOW(emu->gw->tw->pWindow), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+	dialog = gtk_file_chooser_dialog_new ("Save File", GTK_WINDOW(emu->ewin->pWindow), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
 	pFileChooser=GTK_FILE_CHOOSER(dialog);
 
 	if(basedir != NULL)

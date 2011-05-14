@@ -195,7 +195,7 @@ void tilem_animation_start(TilemCalcEmulator* emu) {
 		write_image_block(emu, fp, width, height);
 		write_image_block_end(fp);
 		fclose(fp);
-		emu->gw->ss->isAnimScreenshotRecording = TRUE;
+		emu->ssdlg->isAnimScreenshotRecording = TRUE;
 	}
 }
     
@@ -221,7 +221,7 @@ void tilem_animation_add_frame(TilemCalcEmulator* emu) {
 /* Stop recording animations */
 void tilem_animation_stop(TilemCalcEmulator* emu) {
 	
-	if(emu->gw->ss->isAnimScreenshotRecording) {
+	if(emu->ssdlg->isAnimScreenshotRecording) {
 		FILE* fp;
 		fp = fopen("gifencod.gif", "a");
 		write_global_footer(fp);
@@ -235,7 +235,7 @@ void tilem_animation_stop(TilemCalcEmulator* emu) {
 gboolean tilem_animation_record(gpointer data) {
 	TilemCalcEmulator * emu = (TilemCalcEmulator*) data;
 	
-	if(emu->gw->ss->isAnimScreenshotRecording) 
+	if(emu->ssdlg->isAnimScreenshotRecording) 
 		tilem_animation_add_frame(emu);
 	return TRUE;
 

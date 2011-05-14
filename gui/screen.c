@@ -33,7 +33,7 @@
 /* Set size hints for the toplevel window */
 static void set_size_hints(GtkWidget *widget, gpointer data)
 {
-	TilemCalcEmulator *emu = data;
+	TilemEmulatorWindow *ewin = data;
 
 	/* Don't use gtk_window_set_geometry_hints() (which would
 	   appear to do what we want) because, in addition to setting
@@ -48,58 +48,60 @@ static void set_size_hints(GtkWidget *widget, gpointer data)
 
 	if (gtk_widget_get_window(widget))
 		gdk_window_set_geometry_hints(gtk_widget_get_window(widget),
-		                              &emu->geomhints,
-		                              emu->geomhintmask);
+		                              &ewin->geomhints,
+		                              ewin->geomhintmask);
 }
 
 static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
                                gpointer data)
 {
-	TilemCalcEmulator *emu = data;
+	TilemEmulatorWindow *ewin = data;
 	int rawwidth, rawheight;
 	int lcdleft, lcdright, lcdtop, lcdbottom;
 	double rx, ry;
 
-	g_return_if_fail(emu->si != NULL);
+	g_return_if_fail(ewin->skin != NULL);
 
-	if (emu->si->width == alloc->width && emu->si->height == alloc->height)
+	if (ewin->skin->width == alloc->width
+	    && ewin->skin->height == alloc->height)
 		return;
 
-	emu->si->width = alloc->width;
-	emu->si->height = alloc->height;
+	ewin->skin->width = alloc->width;
+	ewin->skin->height = alloc->height;
 
-	rawwidth = gdk_pixbuf_get_width(emu->si->raw);
-	rawheight = gdk_pixbuf_get_height(emu->si->raw);
+	rawwidth = gdk_pixbuf_get_width(ewin->skin->raw);
+	rawheight = gdk_pixbuf_get_height(ewin->skin->raw);
 
 	rx = (double) alloc->width / rawwidth;
 	ry = (double) alloc->height / rawheight;
-	emu->si->sx = (double) rawwidth / alloc->width;
-	emu->si->sy = (double) rawheight / alloc->height;
+	ewin->skin->sx = (double) rawwidth / alloc->width;
+	ewin->skin->sy = (double) rawheight / alloc->height;
 
-	if (emu->si->image)
-		g_object_unref(emu->si->image);
-	emu->si->image = gdk_pixbuf_scale_simple(emu->si->raw,
-	                                         alloc->width, alloc->height,
-	                                         GDK_INTERP_BILINEAR);
+	if (ewin->skin->image)
+		g_object_unref(ewin->skin->image);
+	ewin->skin->image = gdk_pixbuf_scale_simple(ewin->skin->raw,
+	                                            alloc->width,
+	                                            alloc->height,
+	                                            GDK_INTERP_BILINEAR);
 
-	gtk_image_set_from_pixbuf(GTK_IMAGE(emu->background),
-	                          emu->si->image);
+	gtk_image_set_from_pixbuf(GTK_IMAGE(ewin->background),
+	                          ewin->skin->image);
 
-	lcdleft = emu->si->lcd_pos.left * rx + 0.5;
-	lcdright = emu->si->lcd_pos.right * rx + 0.5;
-	lcdtop = emu->si->lcd_pos.top * ry + 0.5;
-	lcdbottom = emu->si->lcd_pos.bottom * ry + 0.5;
+	lcdleft = ewin->skin->lcd_pos.left * rx + 0.5;
+	lcdright = ewin->skin->lcd_pos.right * rx + 0.5;
+	lcdtop = ewin->skin->lcd_pos.top * ry + 0.5;
+	lcdbottom = ewin->skin->lcd_pos.bottom * ry + 0.5;
 
-	gtk_widget_set_size_request(emu->lcdwin,
+	gtk_widget_set_size_request(ewin->lcdwin,
 	                            MAX(lcdright - lcdleft, 1),
 	                            MAX(lcdbottom - lcdtop, 1));
 
-	gtk_layout_move(GTK_LAYOUT(widget), emu->lcdwin,
+	gtk_layout_move(GTK_LAYOUT(widget), ewin->lcdwin,
 	                lcdleft, lcdtop);
 }
 
 /* Used when you load another skin */
-void redraw_screen(TilemCalcEmulator *emu)
+void redraw_screen(TilemEmulatorWindow *ewin)
 {
 	GtkWidget *pImage;
 	GtkWidget *emuwin;
@@ -108,53 +110,55 @@ void redraw_screen(TilemCalcEmulator *emu)
 	int minwidth, minheight, defwidth, defheight;
 	double sx, sy, s, a1, a2;
 
-	if (emu->si) {
-		skin_unload(emu->si);
-		g_free(emu->si);
+	if (ewin->skin) {
+		skin_unload(ewin->skin);
+		g_free(ewin->skin);
 	}
 
-	emu->si = g_new0(SKIN_INFOS, 1);
+	ewin->skin = g_new0(SKIN_INFOS, 1);
 
-	if (!emu->gw->tw->isSkinDisabled) {
-		if (!emu->cl->SkinFileName
-		    || skin_load(emu->si, emu->cl->SkinFileName))
-			emu->gw->tw->isSkinDisabled = 1;
+	if (!ewin->isSkinDisabled) {
+		if (!ewin->skin_file_name
+		    || skin_load(ewin->skin, ewin->skin_file_name))
+			ewin->isSkinDisabled = 1;
 	}
 
-	lcdwidth = emu->calc->hw.lcdwidth;
-	lcdheight = emu->calc->hw.lcdheight;
+	lcdwidth = ewin->emu->calc->hw.lcdwidth;
+	lcdheight = ewin->emu->calc->hw.lcdheight;
 
-	if (emu->lcdwin)
-		gtk_widget_destroy(emu->lcdwin);
-	if (emu->background)
-		gtk_widget_destroy(emu->background);
-	if (emu->gw->tw->pLayout)
-		gtk_widget_destroy(emu->gw->tw->pLayout);
+	if (ewin->lcdwin)
+		gtk_widget_destroy(ewin->lcdwin);
+	if (ewin->background)
+		gtk_widget_destroy(ewin->background);
+	if (ewin->pLayout)
+		gtk_widget_destroy(ewin->pLayout);
 
 	/* create LCD widget */
-	emu->lcdwin = gtk_drawing_area_new();
+	ewin->lcdwin = gtk_drawing_area_new();
 
 	/* create background image and layout */
-	if (!emu->gw->tw->isSkinDisabled) {
-		emu->gw->tw->pLayout = gtk_layout_new(NULL, NULL);
+	if (!ewin->isSkinDisabled) {
+		ewin->pLayout = gtk_layout_new(NULL, NULL);
 
-		pImage = gtk_image_new_from_pixbuf(emu->si->image);
-		gtk_layout_put(GTK_LAYOUT(emu->gw->tw->pLayout), pImage, 0, 0);
-		emu->background = pImage;
+		pImage = gtk_image_new_from_pixbuf(ewin->skin->image);
+		gtk_layout_put(GTK_LAYOUT(ewin->pLayout), pImage, 0, 0);
+		ewin->background = pImage;
 
-		screenwidth = emu->si->lcd_pos.right - emu->si->lcd_pos.left;
-		screenheight = emu->si->lcd_pos.bottom - emu->si->lcd_pos.top;
+		screenwidth = (ewin->skin->lcd_pos.right
+		               - ewin->skin->lcd_pos.left);
+		screenheight = (ewin->skin->lcd_pos.bottom
+		                - ewin->skin->lcd_pos.top);
 
-		gtk_widget_set_size_request(emu->lcdwin,
+		gtk_widget_set_size_request(ewin->lcdwin,
 		                            screenwidth, screenheight);
-		gtk_layout_put(GTK_LAYOUT(emu->gw->tw->pLayout), emu->lcdwin,
-		               emu->si->lcd_pos.left,
-		               emu->si->lcd_pos.top);
+		gtk_layout_put(GTK_LAYOUT(ewin->pLayout), ewin->lcdwin,
+		               ewin->skin->lcd_pos.left,
+		               ewin->skin->lcd_pos.top);
 
-		g_signal_connect(emu->gw->tw->pLayout, "size-allocate",
-		                 G_CALLBACK(skin_size_allocate), emu);
+		g_signal_connect(ewin->pLayout, "size-allocate",
+		                 G_CALLBACK(skin_size_allocate), ewin);
 
-		emuwin = emu->gw->tw->pLayout;
+		emuwin = ewin->pLayout;
 
 		tilem_config_get("settings",
 		                 "width/i", &defwidth,
@@ -162,9 +166,9 @@ void redraw_screen(TilemCalcEmulator *emu)
 		                 NULL);
 
 		if(defwidth == 0)
-			defwidth = emu->si->width;
+			defwidth = ewin->skin->width;
 		if(defheight == 0)
-			defheight = emu->si->height;
+			defheight = ewin->skin->height;
 
 		sx = (double) lcdwidth / screenwidth;
 		sy = (double) lcdheight / screenheight;
@@ -173,10 +177,10 @@ void redraw_screen(TilemCalcEmulator *emu)
 		minheight = defheight * s + 0.5;
 	}
 	else {
-		emu->gw->tw->pLayout = NULL;
-		emu->background = NULL;
+		ewin->pLayout = NULL;
+		ewin->background = NULL;
 
-		emuwin = emu->lcdwin;
+		emuwin = ewin->lcdwin;
 
 		minwidth = lcdwidth;
 		minheight = lcdheight;
@@ -191,78 +195,78 @@ void redraw_screen(TilemCalcEmulator *emu)
 				       | GDK_DROP_FINISHED
 				       | GDK_DRAG_MOTION));
 
-	g_signal_connect(emu->lcdwin, "expose-event",
-	                 G_CALLBACK(screen_repaint), emu);
-	g_signal_connect(emu->lcdwin, "style-set",
-	                 G_CALLBACK(screen_restyle), emu);
+	g_signal_connect(ewin->lcdwin, "expose-event",
+	                 G_CALLBACK(screen_repaint), ewin);
+	g_signal_connect(ewin->lcdwin, "style-set",
+	                 G_CALLBACK(screen_restyle), ewin);
 
 	g_signal_connect(emuwin, "button-press-event",
-	                 G_CALLBACK(mouse_press_event), emu);
+	                 G_CALLBACK(mouse_press_event), ewin);
 	g_signal_connect(emuwin, "motion-notify-event",
-	                 G_CALLBACK(pointer_motion_event), emu);
+	                 G_CALLBACK(pointer_motion_event), ewin);
 	g_signal_connect(emuwin, "button-release-event",
-	                 G_CALLBACK(mouse_release_event), emu);
+	                 G_CALLBACK(mouse_release_event), ewin);
 
 	gtk_drag_dest_set(emuwin, GTK_DEST_DEFAULT_ALL,
 	                  NULL, 0, GDK_ACTION_COPY);
 	gtk_drag_dest_add_uri_targets(emuwin);
 	g_signal_connect(emuwin, "drag-data-received",
-	                 G_CALLBACK(on_drag_and_drop), emu);
+	                 G_CALLBACK(on_drag_and_drop), ewin);
 
 
 	/* Hint calculation assumes the emulator is the only thing in
 	   the window; if other widgets are added, this will have to
 	   change accordingly
 	*/
-	emu->geomhints.min_width = minwidth;
-	emu->geomhints.min_height = minheight;
+	ewin->geomhints.min_width = minwidth;
+	ewin->geomhints.min_height = minheight;
 	a1 = (double) minwidth / minheight;
 	a2 = (double) defwidth / defheight;
-	emu->geomhints.min_aspect = MIN(a1, a2) - 0.0001;
-	emu->geomhints.max_aspect = MAX(a1, a2) + 0.0001;
-	emu->geomhintmask = (GDK_HINT_MIN_SIZE | GDK_HINT_ASPECT);
+	ewin->geomhints.min_aspect = MIN(a1, a2) - 0.0001;
+	ewin->geomhints.max_aspect = MAX(a1, a2) + 0.0001;
+	ewin->geomhintmask = (GDK_HINT_MIN_SIZE | GDK_HINT_ASPECT);
 
 	/* If the window is already realized, set the hints now, so
 	   that the WM will see the new hints before we try to resize
 	   the window */
-	set_size_hints(emu->gw->tw->pWindow, emu);
+	set_size_hints(ewin->pWindow, ewin);
 
 	gtk_widget_set_size_request(emuwin, minwidth, minheight);
-	gtk_container_add(GTK_CONTAINER(emu->gw->tw->pWindow), emuwin);
-	gtk_window_resize(GTK_WINDOW(emu->gw->tw->pWindow), defwidth, defheight);
+	gtk_container_add(GTK_CONTAINER(ewin->pWindow), emuwin);
+	gtk_window_resize(GTK_WINDOW(ewin->pWindow), defwidth, defheight);
 
-	gtk_widget_show_all(emu->gw->tw->pWindow);
+	gtk_widget_show_all(ewin->pWindow);
 }
 
 /* Switch between skin and LCD-only mode */
-void switch_view(TilemCalcEmulator * emu)
+void switch_view(TilemEmulatorWindow *ewin)
 {
 	int mode;
-	emu->gw->tw->isSkinDisabled = mode = !emu->gw->tw->isSkinDisabled;
-	redraw_screen(emu);
+	ewin->isSkinDisabled = mode = !ewin->isSkinDisabled;
+	redraw_screen(ewin);
 
-	if (emu->gw->tw->isSkinDisabled == mode)
+	if (ewin->isSkinDisabled == mode)
 		tilem_config_set("settings",
 		                 "skin_disabled/b", mode,
 		                 NULL);
 }
 
 /* Display the lcd image into the terminal */
-void display_lcdimage_into_terminal(TilemCalcEmulator* emu)  /* Absolument necessaire */
+void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin)  /* Absolument necessaire */
 {
 	
 	int width, height;
 	guchar* lcddata;
 	int x, y;
 	char c;
-	width = emu->calc->hw.lcdwidth;
-	height = emu->calc->hw.lcdheight;
+	width = ewin->emu->calc->hw.lcdwidth;
+	height = ewin->emu->calc->hw.lcdheight;
 	FILE* lcd_content_file;
 	/* Alloc mmem */
 	lcddata = g_new(guchar, (width / 8) * height);
 		
 	/* Get the lcd content using the function 's pointer from Benjamin's core */
-	(*emu->calc->hw.get_lcd)(emu->calc, lcddata);
+	(*ewin->emu->calc->hw.get_lcd)(ewin->emu->calc, lcddata);
 		
 	/* Print a little demo just for fun;) */
 	printf("\n\n\n");	
@@ -312,7 +316,7 @@ void display_lcdimage_into_terminal(TilemCalcEmulator* emu)  /* Absolument neces
 
 /* Set the color palette for drawing the emulated LCD. */
 void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
-		    TilemCalcEmulator* emu)
+		    TilemEmulatorWindow* ewin)
 {
 	dword* palette;
 	GtkStyle *style;
@@ -320,7 +324,7 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	int r_light, g_light, b_light;
 	double gamma = 2.2;
 
-	if (emu->gw->tw->isSkinDisabled || !emu->si) {
+	if (ewin->isSkinDisabled || !ewin->skin) {
 		/* no skin -> use standard GTK colors */
 
 		style = gtk_widget_get_style(w);
@@ -336,30 +340,30 @@ void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	else {
 		/* use skin colors */
 
-		r_dark = ((emu->si->lcd_black >> 16) & 0xff);
-		g_dark = ((emu->si->lcd_black >> 8) & 0xff);
-		b_dark = (emu->si->lcd_black & 0xff);
+		r_dark = ((ewin->skin->lcd_black >> 16) & 0xff);
+		g_dark = ((ewin->skin->lcd_black >> 8) & 0xff);
+		b_dark = (ewin->skin->lcd_black & 0xff);
 
-		r_light = ((emu->si->lcd_white >> 16) & 0xff);
-		g_light = ((emu->si->lcd_white >> 8) & 0xff);
-		b_light = (emu->si->lcd_white & 0xff);
+		r_light = ((ewin->skin->lcd_white >> 16) & 0xff);
+		g_light = ((ewin->skin->lcd_white >> 8) & 0xff);
+		b_light = (ewin->skin->lcd_white & 0xff);
 	}
 
 	/* Generate a new palette, and convert it into GDK format */
 
-	if (emu->lcd_cmap)
-		gdk_rgb_cmap_free(emu->lcd_cmap);
+	if (ewin->lcd_cmap)
+		gdk_rgb_cmap_free(ewin->lcd_cmap);
 
 	palette = tilem_color_palette_new(r_light, g_light, b_light,
 					  r_dark, g_dark, b_dark, gamma);
-	emu->lcd_cmap = gdk_rgb_cmap_new(palette, 256);
+	ewin->lcd_cmap = gdk_rgb_cmap_new(palette, 256);
 	tilem_free(palette);
 
-	gtk_widget_queue_draw(emu->lcdwin);
+	gtk_widget_queue_draw(ewin->lcdwin);
 }
 
 gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
-			TilemCalcEmulator *emu)
+			TilemEmulatorWindow *ewin)
 {
 	GtkAllocation alloc;
 	GdkWindow *win;
@@ -369,22 +373,23 @@ gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 
 	/* If image buffer is not the correct size, allocate a new one */
 
-	if (!emu->lcd_image_buf
-	    || alloc.width != emu->lcd_image_width
-	    || alloc.height != emu->lcd_image_height) {
-		emu->lcd_image_width = alloc.width;
-		emu->lcd_image_height = alloc.height;
-		g_free(emu->lcd_image_buf);
-		emu->lcd_image_buf = g_new(byte, alloc.width * alloc.height);
+	if (!ewin->lcd_image_buf
+	    || alloc.width != ewin->lcd_image_width
+	    || alloc.height != ewin->lcd_image_height) {
+		ewin->lcd_image_width = alloc.width;
+		ewin->lcd_image_height = alloc.height;
+		g_free(ewin->lcd_image_buf);
+		ewin->lcd_image_buf = g_new(byte, alloc.width * alloc.height);
 	}
 
 	/* Draw LCD contents into the image buffer */
 
-	g_mutex_lock(emu->lcd_mutex);
-	tilem_draw_lcd_image_indexed(emu->lcd_buffer, emu->lcd_image_buf,
+	g_mutex_lock(ewin->emu->lcd_mutex);
+	tilem_draw_lcd_image_indexed(ewin->emu->lcd_buffer,
+	                             ewin->lcd_image_buf,
 	                             alloc.width, alloc.height, alloc.width,
 	                             TILEM_SCALE_SMOOTH);
-	g_mutex_unlock(emu->lcd_mutex);
+	g_mutex_unlock(ewin->emu->lcd_mutex);
 
 	/* Render buffer to the screen */
 
@@ -392,7 +397,8 @@ gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	style = gtk_widget_get_style(w);
 	gdk_draw_indexed_image(win, style->fg_gc[GTK_STATE_NORMAL], 0, 0,
 	                       alloc.width, alloc.height, GDK_RGB_DITHER_NONE,
-	                       emu->lcd_image_buf, alloc.width, emu->lcd_cmap);
+	                       ewin->lcd_image_buf, alloc.width,
+	                       ewin->lcd_cmap);
 	return TRUE;
 }
 
@@ -417,28 +423,28 @@ void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items)
 
 }
 
-GtkWidget* draw_screen(TilemCalcEmulator *emu)  
+GtkWidget* draw_screen(TilemEmulatorWindow *ewin)
 {
 	/* Create the window */
-	emu->gw->tw->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	ewin->pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	
-	g_signal_connect_swapped(emu->gw->tw->pWindow, "destroy", G_CALLBACK(on_destroy), emu);
+	g_signal_connect_swapped(ewin->pWindow, "destroy", G_CALLBACK(on_destroy), ewin);
 
-	g_signal_connect_after(emu->gw->tw->pWindow, "check-resize",
-	                       G_CALLBACK(set_size_hints), emu);
+	g_signal_connect_after(ewin->pWindow, "check-resize",
+	                       G_CALLBACK(set_size_hints), ewin);
 
-	gtk_widget_add_events(emu->gw->tw->pWindow, (GDK_KEY_PRESS_MASK
-	                                | GDK_KEY_RELEASE_MASK));
+	gtk_widget_add_events(ewin->pWindow, (GDK_KEY_PRESS_MASK
+	                                      | GDK_KEY_RELEASE_MASK));
 
-	g_signal_connect(emu->gw->tw->pWindow, "key-press-event",
-	                 G_CALLBACK(key_press_event), emu);
-	g_signal_connect(emu->gw->tw->pWindow, "key-release-event",
-	                 G_CALLBACK(key_release_event), emu);
+	g_signal_connect(ewin->pWindow, "key-press-event",
+	                 G_CALLBACK(key_press_event), ewin);
+	g_signal_connect(ewin->pWindow, "key-release-event",
+	                 G_CALLBACK(key_release_event), ewin);
 
 	/* Create emulator widget */
-	redraw_screen(emu);
+	redraw_screen(ewin);
 
-	g_timeout_add(100, tilem_animation_record,  emu);
+	g_timeout_add(100, tilem_animation_record,  ewin->emu);
 
-	return emu->gw->tw->pWindow;
+	return ewin->pWindow;
 }

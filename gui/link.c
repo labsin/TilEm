@@ -64,7 +64,7 @@ static int ilp_open(CableHandle* cbl)
 
 	g_mutex_lock(emu->calc_mutex);
 
-	if (emu->ilp_active) {
+	if (emu->ilp.active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already opened\n");
 		g_mutex_unlock(emu->calc_mutex);
 		return 1;
@@ -74,12 +74,12 @@ static int ilp_open(CableHandle* cbl)
 	                              | TILEM_STOP_LINK_WRITE_BYTE
 	                              | TILEM_STOP_LINK_ERROR);
 
-	emu->ilp_active = TRUE;
-	emu->ilp_error = FALSE;
-	emu->ilp_abort = FALSE;
-	emu->ilp_timeout = 0;
-	emu->ilp_write_count = 0;
-	emu->ilp_read_count = 0;
+	emu->ilp.active = TRUE;
+	emu->ilp.error = FALSE;
+	emu->ilp.abort = FALSE;
+	emu->ilp.timeout = 0;
+	emu->ilp.write_count = 0;
+	emu->ilp.read_count = 0;
 	tilem_linkport_graylink_reset(emu->calc);
 
 	g_cond_broadcast(emu->calc_wakeup_cond);
@@ -94,7 +94,7 @@ static int ilp_close(CableHandle* cbl)
 
 	g_mutex_lock(emu->calc_mutex);
 
-	if (!emu->ilp_active) {
+	if (!emu->ilp.active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already closed\n");
 		g_mutex_unlock(emu->calc_mutex);
 		return 1;
@@ -106,7 +106,7 @@ static int ilp_close(CableHandle* cbl)
 	                             | TILEM_STOP_LINK_WRITE_BYTE
 	                             | TILEM_STOP_LINK_ERROR);
 
-	emu->ilp_active = FALSE;
+	emu->ilp.active = FALSE;
 	tilem_linkport_graylink_reset(emu->calc);
 
 	g_cond_broadcast(emu->calc_wakeup_cond);
@@ -121,10 +121,10 @@ static int ilp_reset(CableHandle* cbl)
 
 	g_mutex_lock(emu->calc_mutex);
 
-	emu->ilp_error = FALSE;
-	emu->ilp_timeout = 0;
-	emu->ilp_write_count = 0;
-	emu->ilp_read_count = 0;
+	emu->ilp.error = FALSE;
+	emu->ilp.timeout = 0;
+	emu->ilp.write_count = 0;
+	emu->ilp.read_count = 0;
 	tilem_linkport_graylink_reset(emu->calc);
 
 	g_cond_broadcast(emu->calc_wakeup_cond);
@@ -144,19 +144,19 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
 
-	emu->ilp_timeout = emu->ilp_timeout_max = cbl->timeout * 10;
-	emu->ilp_write_queue = data;
-	emu->ilp_write_count = count;
+	emu->ilp.timeout = emu->ilp.timeout_max = cbl->timeout * 10;
+	emu->ilp.write_queue = data;
+	emu->ilp.write_count = count;
 
-	while (emu->ilp_write_count != 0) {
-		if (emu->ilp_abort || emu->ilp_error) {
+	while (emu->ilp.write_count != 0) {
+		if (emu->ilp.abort || emu->ilp.error) {
 			status = ERROR_WRITE_TIMEOUT;
 			break;
 		}
-		g_cond_wait(emu->ilp_finished_cond, emu->calc_mutex);
+		g_cond_wait(emu->ilp.finished_cond, emu->calc_mutex);
 	}
 
-	emu->ilp_timeout = 0;
+	emu->ilp.timeout = 0;
 
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
@@ -174,19 +174,19 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
 
-	emu->ilp_timeout = emu->ilp_timeout_max = cbl->timeout * 10;
-	emu->ilp_read_queue = data;
-	emu->ilp_read_count = count;
+	emu->ilp.timeout = emu->ilp.timeout_max = cbl->timeout * 10;
+	emu->ilp.read_queue = data;
+	emu->ilp.read_count = count;
 
-	while (emu->ilp_read_count != 0) {
-		if (emu->ilp_abort || emu->ilp_error) {
+	while (emu->ilp.read_count != 0) {
+		if (emu->ilp.abort || emu->ilp.error) {
 			status = ERROR_WRITE_TIMEOUT;
 			break;
 		}
-		g_cond_wait(emu->ilp_finished_cond, emu->calc_mutex);
+		g_cond_wait(emu->ilp.finished_cond, emu->calc_mutex);
 	}
 
-	emu->ilp_timeout = 0;
+	emu->ilp.timeout = 0;
 
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
@@ -435,7 +435,7 @@ static gboolean pbar_start(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
 
-	if (!emu->gw->pb->ilp_progress_win)
+	if (!emu->linkpb->ilp_progress_win)
 		progress_bar_init(emu);
 
 	return FALSE;
@@ -446,12 +446,12 @@ static gboolean pbar_stop(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
 
-	if (emu->gw->pb->ilp_progress_win) {
-		gtk_widget_destroy(emu->gw->pb->ilp_progress_win);
-		emu->gw->pb->ilp_progress_win = NULL;
-		emu->gw->pb->ilp_progress_bar1 = NULL;
-		emu->gw->pb->ilp_progress_bar2 = NULL;
-		emu->gw->pb->ilp_progress_label = NULL;
+	if (emu->linkpb->ilp_progress_win) {
+		gtk_widget_destroy(emu->linkpb->ilp_progress_win);
+		emu->linkpb->ilp_progress_win = NULL;
+		emu->linkpb->ilp_progress_bar1 = NULL;
+		emu->linkpb->ilp_progress_bar2 = NULL;
+		emu->linkpb->ilp_progress_label = NULL;
 	}
 
 	return FALSE;
@@ -462,7 +462,7 @@ static gboolean pbar_update(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
 
-	if (emu->gw->pb->ilp_progress_win)
+	if (emu->linkpb->ilp_progress_win)
 		progress_bar_update_activity(emu);
 
 	return FALSE;
@@ -537,7 +537,7 @@ void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
 	g_return_if_fail(emu->calc != NULL);
 	g_return_if_fail(filename != NULL);
 
-	emu->ilp_abort = FALSE;
+	emu->ilp.abort = FALSE;
 	emu->link_cancel = FALSE;
 
 	g_mutex_lock(emu->link_queue_mutex);
@@ -575,8 +575,8 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 
 	/* cancel any ongoing transfer */
 	g_mutex_lock(emu->calc_mutex);
-	emu->ilp_abort = TRUE;
-	g_cond_broadcast(emu->ilp_finished_cond);
+	emu->ilp.abort = TRUE;
+	g_cond_broadcast(emu->ilp.finished_cond);
 	g_mutex_unlock(emu->calc_mutex);
 
 	/* wait for link thread to exit */

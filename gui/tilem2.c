@@ -36,7 +36,9 @@
 
 int main(int argc, char **argv)
 {
-	TilemCalcEmulator* emu ;
+	TilemCalcEmulator* emu;
+	TilemCmdlineArgs* cl;
+
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
 
@@ -46,29 +48,17 @@ int main(int argc, char **argv)
 
 	emu = tilem_calc_emulator_new();
 
-	emu->gw = g_new0(TilemGuiWidget, 1);
-	emu->si=NULL;
-	emu->kh = g_new0(TilemKeyHandle, 1);
-	emu->kh->mouse_key = 0;
-	emu->kh->key_queue = NULL;
-	emu->kh->key_queue_len = 0;
-	emu->kh->key_queue_timer = 0;
-	emu->gw = g_new0(TilemGuiWidget, 1);
-	emu->gw->tw = g_new(TilemTopWindow, 1);
-	emu->gw->tw->pWindow = NULL;
-	emu->gw->pb = g_new(TilemIlpProgress, 1);
-	emu->gw->ss = g_new(TilemScreenshot, 1);
-	emu->gw->ss->isAnimScreenshotRecording = FALSE;
-	//emu->gw->pb = g_new(TilemIlpProgress, 1);
-	emu->gw->mc = g_new(TilemMacro, 1);
-	emu->gw->mc->macro_file = NULL;
-	emu->gw->mc->isMacroRecording = FALSE;
+	emu->ewin = g_slice_new0(TilemEmulatorWindow);
+	emu->ewin->emu = emu;
+	emu->ssdlg = g_slice_new0(TilemScreenshotDialog);
+	emu->ssdlg->emu = emu;
+	emu->linkpb = g_slice_new0(TilemLinkProgress);
+	emu->linkpb->emu = emu;
 
-	emu->cl = tilem_cmdline_new();
-	tilem_cmdline_get_args(argc, argv, emu->cl);
-	
+	cl = tilem_cmdline_new();
+	tilem_cmdline_get_args(argc, argv, cl);
 
-	if (!tilem_calc_emulator_load_state(emu, emu->cl->RomName)) {
+	if (!tilem_calc_emulator_load_state(emu, cl->RomName)) {
 		tilem_calc_emulator_free(emu);
 		return 1;
 	}
@@ -79,30 +69,32 @@ int main(int argc, char **argv)
 	DGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",emu->calc->hw.name);		
 	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",emu->calc->hw.name[3]);
 	DGLOBAL_L0_A0("********************************************************\n");
-	
 
-	if (emu->cl->SkinFileName == NULL) {
-		tilem_choose_skin_filename_by_default(emu);
+	if (cl->SkinFileName) {
+		emu->ewin->skin_file_name = g_strdup(cl->SkinFileName);
+	}
+	else {
+		tilem_choose_skin_filename_by_default(emu->ewin);
 		tilem_config_get("settings",
-		                 "skin_disabled/b", &emu->gw->tw->isSkinDisabled,
+		                 "skin_disabled/b", &emu->ewin->isSkinDisabled,
 		                 NULL);
 	}
 
-	if (emu->cl->isStartingSkinless)
-		emu->gw->tw->isSkinDisabled = TRUE;
+	if (cl->isStartingSkinless)
+		emu->ewin->isSkinDisabled = TRUE;
 
 	/* Draw skin */	
-	emu->gw->tw->pWindow=draw_screen(emu);
+	draw_screen(emu->ewin);
 
 	tilem_calc_emulator_run(emu);
 
 	
 	tilem_keybindings_init(emu, emu->calc->hw.name);
 		
-	if(emu->cl->FileToLoad != NULL) /* Given as parameter ? */
-		tilem_load_file_from_file_at_startup(emu, emu->cl->FileToLoad);
-	if(emu->cl->MacroToPlay != NULL) { /* Given as parameter ? */
-		play_macro_default(emu, emu->cl->MacroToPlay); 		
+	if (cl->FileToLoad) /* Given as parameter ? */
+		tilem_load_file_from_file_at_startup(emu, cl->FileToLoad);
+	if (cl->MacroToPlay) { /* Given as parameter ? */
+		play_macro_default(emu, cl->MacroToPlay); 		
 	}
 
 	gtk_main();

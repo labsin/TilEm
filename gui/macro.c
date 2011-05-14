@@ -32,26 +32,26 @@
 #include "filedlg.h"
 
 /* Turn on recording macro */
-void start_record_macro(TilemCalcEmulator* emu) {
-	emu->gw->mc->isMacroRecording = TRUE;
-	emu->gw->mc->macro_file = NULL;
+void start_record_macro(TilemEmulatorWindow *ewin) {
+	ewin->emu->isMacroRecording = TRUE;
+	ewin->emu->macro_file = NULL;
 }
 
 /* Turn off recording macro */
-void stop_record_macro(TilemCalcEmulator* emu)
+void stop_record_macro(TilemEmulatorWindow *ewin)
 {
 	char *dir, *dest;
 	
-	if(emu->gw->mc->isMacroRecording == TRUE) {
-		emu->gw->mc->isMacroRecording = FALSE;
-		if(emu->gw->mc->macro_file != NULL)
-			fclose(emu->gw->mc->macro_file);
+	if(ewin->emu->isMacroRecording == TRUE) {
+		ewin->emu->isMacroRecording = FALSE;
+		if(ewin->emu->macro_file != NULL)
+			fclose(ewin->emu->macro_file);
 
 		tilem_config_get("macro",
 		                 "loadmacro_recentdir/f", &dir,
 		                 NULL);
 		dest = prompt_save_file("Save Macro",
-		                        GTK_WINDOW(emu->gw->tw->pWindow),
+		                        GTK_WINDOW(ewin->pWindow),
 		                        dir, "macro.txt",
 		                        "Text files", "*.txt",
 		                        "All files", "*",
@@ -82,21 +82,21 @@ void create_or_replace_macro_file(TilemCalcEmulator* emu) {
 	
 
 	macro_file = g_fopen("play.txt", "a+");
-	emu->gw->mc->macro_file= macro_file;
+	emu->macro_file= macro_file;
 }
 
 /* Recording */
 void add_event_in_macro_file(TilemCalcEmulator* emu, char * string) {
 	
 	/* First time ? So create the file */
-	if(emu->gw->mc->macro_file == NULL) {
+	if(emu->macro_file == NULL) {
 		create_or_replace_macro_file(emu);
 	} else {
 		/* Write the comma to seperate */
-		fwrite(",", 1, 1, emu->gw->mc->macro_file);
+		fwrite(",", 1, 1, emu->macro_file);
 	}
 	/* Write the event */
-	fwrite(string, 1, sizeof(int), emu->gw->mc->macro_file);
+	fwrite(string, 1, sizeof(int), emu->macro_file);
 	
 }
 
@@ -112,19 +112,19 @@ void add_load_file_in_macro_file(TilemCalcEmulator* emu, int length, char* filen
 	DMACRO_L0_A2("* filename = %s, length = %d                *\n", filename, length);	
 	
 	/* First time ? So create the file */
-	if(emu->gw->mc->macro_file == NULL) {
+	if(emu->macro_file == NULL) {
 		create_or_replace_macro_file(emu);
 	} else {
-		fwrite(",", 1, 1, emu->gw->mc->macro_file);
+		fwrite(",", 1, 1, emu->macro_file);
 	}
 	/* Write  title */
-	fwrite("file=", 1, 5, emu->gw->mc->macro_file);
+	fwrite("file=", 1, 5, emu->macro_file);
 	sprintf(lengthchar, "%04d",length);
 	/* Write length */
-	fwrite(lengthchar, 1, sizeof(int), emu->gw->mc->macro_file);
-	fwrite("-", 1, 1, emu->gw->mc->macro_file);
+	fwrite(lengthchar, 1, sizeof(int), emu->macro_file);
+	fwrite("-", 1, 1, emu->macro_file);
 	/* Write path */
-	fwrite(filename, 1, length, emu->gw->mc->macro_file);
+	fwrite(filename, 1, length, emu->macro_file);
 	
 	DMACRO_L0_A0("***************************************************\n");	
 	/* Write the comma to seperate */
@@ -141,7 +141,7 @@ int open_macro_file(TilemCalcEmulator* emu, char* macro_name) {
 	} 
 
 	if((macro_file = g_fopen(macro_name, "r")) != NULL) {
-		emu->gw->mc->macro_file= macro_file;
+		emu->macro_file= macro_file;
 	} else {
 		return 1;
 	}
@@ -150,15 +150,15 @@ int open_macro_file(TilemCalcEmulator* emu, char* macro_name) {
 }
 
 /* Callback signal (rightclick menu) */
-void play_macro(TilemCalcEmulator* emu) {
-	play_macro_default(emu, NULL);
-	if(emu->gw->mc->macro_file != NULL)
-		fclose(emu->gw->mc->macro_file);
+void play_macro(TilemEmulatorWindow *ewin) {
+	play_macro_default(ewin->emu, NULL);
+	if(ewin->emu->macro_file != NULL)
+		fclose(ewin->emu->macro_file);
 	//	emu->gw->mc->macro_file = NULL;
 }
 
 /* Callback signal (rightclick menu) */
-void play_macro_from_file(TilemCalcEmulator* emu) {
+void play_macro_from_file(TilemEmulatorWindow *ewin) {
 	char *dir, *filename;
 
 	tilem_config_get("macro",
@@ -166,13 +166,13 @@ void play_macro_from_file(TilemCalcEmulator* emu) {
 	                 NULL);
 
 	filename = prompt_open_file("Play Macro",
-	                            GTK_WINDOW(emu->gw->tw->pWindow),
+	                            GTK_WINDOW(ewin->pWindow),
 	                            dir,
 	                            "Text files", "*.txt",
 	                            "All files", "*",
 	                            NULL);
 	if(filename)
-		play_macro_default(emu, filename);
+		play_macro_default(ewin->emu, filename);
 
 	g_free(dir);
 	g_free(filename);
@@ -189,7 +189,7 @@ int play_macro_default(TilemCalcEmulator* emu, char* macro_name) {
 	char* filename;
 	
 	/* Turn on the macro playing state */
-	emu->gw->mc->isMacroPlaying = TRUE;
+	emu->isMacroPlaying = TRUE;
 
 	/* Test if play.txt exists ? */
 	if(open_macro_file(emu, macro_name)==1) 
@@ -199,19 +199,19 @@ int play_macro_default(TilemCalcEmulator* emu, char* macro_name) {
 	while(c != EOF) {	
 		codechar= (char*) malloc(4 * sizeof(char) + 1);
 		memset(codechar, 0, 5);
-		fread(codechar, 1, 4, emu->gw->mc->macro_file);
+		fread(codechar, 1, 4, emu->macro_file);
 		
 		if(strcmp(codechar, "file") == 0 ) {
-			c = fgetc(emu->gw->mc->macro_file); /* Drop the "="*/
+			c = fgetc(emu->macro_file); /* Drop the "="*/
 			lengthchar= (char*) malloc(4 * sizeof(char) + 1);
 			memset(lengthchar, 0, 5);
-			fread(lengthchar, 1, 4, emu->gw->mc->macro_file);
-			c = fgetc(emu->gw->mc->macro_file); /* Drop the "-"*/
+			fread(lengthchar, 1, 4, emu->macro_file);
+			c = fgetc(emu->macro_file); /* Drop the "-"*/
 			length= atoi(lengthchar);
 			DMACRO_L0_A2("* lengthchar = %s,    length = %d         *\n", lengthchar, length);
 			filename= (char*) malloc(length * sizeof(char)+1);
 			memset(filename, 0, length + 1);
-			fread(filename, 1, length, emu->gw->mc->macro_file);
+			fread(filename, 1, length, emu->macro_file);
 			load_file_from_file(emu, filename);
 			DMACRO_L0_A1("* send file = %s               *\n", filename);
 		} else {
@@ -225,10 +225,10 @@ int play_macro_default(TilemCalcEmulator* emu, char* macro_name) {
 		}
 
 
-		c = fgetc(emu->gw->mc->macro_file);
+		c = fgetc(emu->macro_file);
 	}
 	/* Turn off the macro playing state */
-	emu->gw->mc->isMacroPlaying = FALSE;
+	emu->isMacroPlaying = FALSE;
 	
 	DMACRO_L0_A0("***************************************\n");	
 	

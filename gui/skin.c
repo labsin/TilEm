@@ -34,12 +34,12 @@
 #include "filedlg.h"
 
 /* choose_skin_filename is used to give the name of the default skin file name to load when the emulator starts */
-void tilem_choose_skin_filename_by_default(TilemCalcEmulator *emu)
+void tilem_choose_skin_filename_by_default(TilemEmulatorWindow *ewin)
 {
-	const char *model = emu->calc->hw.name;
+	const char *model = ewin->emu->calc->hw.name;
 	char *name = NULL, *path;
 
-	g_free(emu->cl->SkinFileName);
+	g_free(ewin->skin_file_name);
 
 	tilem_config_get(model,
 	                 "skin/f", &name,
@@ -50,11 +50,11 @@ void tilem_choose_skin_filename_by_default(TilemCalcEmulator *emu)
 
 	if (!g_path_is_absolute(name)) {
 		path = get_shared_file_path("skins", name, NULL);
-		emu->cl->SkinFileName = path;
+		ewin->skin_file_name = path;
 		g_free(name);
 	}
 	else {
-		emu->cl->SkinFileName = name;
+		ewin->skin_file_name = name;
 	}
 }
 
@@ -92,15 +92,15 @@ static char *canonicalize_filename(const char *name)
 }
 
 /* GtkFileSelection */
-void tilem_user_change_skin(TilemCalcEmulator *emu)
+void tilem_user_change_skin(TilemEmulatorWindow *ewin)
 {
-	const char *model = emu->calc->hw.name;
+	const char *model = ewin->emu->calc->hw.name;
 	char *file_selected = NULL, *default_dir, *base, *shared, *canon;
 
 	/* Show a nice chooser dialog, and get the filename selected */	
 	default_dir = get_shared_dir_path("skins", NULL);
 	file_selected = prompt_open_file("Open Skin",
-	                                 GTK_WINDOW(emu->gw->tw->pWindow),
+	                                 GTK_WINDOW(ewin->pWindow),
 	                                 default_dir,
 	                                 "Skin files", "*.skn",
 	                                 "All files", "*",
@@ -108,10 +108,10 @@ void tilem_user_change_skin(TilemCalcEmulator *emu)
 	g_free(default_dir);
 
 	if (file_selected != NULL) {
-		g_free(emu->cl->SkinFileName);
-		emu->cl->SkinFileName = file_selected;
-		emu->gw->tw->isSkinDisabled = FALSE;
-		redraw_screen(emu);
+		g_free(ewin->skin_file_name);
+		ewin->skin_file_name = file_selected;
+		ewin->isSkinDisabled = FALSE;
+		redraw_screen(ewin);
 
 		/* if file is stored in shared skins directory, save
 		   only the relative path; otherwise, save the

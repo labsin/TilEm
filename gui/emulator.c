@@ -42,41 +42,41 @@ static void update_link(TilemCalcEmulator *emu)
 	int b;
 
 	if (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR) {
-		emu->ilp_error = TRUE;
-		g_cond_broadcast(emu->ilp_finished_cond);
+		emu->ilp.error = TRUE;
+		g_cond_broadcast(emu->ilp.finished_cond);
 		return;
 	}
 
-	if (emu->ilp_write_count > 0) {
-		b = emu->ilp_write_queue[0];
+	if (emu->ilp.write_count > 0) {
+		b = emu->ilp.write_queue[0];
 		if (!tilem_linkport_graylink_send_byte(emu->calc, b)) {
-			emu->ilp_write_queue++;
-			emu->ilp_write_count--;
-			emu->ilp_timeout = emu->ilp_timeout_max;
-			if (emu->ilp_write_count == 0)
-				g_cond_broadcast(emu->ilp_finished_cond);
+			emu->ilp.write_queue++;
+			emu->ilp.write_count--;
+			emu->ilp.timeout = emu->ilp.timeout_max;
+			if (emu->ilp.write_count == 0)
+				g_cond_broadcast(emu->ilp.finished_cond);
 		}
 	}
 
-	if (emu->ilp_read_count > 0) {
+	if (emu->ilp.read_count > 0) {
 		b = tilem_linkport_graylink_get_byte(emu->calc);
 		if (b != -1) {
-			emu->ilp_read_queue[0] = b;
-			emu->ilp_read_queue++;
-			emu->ilp_read_count--;
-			emu->ilp_timeout = emu->ilp_timeout_max;
-			if (emu->ilp_read_count == 0)
-				g_cond_broadcast(emu->ilp_finished_cond);
+			emu->ilp.read_queue[0] = b;
+			emu->ilp.read_queue++;
+			emu->ilp.read_count--;
+			emu->ilp.timeout = emu->ilp.timeout_max;
+			if (emu->ilp.read_count == 0)
+				g_cond_broadcast(emu->ilp.finished_cond);
 		}
 	}
 
-	if (emu->ilp_timeout && !emu->calc->z80.stop_reason) {
-		emu->ilp_timeout--;
-		if (!emu->ilp_timeout) {
-			emu->ilp_error = TRUE;
-			emu->ilp_write_count = 0;
-			emu->ilp_read_count = 0;
-			g_cond_broadcast(emu->ilp_finished_cond);
+	if (emu->ilp.timeout && !emu->calc->z80.stop_reason) {
+		emu->ilp.timeout--;
+		if (!emu->ilp.timeout) {
+			emu->ilp.error = TRUE;
+			emu->ilp.write_count = 0;
+			emu->ilp.read_count = 0;
+			g_cond_broadcast(emu->ilp.finished_cond);
 		}
 	}
 }
@@ -85,8 +85,8 @@ static gboolean refresh_lcd(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
 
-	if (emu->lcdwin)
-		gtk_widget_queue_draw(emu->lcdwin);
+	if (emu->ewin->lcdwin)
+		gtk_widget_queue_draw(emu->ewin->lcdwin);
 
 	return FALSE;
 }
@@ -129,7 +129,7 @@ static gpointer core_thread(gpointer data)
 
 		tilem_z80_run_time(emu->calc, MICROSEC_PER_TICK, &remaining);
 
-		if (emu->ilp_active)
+		if (emu->ilp.active)
 			update_link(emu);
 
 		ticks--;
@@ -171,8 +171,8 @@ static gpointer core_thread(gpointer data)
 
 static GtkWidget *get_toplevel(TilemCalcEmulator *emu)
 {
-	if (emu->lcdwin)
-		return gtk_widget_get_toplevel(emu->lcdwin);
+	if (emu->ewin)
+		return emu->ewin->pWindow;
 	else
 		return NULL;
 }
@@ -188,7 +188,7 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 
 	emu->calc_mutex = g_mutex_new();
 	emu->calc_wakeup_cond = g_cond_new();
-	emu->ilp_finished_cond = g_cond_new();
+	emu->ilp.finished_cond = g_cond_new();
 	emu->lcd_mutex = g_mutex_new();
 
 	emu->limit_speed = TRUE;
@@ -225,7 +225,7 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 	g_mutex_free(emu->calc_mutex);
 	g_mutex_free(emu->lcd_mutex);
 	g_cond_free(emu->calc_wakeup_cond);
-	g_cond_free(emu->ilp_finished_cond);
+	g_cond_free(emu->ilp.finished_cond);
 
 	g_mutex_free(emu->link_queue_mutex);
 	g_cond_free(emu->link_queue_cond);
@@ -239,10 +239,6 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 		tilem_gray_lcd_free(emu->glcd);
 	if (emu->calc)
 		tilem_calc_free(emu->calc);
-	if (emu->lcd_image_buf)
-		g_free(emu->lcd_image_buf);
-	if (emu->lcd_cmap)
-		gdk_rgb_cmap_free(emu->lcd_cmap);
 
 	g_free(emu);
 }

@@ -33,7 +33,7 @@ static GtkWidget* create_menu_item(const char* label, const char* stock_img);
 
 
 /* Build the menu */
-GtkWidget * build_menu(TilemCalcEmulator* emu) {
+GtkWidget * build_menu(TilemEmulatorWindow* ewin) {
 
 	/* TODO : use create_menu_item everywhere to minimize the code :) */
 	GtkWidget* right_click_menu = gtk_menu_new ();    
@@ -50,7 +50,7 @@ GtkWidget * build_menu(TilemCalcEmulator* emu) {
 	GtkWidget* launch_debugger_item =  gtk_image_menu_item_new_from_stock("tilem-db-step", NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(launch_debugger_item), "Debugger...");
 	GtkWidget* toggle_speed_item;
-	if(emu->limit_speed) {
+	if(ewin->emu->limit_speed) {
 		toggle_speed_item =  create_menu_item("Toggle speed limit", GTK_STOCK_MEDIA_FORWARD);
 	} else {
 		toggle_speed_item =  create_menu_item("Toggle speed limit", GTK_STOCK_MEDIA_PLAY);
@@ -68,7 +68,7 @@ GtkWidget * build_menu(TilemCalcEmulator* emu) {
 	GtkWidget* display_lcd_into_console_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SORT_ASCENDING, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(display_lcd_into_console_item), "Display LCD into console...");
 	GtkWidget* switch_view_item;
-	if(emu->gw->tw->isSkinDisabled) {
+	if(ewin->isSkinDisabled) {
 		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FULLSCREEN, NULL);
 		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Show skin");
 	} else {
@@ -144,24 +144,24 @@ GtkWidget * build_menu(TilemCalcEmulator* emu) {
 
 
 	/* Callback */
-	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (screenshot_menu_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (quick_screenshot_item), "activate", G_CALLBACK (screenshot), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (save_state_item), "activate", G_CALLBACK (save_state), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (start_record_macro_item), "activate", G_CALLBACK (start_record_macro), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (stop_record_macro_item), "activate", G_CALLBACK (stop_record_macro), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (play_item), "activate", G_CALLBACK (play_macro), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (play_from_file_item), "activate", G_CALLBACK (play_macro_from_file), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (about_item), "activate", G_CALLBACK (show_about), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (reset_item), "activate", G_CALLBACK (on_reset), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (quit_no_save_item), "activate", G_CALLBACK (on_destroy), (gpointer) emu);
-	g_signal_connect_swapped (GTK_OBJECT (quit_with_save_item), "activate", G_CALLBACK (quit_with_save), (gpointer) emu);
+	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (screenshot_menu_item), "activate", G_CALLBACK (create_screenshot_window), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (quick_screenshot_item), "activate", G_CALLBACK (screenshot), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (save_state_item), "activate", G_CALLBACK (save_state), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (start_record_macro_item), "activate", G_CALLBACK (start_record_macro), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (stop_record_macro_item), "activate", G_CALLBACK (stop_record_macro), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (play_item), "activate", G_CALLBACK (play_macro), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (play_from_file_item), "activate", G_CALLBACK (play_macro_from_file), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (about_item), "activate", G_CALLBACK (show_about), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (reset_item), "activate", G_CALLBACK (on_reset), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (quit_no_save_item), "activate", G_CALLBACK (on_destroy), (gpointer) ewin);
+	g_signal_connect_swapped (GTK_OBJECT (quit_with_save_item), "activate", G_CALLBACK (quit_with_save), (gpointer) ewin);
 	
 	/* Show the items */
 	gtk_widget_show (load_skin_item);
@@ -197,10 +197,10 @@ static GtkWidget* create_menu_item(const char* label, const char* stock_img) {
 }	
 
 /* Print the right click menu */
-void show_popup_menu(TilemCalcEmulator* emu, GdkEvent* event)
+void show_popup_menu(TilemEmulatorWindow* ewin, GdkEvent* event)
 {
-	GtkWidget* right_click_menu = build_menu(emu);
-	create_menus(emu->gw->tw->pWindow, event, right_click_menu);
+	GtkWidget* right_click_menu = build_menu(ewin);
+	create_menus(ewin->pWindow, event, right_click_menu);
 	
 	
 }

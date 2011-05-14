@@ -18,47 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "skinops.h"
-
-/* This struct is used to handle cmd line args */
-typedef struct _TilemCmdlineArg {
-	char *SkinFileName;
-	char *RomName;  
-	char *SavName; 
-	char *FileToLoad;  
-	char *MacroToPlay;  
-	/* Flags */
-	gboolean isStartingSkinless; 
-} TilemCmdlineArgs;
-
-/* Macro view (FILE and flags) */
-typedef struct _TilemMacro {
-	FILE * macro_file;	/* The macro file */
-	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */
-	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
-} TilemMacro;
-
-/* Root window view (widgets and flags) */
-typedef struct _TilemTopWindow {
-	GtkWidget *pWindow; /* The top level window */
-	GtkWidget *pLayout; /* Layout */
-	/* Flags */
-	gboolean isSkinDisabled; /* A flag to know if skinless or not */
-} TilemTopWindow;
-
-/* Screenshot view (widgets and flags) */
-typedef struct _TilemScreenshot {
-	/* Screenshot menu */
-	GtkWidget* screenshot_preview_image; /* Review pixbuf */
-	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
-	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
-	GtkWidget* ss_ext_combo; /* Folder chooser dialog (animated gif)*/
-
-	/* Flags */
-	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
-} TilemScreenshot;
-
-/* List of loaded keybindings */
+/* Key binding */
 typedef struct _TilemKeyBinding {
 	unsigned int keysym;     /* host keysym value */
 	unsigned int modifiers;  /* modifier mask */
@@ -66,37 +26,19 @@ typedef struct _TilemKeyBinding {
 	byte *scancodes;         /* calculator scancodes */
 } TilemKeyBinding;
 
-/* Key press related stuff */
-typedef struct _TilemKeyHandle {
-	int mouse_key;		/* Key currently pressed by mouse button */
-
-	/* Host keycode used to activate each key, if any */
-	int keypress_keycodes[64];
-	int sequence_keycode;
-
-	/* Sequence of keys to be pressed
-	   (used by core thread; guarded by calc_mutex) */
-	byte *key_queue;
-	int key_queue_len;
-	int key_queue_timer;
-	int key_queue_pressed;
-} TilemKeyHandle;
-
-/* Handle the ilp progress stuff */
-typedef struct _TilemIlpProgress {
-	GtkProgressBar* ilp_progress_bar1; /* progress bar (current item) */
-	GtkProgressBar* ilp_progress_bar2; /* progress bar (total) */
-	GtkLabel* ilp_progress_label; /* status message */
-	GtkWidget* ilp_progress_win;
-} TilemIlpProgress;
-
-/* A structure which contains widget/flags/data grouped by view */
-typedef struct _TilemGuiWidget {
-	TilemTopWindow *tw;
-	TilemScreenshot *ss;
-	TilemIlpProgress *pb;
-	TilemMacro *mc;
-} TilemGuiWidget;
+/* Internal link cable state */
+typedef struct _TilemInternalLink {
+	gboolean active;       /* internal link cable active */
+	GCond *finished_cond;  /* used to signal when transfer finishes */
+	gboolean error;        /* error (collision or timeout) */
+	gboolean abort;        /* transfer aborted */
+	int timeout_max;       /* time allowed per byte */
+	int timeout;           /* time left for next byte */
+	byte *read_queue;      /* buffer for received data */
+	int read_count;        /* number of bytes left to read */
+	const byte *write_queue; /* data to be sent */
+	int write_count;         /* number of bytes left to send */
+} TilemInternalLink;
 
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
@@ -108,45 +50,26 @@ typedef struct _TilemCalcEmulator {
 	gboolean exiting;
 	gboolean limit_speed;   /* limit to actual speed */
 
+	/* Internal link cable */
+	TilemInternalLink ilp;
+
+	/* Sequence of keys to be pressed */
+	byte *key_queue;
+	int key_queue_len;
+	int key_queue_timer;
+	int key_queue_pressed;
+
 	GMutex *lcd_mutex;
 	TilemLCDBuffer *lcd_buffer;
 	TilemGrayLCD *glcd;
 
 	char *rom_file_name;
 
-	struct _TilemDebugger *dbg;
-
-	/* Skin infos  */
-	SKIN_INFOS *si; /* A structure which contains all the information about a skin (see skinops.h) */
-
-	/* This struct contains a lot of sub structure which contains widget/flags/data (very few data) */	
-	TilemGuiWidget * gw;
-
-	/* This struct handle command line arguments */
-	TilemCmdlineArgs * cl;
-
-	/* All key press relating stuff (maybe we should add TilemkeyBindings inside?) */
-	struct _TilemKeyHandle * kh;
-	
 	/* List of key bindings */
-	struct _TilemKeyBinding *keybindings;
+	TilemKeyBinding *keybindings;
 	int nkeybindings;
 
-	/* These following lines need maybe to be a part of a new struture (TilemLink?) */
-	/* Adding it to TilemIlpProgress is not very good because TilemIlpProgress is more 
-	   "gui oriented" */
- 
-	gboolean ilp_active;       /* internal link cable active */
-	GCond *ilp_finished_cond;  /* used to signal when transfer finishes */
-	gboolean ilp_error;        /* error (collision or timeout) */
-	gboolean ilp_abort;        /* transfer aborted */
-	int ilp_timeout_max;       /* time allowed per byte */
-	int ilp_timeout;           /* time left for next byte */
-	byte *ilp_read_queue;      /* buffer for received data */
-	int ilp_read_count;        /* number of bytes left to read */
-	const byte *ilp_write_queue; /* data to be sent */
-	int ilp_write_count;         /* number of bytes left to send */
-
+	/* Link transfer state */
 	GThread *link_thread;
 	GMutex *link_queue_mutex;
 	GCond *link_queue_cond;
@@ -154,18 +77,16 @@ typedef struct _TilemCalcEmulator {
 	gboolean link_cancel;    /* cancel_link() has been called */
 	CalcUpdate *link_update; /* CalcUpdate (status and callbacks for ticalcs) */
 
-	/* FIXME: following stuff belongs elsewhere */
+	/* GUI widgets */
+	struct _TilemDebugger *dbg;
+	struct _TilemEmulatorWindow *ewin;
+	struct _TilemScreenshotDialog *ssdlg;
+	struct _TilemLinkProgress *linkpb;
 
-	byte* lcd_image_buf;
-	int lcd_image_width;
-	int lcd_image_height;
-	GdkRgbCmap* lcd_cmap;
+	FILE * macro_file;	/* The macro file */
+	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */
+	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
 
-	GtkWidget* lcdwin;
-	GtkWidget* background;
-
-	GdkGeometry geomhints;
-	GdkWindowHints geomhintmask;
 } TilemCalcEmulator;
 
 /* Create a new TilemCalcEmulator. */
