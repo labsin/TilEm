@@ -61,13 +61,6 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	DGLOBAL_L0_A0("**************** fct : main ****************************\n");
-	DGLOBAL_L0_A1("*  calc_id= %c                                            *\n",calc_id);
-	DGLOBAL_L0_A1("*  emu.calc->hw.model= %c                               *\n",emu->calc->hw.model_id);	
-	DGLOBAL_L0_A1("*  emu.calc->hw.name= %s                             *\n",emu->calc->hw.name);		
-	DGLOBAL_L0_A1("*  emu.calc->hw.name[3]= %c                             *\n",emu->calc->hw.name[3]);
-	DGLOBAL_L0_A0("********************************************************\n");
-
 	emu->ewin = tilem_emulator_window_new(emu);
 
 	if (cl->SkinFileName)
