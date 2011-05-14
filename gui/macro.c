@@ -53,8 +53,8 @@ void stop_record_macro(TilemCalcEmulator* emu)
 		dest = prompt_save_file("Save Macro",
 		                        GTK_WINDOW(emu->gw->tw->pWindow),
 		                        dir, "macro.txt",
-		                        "Text Files", "*.txt",
-		                        "All Files", "*",
+		                        "Text files", "*.txt",
+		                        "All files", "*",
 		                        NULL);
 		g_free(dir);
 
@@ -168,8 +168,8 @@ void play_macro_from_file(TilemCalcEmulator* emu) {
 	filename = prompt_open_file("Play Macro",
 	                            GTK_WINDOW(emu->gw->tw->pWindow),
 	                            dir,
-	                            "Text Files", "*.txt",
-	                            "All Files", "*",
+	                            "Text files", "*.txt",
+	                            "All files", "*",
 	                            NULL);
 	if(filename)
 		play_macro_default(emu, filename);

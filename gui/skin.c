@@ -102,8 +102,8 @@ void tilem_user_change_skin(TilemCalcEmulator *emu)
 	file_selected = prompt_open_file("Open Skin",
 	                                 GTK_WINDOW(emu->gw->tw->pWindow),
 	                                 default_dir,
-	                                 "Skin Files", "*.skn",
-	                                 "All Files", "*",
+	                                 "Skin files", "*.skn",
+	                                 "All files", "*",
 	                                 NULL);
 	g_free(default_dir);
 

@@ -502,7 +502,99 @@ void switch_borderless(TilemCalcEmulator* emu) {
 		gtk_window_set_decorated(GTK_WINDOW(emu->gw->tw->pWindow) , TRUE);
 }
 
+#define PAT_TI81       "*.prg"
+#define PAT_TI73       "*.73?"
+#define PAT_TI73_NUM   "*.73n;*.73l;*.73m;*.73i"
+#define PAT_TI82       "*.82?"
+#define PAT_TI82_NUM   "*.82n;*.82l;*.82m;*.82i"
+#define PAT_TI82_TEXT  "*.82s;*.82y;*.82p"
+#define PAT_TI83       "*.83?"
+#define PAT_TI83_NUM   "*.83n;*.83l;*.83m;*.83i"
+#define PAT_TI83_TEXT  "*.83s;*.83y;*.83p"
+#define PAT_TI83P      "*.8x?;*.8xgrp"
+#define PAT_TI83P_NUM  "*.8xn;*.8xl;*.8xm;*.8xi"
+#define PAT_TI83P_TEXT "*.8xs;*.8xy;*.8xp"
+#define PAT_TI85       "*.85?"
+#define PAT_TI86       "*.86?"
+#define PAT_TIG        "*.tig"
 
+#define FLT_TI81       "TI-81 programs", PAT_TI81
+#define FLT_TI73       "TI-73 files", PAT_TI73
+#define FLT_TI82       "TI-82 files", PAT_TI82
+#define FLT_TI83       "TI-83 files", PAT_TI83
+#define FLT_TI83P      "TI-83 Plus files", PAT_TI83P
+#define FLT_TI85       "TI-85 files", PAT_TI85
+#define FLT_TI86       "TI-86 files", PAT_TI86
+#define FLT_TIG        "TIGroup files", PAT_TIG
+#define FLT_ALL        "All files", "*"
+
+#define DESC_COMPAT "All compatible files"
+
+#define FLT_TI73_COMPAT    DESC_COMPAT, (PAT_TI73 ";" PAT_TIG ";" \
+                                         PAT_TI82_NUM ";" \
+                                         PAT_TI83_NUM ";" \
+                                         PAT_TI83P_NUM)
+
+#define FLT_TI82_COMPAT    DESC_COMPAT, (PAT_TI82 ";" PAT_TIG ";" \
+                                         PAT_TI83_TEXT ";" PAT_TI83_NUM ";" \
+                                         PAT_TI83P_TEXT ";" PAT_TI83P_NUM ";" \
+                                         PAT_TI73_NUM)
+
+#define FLT_TI83_COMPAT    DESC_COMPAT, (PAT_TI83 ";" PAT_TIG ";" \
+                                         PAT_TI82_TEXT ";" PAT_TI82_NUM ";" \
+                                         PAT_TI83P_TEXT ";" PAT_TI83P_NUM ";" \
+                                         PAT_TI73_NUM)
+
+#define FLT_TI83P_COMPAT   DESC_COMPAT, (PAT_TI83P ";" PAT_TIG ";" \
+                                         PAT_TI82_TEXT ";" PAT_TI82_NUM ";" \
+                                         PAT_TI83_TEXT ";" PAT_TI83_NUM ";" \
+                                         PAT_TI73_NUM)
+
+#define FLT_TI8586_COMPAT  DESC_COMPAT, (PAT_TI85 ";" PAT_TI86 ";" PAT_TIG)
+
+static char ** prompt_link_files(const char *title,
+                                 GtkWindow *parent,
+                                 const char *dir,
+                                 int model)
+{
+	switch (model) {
+	case TILEM_CALC_TI73:
+		return prompt_open_files(title, parent, dir,
+		                         FLT_TI73_COMPAT, FLT_TI73,
+		                         FLT_TI82, FLT_TI83, FLT_TI83P,
+		                         FLT_TIG, FLT_ALL, NULL);
+	case TILEM_CALC_TI81:
+		return prompt_open_files(title, parent, dir,
+		                         FLT_TI81, FLT_ALL, NULL);
+	case TILEM_CALC_TI82:
+		return prompt_open_files(title, parent, dir,
+		                         FLT_TI82_COMPAT, FLT_TI73,
+		                         FLT_TI82, FLT_TI83, FLT_TI83P,
+		                         FLT_TIG, FLT_ALL, NULL);
+	case TILEM_CALC_TI83:
+	case TILEM_CALC_TI76:
+		return prompt_open_files(title, parent, dir,
+		                         FLT_TI83_COMPAT, FLT_TI73,
+		                         FLT_TI82, FLT_TI83, FLT_TI83P,
+		                         FLT_TIG, FLT_ALL, NULL);
+	case TILEM_CALC_TI83P:
+	case TILEM_CALC_TI83P_SE:
+	case TILEM_CALC_TI84P:
+	case TILEM_CALC_TI84P_SE:
+	case TILEM_CALC_TI84P_NSPIRE:
+		return prompt_open_files(title, parent, dir,
+		                         FLT_TI83P_COMPAT, FLT_TI73,
+		                         FLT_TI82, FLT_TI83, FLT_TI83P,
+		                         FLT_TIG, FLT_ALL, NULL);
+	case TILEM_CALC_TI85:
+	case TILEM_CALC_TI86:
+		return prompt_open_files(title, parent, dir,
+		                         FLT_TI8586_COMPAT, FLT_TI85,
+		                         FLT_TI86, FLT_TIG, FLT_ALL, NULL);
+	default:
+		return prompt_open_files(title, parent, dir, FLT_ALL, NULL);
+	}
+}
 
 /* Load a file */
 void load_file(TilemCalcEmulator *emu)
@@ -514,27 +606,9 @@ void load_file(TilemCalcEmulator *emu)
 	                 "sendfile_recentdir/f", &dir,
 	                 NULL);
 
-	/* FIXME: the default filter should select files that are
-	   presumed compatible with the current model.  Should exclude
-	   filters for types that make no sense whatsoever (e.g. prg
-	   files on anything but a TI-81.)  Maybe the
-	   prompt_open_files API should be changed to make this
-	   easier */
-
-	filenames = prompt_open_files("Send File",
+	filenames = prompt_link_files("Send File",
 	                              GTK_WINDOW(emu->gw->tw->pWindow),
-	                              dir,
-	                              "TI-73 Files", "*.73?",
-	                              "TI-81 Files", "*.prg",
-	                              "TI-82 Files", "*.82?",
-	                              "TI-83 Files", "*.83?",
-	                              "TI-83 Plus Files", "*.8x?",
-	                              "TI-85 Files", "*.85?",
-	                              "TI-86 Files", "*.86?",
-	                              "Group Files", "*.tig",
-	                              "All Files", "*",
-	                              NULL);
-
+	                              dir, emu->calc->hw.model_id);
 	g_free(dir);
 
 	if (filenames && filenames[0]) {
