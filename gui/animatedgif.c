@@ -96,7 +96,7 @@ static void write_global_header(FILE* fp, int width, int height) {
 	fwrite(global_header_background_index, 1, 1, fp);
 	fwrite(global_header_aspect_pixel_ratio, 1, 1, fp);
 	
-	byte* palette = tilem_color_palette_new1(255, 255, 255, 0, 0, 0, 0.5);
+	byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);
 	
 	fwrite(palette, 256 * 3, 1, fp);
 }

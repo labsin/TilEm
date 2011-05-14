@@ -66,52 +66,25 @@ dword* tilem_color_palette_new(int rlight, int glight, int blight,
 	return pal;
 }
 
-byte* tilem_color_palette_new1(int rlight, int glight, int blight,
-			       int rdark, int gdark, int bdark,
-			       double gamma)
+byte* tilem_color_palette_new_packed(int rlight, int glight, int blight,
+                                     int rdark, int gdark, int bdark,
+                                     double gamma)
 {
-	byte* pal = tilem_new_atomic(byte, 256*3);
-	double r0, g0, b0, dr, dg, db;
-	double igamma = 1.0 / gamma;
-	double s = (1.0 / 255.0);
-	int r, g, b, i;
+	dword* palette;
+	byte* packed;
+	int i;
 
-	r0 = pow(rlight * s, gamma);
-	g0 = pow(glight * s, gamma);
-	b0 = pow(blight * s, gamma);
-	dr = (pow(rdark * s, gamma) - r0) * s;
-	dg = (pow(gdark * s, gamma) - g0) * s;
-	db = (pow(bdark * s, gamma) - b0) * s;
+	palette = tilem_color_palette_new(rlight, glight, blight,
+	                                  rdark, gdark, bdark, gamma);
 
-	pal[0] = rlight; 
-	pal[1] = glight;
-	pal[2] = blight;
-
-	int j = 3;
-	for (i = 1; i < 255; i++) {
-		r = pow(r0 + i * dr, igamma) * 255.0 + 0.5;
-		if (r < 0) r = 0;
-		if (r > 255) r = 255;
-
-		g = pow(g0 + i * dg, igamma) * 255.0 + 0.5;
-		if (g < 0) g = 0;
-		if (g > 255) g = 255;
-
-		b = pow(b0 + i * db, igamma) * 255.0 + 0.5;
-		if (b < 0) b = 0;
-		if (b > 255) b = 255;
-
-		pal[j] = r ;
-		j++;
-		pal[j] = g;
-		j++;
-		pal[j] = b;
-		j++;
+	packed = tilem_new_atomic(byte, 256 * 3);
+	for (i = 0; i < 256; i++) {
+		packed[i * 3] = palette[i] >> 16;
+		packed[i * 3 + 1] = palette[i] >> 8;
+		packed[i * 3 + 2] = palette[i];
 	}
 
-	pal[765] = rdark;
-	pal[766] = gdark;
-	pal[767] = bdark;
+	tilem_free(palette);
 
-	return pal;
+	return packed;
 }

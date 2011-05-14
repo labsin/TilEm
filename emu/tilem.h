@@ -886,11 +886,11 @@ dword* tilem_color_palette_new(int rlight, int glight, int blight,
                                int rdark, int gdark, int bdark,
                                double gamma);
 
-
-/* Calculate a palette and returns a byte *. Palette is easy to use like this */ 
-byte* tilem_color_palette_new1(int rlight, int glight, int blight,
-                               int rdark, int gdark, int bdark,
-                               double gamma);
+/* Calculate a color palette, as above, and convert it to a packed
+   array of bytes (R, G, B) */
+byte* tilem_color_palette_new_packed(int rlight, int glight, int blight,
+                                     int rdark, int gdark, int bdark,
+                                     double gamma);
 
 
 /* Grayscale LCD simulation */
