@@ -220,6 +220,10 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 	if (emu->z80_thread)
 		g_thread_join(emu->z80_thread);
 
+	g_free(emu->key_queue);
+
+	g_free(emu->rom_file_name);
+
 	tilem_calc_emulator_cancel_link(emu);
 
 	g_mutex_free(emu->calc_mutex);
@@ -488,4 +492,160 @@ void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
                                          gboolean limit)
 {
 	emu->limit_speed = limit;
+}
+
+/* If currently recording a macro, record a keypress */
+static void record_key(TilemCalcEmulator* emu, int code)
+{
+	char* codechar;
+
+	if (emu->isMacroRecording) {
+		codechar= g_strdup_printf("%04d", code);
+		add_event_in_macro_file(emu, codechar);     
+		g_free(codechar);
+	}
+}
+
+void tilem_calc_emulator_press_key(TilemCalcEmulator *emu, int key)
+{
+	g_return_if_fail(emu != NULL);
+
+	if (key == 0)
+		return;
+
+	g_mutex_lock(emu->calc_mutex);
+	tilem_keypad_press_key(emu->calc, key);
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
+
+	record_key(emu, key);
+}
+
+void tilem_calc_emulator_release_key(TilemCalcEmulator *emu, int key)
+{
+	g_return_if_fail(emu != NULL);
+
+	if (key == 0)
+		return;
+
+	g_mutex_lock(emu->calc_mutex);
+	tilem_keypad_release_key(emu->calc, key);
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
+}
+
+/* Timer callback for key sequences */
+static void tmr_key_queue(TilemCalc* calc, void* data)
+{
+	TilemCalcEmulator *emu = data;
+	int nextkey;
+
+	if (emu->key_queue_pressed) {
+		if (emu->key_queue_len > 0 || !emu->key_queue_hold) {
+			tilem_keypad_release_key(calc, emu->key_queue_cur);
+			emu->key_queue_pressed = 0;
+			emu->key_queue_cur = 0;
+			tilem_z80_set_timer(calc, emu->key_queue_timer,
+			                    20000, 0, 1);
+		}
+		else {
+			tilem_z80_remove_timer(calc, emu->key_queue_timer);
+			emu->key_queue_timer = 0;
+		}
+	}
+	else {
+		if (emu->key_queue_len > 0) {
+			nextkey = emu->key_queue[--emu->key_queue_len];
+			tilem_keypad_press_key(calc, nextkey);
+			emu->key_queue_pressed = 1;
+			emu->key_queue_cur = nextkey;
+			tilem_z80_set_timer(calc, emu->key_queue_timer,
+			                    50000, 0, 1);
+		}
+		else {
+			tilem_z80_remove_timer(calc, emu->key_queue_timer);
+			emu->key_queue_timer = 0;
+		}
+	}
+}
+
+static void queue_keys(TilemCalcEmulator *emu, const byte *keys, int nkeys)
+{
+	byte *q;
+	int i;
+
+	q = g_new(byte, emu->key_queue_len + nkeys);
+
+	for (i = 0; i < nkeys; i++) {
+		q[nkeys - i - 1] = keys[i];
+		record_key(emu, keys[i]);
+	}
+
+	if (emu->key_queue_len)
+		memcpy(q + nkeys, emu->key_queue, emu->key_queue_len);
+
+	g_free(emu->key_queue);
+	emu->key_queue = q;
+	emu->key_queue_len += nkeys;
+	emu->key_queue_hold = 1;
+
+	if (!emu->key_queue_timer) {
+		emu->key_queue_timer
+			= tilem_z80_add_timer(emu->calc, 1, 0, 1,
+			                      &tmr_key_queue, emu);
+	}
+}
+
+void tilem_calc_emulator_queue_keys(TilemCalcEmulator *emu,
+                                    const byte *keys, int nkeys)
+{
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(keys != NULL);
+	g_return_if_fail(nkeys > 0);
+
+	g_mutex_lock(emu->calc_mutex);
+	queue_keys(emu, keys, nkeys);
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
+}
+
+void tilem_calc_emulator_release_queued_key(TilemCalcEmulator *emu)
+{
+	g_return_if_fail(emu != NULL);
+
+	g_mutex_lock(emu->calc_mutex);
+	if (emu->key_queue_timer) {
+		emu->key_queue_hold = 0;
+	}
+	else if (emu->key_queue_pressed) {
+		tilem_keypad_release_key(emu->calc, emu->key_queue_cur);
+		emu->key_queue_pressed = 0;
+		emu->key_queue_cur = 0;
+		g_cond_broadcast(emu->calc_wakeup_cond);
+	}
+	g_mutex_unlock(emu->calc_mutex);
+}
+
+gboolean tilem_calc_emulator_press_or_queue(TilemCalcEmulator *emu,
+                                            int key)
+{
+	byte b;
+	gboolean status;
+
+	g_return_val_if_fail(emu != NULL, FALSE);
+
+	g_mutex_lock(emu->calc_mutex);
+
+	if (emu->key_queue_timer) {
+		b = key;
+		queue_keys(emu, &b, 1);
+		status = TRUE;
+	}
+	else {
+		tilem_keypad_press_key(emu->calc, key);
+		status = FALSE;
+	}
+	g_cond_broadcast(emu->calc_wakeup_cond);
+	g_mutex_unlock(emu->calc_mutex);
+	return status;
 }

@@ -58,6 +58,8 @@ typedef struct _TilemCalcEmulator {
 	int key_queue_len;
 	int key_queue_timer;
 	int key_queue_pressed;
+	int key_queue_cur;
+	int key_queue_hold;
 
 	GMutex *lcd_mutex;
 	TilemLCDBuffer *lcd_buffer;
@@ -116,6 +118,23 @@ void tilem_calc_emulator_run(TilemCalcEmulator *emu);
    actual CPU speed; FALSE means run as fast as we can.) */
 void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
                                          gboolean limit);
+
+/* Press a single key. */
+void tilem_calc_emulator_press_key(TilemCalcEmulator *emu, int key);
+
+/* Release a single key. */
+void tilem_calc_emulator_release_key(TilemCalcEmulator *emu, int key);
+
+/* Add keys to the input queue. */
+void tilem_calc_emulator_queue_keys(TilemCalcEmulator *emu,
+                                    const byte *keys, int nkeys);
+
+/* Release final key in input queue. */
+void tilem_calc_emulator_release_queued_key(TilemCalcEmulator *emu);
+
+/* If input queue is empty, press key immediately; otherwise, add to
+   the input queue.  Return TRUE if key was added to the queue. */
+gboolean tilem_calc_emulator_press_or_queue(TilemCalcEmulator *emu, int key);
 
 /* Add a file to the link queue. */
 void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,

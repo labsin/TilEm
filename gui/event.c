@@ -236,27 +236,6 @@ void launch_debugger(TilemEmulatorWindow *ewin)
 	tilem_debugger_show(ewin->emu->dbg);
 }
 
-/* If currently recording a macro, record a keypress */
-static void record_key(TilemCalcEmulator* emu, int code)
-{
-	/* This WAS seriously broken ;)
-	In fact, macro_file must be set to NULL when you start. And isMacroRecording to 0
-	Switch isMacroRecording to 1 means : "record my key press/send file etc...
-	Switch to 0 is to stop recording
-	If macro file doesn't exist, tilem creates it
-	The key press is represented as an int, separate by a comma, the int could contains 0 before to be like this 0031,0022,0012
-	*/
-
-	char* codechar;
-
-	if(emu->isMacroRecording) {     
-		codechar= (char*) malloc(sizeof(int));
-		sprintf(codechar, "%04d", code);
-		add_event_in_macro_file(emu, codechar);     
-		free(codechar);
-	}
-}
-
 /* Press a key, ensuring that at most one key is "pressed" at a time
    due to this function (if pointer moves or is released, we don't
    want the old key held down.)
@@ -268,20 +247,8 @@ static void press_mouse_key(TilemEmulatorWindow* ewin, int key)
 	if (ewin->mouse_key == key)
 		return;
 
-	g_mutex_lock(ewin->emu->calc_mutex);
-
-	if (ewin->mouse_key)
-		tilem_keypad_release_key(ewin->emu->calc, ewin->mouse_key);
-
-	if (key)
-		tilem_keypad_press_key(ewin->emu->calc, key);
-
-	g_cond_broadcast(ewin->emu->calc_wakeup_cond);
-	g_mutex_unlock(ewin->emu->calc_mutex);
-
-	if (key)
-		record_key(ewin->emu, key);
-
+	tilem_calc_emulator_release_key(ewin->emu, ewin->mouse_key);
+	tilem_calc_emulator_press_key(ewin->emu, key);
 	ewin->mouse_key = key;
 }
 
@@ -295,19 +262,14 @@ gboolean mouse_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 	key = scan_click(ewin->skin, event->x, event->y);
 
 	if (event->button == 1) {
-		/* button 1: press key until button is released or pointer moves away */
+		/* button 1: press key until button is released or
+		   pointer moves away */
 		press_mouse_key(ewin, key);
 		return TRUE;
 	}
 	else if (event->button == 2) {
 		/* button 2: hold key down permanently */
-		if (key) {
-			g_mutex_lock(ewin->emu->calc_mutex);
-			tilem_keypad_press_key(ewin->emu->calc, key);
-			g_cond_broadcast(ewin->emu->calc_wakeup_cond);
-			g_mutex_unlock(ewin->emu->calc_mutex);
-			record_key(ewin->emu, key);
-		}
+		tilem_calc_emulator_press_key(ewin->emu, key);
 		return TRUE;
 	}
 	else if (event->button == 3) {
@@ -352,27 +314,6 @@ gboolean mouse_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 	return FALSE;
 }
 
-/* Timer callback for key sequences */
-static void tmr_key_queue(TilemCalc* calc, void* data)
-{
-	TilemCalcEmulator *emu = data;
-	int nextkey = emu->key_queue[emu->key_queue_len - 1];
-
-	if (emu->key_queue_pressed) {
-		tilem_keypad_release_key(calc, nextkey);
-		emu->key_queue_len--;
-		if (emu->key_queue_len == 0) {
-			tilem_z80_remove_timer(calc, emu->key_queue_timer);
-			emu->key_queue_timer = 0;
-		}
-	}
-	else {
-		tilem_keypad_press_key(calc, nextkey);
-	}
-
-	emu->key_queue_pressed = !emu->key_queue_pressed;
-}
-
 /* Find key binding matching the given event */
 static TilemKeyBinding* find_key_binding(TilemCalcEmulator* emu,
                                          GdkEventKey* event)
@@ -404,15 +345,13 @@ static TilemKeyBinding* find_key_binding(TilemCalcEmulator* emu,
 }
 
 /* Key-press event */
-gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
+gboolean key_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
                          gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	TilemCalcEmulator *emu = ewin->emu;
 	TilemKeyBinding *kb;
-	byte *q;
 	int i, key;
-	w = w;
+	unsigned int hwkey;
 
 	/* Ignore repeating keys */
 	for (i = 0; i < 64; i++)
@@ -424,45 +363,22 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey* event,
 	if (!(kb = find_key_binding(ewin->emu, event)))
 		return FALSE;
 
-	g_mutex_lock(emu->calc_mutex);
+	hwkey = event->hardware_keycode;
 
-	if (emu->key_queue_len == 0 && kb->nscancodes == 1) {
-		/* press single key */
+	if (kb->nscancodes == 1) {
+		/* if queue is empty, just press the key; otherwise
+		   add it to the queue */
 		key = kb->scancodes[0];
-		tilem_keypad_press_key(emu->calc, key);
-		ewin->keypress_keycodes[key] = event->hardware_keycode;
-		record_key(emu, key);
+		if (tilem_calc_emulator_press_or_queue(ewin->emu, key))
+			ewin->sequence_keycode = hwkey;
+		else 
+			ewin->keypress_keycodes[key] = hwkey;
 	}
 	else {
-		/* add key sequence to queue */
-		q = g_new(byte, kb->nscancodes + emu->key_queue_len);
-
-		for (i = 0; i < kb->nscancodes; i++) {
-			q[kb->nscancodes - i - 1] = kb->scancodes[i];
-			record_key(emu, kb->scancodes[i]);
-		}
-
-		if (emu->key_queue_len)
-			memcpy(q + kb->nscancodes, emu->key_queue,
-			       emu->key_queue_len);
-
-		g_free(emu->key_queue);
-		emu->key_queue = q;
-		emu->key_queue_len += kb->nscancodes;
-
-		if (!emu->key_queue_timer) {
-			emu->key_queue_timer
-				= tilem_z80_add_timer(emu->calc,
-				                      1, 50000, 1,
-				                      &tmr_key_queue, emu);
-			emu->key_queue_pressed = 0;
-		}
-
-		ewin->sequence_keycode = event->hardware_keycode;
+		tilem_calc_emulator_queue_keys(ewin->emu, kb->scancodes,
+		                               kb->nscancodes);
+		ewin->sequence_keycode = hwkey;
 	}
-
-	g_cond_broadcast(emu->calc_wakeup_cond);
-	g_mutex_unlock(emu->calc_mutex);
 
 	return TRUE;
 }
@@ -480,16 +396,15 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	   pressed.) */
 	for (i = 0; i < 64; i++) {
 		if (ewin->keypress_keycodes[i] == event->hardware_keycode) {
-			g_mutex_lock(ewin->emu->calc_mutex);
-			tilem_keypad_release_key(ewin->emu->calc, i);
-			g_cond_broadcast(ewin->emu->calc_wakeup_cond);
-			g_mutex_unlock(ewin->emu->calc_mutex);
+			tilem_calc_emulator_release_key(ewin->emu, i);
 			ewin->keypress_keycodes[i] = 0;
 		}
 	}
 
-	if (ewin->sequence_keycode == event->hardware_keycode)
+	if (ewin->sequence_keycode == event->hardware_keycode) {
+		tilem_calc_emulator_release_queued_key(ewin->emu);
 		ewin->sequence_keycode = 0;
+	}
 
 	return FALSE;
 }
