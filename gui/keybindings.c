@@ -42,6 +42,28 @@ static int calc_key_from_name(const TilemCalc *calc, const char *name)
 		    && !strcmp(calc->hw.keynames[i], name))
 			return i + 1;
 
+	/* kludge: accept aliases for a few keys */
+	for (i = 0; i < 64; i++) {
+		if (!calc->hw.keynames[i])
+			continue;
+
+		if (!strcmp(name, "Matrix")
+		    && !strcmp(calc->hw.keynames[i], "Apps"))
+			return i + 1;
+		if (!strcmp(name, "Apps")
+		    && !strcmp(calc->hw.keynames[i], "AppsMenu"))
+			return i + 1;
+		if (!strcmp(name, "List")
+		    && !strcmp(calc->hw.keynames[i], "StatEd"))
+			return i + 1;
+		if (!strcmp(name, "Power")
+		    && !strcmp(calc->hw.keynames[i], "Expon"))
+			return i + 1;
+		if (!strcmp(name, "Stat")
+		    && !strcmp(calc->hw.keynames[i], "Table"))
+			return i + 1;
+	}
+
 	return 0;
 }
 
@@ -80,6 +102,9 @@ static gboolean parse_binding(TilemKeyBinding *kb,
 			kb->modifiers |= GDK_MOD4_MASK;
 		else if (!g_ascii_strcasecmp(s, "mod5"))
 			kb->modifiers |= GDK_MOD5_MASK;
+		else if (!g_ascii_strcasecmp(s, "lock")
+		         || !g_ascii_strcasecmp(s, "capslock"))
+			kb->modifiers |= GDK_LOCK_MASK;
 		else {
 			g_free(s);
 			return FALSE;
@@ -134,9 +159,9 @@ static gboolean parse_binding(TilemKeyBinding *kb,
 
 /* Parse a group (model) in the keybindings file */
 static void parse_binding_group(TilemCalcEmulator *emu, GKeyFile *gkf,
-                                const char *group)
+                                const char *group, int maxdepth)
 {
-	gchar **keys;
+	gchar **keys, **groups;
 	char *k, *v;
 	int i, n;
 
@@ -154,6 +179,9 @@ static void parse_binding_group(TilemCalcEmulator *emu, GKeyFile *gkf,
 
 	for(i = 0; keys[i]; i++) {
 		k = keys[i];
+		if (!strcmp(k, "INHERIT"))
+			continue;
+
 		v = g_key_file_get_value(gkf, group, k, NULL);
 		if (!v)
 			continue;
@@ -169,6 +197,18 @@ static void parse_binding_group(TilemCalcEmulator *emu, GKeyFile *gkf,
 	emu->nkeybindings = n;
 
 	g_strfreev(keys);
+
+	/* Include all bindings from groups marked as INHERIT */
+
+	if (maxdepth == 0)
+		return;
+
+	groups = g_key_file_get_string_list(gkf, group, "INHERIT",
+	                                    NULL, NULL);
+	for (i = 0; groups && groups[i]; i++)
+		parse_binding_group(emu, gkf, groups[i], maxdepth - 1);
+	g_strfreev(groups);
+
 }
 
 /* Init the keybindings struct and open the keybindings file */
@@ -208,35 +248,7 @@ void tilem_keybindings_init(TilemCalcEmulator *emu, const char *model)
 	emu->keybindings = NULL;
 	emu->nkeybindings = 0;
 
-
-	/* To avoid giving the same keybindings for each models, 
-	   keybindings are grouped into categories...
-	   "all" : all the models
-	   "all-alpha" : all models with alpha key
-	   "all-except-ti73" : all models ... except ti73
-	*/
-	parse_binding_group(emu, gkf, "all");
-	
-	if((strcmp(model, "ti73") !=0)) {
-		printf("all-with-alpha\n");
-		parse_binding_group(emu, gkf, "all-with-alpha");
-	}
-
-	if(strcmp(model, "ti73") != 0){
-		printf("all-except-ti73\n");
-		parse_binding_group(emu, gkf, "all-except-ti73");
-	}
-	
-	if((strcmp(model, "ti82") == 0) || (strcmp(model, "ti83") == 0) || (strcmp(model, "ti83+") == 0) ) {
-		printf("ti82-ti83(+)-ti84+\n");
-		parse_binding_group(emu, gkf, "ti82-ti83(+)-ti84+");
-	} else if((strcmp(model, "ti85") == 0) || (strcmp(model, "ti86") == 0)) { 
-		printf("ti85-ti86\n");
-		parse_binding_group(emu, gkf, "ti85-ti86");
-	} else {	 
-		printf("%s\n", model);
-		parse_binding_group(emu, gkf, model);
-	}
+	parse_binding_group(emu, gkf, model, 5);
 
 	g_key_file_free(gkf);
 	g_free(kfname);

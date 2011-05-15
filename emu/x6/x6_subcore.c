@@ -37,7 +37,7 @@ static const char* keynames[64] = {
 	"Enter", "Add", "Sub", "Mul", "Div", "Power", "Clear", 0,
 	"Chs", "3", "6", "9", "RParen", "Tan", "Custom", 0,
 	"DecPnt", "2", "5", "8", "LParen", "Cos", "Prgm", "Del",
-	"0", "1", "4", "7", "EE", "Sin", "Stat", "XVar",
+	"0", "1", "4", "7", "EE", "Sin", "Table", "XVar",
 	"On", "Store", "Comma", "Square", "Ln", "Log", "Graph", "Alpha",
 	"F5", "F4", "F3", "F2", "F1", "2nd", "Exit", "More",
 	0, 0, 0, 0, 0, 0, 0, 0};

@@ -546,7 +546,7 @@ static void tmr_key_queue(TilemCalc* calc, void* data)
 			emu->key_queue_pressed = 0;
 			emu->key_queue_cur = 0;
 			tilem_z80_set_timer(calc, emu->key_queue_timer,
-			                    20000, 0, 1);
+			                    50000, 0, 1);
 		}
 		else {
 			tilem_z80_remove_timer(calc, emu->key_queue_timer);
@@ -560,7 +560,7 @@ static void tmr_key_queue(TilemCalc* calc, void* data)
 			emu->key_queue_pressed = 1;
 			emu->key_queue_cur = nextkey;
 			tilem_z80_set_timer(calc, emu->key_queue_timer,
-			                    50000, 0, 1);
+			                    20000, 0, 1);
 		}
 		else {
 			tilem_z80_remove_timer(calc, emu->key_queue_timer);
