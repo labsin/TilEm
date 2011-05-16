@@ -168,11 +168,26 @@ static void write_comment(FILE* fp) {
 
 static void write_application_extension(FILE * fp) {
 
-    	/* Introduce the block 3bytes, netscape (type of gif : animation), a new block comment */
-	char gif_infos[31] = {
-        0x21, 0xff, 0x0b, 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0', 3, 1, 0xff, 0xff, 0x00	};
+	/* Magic number to start the block */
+	char application_extension_magic_number[] = { 0x21, 0xff, 0x0b };
+	/* Application name */
+	char application_extension_application_name[] = { 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0' };
+	/* magic number */
+	char application_extension_data_follow[] = { 0x03, 0x01 };
+	/* 0 to 65535 loop */
+	char application_extension_number_of_loop[] = { 0xff, 0xff};
+	/* the end of the block */	
+	char application_extension_terminator[] = { 0x00 };
+	
+	//char gif_infos[31] = {
+        //0x21, 0xff, 0x0b, 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0', 3, 1, 0xff, 0xff, 0x00	};
 
-	fwrite(gif_infos, 19, 1, fp);
+	//fwrite(gif_infos, 19, 1, fp);
+	fwrite(application_extension_magic_number, 3, 1, fp);
+	fwrite(application_extension_application_name, 11, 1, fp);
+	fwrite(application_extension_data_follow, 2, 1, fp);
+	fwrite(application_extension_number_of_loop, 2, 1, fp);
+	fwrite(application_extension_terminator, 1, 1, fp);
 }
 
 /* Create an empty gif and add the first frame */ 
