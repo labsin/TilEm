@@ -128,6 +128,8 @@ gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragCon
 /* Save the dimension before exit for next times we use tilem */
 void save_root_window_dimension(TilemEmulatorWindow *ewin);
 
+/* Callback function for teh receive menu entry */
+void on_receive(TilemEmulatorWindow * ewin);
 
 
 /* ###### skin.c ##### */
@@ -218,6 +220,9 @@ int get_calc_model(TilemCalc* calc);
 
 /* Simply emulate a click on key (use to prepare link -> come into receive mode) */
 void run_with_key(TilemCalc* calc, int key);
+
+/* Get directory list */
+void get_dir_list(TilemCalcEmulator *emu);
 
 
 

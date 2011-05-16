@@ -256,7 +256,7 @@ void run_with_key(TilemCalc* calc, int key)
 	tilem_z80_run_time(calc, 500000, NULL);
 }
 
-/* Automatically press key to be in the receive mode i(ti82 and ti85) */
+/* Automatically press key to be in the receive mode (ti82 and ti85) */
 static void prepare_for_link(TilemCalc* calc)
 {
 	run_with_key(calc, TILEM_KEY_ON);
@@ -587,4 +587,47 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 
 	update->cancel = 0;
 }
+/* Load a file without file_selector old method without thread */
+void get_dir_list(TilemCalcEmulator *emu)
+{
+	CableHandle* cbl;
+	CalcHandle* ch;
+	GNode *vars, *apps;
+	
+	/* Init the libtis */
+	ticables_library_init();
+	tifiles_library_init();
+	ticalcs_library_init();
+	
+	/* Create cable (here an internal an dvirtual cabla) */
+	cbl = internal_link_handle_new(emu);
+	if (!cbl) 
+		fprintf(stderr, "Cannot create ilp handle\n");
+	
 
+	ch = ticalcs_handle_new(get_calc_model(emu->calc));
+	if (!ch) {
+		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
+		return;
+	}
+
+	ticalcs_cable_attach(ch, cbl);
+	
+	ticalcs_calc_get_dirlist(ch, &vars, &apps);
+        ticalcs_dirlist_display(vars);
+        ticalcs_dirlist_display(apps);
+        ticalcs_dirlist_destroy(&vars);
+        ticalcs_dirlist_destroy(&apps);
+		
+
+	ticalcs_cable_detach(ch);
+	ticalcs_handle_del(ch);
+
+	ticables_handle_del(cbl);
+
+	/* Exit the libtis */
+	ticalcs_library_exit();
+	tifiles_library_exit();
+	ticables_library_exit();
+
+}

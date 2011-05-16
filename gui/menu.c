@@ -48,6 +48,8 @@ GtkWidget * build_menu(TilemEmulatorWindow* ewin) {
 	//gtk_accel_group_connect(accelgrp, gdk_keyval_from_name("F11"), GDK_SHIFT_MASK,  GTK_ACCEL_VISIBLE , g_cclosure_new(G_CALLBACK(load_file), emu, NULL)); 
 	GtkWidget* send_file_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(send_file_item), "Load file...");
+	GtkWidget* rcv_file_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_GOTO_BOTTOM, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(rcv_file_item), "Receive file...");
 	GtkWidget* load_skin_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(load_skin_item), "Change skin...");
 
@@ -113,6 +115,7 @@ GtkWidget * build_menu(TilemEmulatorWindow* ewin) {
 
 	/* Add items to the menu */
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), send_file_item);
+	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), rcv_file_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), load_skin_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), launch_debugger_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), toggle_speed_item);
@@ -149,6 +152,7 @@ GtkWidget * build_menu(TilemEmulatorWindow* ewin) {
 
 
 	/* Callback */
+	g_signal_connect_swapped (GTK_OBJECT (rcv_file_item), "activate", G_CALLBACK (on_receive), (gpointer) ewin);
 	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) ewin);
 	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) ewin);
 	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) ewin);
@@ -170,6 +174,7 @@ GtkWidget * build_menu(TilemEmulatorWindow* ewin) {
 	
 	/* Show the items */
 	gtk_widget_show (load_skin_item);
+	gtk_widget_show (rcv_file_item);
 	gtk_widget_show (send_file_item);
 	gtk_widget_show (launch_debugger_item);
 	gtk_widget_show (toggle_speed_item);

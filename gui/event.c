@@ -577,6 +577,8 @@ void tilem_load_file_from_file_at_startup(TilemCalcEmulator *emu, char* filename
 
 }
 
+
+
 /* Toggle limit speed */
 void tilem_change_speed(TilemEmulatorWindow *ewin)
 {
@@ -600,4 +602,9 @@ gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragCon
 	load_file_from_file(ewin->emu, filename );
 	return FALSE;
 
+}
+
+/* Callback for the receive menu entry */
+void on_receive(TilemEmulatorWindow * ewin) {
+	get_dir_list(ewin->emu);
 }
