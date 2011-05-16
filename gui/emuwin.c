@@ -303,7 +303,7 @@ static void redraw_screen(TilemEmulatorWindow *ewin)
 
 	gtk_drag_dest_set(emuwin, GTK_DEST_DEFAULT_ALL,
 	                  NULL, 0, GDK_ACTION_COPY);
-	gtk_drag_dest_add_uri_targets(emuwin);
+	gtk_drag_dest_add_text_targets(emuwin);
 	g_signal_connect(emuwin, "drag-data-received",
 	                 G_CALLBACK(on_drag_and_drop), ewin);
 
