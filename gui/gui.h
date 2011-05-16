@@ -222,8 +222,10 @@ int get_calc_model(TilemCalc* calc);
 void run_with_key(TilemCalc* calc, int key);
 
 /* Get directory list */
-void get_dir_list(TilemCalcEmulator *emu);
+void get_var(TilemCalcEmulator *emu);
 
+/* Receive a var (for the moment it's just for test)*/
+int receive_var(CalcHandle * h);
 
 
 /* ##### pbar.c ##### */

@@ -587,12 +587,26 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 
 	update->cancel = 0;
 }
-/* Load a file without file_selector old method without thread */
-void get_dir_list(TilemCalcEmulator *emu)
+
+/* Print the var list and apps list */
+void get_dirlist(CalcHandle *ch) {
+	GNode *vars, *apps;
+	ticalcs_calc_get_dirlist(ch, &vars, &apps);
+        ticalcs_dirlist_display(vars);
+        ticalcs_dirlist_display(apps);
+        ticalcs_dirlist_destroy(&vars);
+        ticalcs_dirlist_destroy(&apps);
+}
+		
+
+/* Get var from calc to PC */
+/* This function should really use a separate thread because it freeze the calc
+ * a long time. 
+ */
+void get_var(TilemCalcEmulator *emu)
 {
 	CableHandle* cbl;
 	CalcHandle* ch;
-	GNode *vars, *apps;
 	
 	/* Init the libtis */
 	ticables_library_init();
@@ -612,13 +626,9 @@ void get_dir_list(TilemCalcEmulator *emu)
 	}
 
 	ticalcs_cable_attach(ch, cbl);
+	get_dirlist(ch);	
+	receive_var(ch);
 	
-	ticalcs_calc_get_dirlist(ch, &vars, &apps);
-        ticalcs_dirlist_display(vars);
-        ticalcs_dirlist_display(apps);
-        ticalcs_dirlist_destroy(&vars);
-        ticalcs_dirlist_destroy(&apps);
-		
 
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
@@ -631,3 +641,31 @@ void get_dir_list(TilemCalcEmulator *emu)
 	ticables_library_exit();
 
 }
+
+/* Get a var from calc and save it into filename on PC */
+int receive_var(CalcHandle * ch) {
+
+	/* Currently, this code is based on romain lievins example */
+	char filename[1024] = ""; 
+        int ret;
+	VarEntry ve ;
+	FileContent* filec;
+
+	filec = tifiles_content_create_regular(ch->model);
+
+        printf("Enter filename: ");
+        ret = scanf("%1023s", filename);
+        if(ret < 1)
+                return 0;
+
+        printf("Enter variable name: ");
+        ret = scanf("%1023s", ve.name);
+        if(ret < 1)
+                return 0;
+
+        ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, &ve);	
+	tifiles_file_write_regular(filename, filec, NULL);
+
+	return 0;
+}
+
