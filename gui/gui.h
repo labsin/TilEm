@@ -227,6 +227,12 @@ void get_var(TilemCalcEmulator *emu);
 /* Receive a var (for the moment it's just for test)*/
 int receive_var(CalcHandle * h);
 
+/* List the name and size of a var tree */
+void tilem_dirlist_display(GNode* tree);
+
+/* Get the number of vars */
+gint tilem_get_dirlist_size(GNode* tree);
+
 
 /* ##### pbar.c ##### */
 

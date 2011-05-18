@@ -27,6 +27,8 @@
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <ticalcs.h>
+#include <ticonv.h>
+#include <string.h>
 #include <tilem.h>
 #include <scancodes.h>
 
@@ -588,16 +590,120 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 	update->cancel = 0;
 }
 
+void print_child(G_GNUC_UNUSED GNode *vars, G_GNUC_UNUSED gpointer data) {
+
+	printf("print child \n");
+
+}
+
+
+
+/* Display the list of vars/app */		
+/* This is a modified version of get_dirlist (ticalc) 
+ * because tiz80 never have folders (can you confirm that Benjamin...?) 
+ */
+void tilem_dirlist_display(GNode* tree)
+{
+	GNode *vars = tree;
+	TreeInfo *info = (TreeInfo *)(tree->data);
+	int i, j, k;
+	char *utf8;
+  
+	if (tree == NULL)
+		return;
+
+	printf(  "+------------------+----------+----------+\n");
+	printf(  "| B. name          | T. name  | Size     |\n");
+	printf(  "+------------------+----------+----------+\n");
+	i = 0;
+
+	GNode *parent = g_node_nth_child(vars, i);
+
+
+	for (j = 0; j < (int)g_node_n_children(parent); j++)	//parse variables
+	{
+		GNode *child = g_node_nth_child(parent, j);
+		VarEntry *ve = (VarEntry *) (child->data);
+
+		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
+
+	printf("| ");
+	for (k = 0; k < 8; k++) 
+		printf("%02X", (uint8_t) (ve->name)[k]);
+	printf(" | ");
+	printf("%8s", utf8);
+	printf(" | ");
+	printf("%08X", ve->size);
+	printf(" | ");
+		printf("\n");
+
+		g_free(utf8);
+	}
+	printf("+------------------+----------+----------+");
+	printf("\n");
+}
+
+/* Get the list of varname. I plan to use it into a list (in a menu) */
+char ** tilem_get_dirlist(GNode* tree)
+{
+	GNode *vars = tree;
+	TreeInfo *info = (TreeInfo *)(tree->data);
+	int i, j;
+	char *utf8;
+  
+	if (tree == NULL)
+		return NULL;
+
+	i = 0;
+	GNode *parent = g_node_nth_child(vars, i);
+		
+	char ** list = g_new(char*, g_node_n_children(parent));
+	//printf("Number of children : %d\n", g_node_n_children(parent));
+
+
+	for (j = 0; j < (int)g_node_n_children(parent); j++)	//parse variables
+	{
+		GNode *child = g_node_nth_child(parent, j);
+		VarEntry *ve = (VarEntry *) (child->data);
+
+		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
+
+		list[j] = g_strdup(utf8);
+		g_free(utf8);
+	}
+	printf("\n");
+	return list;
+}
+
+/* Get the list of varname. I plan to use it into a list (in a menu) */
+gint tilem_get_dirlist_size(GNode* tree)
+{
+	GNode *vars = tree;
+	int i = 0;
+	
+	GNode *parent = g_node_nth_child(vars, i);
+		
+	return g_node_n_children(parent);
+
+}
+
+
 /* Print the var list and apps list */
 void get_dirlist(CalcHandle *ch) {
 	GNode *vars, *apps;
 	ticalcs_calc_get_dirlist(ch, &vars, &apps);
-        ticalcs_dirlist_display(vars);
-        ticalcs_dirlist_display(apps);
-        ticalcs_dirlist_destroy(&vars);
-        ticalcs_dirlist_destroy(&apps);
+	g_node_children_foreach(vars, G_TRAVERSE_ALL, print_child, vars);
+        //ticalcs_dirlist_display(vars);
+        tilem_dirlist_display(vars);
+        char ** list = tilem_get_dirlist(vars);
+	int i=0;
+	for(i = 0; list[i]; i++)
+		printf("#%d : %s\n", i, list[i]);
+	printf("Number of children : %d\n", tilem_get_dirlist_size(vars));
+        //ticalcs_dirlist_display(apps);
+        //ticalcs_dirlist_destroy(&vars);
+        //ticalcs_dirlist_destroy(&apps);
 }
-		
 
 /* Get var from calc to PC */
 /* This function should really use a separate thread because it freeze the calc
@@ -627,7 +733,7 @@ void get_var(TilemCalcEmulator *emu)
 
 	ticalcs_cable_attach(ch, cbl);
 	get_dirlist(ch);	
-	receive_var(ch);
+	//receive_var(ch);
 	
 
 	ticalcs_cable_detach(ch);
