@@ -347,3 +347,6 @@ void show_popup_menu(TilemEmulatorWindow* ewin, GdkEvent* event);
 GtkWidget * build_menu(TilemEmulatorWindow* ewin);
 
 
+
+/* ##### rcvmenu.c ##### */
+void tilem_rcvmenu_new(char** list, int size_list);

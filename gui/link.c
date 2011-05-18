@@ -694,12 +694,13 @@ void get_dirlist(CalcHandle *ch) {
 	ticalcs_calc_get_dirlist(ch, &vars, &apps);
 	g_node_children_foreach(vars, G_TRAVERSE_ALL, print_child, vars);
         //ticalcs_dirlist_display(vars);
-        tilem_dirlist_display(vars);
+        //tilem_dirlist_display(vars);
         char ** list = tilem_get_dirlist(vars);
 	int i=0;
 	for(i = 0; list[i]; i++)
 		printf("#%d : %s\n", i, list[i]);
 	printf("Number of children : %d\n", tilem_get_dirlist_size(vars));
+	tilem_rcvmenu_new(list, tilem_get_dirlist_size(vars));
         //ticalcs_dirlist_display(apps);
         //ticalcs_dirlist_destroy(&vars);
         //ticalcs_dirlist_destroy(&apps);
