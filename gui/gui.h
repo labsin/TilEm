@@ -53,7 +53,8 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* screenshot_preview_image; /* Review pixbuf */
 	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
 	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
-	GtkWidget* ss_ext_combo; /* Folder chooser dialog (animated gif)*/
+	GtkWidget* ss_ext_combo; /* Combo box for file format */
+	GtkWidget* ss_size_combo; /* Combo box for size */
 
 	TilemAnimation *current_anim;
 

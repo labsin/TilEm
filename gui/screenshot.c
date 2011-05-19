@@ -203,6 +203,30 @@ static void on_destroy_screenshot(GtkWidget* screenshotanim_win)   {
 	gtk_widget_destroy(GTK_WIDGET(screenshotanim_win));
 }
 
+
+static void create_size_combobox(TilemCalcEmulator * emu) {
+	
+	emu->ssdlg->ss_size_combo = gtk_combo_box_new_text(); 
+	
+	if((strcmp(emu->calc->hw.name, "ti85") == 0) || (strcmp(emu->calc->hw.name, "ti86") == 0)) {
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "219 x 128");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "256 x 128");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "256 x 150");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "328 x 192");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "384 x 192");
+		gtk_combo_box_set_active(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), 1);
+	} else {
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "96 x 64");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "128 x 64");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "128 x 75");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "192 x 128");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), "288 x 192");
+		gtk_combo_box_set_active(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo), 1);
+	}
+}
+		
+
+
 /* Create the screenshot menu */
 void create_screenshot_window(TilemEmulatorWindow* ewin)
 {
@@ -264,13 +288,15 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	GtkWidget * config_expander = gtk_expander_new("config");
 	gtk_expander_set_expanded(GTK_EXPANDER(config_expander), TRUE);
 	
-	GtkWidget* vboxc0, *hboxc0, *hboxc1, *hboxc2; 
+	GtkWidget* vboxc0, *hboxc00, *hboxc0, *hboxc1, *hboxc2; 
 	vboxc0 = gtk_vbox_new(TRUE,2);
+	hboxc00 = gtk_hbox_new (TRUE, 1);
 	hboxc0 = gtk_hbox_new (TRUE, 1);
 	hboxc1 = gtk_hbox_new (TRUE, 1);
 	hboxc2 = gtk_hbox_new (TRUE, 1);
 	
 	gtk_container_add(GTK_CONTAINER(config_expander), vboxc0);
+	gtk_box_pack_start(GTK_BOX(vboxc0), hboxc00, 2, 3, 4);
 	gtk_box_pack_start(GTK_BOX(vboxc0), hboxc0, 2, 3, 4);
 	gtk_box_pack_start(GTK_BOX(vboxc0), hboxc1, 2, 3, 4);
 	gtk_box_pack_end(GTK_BOX(vboxc0), hboxc2, 2, 3, 4);
@@ -279,6 +305,12 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	/* Labels */	
 	GtkWidget * screenshot_dir_label = gtk_label_new("Screenshot folder :");
 	GtkWidget * animation_dir_label = gtk_label_new("Animations folder :");
+
+	create_size_combobox(emu);
+	
+	/* FIXME : USE DEPRECATED SYMBOLS */
+	GtkWidget * screenshot_size = gtk_label_new("Screenshot size :");
+		
 
 	/* FIXME : USE DEPRECATED SYMBOLS */
 	GtkWidget * screenshot_extension = gtk_label_new("Screenshot extension :");
@@ -303,7 +335,10 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(emu->ssdlg->folder_chooser_animation), animdir);
 	g_free(ssdir);
 	g_free(animdir);
-
+	
+	
+	gtk_box_pack_start (GTK_BOX (hboxc00), screenshot_size, 2, 3, 4);
+	gtk_box_pack_end (GTK_BOX (hboxc00), emu->ssdlg->ss_size_combo, 2, 3, 4);
 	gtk_box_pack_start (GTK_BOX (hboxc0), screenshot_extension, 2, 3, 4);
 	gtk_box_pack_end (GTK_BOX (hboxc0), emu->ssdlg->ss_ext_combo, 2, 3, 4);
 	gtk_box_pack_start (GTK_BOX (hboxc1), screenshot_dir_label, 2, 3, 4);
@@ -342,6 +377,54 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	gtk_widget_show_all(screenshotanim_win);
 }
 
+/* These stuff will be improved */
+/* Extract width from the "width x size" string */
+static int get_width(char* size) {
+	if(size) {
+		if(strncmp(size,"96", 2) == 0)
+			return 96; 	
+		if(strncmp(size,"128", 3) == 0)
+			return 128; 	
+		if(strncmp(size,"192", 3) == 0)
+			return 192; 	
+		if(strncmp(size,"219", 3) == 0)
+			return 219; 	
+		if(strncmp(size,"256", 3) == 0)
+			return 256; 	
+		if(strncmp(size,"328", 3) == 0)
+			return 328; 	
+		if(strncmp(size,"384", 3) == 0)
+			return 384; 	
+	}
+
+	return 192;
+}	
+
+/* Extract height from the "width x size" string */
+static int get_height(char* size) {
+	if(size) {
+		if((strcmp(size,"96 x 64") == 0) || (strcmp(size, "128 x 64") == 0))
+			return 64; 	
+		if(strcmp(size,"128 x 75") == 0)
+			return 75; 	
+		if(strcmp(size,"192 x 128") == 0) 
+			return 128; 	
+		if(strcmp(size, "256 x 128") == 0)
+			return 128; 	
+		if(strcmp(size,"256 x 150") == 0)
+			return 150; 	
+		if(strcmp(size, "288 x 192") == 0)
+			return 192; 	
+		if(strcmp(size, "328 x 192")==0) 
+			return 192; 	
+		if(strcmp(size, "384 x 192") == 0)
+			return 192; 	
+	}
+
+	return 128;
+}
+
+
 /* Callback for record button */
 static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	g_print("record event\n");
@@ -351,6 +434,14 @@ static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->play), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->playfrom), FALSE);
 	tilem_calc_emulator_begin_animation(emu, TRUE);
+	char* size = NULL;
+	
+	if(GTK_IS_COMBO_BOX(emu->ssdlg->ss_size_combo)) {
+		size = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo));
+		printf("size : %s\n", size);
+	}
+	tilem_animation_set_size(emu->anim, get_width(size), get_height(size)); 
+	g_free(size);
 }
 
 /* Only used for testing purpose */
