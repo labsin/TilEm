@@ -33,12 +33,12 @@
 
 #define GAMMA 2.2
 
-typedef struct _TilemAnimFrame {
+struct _TilemAnimFrame {
 	struct _TilemAnimFrame *next;
 	unsigned duration : 24;
 	unsigned contrast : 8;
 	byte data[1];
-} TilemAnimFrame;
+};
 
 struct _TilemAnimation {
 	GdkPixbufAnimation parent;
@@ -447,4 +447,43 @@ void tilem_animation_set_colors(TilemAnimation *anim,
 	                                        background->green >> 8,
 	                                        background->blue >> 8,
 	                                        GAMMA);
+}
+
+TilemAnimFrame *tilem_animation_next_frame(TilemAnimation *anim,
+                                           TilemAnimFrame *frm)
+{
+	g_return_val_if_fail(TILEM_IS_ANIMATION(anim), NULL);
+	if (frm)
+		return frm->next;
+	else
+		return anim->start;
+}
+
+int tilem_anim_frame_get_duration(TilemAnimFrame *frm)
+{
+	g_return_val_if_fail(frm != NULL, 0);
+	return frm->duration;
+}
+
+void tilem_animation_get_indexed_image(TilemAnimation *anim,
+                                       TilemAnimFrame *frm,
+                                       byte **buffer,
+                                       int *width, int *height)
+{
+	g_return_if_fail(TILEM_IS_ANIMATION(anim));
+	g_return_if_fail(frm != NULL);
+	g_return_if_fail(buffer != NULL);
+	g_return_if_fail(width != NULL);
+	g_return_if_fail(height != NULL);
+
+	*width = anim->image_width;
+	*height = anim->image_height;
+	*buffer = g_new(byte, anim->image_width * anim->image_height);
+
+	set_lcdbuf_from_frame(anim, anim->temp_buffer, frm);
+	tilem_draw_lcd_image_indexed(anim->temp_buffer, *buffer,
+	                             anim->image_width, anim->image_height,
+	                             anim->image_width,
+	                             TILEM_SCALE_SMOOTH);
+	anim->temp_buffer->data = NULL;
 }

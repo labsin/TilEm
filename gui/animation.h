@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 
 typedef struct _TilemAnimation TilemAnimation;
 typedef struct _TilemAnimationClass TilemAnimationClass;
+typedef struct _TilemAnimFrame TilemAnimFrame;
 
 /* Create a new TilemAnimation for the given display dimensions. */
 TilemAnimation * tilem_animation_new(int display_width,
@@ -49,6 +50,23 @@ void tilem_animation_set_size(TilemAnimation *anim, int width, int height);
 void tilem_animation_set_colors(TilemAnimation *anim,
                                 const GdkColor *foreground,
                                 const GdkColor *background);
+
+/* Retrieve the next frame of the animation.  If FRM is NULL, retrieve
+   the first frame.  If FRM is non-null, it must be a frame belonging
+   to this animation. */
+TilemAnimFrame *tilem_animation_next_frame(TilemAnimation *anim,
+                                           TilemAnimFrame *frm);
+
+/* Get the duration of this frame (milliseconds.) */
+int tilem_anim_frame_get_duration(TilemAnimFrame *frm);
+
+/* Convert frame to an indexed-color image buffer.  FRM must be a
+   frame belonging to this animation.  The returned buffer must be
+   freed with g_free(). */
+void tilem_animation_get_indexed_image(TilemAnimation *anim,
+                                       TilemAnimFrame *frm,
+                                       byte **buffer,
+                                       int *width, int *height);
 
 /* Save animation to a file.  TYPE is an ASCII string describing the
    type.  Options are specified by OPTION_KEYS and OPTION_VALUES (see
