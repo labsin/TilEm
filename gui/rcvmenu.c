@@ -42,8 +42,26 @@ static GtkTreeModel* fill_varlist();
 enum
 {
 	COL_NAME = 0,
+	COL_SIZE,
   	NUM_COLS
 };
+
+
+/* Create a new scrolled window with sensible default settings. */
+static GtkWidget *new_scrolled_window(GtkWidget *contents)
+{
+        GtkWidget *sw; 
+        sw = gtk_scrolled_window_new(NULL, NULL);
+        gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+                                       GTK_POLICY_AUTOMATIC,
+                                       GTK_POLICY_AUTOMATIC);
+        gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw),
+                                            GTK_SHADOW_IN);
+        gtk_container_add(GTK_CONTAINER(sw), contents);
+        return sw;
+}
+
+
 
 /* Create the GtkTreeView to show the stack */
 static GtkWidget *create_varlist()
@@ -65,11 +83,12 @@ static GtkWidget *create_varlist()
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	
+	
 	return treeview;
 }
 
 /* Create a new TilemDebugger. */
-void tilem_rcvmenu_new(char** list, int list_size)
+void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 {
 	int defwidth, defheight;
 
@@ -87,11 +106,21 @@ void tilem_rcvmenu_new(char** list, int list_size)
 	gtk_window_set_default_size(GTK_WINDOW(window), defwidth, defheight);
 	
 	GtkWidget* treeview = create_varlist();  	
-	GtkTreeModel *model = fill_varlist(list, list_size);
+	GtkTreeModel *model = fill_varlist(tilem_get_dirlist(emu));
         gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);	
 
-
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(window))), treeview);
+	GtkWidget * hbox = gtk_hbox_new(TRUE, 0);
+	GtkWidget * scroll = new_scrolled_window(treeview);
+	gtk_box_pack_start(GTK_BOX(hbox), scroll, TRUE, TRUE, FALSE);
+	
+	GtkWidget* vbox = gtk_vbox_new(TRUE, 0);
+	GtkWidget * save_button = gtk_button_new_with_label("Save");
+	gtk_box_pack_start(GTK_BOX(vbox), save_button, FALSE, FALSE, FALSE);
+	
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, FALSE);
+	
+	
+	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(window))), hbox);
 
 	
 	gtk_widget_show_all(GTK_WIDGET(window));
@@ -99,14 +128,14 @@ void tilem_rcvmenu_new(char** list, int list_size)
 
 }
 
-static GtkTreeModel* fill_varlist(char** list, int list_size)
+static GtkTreeModel* fill_varlist(char** list)
 {
 	GtkListStore  *store;
 	GtkTreeIter    iter;
 
 	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 	int i = 0;
-	for(i = 0; i < list_size; i++) {
+	for(i = 0; list[i]; i++) {
 		char* name = g_strdup( list[i]);
 		gtk_list_store_append (store, &iter);
 		gtk_list_store_set (store, &iter, COL_NAME, name, -1);

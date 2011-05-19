@@ -42,6 +42,13 @@ typedef struct _TilemCmdlineArg {
 typedef struct _TilemScreenshotDialog {
 	TilemCalcEmulator *emu;
 
+	/* Buttons */
+	GtkWidget* screenshot;
+	GtkWidget* record;
+	GtkWidget* stop;
+	GtkWidget* play;
+	GtkWidget* playfrom;
+
 	/* Screenshot menu */
 	GtkWidget* screenshot_preview_image; /* Review pixbuf */
 	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
@@ -233,8 +240,9 @@ int receive_var(CalcHandle * h);
 /* List the name and size of a var tree */
 void tilem_dirlist_display(GNode* tree);
 
-/* Get the number of vars */
-gint tilem_get_dirlist_size(GNode* tree);
+/* Get the list of varname. I plan to use it into a list (in a menu) */
+char ** tilem_get_dirlist(TilemCalcEmulator *emu);
+
 
 
 /* ##### pbar.c ##### */
@@ -355,4 +363,4 @@ GtkWidget * build_menu(TilemEmulatorWindow* ewin);
 
 
 /* ##### rcvmenu.c ##### */
-void tilem_rcvmenu_new(char** list, int size_list);
+void tilem_rcvmenu_new(TilemCalcEmulator *emu);

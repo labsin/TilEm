@@ -28,7 +28,7 @@
 #include "gui.h"
 
 
-static void write_global_header(FILE* fout, int width, int height);
+static void write_global_header(FILE* fp, int width, int height);
 static void write_global_footer(FILE* fp);
 static void write_extension_block(FILE* fout, word delay);
 static void write_image_block_start(FILE *fp, int width, int height);

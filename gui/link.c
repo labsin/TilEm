@@ -644,73 +644,7 @@ void tilem_dirlist_display(GNode* tree)
 }
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
-char ** tilem_get_dirlist(GNode* tree)
-{
-	GNode *vars = tree;
-	TreeInfo *info = (TreeInfo *)(tree->data);
-	int i, j;
-	char *utf8;
-  
-	if (tree == NULL)
-		return NULL;
-
-	i = 0;
-	GNode *parent = g_node_nth_child(vars, i);
-		
-	char ** list = g_new(char*, g_node_n_children(parent));
-	//printf("Number of children : %d\n", g_node_n_children(parent));
-
-
-	for (j = 0; j < (int)g_node_n_children(parent); j++)	//parse variables
-	{
-		GNode *child = g_node_nth_child(parent, j);
-		VarEntry *ve = (VarEntry *) (child->data);
-
-		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
-
-		list[j] = g_strdup(utf8);
-		g_free(utf8);
-	}
-	printf("\n");
-	return list;
-}
-
-/* Get the list of varname. I plan to use it into a list (in a menu) */
-gint tilem_get_dirlist_size(GNode* tree)
-{
-	GNode *vars = tree;
-	int i = 0;
-	
-	GNode *parent = g_node_nth_child(vars, i);
-		
-	return g_node_n_children(parent);
-
-}
-
-
-/* Print the var list and apps list */
-void get_dirlist(CalcHandle *ch) {
-	GNode *vars, *apps;
-	ticalcs_calc_get_dirlist(ch, &vars, &apps);
-	g_node_children_foreach(vars, G_TRAVERSE_ALL, print_child, vars);
-        //ticalcs_dirlist_display(vars);
-        //tilem_dirlist_display(vars);
-        char ** list = tilem_get_dirlist(vars);
-	int i=0;
-	for(i = 0; list[i]; i++)
-		printf("#%d : %s\n", i, list[i]);
-	printf("Number of children : %d\n", tilem_get_dirlist_size(vars));
-	tilem_rcvmenu_new(list, tilem_get_dirlist_size(vars));
-        //ticalcs_dirlist_display(apps);
-        //ticalcs_dirlist_destroy(&vars);
-        //ticalcs_dirlist_destroy(&apps);
-}
-
-/* Get var from calc to PC */
-/* This function should really use a separate thread because it freeze the calc
- * a long time. 
- */
-void get_var(TilemCalcEmulator *emu)
+char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 {
 	CableHandle* cbl;
 	CalcHandle* ch;
@@ -729,14 +663,34 @@ void get_var(TilemCalcEmulator *emu)
 	ch = ticalcs_handle_new(get_calc_model(emu->calc));
 	if (!ch) {
 		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
-		return;
 	}
 
 	ticalcs_cable_attach(ch, cbl);
-	get_dirlist(ch);	
-	//receive_var(ch);
-	
+	GNode *vars, *apps;
+	ticalcs_calc_get_dirlist(ch, &vars, &apps);
 
+	TreeInfo *info = (TreeInfo *)(vars->data);
+	int i, j;
+	char *utf8;
+  
+	i = 0;
+	GNode *parent = g_node_nth_child(vars, i);
+		
+	char ** list = g_new(char*, g_node_n_children(parent));
+	//printf("Number of children : %d\n", g_node_n_children(parent));
+
+
+	for (j = 0; j < (int)g_node_n_children(parent); j++)	//parse variables
+	{
+		GNode *child = g_node_nth_child(parent, j);
+		VarEntry *ve = (VarEntry *) (child->data);
+
+		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
+
+		list[j] = g_strdup(utf8);
+		g_free(utf8);
+	}
+	printf("\n");
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
 
@@ -747,10 +701,36 @@ void get_var(TilemCalcEmulator *emu)
 	tifiles_library_exit();
 	ticables_library_exit();
 
+
+	return list;
+}
+
+/* Get the list of varname. I plan to use it into a list (in a menu) */
+gint tilem_get_dirlist_size(GNode* tree)
+{
+	GNode *vars = tree;
+	int i = 0;
+	
+	GNode *parent = g_node_nth_child(vars, i);
+		
+	return g_node_n_children(parent);
+
+}
+
+
+/* Get var from calc to PC */
+/* This function should really use a separate thread because it freeze the calc
+ * a long time. 
+ */
+void get_var(TilemCalcEmulator *emu)
+{
+
+	tilem_rcvmenu_new(emu);
+	//receive_var(ch);
 }
 
 /* Get a var from calc and save it into filename on PC */
-int receive_var(CalcHandle * ch) {
+int receive_var_cmdline(CalcHandle * ch) {
 
 	/* Currently, this code is based on romain lievins example */
 	char filename[1024] = ""; 

@@ -246,11 +246,17 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	gtk_box_pack_end(GTK_BOX(hbox), vbox, 2, 3, 4);
 
 		
-	GtkWidget* screenshot_button = gtk_button_new_with_label ("Shoot!");
+	GtkWidget* screenshot = gtk_button_new_with_label ("Shoot!");
 	GtkWidget* record = gtk_button_new_with_label ("Record");
 	GtkWidget* stop = gtk_button_new_with_label("Stop");
+	gtk_widget_set_sensitive(GTK_WIDGET(stop), FALSE);
 	GtkWidget* play = gtk_button_new_with_label ("Replay (detached)");
 	GtkWidget* playfrom = gtk_button_new_with_label ("Replay (browse)");
+	emu->ssdlg->screenshot = screenshot;
+	emu->ssdlg->record = record;
+	emu->ssdlg->stop = stop;
+	emu->ssdlg->play = play;
+	emu->ssdlg->playfrom = playfrom;
 
 
 
@@ -310,8 +316,8 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	gtk_widget_show(emu->ssdlg->folder_chooser_screenshot);
 	/* <<<< */	
 	
-	gtk_box_pack_start (GTK_BOX (vbox), screenshot_button, FALSE, 3, 4);
-	gtk_widget_show(screenshot_button);
+	gtk_box_pack_start (GTK_BOX (vbox), screenshot, FALSE, 3, 4);
+	gtk_widget_show(screenshot);
 	gtk_box_pack_start (GTK_BOX (vbox), record, FALSE, 3, 4);
 	gtk_widget_show(record);
 	//gtk_box_pack_start (GTK_BOX (hbox), add_frame, 2, 3, 4);
@@ -325,7 +331,7 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 
 	gtk_box_pack_end (GTK_BOX (parent_vbox), config_expander, FALSE, 3, 4);
 	
-	g_signal_connect(GTK_OBJECT(screenshot_button), "clicked", G_CALLBACK(on_screenshot), emu);
+	g_signal_connect(GTK_OBJECT(screenshot), "clicked", G_CALLBACK(on_screenshot), emu);
 	g_signal_connect(GTK_OBJECT(record), "clicked", G_CALLBACK(on_record), emu);
 	//g_signal_connect(GTK_OBJECT(add_frame), "clicked", G_CALLBACK(on_add_frame), emu);
 	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), emu);
@@ -339,6 +345,11 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 /* Callback for record button */
 static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	g_print("record event\n");
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->screenshot), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->record), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->stop), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->play), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->playfrom), FALSE);
 	tilem_calc_emulator_begin_animation(emu, TRUE);
 }
 
@@ -366,7 +377,12 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu)
 
 	anim = tilem_calc_emulator_end_animation(emu);
 	set_current_animation(emu->ssdlg, anim);
-
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->screenshot), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->record), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->stop), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->play), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->playfrom), TRUE);
+	
 	/*
 	g_print("stop event\n");
 	char* dest = NULL, *dir;
