@@ -63,7 +63,11 @@ typedef struct _TilemCalcEmulator {
 
 	GMutex *lcd_mutex;
 	TilemLCDBuffer *lcd_buffer;
+	TilemLCDBuffer *tmp_lcd_buffer;
 	TilemGrayLCD *glcd;
+
+	TilemAnimation *anim; /* animation being recorded */
+	gboolean anim_grayscale; /* use grayscale in animation */
 
 	char *rom_file_name;
 
@@ -135,6 +139,20 @@ void tilem_calc_emulator_release_queued_key(TilemCalcEmulator *emu);
 /* If input queue is empty, press key immediately; otherwise, add to
    the input queue.  Return TRUE if key was added to the queue. */
 gboolean tilem_calc_emulator_press_or_queue(TilemCalcEmulator *emu, int key);
+
+/* Retrieve a static screenshot of current calculator screen.
+   Returned object has a reference count of 1 (free it with
+   g_object_unref().) */
+TilemAnimation * tilem_calc_emulator_get_screenshot(TilemCalcEmulator *emu,
+                                                    gboolean grayscale);
+
+/* Begin recording an animated screenshot. */
+void tilem_calc_emulator_begin_animation(TilemCalcEmulator *emu,
+                                         gboolean grayscale);
+
+/* Finish recording an animated screenshot.  Returned object has a
+   reference count of 1 (free it with g_object_unref().) */
+TilemAnimation * tilem_calc_emulator_end_animation(TilemCalcEmulator *emu);
 
 /* Add a file to the link queue. */
 void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,

@@ -72,7 +72,8 @@ compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(DEFS) \
 link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
 
 common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
-	gui.h emulator.h debugger.h emuwin.h skinops.h debuginfo.h gtk-compat.h msgbox.h
+	gui.h emulator.h debugger.h emuwin.h skinops.h animation.h \
+	debuginfo.h gtk-compat.h msgbox.h
 
 all: tilem2@EXEEXT@
 
@@ -156,7 +157,7 @@ pbar.o: pbar.c $(common_headers)
 	$(compile) -c $(srcdir)/pbar.c
 
 # Screenshot/animation recording
-animation.o: animation.c animation.h $(common_headers)
+animation.o: animation.c $(common_headers)
 	$(compile) -c $(srcdir)/animation.c
 
 

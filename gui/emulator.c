@@ -37,6 +37,8 @@
 #define GRAY_WINDOW_SIZE 2
 #define GRAY_SAMPLE_INT 200
 
+#define MILLISEC_PER_FRAME ((MICROSEC_PER_TICK * TICKS_PER_FRAME) / 1000)
+
 static void update_link(TilemCalcEmulator *emu)
 {
 	int b;
@@ -101,6 +103,41 @@ static gboolean show_debugger(gpointer data)
 	return FALSE;
 }
 
+static void update_screen(TilemCalcEmulator *emu)
+{
+	g_mutex_lock(emu->lcd_mutex);
+
+	if (emu->glcd)
+		tilem_gray_lcd_get_frame(emu->glcd, emu->lcd_buffer);
+	else
+		tilem_lcd_get_frame(emu->calc, emu->lcd_buffer);
+
+	if (emu->anim) {
+		if (emu->anim_grayscale) {
+			tilem_animation_append_frame(emu->anim,
+			                             emu->lcd_buffer,
+			                             MILLISEC_PER_FRAME);
+		}
+		else {
+			tilem_lcd_get_frame(emu->calc, emu->tmp_lcd_buffer);
+			tilem_animation_append_frame(emu->anim,
+			                             emu->tmp_lcd_buffer,
+			                             MILLISEC_PER_FRAME);
+		}
+	}
+
+	g_mutex_unlock(emu->lcd_mutex);
+
+	g_idle_add_full(G_PRIORITY_DEFAULT, &refresh_lcd, emu, NULL);
+}
+
+static void cancel_animation(TilemCalcEmulator *emu)
+{
+	if (emu->anim)
+		g_object_unref(emu->anim);
+	emu->anim = NULL;
+}
+
 static gpointer core_thread(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -133,11 +170,8 @@ static gpointer core_thread(gpointer data)
 			update_link(emu);
 
 		ticks--;
-		if (!ticks) {
-			g_mutex_lock(emu->lcd_mutex);
-			tilem_gray_lcd_get_frame(emu->glcd, emu->lcd_buffer);
-			g_mutex_unlock(emu->lcd_mutex);
-		}
+		if (!ticks)
+			update_screen(emu);
 
 		if (emu->calc->z80.stop_reason & TILEM_STOP_BREAKPOINT) {
 			emu->paused = TRUE;
@@ -146,11 +180,8 @@ static gpointer core_thread(gpointer data)
 
 		g_mutex_unlock(emu->calc_mutex);
 
-		if (!ticks) {
-			g_idle_add_full(G_PRIORITY_DEFAULT,
-			                &refresh_lcd, emu, NULL);
+		if (!ticks)
 			ticks = TICKS_PER_FRAME;
-		}
 
 		if (emu->limit_speed) {
 			g_timer_elapsed(tmr, &tcur);
@@ -239,6 +270,8 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 
 	if (emu->lcd_buffer)
 		tilem_lcd_buffer_free(emu->lcd_buffer);
+	if (emu->tmp_lcd_buffer)
+		tilem_lcd_buffer_free(emu->tmp_lcd_buffer);
 	if (emu->glcd)
 		tilem_gray_lcd_free(emu->glcd);
 	if (emu->calc)
@@ -377,6 +410,8 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	g_mutex_lock(emu->calc_mutex);
 
+	cancel_animation(emu);
+
 	if (emu->glcd)
 		tilem_gray_lcd_free(emu->glcd);
 	if (emu->calc)
@@ -384,6 +419,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	emu->calc = calc;
 	emu->lcd_buffer = tilem_lcd_buffer_new();
+	emu->tmp_lcd_buffer = tilem_lcd_buffer_new();
 	emu->glcd = tilem_gray_lcd_new(calc, GRAY_WINDOW_SIZE,
 	                               GRAY_SAMPLE_INT);
 
@@ -648,4 +684,58 @@ gboolean tilem_calc_emulator_press_or_queue(TilemCalcEmulator *emu,
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
+}
+
+TilemAnimation * tilem_calc_emulator_get_screenshot(TilemCalcEmulator *emu,
+                                                    gboolean grayscale)
+{
+	TilemAnimation *anim;
+
+	g_return_val_if_fail(emu != NULL, NULL);
+	g_return_val_if_fail(emu->calc != NULL, NULL);
+
+	anim = tilem_animation_new(emu->calc->hw.lcdwidth,
+	                           emu->calc->hw.lcdheight);
+
+	g_mutex_lock(emu->calc_mutex);
+
+	if (grayscale && emu->glcd)
+		tilem_gray_lcd_get_frame(emu->glcd, emu->tmp_lcd_buffer);
+	else
+		tilem_lcd_get_frame(emu->calc, emu->tmp_lcd_buffer);
+
+	tilem_animation_append_frame(anim, emu->tmp_lcd_buffer, 1);
+
+	g_mutex_unlock(emu->calc_mutex);
+
+	return anim;
+}
+
+void tilem_calc_emulator_begin_animation(TilemCalcEmulator *emu,
+                                         gboolean grayscale)
+{
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(emu->calc != NULL);
+
+	g_mutex_lock(emu->calc_mutex);
+	cancel_animation(emu);
+	emu->anim = tilem_animation_new(emu->calc->hw.lcdwidth,
+	                                emu->calc->hw.lcdheight);
+	emu->anim_grayscale = grayscale;
+	g_mutex_unlock(emu->calc_mutex);
+}
+
+TilemAnimation * tilem_calc_emulator_end_animation(TilemCalcEmulator *emu)
+{
+	TilemAnimation *anim;
+
+	g_return_val_if_fail(emu != NULL, NULL);
+	g_return_val_if_fail(emu->anim != NULL, NULL);
+
+	g_mutex_lock(emu->calc_mutex);
+	anim = emu->anim;
+	emu->anim = NULL;
+	g_mutex_unlock(emu->calc_mutex);
+
+	return anim;
 }
