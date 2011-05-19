@@ -48,6 +48,8 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
 	GtkWidget* ss_ext_combo; /* Folder chooser dialog (animated gif)*/
 
+	TilemAnimation *current_anim;
+
 	/* Flags */
 	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
 } TilemScreenshotDialog;

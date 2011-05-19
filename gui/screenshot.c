@@ -339,8 +339,7 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 /* Callback for record button */
 static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	g_print("record event\n");
-	start_spinner(emu);
-	tilem_animation_start(emu);
+	tilem_calc_emulator_begin_animation(emu, TRUE);
 }
 
 /* Only used for testing purpose */
@@ -350,8 +349,25 @@ void on_add_frame(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	tilem_animation_add_frame(emu);
 }
 
+static void set_current_animation(TilemScreenshotDialog *ssdlg,
+                                  TilemAnimation *anim)
+{
+	if (ssdlg->current_anim)
+		g_object_unref(ssdlg->current_anim);
+	ssdlg->current_anim = anim;
+	gtk_image_set_from_animation(GTK_IMAGE(ssdlg->screenshot_preview_image),
+	                             GDK_PIXBUF_ANIMATION(anim));
+}
+
 /* Callback for stop button (stop the recording) */
-static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
+static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu)
+{
+	TilemAnimation *anim;
+
+	anim = tilem_calc_emulator_end_animation(emu);
+	set_current_animation(emu->ssdlg, anim);
+
+	/*
 	g_print("stop event\n");
 	char* dest = NULL, *dir;
 
@@ -382,12 +398,21 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	g_free(dest);
 
 	delete_spinner_and_put_logo(emu);
+	*/
 }
 
 /* Callback for screenshot button (take a screenshot) */
-static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
+static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu)
+{
+	TilemAnimation *anim;
+
+	anim = tilem_calc_emulator_get_screenshot(emu, TRUE);
+	set_current_animation(emu->ssdlg, anim);
+
+	/*
 	screenshot(emu->ewin);
 	g_print("screenshot event\n");
+	*/
 }
 
 
