@@ -27,9 +27,11 @@
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
+#include <glib/gstdio.h>
+#include <ticalcs.h>
 #include <tilem.h>
 
-#include "animation.h"
+#include "gui.h"
 
 #define GAMMA 2.2
 
@@ -486,4 +488,58 @@ void tilem_animation_get_indexed_image(TilemAnimation *anim,
 	                             anim->image_width,
 	                             TILEM_SCALE_SMOOTH);
 	anim->temp_buffer->data = NULL;
+}
+
+gboolean tilem_animation_save(TilemAnimation *anim,
+                              const char *fname, const char *type,
+                              char **option_keys, char **option_values,
+                              GError **err)
+{
+	FILE *fp;
+	char *dname;
+	int errnum;
+	GdkPixbuf *pb;
+	gboolean status;
+
+	g_return_val_if_fail(TILEM_IS_ANIMATION(anim), FALSE);
+	g_return_val_if_fail(fname != NULL, FALSE);
+	g_return_val_if_fail(type != NULL, FALSE);
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
+
+	if (strcmp(type, "gif") != 0) {
+		pb = gdk_pixbuf_animation_get_static_image
+			(GDK_PIXBUF_ANIMATION(anim));
+		status = gdk_pixbuf_savev(pb, fname, type,
+		                          option_keys, option_values,
+		                          err);
+		g_object_unref(pb);
+		return status;
+	}
+
+	fp = g_fopen(fname, "wb");
+	if (!fp) {
+		errnum = errno;
+		dname = g_filename_display_name(fname);
+		g_set_error(err, G_FILE_ERROR,
+		            g_file_error_from_errno(errnum),
+		            "Failed to open '%s' for writing: %s",
+		            dname, g_strerror(errnum));
+		g_free(dname);
+		return FALSE;
+	}
+
+	tilem_animation_write_gif(anim, fp);
+
+	if (fclose(fp)) {
+		errnum = errno;
+		dname = g_filename_display_name(fname);
+		g_set_error(err, G_FILE_ERROR,
+		            g_file_error_from_errno(errnum),
+		            "Error while closing '%s': %s",
+		            dname, g_strerror(errnum));
+		g_free(dname);
+		return FALSE;
+	}
+
+	return TRUE;
 }
