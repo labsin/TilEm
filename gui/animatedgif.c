@@ -256,3 +256,50 @@ gboolean tilem_animation_record(gpointer data) {
 
 }
 
+
+void tilem_animation_write_gif(TilemAnimation *anim, FILE *fp)
+{
+	GdkPixbufAnimation *ganim;
+	int width, height, delay;
+	byte *image;
+	TilemAnimFrame *frm;
+	gboolean is_static;
+
+	g_return_if_fail(TILEM_IS_ANIMATION(anim));
+	g_return_if_fail(fp != NULL);
+
+	ganim = GDK_PIXBUF_ANIMATION(anim);
+	width = gdk_pixbuf_animation_get_width(ganim);
+	height = gdk_pixbuf_animation_get_height(ganim);
+	is_static = gdk_pixbuf_animation_is_static_image(ganim);
+
+	frm = tilem_animation_next_frame(anim, NULL);
+	g_return_if_fail(frm != NULL);
+
+	write_global_header(fp, width, height);
+
+	if (!is_static)
+		write_application_extension(fp);
+
+	write_comment(fp);
+
+	while (frm) {
+		if (!is_static) {
+			delay = tilem_anim_frame_get_duration(frm) / 10;
+			if (delay > 0xffff)
+				delay = 0xffff;
+			write_extension_block(fp, delay);
+		}
+
+		tilem_animation_get_indexed_image(anim, frm, &image,
+		                                  &width, &height);
+		write_image_block_start(fp, width, height);
+		GifEncode(fp, image, 8, width * height);
+		write_image_block_end(fp);
+		g_free(image);
+
+		frm = tilem_animation_next_frame(anim, frm);
+	}
+
+	write_global_footer(fp);
+}

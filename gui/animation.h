@@ -32,6 +32,8 @@ typedef struct _TilemAnimation TilemAnimation;
 typedef struct _TilemAnimationClass TilemAnimationClass;
 typedef struct _TilemAnimFrame TilemAnimFrame;
 
+GType tilem_animation_get_type(void) G_GNUC_CONST;
+
 /* Create a new TilemAnimation for the given display dimensions. */
 TilemAnimation * tilem_animation_new(int display_width,
                                      int display_height);

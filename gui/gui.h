@@ -317,6 +317,9 @@ gboolean tilem_animation_record(gpointer data);
 /* Stop recording screenshot */
 void tilem_animation_stop(TilemCalcEmulator* emu);
 
+/* Save a TilemAnimation to a GIF file. */
+void tilem_animation_write_gif(TilemAnimation *anim, FILE *fp);
+
 
 
 /* ##### gifencod.c ##### */
