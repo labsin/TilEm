@@ -368,7 +368,7 @@ TilemAnimation * tilem_animation_new(int display_width, int display_height)
 	anim->image_height = display_height;
 
 	anim->temp_buffer = tilem_lcd_buffer_new();
-	anim->palette = tilem_color_palette_new(0, 0, 0, 255, 255, 255, GAMMA);
+	anim->palette = tilem_color_palette_new(255, 255, 255, 0, 0, 0, GAMMA);
 
 	dummy_frame = alloc_frame(anim->frame_size);
 	dummy_frame->duration = 0;
