@@ -41,6 +41,8 @@ typedef struct _TilemCmdlineArg {
 /* Screenshot view (widgets and flags) */
 typedef struct _TilemScreenshotDialog {
 	TilemCalcEmulator *emu;
+	
+	GtkWidget* screenshot_win;
 
 	/* Buttons */
 	GtkWidget* screenshot;
