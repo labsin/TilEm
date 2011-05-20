@@ -428,6 +428,17 @@ static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 
 static void on_save(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	printf("on_save\n");
+	/* FIXME : use Benjamin's function instead mine */
+	char* filename = select_file_for_save(emu, NULL);
+	if(filename) {
+		char* format = strdup("gif");	
+		if(GTK_IS_COMBO_BOX(emu->ssdlg->ss_ext_combo))
+			format = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo));
+		tilem_animation_save(emu->ssdlg->current_anim, filename,  format, NULL, NULL, NULL);
+		printf("Saved as : %s\n", filename);
+		g_free(format);
+		g_free(filename);
+	}
 
 
 }
