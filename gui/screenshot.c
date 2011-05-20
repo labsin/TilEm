@@ -33,6 +33,7 @@
 #include "files.h"
 
 static void on_screenshot();
+static void on_save(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
 static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
 static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
 static void on_play(G_GNUC_UNUSED GtkWidget* win,TilemCalcEmulator* emu);
@@ -213,6 +214,9 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	else 
 		emu->ssdlg->screenshot_preview_image = gtk_image_new();
 	g_free(tilem_logo);
+
+	
+
 	gtk_layout_put(GTK_LAYOUT(layout), emu->ssdlg->screenshot_preview_image, 10, 10);
 	gtk_container_add(GTK_CONTAINER(screenshot_preview), layout);
 
@@ -228,11 +232,14 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	gtk_widget_set_sensitive(GTK_WIDGET(stop), FALSE);
 	GtkWidget* play = gtk_button_new_with_label ("Replay (detached)");
 	GtkWidget* playfrom = gtk_button_new_with_label ("Replay (browse)");
+	GtkWidget* save = gtk_button_new_with_label("Save");
+	gtk_widget_set_sensitive(GTK_WIDGET(save), FALSE);
 	emu->ssdlg->screenshot = screenshot;
 	emu->ssdlg->record = record;
 	emu->ssdlg->stop = stop;
 	emu->ssdlg->play = play;
 	emu->ssdlg->playfrom = playfrom;
+	emu->ssdlg->save = save;
 
 	/* >>>> SOUTH */	
 	GtkWidget * config_expander = gtk_expander_new("config");
@@ -266,7 +273,6 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 
 	refresh_size_spin(emu->ssdlg->screenshot_win, emu); 
 	
-		
 
 	/* FIXME : USE DEPRECATED SYMBOLS */
 	emu->ssdlg->ss_ext_combo = gtk_combo_box_new_text(); 
@@ -319,6 +325,8 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	gtk_widget_show(play);
 	gtk_box_pack_start (GTK_BOX (vbox), playfrom, FALSE, 3, 4);
 	gtk_widget_show(playfrom);
+	gtk_box_pack_start (GTK_BOX (vbox), emu->ssdlg->save, 2, 3, 4);
+	gtk_widget_show(emu->ssdlg->save);
 
 	gtk_box_pack_end (GTK_BOX (parent_vbox), config_expander, FALSE, 3, 4);
 	
@@ -328,6 +336,7 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	g_signal_connect(GTK_OBJECT(stop), "clicked", G_CALLBACK(on_stop), emu);
 	g_signal_connect(GTK_OBJECT(play), "clicked", G_CALLBACK(on_play), emu);
 	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), emu);
+	g_signal_connect(GTK_OBJECT(save), "clicked", G_CALLBACK(on_save), emu);
 	g_signal_connect(GTK_OBJECT(emu->ssdlg->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), emu);
 	g_signal_connect(GTK_OBJECT(emu->ssdlg->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), emu);
 	g_signal_connect(GTK_OBJECT(emu->ssdlg->ss_size_combo), "changed", G_CALLBACK(refresh_size_spin), emu);
@@ -390,6 +399,7 @@ static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->stop), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->play), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->playfrom), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->save), FALSE);
 	tilem_calc_emulator_begin_animation(emu, TRUE);
 	char* size = NULL;
 	
@@ -413,6 +423,13 @@ static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 
 	tilem_animation_set_size(emu->anim, width, height); 
 	g_free(size);
+}
+
+
+static void on_save(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
+	printf("on_save\n");
+
+
 }
 
 /* Only used for testing purpose */
@@ -449,6 +466,7 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu)
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->stop), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->play), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->playfrom), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->save), TRUE);
 	
 	/*
 	g_print("stop event\n");
@@ -491,6 +509,7 @@ static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu)
 
 	anim = tilem_calc_emulator_get_screenshot(emu, TRUE);
 	set_current_animation(emu->ssdlg, anim);
+	gtk_widget_set_sensitive(GTK_WIDGET(emu->ssdlg->save), TRUE);
 
 	/*
 	screenshot(emu->ewin);

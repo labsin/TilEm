@@ -45,6 +45,7 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* screenshot_win;
 
 	/* Buttons */
+	GtkWidget* save;
 	GtkWidget* screenshot;
 	GtkWidget* record;
 	GtkWidget* stop;
