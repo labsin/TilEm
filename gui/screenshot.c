@@ -47,6 +47,7 @@ static void change_review_image(TilemCalcEmulator * emu, char * new_image);
 static void start_spinner(TilemCalcEmulator * emu);
 static void stop_spinner(TilemCalcEmulator * emu);
 static void delete_spinner_and_put_logo(TilemCalcEmulator * emu);
+static void on_change_size_combo(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu);
 
 /* UNUSED */
 void on_add_frame(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
@@ -303,17 +304,19 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 
 
 	/* Labels */	
+	//GtkWidget * screenshot_size = gtk_label_new("Screenshot size :");
+	GtkWidget * screenshot_extension = gtk_label_new("Screenshot extension :");
 	GtkWidget * screenshot_dir_label = gtk_label_new("Screenshot folder :");
 	GtkWidget * animation_dir_label = gtk_label_new("Animations folder :");
+	
+	emu->ssdlg->width_spin = gtk_spin_button_new_with_range(0, 500, 1);
+	emu->ssdlg->height_spin = gtk_spin_button_new_with_range(0, 500, 1);
 
 	create_size_combobox(emu);
 	
-	/* FIXME : USE DEPRECATED SYMBOLS */
-	GtkWidget * screenshot_size = gtk_label_new("Screenshot size :");
 		
 
 	/* FIXME : USE DEPRECATED SYMBOLS */
-	GtkWidget * screenshot_extension = gtk_label_new("Screenshot extension :");
 	emu->ssdlg->ss_ext_combo = gtk_combo_box_new_text(); 
 	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo), "png");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo), "jpeg");
@@ -337,7 +340,8 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	g_free(animdir);
 	
 	
-	gtk_box_pack_start (GTK_BOX (hboxc00), screenshot_size, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (hboxc00), emu->ssdlg->width_spin, 2, 3, 4);
+	gtk_box_pack_start (GTK_BOX (hboxc00), emu->ssdlg->height_spin, 2, 3, 4);
 	gtk_box_pack_end (GTK_BOX (hboxc00), emu->ssdlg->ss_size_combo, 2, 3, 4);
 	gtk_box_pack_start (GTK_BOX (hboxc0), screenshot_extension, 2, 3, 4);
 	gtk_box_pack_end (GTK_BOX (hboxc0), emu->ssdlg->ss_ext_combo, 2, 3, 4);
@@ -374,6 +378,7 @@ void create_screenshot_window(TilemEmulatorWindow* ewin)
 	g_signal_connect(GTK_OBJECT(playfrom), "clicked", G_CALLBACK(on_playfrom), emu);
 	g_signal_connect(GTK_OBJECT(emu->ssdlg->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), emu);
 	g_signal_connect(GTK_OBJECT(emu->ssdlg->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), emu);
+	g_signal_connect(GTK_OBJECT(emu->ssdlg->ss_size_combo), "changed", G_CALLBACK(on_change_size_combo), emu);
 	gtk_widget_show_all(screenshotanim_win);
 }
 
@@ -440,7 +445,17 @@ static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu) {
 		size = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo));
 		printf("size : %s\n", size);
 	}
-	tilem_animation_set_size(emu->anim, get_width(size), get_height(size)); 
+	int height = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(emu->ssdlg->height_spin));
+	int width = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(emu->ssdlg->width_spin));
+
+	/* Normally this test is redundant because get_height et get_width already have a default return value */
+	if(height <= 0 || height > 384)
+		height = 128;
+	
+	if(width <= 0 || width > 384)
+		height = 128;
+
+	tilem_animation_set_size(emu->anim, width, height); 
 	g_free(size);
 }
 
@@ -619,7 +634,16 @@ static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 
 	g_free(src);
 }
-	 
+
+static void on_change_size_combo(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
+	printf("toto\n");
+	if(GTK_IS_COMBO_BOX(emu->ssdlg->ss_size_combo)) {
+		char *size = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->ssdlg->ss_size_combo));
+		printf("size : %s\n", size);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(emu->ssdlg->width_spin), get_width(size));
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(emu->ssdlg->height_spin), get_height(size));
+	}
+} 
 
 static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {
 	char* folder = NULL;
@@ -630,6 +654,7 @@ static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemC
 		                 NULL);
 	g_free(folder);
 }
+
 
 	
 static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, TilemCalcEmulator* emu) {

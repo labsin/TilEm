@@ -55,6 +55,9 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
 	GtkWidget* ss_ext_combo; /* Combo box for file format */
 	GtkWidget* ss_size_combo; /* Combo box for size */
+	GtkWidget* width_spin;
+	GtkWidget* height_spin;
+	
 
 	TilemAnimation *current_anim;
 
@@ -345,6 +348,8 @@ void create_screenshot_window(TilemEmulatorWindow* ewin);
 
 /* Take a single screenshot */
 void screenshot(TilemEmulatorWindow *ewin);
+
+
 
 
 /* ##### keybindings.c ##### */
