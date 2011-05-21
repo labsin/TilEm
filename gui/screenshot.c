@@ -145,28 +145,26 @@ static char* find_free_filename(const char* folder,
                                 const char* extension)
 {
 	int i;
-	char* filename;
+	char *filename, *prefix;
+
+	if(folder)
+		prefix = g_build_filename(folder, basename, NULL);
+	else
+		prefix = g_build_filename(basename, NULL);
 
 	/* I do not use a while and limit number to 1000 because for any reason, if there's a problem in this scope
 	   I don't want to freeze tilem (if tilem don't find a free filename and never return anything)
 	   Limit to 1000 prevent this problem but if you prefer we could use a while wich wait a valid filename... */
 	for(i=0; i<999; i++) {
-		if(folder) {
-			filename = g_build_filename(folder, basename, NULL);	
-			/*printf("path : %s\n", filename); */
-		} else {
-			filename = g_build_filename(basename, NULL);	
-			/*printf("path : %s\n", filename);*/
-		}
-		filename = g_strdup_printf("%s%03d%c%s", filename, i, '.',  extension );
-		/*printf("path : %s\n", filename); */
-		
+		filename = g_strdup_printf("%s%03d.%s", prefix, i, extension);
 		if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+			g_free(prefix);
 			return filename;
-			break;
 		}
+		g_free(filename);
 	}
-	
+
+	g_free(prefix);
 	return NULL;
 }
 
@@ -553,7 +551,7 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	}
 
 	filename = find_free_filename(dir, "screenshot", format);
-	basename = g_filename_display_basename(filename);
+	basename = (filename ? g_filename_display_basename(filename) : NULL);
 	g_free(filename);
 	g_free(format);
 
