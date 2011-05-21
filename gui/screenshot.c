@@ -39,22 +39,25 @@
 #define DEFAULT_HEIGHT_128  128
 #define DEFAULT_FORMAT      "png"
 
+struct imgsize {
+	int width;
+	int height;
+};
+
+static const struct imgsize normal_sizes[] =
+	{ { 96, 64 }, { 192, 128 }, { 288, 192 } };
+
+static const struct imgsize wide_sizes[] =
+	/* actual aspect ratio is 94:55 or 1.709:1 */
+	{ { 128, 64 }, { 128, 75 },
+	  { 219, 128 }, { 256, 128 }, { 256, 150 },
+	  { 328, 192 }, { 384, 192 } };
+
 static void on_screenshot();
 static void on_save(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg);
 static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg);
 static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg);
-static void on_play(G_GNUC_UNUSED GtkWidget* win,TilemScreenshotDialog *ssdlg);
-static void on_playfrom(G_GNUC_UNUSED GtkWidget* win,TilemScreenshotDialog *ssdlg);
-static void on_destroy_playview(G_GNUC_UNUSED GtkWidget* playwin);
-static gboolean on_destroy_screenshot(GtkWidget* screenshotanim_win, GdkEvent *event, gpointer data);
-static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemScreenshotDialog *ssdlg);
-static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, TilemScreenshotDialog *ssdlg);
-static gboolean save_screenshot(TilemCalcEmulator *emu, const char *filename, const char *format);
 char* find_free_filename(const char* directory, const char* filename, const char* extension);
-static void change_review_image(TilemCalcEmulator * emu, char * new_image);
-static void refresh_size_spin(G_GNUC_UNUSED GtkWidget * win, TilemScreenshotDialog *ssdlg);
-static int get_width_from_size_combo(char* size);
-static int get_height_from_size_combo(char* size);
 
 static gboolean is_wide_screen(TilemCalcEmulator *emu)
 {
@@ -161,277 +164,312 @@ char* find_free_filename(const char* folder, const char* basename, const char* e
 	return NULL;
 }
 
-
-/* Replace the current logo/review image by the recent shot/animation */
-static void change_review_image(TilemCalcEmulator * emu, char * new_image) {
-
-	/* Test if the widget exists (should exists), if not don't try to change the image */
-	if(GTK_IS_WIDGET(emu->ssdlg->screenshot_preview_image)) {
-		GtkWidget * screenshot_preview = gtk_widget_get_parent(GTK_WIDGET(emu->ssdlg->screenshot_preview_image));
-		if(GTK_IS_SPINNER(emu->ssdlg->screenshot_preview_image)) {
-			gtk_spinner_stop(GTK_SPINNER(emu->ssdlg->screenshot_preview_image));
-		}
-		gtk_object_destroy(GTK_OBJECT(emu->ssdlg->screenshot_preview_image));
-		emu->ssdlg->screenshot_preview_image = gtk_image_new_from_file(new_image);
-		gtk_widget_show(emu->ssdlg->screenshot_preview_image);
-		gtk_layout_put(GTK_LAYOUT(screenshot_preview), emu->ssdlg->screenshot_preview_image, 10, 10);
-		gtk_widget_show(screenshot_preview);
-	}
-
-}
-
-/* Destroy the screenshot box */
-static gboolean on_destroy_screenshot(GtkWidget* screenshotanim_win,
-                                      G_GNUC_UNUSED GdkEvent *event,
-                                      G_GNUC_UNUSED gpointer data)
+/* Change the review image to set the current animation */
+static void set_current_animation(TilemScreenshotDialog *ssdlg,
+                                  TilemAnimation *anim)
 {
-	gtk_widget_hide(screenshotanim_win);
-	return TRUE;
+	if (ssdlg->current_anim)
+		g_object_unref(ssdlg->current_anim);
+	ssdlg->current_anim = anim;
+
+	gtk_image_set_from_animation(GTK_IMAGE(ssdlg->screenshot_preview_image),
+	                             GDK_PIXBUF_ANIMATION(anim));
+	/* Need to call gtk_widget_show because we hide it while recording */
+	gtk_widget_show(GTK_WIDGET(ssdlg->screenshot_preview_image));
 }
 
-/* Create the size combo for default size */
-static void create_size_combobox(TilemScreenshotDialog *ssdlg) {
-	
-	ssdlg->ss_size_combo = gtk_combo_box_new_text(); 
-	
-	/* We don't use the same default because ti85 and ti86 are wide screen */	
-	if (is_wide_screen(ssdlg->emu)) {
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "219 x 128");
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "256 x 128"); /* DEFAULT */ 
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "256 x 150");
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "328 x 192");
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "384 x 192");
-		gtk_combo_box_set_active(GTK_COMBO_BOX(ssdlg->ss_size_combo), 1); /* Default selection */
-	} else {
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "96 x 64");
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "128 x 64"); /* DEFAULT */
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "128 x 75");
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "192 x 128");
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_size_combo), "288 x 192");
-		gtk_combo_box_set_active(GTK_COMBO_BOX(ssdlg->ss_size_combo), 1); /* Default selection */
+static void dialog_response(GtkDialog *dialog, gint response, gpointer data)
+{
+	TilemScreenshotDialog *ssdlg = data;
+
+	if (response == GTK_RESPONSE_ACCEPT) {
+		on_save(NULL, ssdlg);
 	}
+
+	gtk_widget_hide(GTK_WIDGET(dialog));
+	on_stop(NULL, ssdlg);
+	set_current_animation(ssdlg, NULL);
+}
+
+static void set_size_spin_buttons(TilemScreenshotDialog *ssdlg,
+                                  int width, int height)
+{
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(ssdlg->width_spin), width);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(ssdlg->height_spin), height);
+}
+
+enum {
+	COL_TEXT,
+	COL_WIDTH,
+	COL_HEIGHT
+};
+
+/* Combo box changed.  Update spin buttons accordingly. */
+static void size_combo_changed(GtkComboBox *combo,
+                               TilemScreenshotDialog *ssdlg)
+{
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	int width, height;
+
+	if (gtk_combo_box_get_active_iter(combo, &iter)) {
+		model = gtk_combo_box_get_model(combo);
+		gtk_tree_model_get(model, &iter,
+		                   COL_WIDTH, &width,
+		                   COL_HEIGHT, &height,
+		                   -1);
+		if (width && height)
+			set_size_spin_buttons(ssdlg, width, height);
+	}
+}
+
+static void size_spin_changed(G_GNUC_UNUSED GtkSpinButton *sb,
+                              TilemScreenshotDialog *ssdlg)
+{
+	GtkComboBox *combo = GTK_COMBO_BOX(ssdlg->ss_size_combo);
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	int width, height, w, h;
+
+	model = gtk_combo_box_get_model(combo);
+	if (!model || !gtk_tree_model_get_iter_first(model, &iter))
+		return;
+
+	width = gtk_spin_button_get_value_as_int
+		(GTK_SPIN_BUTTON(ssdlg->width_spin));
+	height = gtk_spin_button_get_value_as_int
+		(GTK_SPIN_BUTTON(ssdlg->height_spin));
+
+	do {
+		gtk_tree_model_get(model, &iter,
+		                   COL_WIDTH, &w,
+		                   COL_HEIGHT, &h,
+		                   -1);
+
+		if ((w == 0 && h == 0) || (w == width && h == height)) {
+			gtk_combo_box_set_active_iter(combo, &iter);
+			return;
+		}
+	} while (gtk_tree_model_iter_next(model, &iter));
+}
+
+static void fill_size_combobox(GtkComboBox *combo,
+                               const struct imgsize *sizes,
+                               int nsizes)
+{
+	GtkListStore *store;
+	GtkTreeIter iter;
+	int i;
+	char *s;
+
+	store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+
+	for (i = 0; i < nsizes; i++) {
+		s = g_strdup_printf("%d \303\227 %d",
+		                    sizes[i].width,
+		                    sizes[i].height);
+
+		gtk_list_store_append(store, &iter);
+		gtk_list_store_set(store, &iter,
+		                   COL_TEXT, s,
+		                   COL_WIDTH, sizes[i].width,
+		                   COL_HEIGHT, sizes[i].height,
+		                   -1);
+		g_free(s);
+	}
+
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter,
+	                   COL_TEXT, "Custom",
+	                   COL_WIDTH, 0,
+	                   COL_HEIGHT, 0,
+	                   -1);
+
+	gtk_combo_box_set_model(GTK_COMBO_BOX(combo), GTK_TREE_MODEL(store));
 }
 
 /* Create the screenshot menu */
 static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 {
 	TilemScreenshotDialog *ssdlg = g_slice_new0(TilemScreenshotDialog);
-	GtkWidget *hbox, *vbox, *parent_vbox, *screenshot_preview, *layout,
-		*config_expander, *vboxc0, *hboxc00, *hboxc1, *hboxc2,
-		*screenshot_dir_label, *animation_dir_label;
+	GtkWidget *main_table, *vbox, *frame, *config_expander,
+		*tbl, *lbl, *align;
+	GtkCellRenderer *cell;
 
 	ssdlg->emu = emu;
 
-	ssdlg->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(ssdlg->window), "Screenshot");
-	gtk_window_set_default_size(GTK_WINDOW(ssdlg->window) , 450, 300);
-	
-	g_signal_connect(GTK_OBJECT(ssdlg->window), "delete-event", G_CALLBACK(on_destroy_screenshot), NULL);
+	ssdlg->window = gtk_dialog_new_with_buttons
+		("Screenshot",
+		 (emu->ewin ? GTK_WINDOW(emu->ewin->window) : NULL),
+		 GTK_DIALOG_DESTROY_WITH_PARENT,
+		 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+		 GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+		 NULL);
 
-	parent_vbox = gtk_vbox_new (0, 1);
-	vbox = gtk_vbox_new(0,1);
-	hbox = gtk_hbox_new (0, 1);
-	gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);	
-	
-	screenshot_preview = gtk_expander_new("preview");
-	gtk_expander_set_expanded(GTK_EXPANDER(screenshot_preview), TRUE);
-	layout = gtk_layout_new(NULL,NULL);
-	gtk_layout_set_size(GTK_LAYOUT(layout), 200, 100); 
-	
-	/* Print the nice logo (from old tilem) 
-	   Maybe try to load the most recent gif/screenshot could be a good idea... (as it was done before)
-	   But I think it's good like this, because we don't really need to see last session screenshot.
-	   And maybe it doesn't exist or saved filename is bad...*/ 
-	char* tilem_logo = get_shared_file_path("pixs", "tilem.png", NULL);
-	if(tilem_logo)
-		ssdlg->screenshot_preview_image = gtk_image_new_from_file(tilem_logo);
-	else 
-		ssdlg->screenshot_preview_image = gtk_image_new();
-	g_free(tilem_logo);
+	gtk_dialog_set_alternative_button_order(GTK_DIALOG(ssdlg->window),
+	                                        GTK_RESPONSE_ACCEPT,
+	                                        GTK_RESPONSE_CANCEL,
+	                                        -1);
 
-	
+	gtk_dialog_set_default_response(GTK_DIALOG(ssdlg->window),
+	                                GTK_RESPONSE_ACCEPT);
 
-	gtk_layout_put(GTK_LAYOUT(layout), ssdlg->screenshot_preview_image, 10, 10);
-	gtk_container_add(GTK_CONTAINER(screenshot_preview), layout);
+	g_signal_connect(ssdlg->window, "response",
+	                 G_CALLBACK(dialog_response), ssdlg);
 
-	gtk_container_add(GTK_CONTAINER(ssdlg->window), parent_vbox);
-	gtk_box_pack_start(GTK_BOX(parent_vbox), hbox, 2, 3, 4);
-	gtk_box_pack_start(GTK_BOX(hbox), screenshot_preview, 2, 3, 4);
-	gtk_box_pack_end(GTK_BOX(hbox), vbox, 2, 3, 4);
+	main_table = gtk_table_new(2, 2, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(main_table), 6);
+	gtk_table_set_col_spacings(GTK_TABLE(main_table), 12);
+	gtk_container_set_border_width(GTK_CONTAINER(main_table), 6);
 
-	ssdlg->screenshot = gtk_button_new_with_label ("Shoot!");
-	ssdlg->record = gtk_button_new_with_label ("Record");
-	ssdlg->stop = gtk_button_new_with_label("Stop");
-	ssdlg->play = gtk_button_new_with_label ("Replay (detached)");
-	ssdlg->playfrom = gtk_button_new_with_label ("Replay (browse)");
-	ssdlg->save = gtk_button_new_with_label("Save");
+	/* Preview */
 
+	frame = gtk_frame_new("Preview");
+	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
+
+	ssdlg->screenshot_preview_image = gtk_image_new();
+	align = gtk_alignment_new(0.0, 0.0, 0.0, 0.0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, 12, 0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->screenshot_preview_image);
+
+	gtk_container_add(GTK_CONTAINER(frame), align);
+	gtk_table_attach(GTK_TABLE(main_table), frame, 0, 1, 0, 1,
+	                 GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+
+	/* Buttons */
+
+	vbox = gtk_vbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(vbox), GTK_BUTTONBOX_START);
+	gtk_box_set_spacing(GTK_BOX(vbox), 6);
+
+	ssdlg->screenshot = gtk_button_new_with_mnemonic("_Grab");
+	gtk_box_pack_start(GTK_BOX(vbox), ssdlg->screenshot, FALSE, FALSE, 0);
+
+	ssdlg->record = gtk_button_new_with_mnemonic("_Record");
+	gtk_box_pack_start(GTK_BOX(vbox), ssdlg->record, FALSE, FALSE, 0);
+
+	ssdlg->stop = gtk_button_new_with_mnemonic("_Stop");
+	gtk_box_pack_start(GTK_BOX(vbox), ssdlg->stop, FALSE, FALSE, 0);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->save), FALSE);
 
-	/* >>>> SOUTH */	
-	config_expander = gtk_expander_new("config");
-	gtk_expander_set_expanded(GTK_EXPANDER(config_expander), TRUE);
-	
-	vboxc0 = gtk_vbox_new(TRUE,2);
-	hboxc00 = gtk_hbox_new (TRUE, 1);
-	//hboxc0 = gtk_hbox_new (TRUE, 1);
-	hboxc1 = gtk_hbox_new (TRUE, 1);
-	hboxc2 = gtk_hbox_new (TRUE, 1);
-	
-	gtk_container_add(GTK_CONTAINER(config_expander), vboxc0);
-	gtk_box_pack_start(GTK_BOX(vboxc0), hboxc00, 2, 3, 4);
-	//gtk_box_pack_start(GTK_BOX(vboxc0), hboxc0, 2, 3, 4);
-	gtk_box_pack_start(GTK_BOX(vboxc0), hboxc1, 2, 3, 4);
-	gtk_box_pack_end(GTK_BOX(vboxc0), hboxc2, 2, 3, 4);
+	gtk_table_attach(GTK_TABLE(main_table), vbox, 1, 2, 0, 2,
+	                 GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 
+	/* Options */
 
-	/* Labels */	
-	/*GtkWidget * screenshot_size = gtk_label_new("Screenshot size :");*/
-	/*GtkWidget * screenshot_extension = gtk_label_new("Screenshot extension :");*/
-	screenshot_dir_label = gtk_label_new("Screenshot folder :");
-	animation_dir_label = gtk_label_new("Animations folder :");
+	config_expander = gtk_expander_new("Options");
 
-	/* About the size */	
+	tbl = gtk_table_new(3, 2, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(tbl), 6);
+	gtk_table_set_col_spacings(GTK_TABLE(tbl), 6);
+
+	lbl = gtk_label_new_with_mnemonic("Image si_ze:");
+	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), lbl,
+	                 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+
+	ssdlg->ss_size_combo = gtk_combo_box_new();
+	cell = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(ssdlg->ss_size_combo),
+	                           cell, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ssdlg->ss_size_combo),
+	                               cell, "text", COL_TEXT, NULL);
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->ss_size_combo);
+	gtk_table_attach(GTK_TABLE(tbl), ssdlg->ss_size_combo,
+	                 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+
+	lbl = gtk_label_new_with_mnemonic("_Width:");
+	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), lbl,
+	                 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+
 	ssdlg->width_spin = gtk_spin_button_new_with_range(0, 500, 1);
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->width_spin);
+	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->width_spin);
+	gtk_table_attach(GTK_TABLE(tbl), align,
+	                 1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+
+	lbl = gtk_label_new_with_mnemonic("_Height:");
+	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), lbl,
+	                 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+
 	ssdlg->height_spin = gtk_spin_button_new_with_range(0, 500, 1);
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->height_spin);
+	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->height_spin);
+	gtk_table_attach(GTK_TABLE(tbl), align,
+	                 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
-	create_size_combobox(ssdlg);
+	align = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, 12, 0);
+	gtk_container_add(GTK_CONTAINER(align), tbl);
 
-	refresh_size_spin(ssdlg->screenshot_win, ssdlg); 
-	
+	gtk_container_add(GTK_CONTAINER(config_expander), align);
 
-	/* FIXME : USE DEPRECATED SYMBOLS */
-	ssdlg->ss_ext_combo = gtk_combo_box_new_text(); 
-	gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_ext_combo), "png");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_ext_combo), "jpeg");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_ext_combo), "bmp");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->ss_ext_combo), "gif");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(ssdlg->ss_ext_combo), 3);
+	gtk_table_attach(GTK_TABLE(main_table), config_expander, 0, 1, 1, 2,
+	                 GTK_FILL, GTK_FILL, 0, 0);
 
-	/* GtkFileChooserButton */
-	char *ssdir, *animdir;
+	g_signal_connect(ssdlg->screenshot, "clicked",
+	                 G_CALLBACK(on_screenshot), ssdlg);
+	g_signal_connect(ssdlg->record, "clicked",
+	                 G_CALLBACK(on_record), ssdlg);
+	g_signal_connect(ssdlg->stop, "clicked",
+	                 G_CALLBACK(on_stop), ssdlg);
 
-	tilem_config_get("screenshot",
-	                 "screenshot_directory/f", &ssdir,
-	                 "animation_directory/f", &animdir,
-	                 NULL);
+	g_signal_connect(ssdlg->ss_size_combo, "changed",
+	                 G_CALLBACK(size_combo_changed), ssdlg);
+	g_signal_connect(ssdlg->width_spin, "value-changed",
+	                 G_CALLBACK(size_spin_changed), ssdlg);
+	g_signal_connect(ssdlg->height_spin, "value-changed",
+	                 G_CALLBACK(size_spin_changed), ssdlg);
 
-	ssdlg->folder_chooser_screenshot = gtk_file_chooser_button_new("Screenshot", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(ssdlg->folder_chooser_screenshot), ssdir);
-	ssdlg->folder_chooser_animation = gtk_file_chooser_button_new("Animation", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(ssdlg->folder_chooser_animation), animdir);
-	g_free(ssdir);
-	g_free(animdir);
-	
-	
-	gtk_box_pack_start (GTK_BOX (hboxc00), ssdlg->width_spin, 2, 3, 4);
-	gtk_box_pack_start (GTK_BOX (hboxc00), ssdlg->height_spin, 2, 3, 4);
-	gtk_box_pack_start (GTK_BOX (hboxc00), ssdlg->ss_size_combo, 2, 3, 4);
-	//gtk_box_pack_start (GTK_BOX (hboxc0), screenshot_extension, 2, 3, 4);
-	gtk_box_pack_start (GTK_BOX (hboxc00), ssdlg->ss_ext_combo, 2, 3, 4);
-	gtk_box_pack_start (GTK_BOX (hboxc1), screenshot_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc1), ssdlg->folder_chooser_screenshot, 2, 3, 4);
-	gtk_box_pack_start (GTK_BOX (hboxc2), animation_dir_label, 2, 3, 4);
-	gtk_box_pack_end (GTK_BOX (hboxc2), ssdlg->folder_chooser_animation, 2, 3, 4);
-	gtk_widget_show(screenshot_dir_label);
-	gtk_widget_show(animation_dir_label);
-	gtk_widget_show(ssdlg->folder_chooser_animation);
-	gtk_widget_show(ssdlg->folder_chooser_screenshot);
-	/* <<<< */	
-	
-	gtk_box_pack_start (GTK_BOX (vbox), ssdlg->screenshot, FALSE, 3, 4);
-	gtk_widget_show(ssdlg->screenshot);
-	gtk_box_pack_start (GTK_BOX (vbox), ssdlg->record, FALSE, 3, 4);
-	gtk_widget_show(ssdlg->record);
-	//gtk_box_pack_start (GTK_BOX (hbox), add_frame, 2, 3, 4);
-	//gtk_widget_show(add_frame);
-	gtk_box_pack_start (GTK_BOX (vbox), ssdlg->stop, FALSE, 3, 4);
-	gtk_widget_show(ssdlg->stop);
-	gtk_box_pack_start (GTK_BOX (vbox), ssdlg->play, FALSE, 3, 4);
-	gtk_widget_show(ssdlg->play);
-	gtk_box_pack_start (GTK_BOX (vbox), ssdlg->playfrom, FALSE, 3, 4);
-	gtk_widget_show(ssdlg->playfrom);
-	gtk_box_pack_start (GTK_BOX (vbox), ssdlg->save, 2, 3, 4);
-	gtk_widget_show(ssdlg->save);
-
-	gtk_box_pack_end (GTK_BOX (parent_vbox), config_expander, FALSE, 3, 4);
-	
-	g_signal_connect(GTK_OBJECT(ssdlg->screenshot), "clicked", G_CALLBACK(on_screenshot), ssdlg);
-	g_signal_connect(GTK_OBJECT(ssdlg->record), "clicked", G_CALLBACK(on_record), ssdlg);
-	g_signal_connect(GTK_OBJECT(ssdlg->stop), "clicked", G_CALLBACK(on_stop), ssdlg);
-	g_signal_connect(GTK_OBJECT(ssdlg->play), "clicked", G_CALLBACK(on_play), ssdlg);
-	g_signal_connect(GTK_OBJECT(ssdlg->playfrom), "clicked", G_CALLBACK(on_playfrom), ssdlg);
-	g_signal_connect(GTK_OBJECT(ssdlg->save), "clicked", G_CALLBACK(on_save), ssdlg);
-	g_signal_connect(GTK_OBJECT(ssdlg->folder_chooser_screenshot), "selection-changed", G_CALLBACK(on_change_screenshot_directory), emu);
-	g_signal_connect(GTK_OBJECT(ssdlg->folder_chooser_animation), "selection-changed", G_CALLBACK(on_change_animation_directory), emu);
-	g_signal_connect(GTK_OBJECT(ssdlg->ss_size_combo), "changed", G_CALLBACK(refresh_size_spin), emu);
-
-	gtk_widget_show_all(parent_vbox);
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(ssdlg->window));
+	gtk_container_add(GTK_CONTAINER(vbox), main_table);
+	gtk_widget_show_all(main_table);
 
 	return ssdlg;
 }
 
 void popup_screenshot_window(TilemEmulatorWindow *ewin)
 {
+	TilemScreenshotDialog *ssdlg;
+	int w96, h96, w128, h128, width, height;
+
 	g_return_if_fail(ewin != NULL);
 	g_return_if_fail(ewin->emu != NULL);
 
 	if (!ewin->emu->ssdlg)
 		ewin->emu->ssdlg = create_screenshot_window(ewin->emu);
+	ssdlg = ewin->emu->ssdlg;
 
-	on_screenshot(NULL, ewin->emu->ssdlg);
-	gtk_window_present(GTK_WINDOW(ewin->emu->ssdlg->window));
-}
+	tilem_config_get("screenshot",
+	                 "width_96x64/i", &w96,
+	                 "height_96x64/i", &h96,
+	                 "width_128x64/i", &w128,
+	                 "height_128x64/i", &h128,
+	                 NULL);
 
-
-/* These stuff will be improved */
-/* Extract width from the "width x size" string */
-static int get_width_from_size_combo(char* size) {
-	if(size) {
-		if(strncmp(size,"96", 2) == 0)
-			return 96; 	
-		if(strncmp(size,"128", 3) == 0)
-			return 128; 	
-		if(strncmp(size,"192", 3) == 0)
-			return 192; 	
-		if(strncmp(size,"219", 3) == 0)
-			return 219; 	
-		if(strncmp(size,"256", 3) == 0)
-			return 256; 	
-		if(strncmp(size,"328", 3) == 0)
-			return 328; 	
-		if(strncmp(size,"384", 3) == 0)
-			return 384; 	
+	if (is_wide_screen(ewin->emu)) {
+		fill_size_combobox(GTK_COMBO_BOX(ssdlg->ss_size_combo),
+		                   wide_sizes, G_N_ELEMENTS(wide_sizes));
+		width = (w128 > 0 ? w128 : DEFAULT_WIDTH_128);
+		height = (h128 > 0 ? h128 : DEFAULT_HEIGHT_128);
+	}
+	else {
+		fill_size_combobox(GTK_COMBO_BOX(ssdlg->ss_size_combo),
+		                   normal_sizes, G_N_ELEMENTS(normal_sizes));
+		width = (w96 > 0 ? w96 : DEFAULT_WIDTH_96);
+		height = (h96 > 0 ? h96 : DEFAULT_HEIGHT_96);
 	}
 
-	return 192;
-}	
+	set_size_spin_buttons(ssdlg, width, height);
+	size_spin_changed(NULL, ssdlg);
 
-/* Extract height from the "width x size" string */
-static int get_height_from_size_combo(char* size) {
-	if(size) {
-		if((strcmp(size,"96 x 64") == 0) || (strcmp(size, "128 x 64") == 0))
-			return 64; 	
-		if(strcmp(size,"128 x 75") == 0)
-			return 75; 	
-		if(strcmp(size,"192 x 128") == 0) 
-			return 128; 	
-		if(strcmp(size, "256 x 128") == 0)
-			return 128; 	
-		if(strcmp(size,"256 x 150") == 0)
-			return 150; 	
-		if(strcmp(size, "288 x 192") == 0)
-			return 192; 	
-		if(strcmp(size, "328 x 192")==0) 
-			return 192; 	
-		if(strcmp(size, "384 x 192") == 0)
-			return 192; 	
-	}
-
-	return 128;
+	on_screenshot(NULL, ssdlg);
+	gtk_window_present(GTK_WINDOW(ssdlg->window));
 }
-
 
 /* Callback for record button */
 static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg) {
@@ -439,9 +477,9 @@ static void on_record(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), TRUE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->play), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->playfrom), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->save), FALSE);
+	gtk_dialog_set_response_sensitive(GTK_DIALOG(ssdlg->window),
+	                                  GTK_RESPONSE_ACCEPT, FALSE);
+
 	tilem_calc_emulator_begin_animation(ssdlg->emu, TRUE);
 	char* size = NULL;
 	
@@ -485,21 +523,6 @@ static void on_save(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg) 
 
 }
 
-/* Change the review image to set the current animation */
-static void set_current_animation(TilemScreenshotDialog *ssdlg,
-                                  TilemAnimation *anim)
-{
-	if (ssdlg->current_anim)
-		g_object_unref(ssdlg->current_anim);
-	ssdlg->current_anim = anim;
-	if(GTK_IS_IMAGE(ssdlg->screenshot_preview_image)) {
-		gtk_image_set_from_animation(GTK_IMAGE(ssdlg->screenshot_preview_image),
-	                             GDK_PIXBUF_ANIMATION(anim));
-		/* Need to call gtk_widget_show because we hide it while recording */
-		gtk_widget_show(GTK_WIDGET(ssdlg->screenshot_preview_image));
-	}
-}
-
 /* Callback for stop button (stop the recording) */
 static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg)
 {
@@ -510,9 +533,9 @@ static void on_stop(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *ssdlg)
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->play), TRUE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->playfrom), TRUE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->save), TRUE);
+	gtk_dialog_set_response_sensitive(GTK_DIALOG(ssdlg->window),
+	                                  GTK_RESPONSE_ACCEPT, TRUE);
+
 	
 	/*
 	g_print("stop event\n");
@@ -555,7 +578,8 @@ static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *s
 
 	anim = tilem_calc_emulator_get_screenshot(ssdlg->emu, TRUE);
 	set_current_animation(ssdlg, anim);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->save), TRUE);
+	gtk_dialog_set_response_sensitive(GTK_DIALOG(ssdlg->window),
+	                                  GTK_RESPONSE_ACCEPT, TRUE);
 
 	/*
 	screenshot(emu->ewin);
@@ -563,136 +587,3 @@ static void on_screenshot(G_GNUC_UNUSED GtkWidget* win, TilemScreenshotDialog *s
 	*/
 }
 
-
-/* Screenshot saver */
-static gboolean save_screenshot(TilemCalcEmulator *emu, const char *filename,
-                                const char *format)
-{
-	int width = emu->calc->hw.lcdwidth * 2;
-	int height = emu->calc->hw.lcdheight * 2;
-	guchar *buffer;
-	dword *palette;
-	GdkPixbuf *pb;
-	gboolean status;
-	GError *err = NULL;
-
-	buffer = g_new(guchar, width * height * 3);
-
-	/* FIXME: this palette should be cached for future use.  Also
-	   might want the option to save images in skinned colors. */
-	palette = tilem_color_palette_new(255, 255, 255, 0, 0, 0, 2.2);
-
-	g_mutex_lock(emu->lcd_mutex);
-	tilem_draw_lcd_image_rgb(emu->lcd_buffer, buffer,
-	                         width, height, width * 3, 3,
-	                         palette, TILEM_SCALE_SMOOTH);
-	g_mutex_unlock(emu->lcd_mutex);
-
-	tilem_free(palette);
-
-	pb = gdk_pixbuf_new_from_data(buffer, GDK_COLORSPACE_RGB, FALSE, 8,
-	                              width, height, width * 3, NULL, NULL);
-
-	status = gdk_pixbuf_save(pb, filename, format, &err, NULL);
-
-	g_object_unref(pb);
-	g_free(buffer);
-
-	if (!status) {
-		fprintf(stderr, "*** unable to save screenshot: %s\n", err->message);
-		g_error_free(err);
-	} else {
-		printf("Screenshot successfully saved as : %s\n", filename);
-	}
-
-	return status;
-}
-
-/* Destroy the screenshot box */
-static void on_destroy_playview(GtkWidget* playwin)   {
-	
-	gtk_widget_destroy(GTK_WIDGET(playwin));
-}
-
-/* Callback for play button (replay the last gif) */
-static void on_play(G_GNUC_UNUSED GtkWidget * win, G_GNUC_UNUSED TilemScreenshotDialog *ssdlg) {
-	printf("play\n");
-	GtkWidget *image = NULL;
-	char *filename;
-
-	tilem_config_get("screenshot",
-	                 "animation_recent/f", &filename,
-	                 NULL);
-	if (!filename)
-		return;
-
-	ssdlg->screenshot_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(G_OBJECT(ssdlg->screenshot_win),"destroy",G_CALLBACK(on_destroy_playview), NULL);
-
-	image = gtk_image_new_from_file(filename);
-	gtk_container_add(GTK_CONTAINER(ssdlg->screenshot_win),image);
-
-	gtk_widget_show_all(ssdlg->screenshot_win);
-	g_free(filename);
-}
-
-/* Callback for play button (replay the last gif) */
-static void on_playfrom(G_GNUC_UNUSED GtkWidget * win, TilemScreenshotDialog *ssdlg) {
-	char* src = NULL, *dir;
-
-	tilem_config_get("screenshot",
-	                 "animation_directory/f", &dir,
-	                 NULL);
-
-	src = select_file_for_save(ssdlg->emu, dir);
-	g_free(dir);
-	if(src) {
-		dir = g_path_get_dirname(src);
-		tilem_config_set("screenshot",
-		                 "animation_recent/f", src,
-		                 "animation_directory/f", dir,
-		                 NULL);
-		g_free(dir);
-
-		change_review_image(ssdlg->emu, src);
-	}
-
-	g_free(src);
-}
-
-/* This method refresh the size spin button using the size combo box as input values */
-/* It's called at screenshot window and as callback (when combo box value change) */
-static void refresh_size_spin(G_GNUC_UNUSED GtkWidget * win, TilemScreenshotDialog *ssdlg) {
-	if(GTK_IS_COMBO_BOX(ssdlg->ss_size_combo)) {
-		char *size = gtk_combo_box_get_active_text(GTK_COMBO_BOX(ssdlg->ss_size_combo));
-		printf("size : %s\n", size);
-		if(GTK_IS_SPIN_BUTTON(ssdlg->width_spin))
-			gtk_spin_button_set_value(GTK_SPIN_BUTTON(ssdlg->width_spin), get_width_from_size_combo(size));
-		if(GTK_IS_SPIN_BUTTON(ssdlg->height_spin))
-			gtk_spin_button_set_value(GTK_SPIN_BUTTON(ssdlg->height_spin), get_height_from_size_combo(size));
-		g_free(size);
-	}
-} 
-
-/* When user change directory, save the new value in the config file */
-static void on_change_screenshot_directory(G_GNUC_UNUSED GtkWidget * win, TilemScreenshotDialog *ssdlg) {
-	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ssdlg->folder_chooser_screenshot)); 
-	if(folder) 
-		tilem_config_set("screenshot",
-		                 "screenshot_directory/f", folder,
-		                 NULL);
-	g_free(folder);
-}
-
-
-/* When user change directory, save the new value in the config file */
-static void on_change_animation_directory(G_GNUC_UNUSED GtkWidget * win, TilemScreenshotDialog *ssdlg) {
-	char* folder = NULL;
-	folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ssdlg->folder_chooser_animation)); 
-	if(folder)
-		tilem_config_set("screenshot",
-		                 "animation_directory/f", folder,
-		                 NULL);
-	g_free(folder);
-}

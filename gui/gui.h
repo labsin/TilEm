@@ -43,25 +43,18 @@ typedef struct _TilemScreenshotDialog {
 	TilemCalcEmulator *emu;
 	
 	GtkWidget* window;
-	GtkWidget* screenshot_win;
 
 	/* Buttons */
-	GtkWidget* save;
 	GtkWidget* screenshot;
 	GtkWidget* record;
 	GtkWidget* stop;
-	GtkWidget* play;
-	GtkWidget* playfrom;
 
 	/* Screenshot menu */
 	GtkWidget* screenshot_preview_image; /* Review pixbuf */
-	GtkWidget* folder_chooser_screenshot; /* Folder chooser dialog (static screenshot)*/
-	GtkWidget* folder_chooser_animation; /* Folder chooser dialog (animated gif)*/
 	GtkWidget* ss_ext_combo; /* Combo box for file format */
 	GtkWidget* ss_size_combo; /* Combo box for size */
 	GtkWidget* width_spin;
 	GtkWidget* height_spin;
-	
 
 	TilemAnimation *current_anim;
 
