@@ -314,6 +314,21 @@ gboolean mouse_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 	return FALSE;
 }
 
+/* Find key binding for the given keysym and modifiers */
+static TilemKeyBinding* find_key_binding_for_keysym(TilemCalcEmulator* emu,
+                                                    guint keyval,
+                                                    GdkModifierType mods)
+{
+	int i;
+
+	for (i = 0; i < emu->nkeybindings; i++)
+		if (keyval == emu->keybindings[i].keysym
+		    && mods == emu->keybindings[i].modifiers)
+			return &emu->keybindings[i];
+
+	return NULL;
+}
+
 /* Find key binding matching the given event */
 static TilemKeyBinding* find_key_binding(TilemCalcEmulator* emu,
                                          GdkEventKey* event)
@@ -322,7 +337,7 @@ static TilemKeyBinding* find_key_binding(TilemCalcEmulator* emu,
 	GdkKeymap *km;
 	guint keyval;
 	GdkModifierType consumed, mods;
-	int i;
+	TilemKeyBinding *kb;
 
 	dpy = gdk_drawable_get_display(event->window);
 	km = gdk_keymap_get_for_display(dpy);
@@ -336,12 +351,13 @@ static TilemKeyBinding* find_key_binding(TilemCalcEmulator* emu,
 	mods = (event->state & ~consumed
 	        & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK));
 
-	for (i = 0; i < emu->nkeybindings; i++)
-		if (keyval == emu->keybindings[i].keysym
-		    && mods == emu->keybindings[i].modifiers)
-			return &emu->keybindings[i];
+	if (event->state & GDK_LOCK_MASK
+	    && (kb = find_key_binding_for_keysym(emu, keyval,
+	                                         mods | GDK_LOCK_MASK))) {
+		return kb;
+	}
 
-	return NULL;
+	return find_key_binding_for_keysym(emu, keyval, mods);
 }
 
 /* Key-press event */
@@ -356,9 +372,9 @@ gboolean key_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	/* Ignore repeating keys */
 	for (i = 0; i < 64; i++)
 		if (ewin->keypress_keycodes[i] == event->hardware_keycode)
-			return FALSE;
+			return TRUE;
 	if (ewin->sequence_keycode == event->hardware_keycode)
-		return FALSE;
+		return TRUE;
 
 	if (!(kb = find_key_binding(ewin->emu, event)))
 		return FALSE;
