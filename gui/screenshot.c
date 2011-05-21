@@ -31,6 +31,13 @@
 
 #include "gui.h"
 #include "files.h"
+#include "msgbox.h"
+
+#define DEFAULT_WIDTH_96    192
+#define DEFAULT_HEIGHT_96   128
+#define DEFAULT_WIDTH_128   256
+#define DEFAULT_HEIGHT_128  128
+#define DEFAULT_FORMAT      "png"
 
 static void on_screenshot();
 static void on_save(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
@@ -52,54 +59,78 @@ static int get_height_from_size_combo(char* size);
 /* UNUSED */
 void on_add_frame(G_GNUC_UNUSED GtkWidget* win, TilemCalcEmulator* emu);
 
-/* This method is called from click event */
-void screenshot(TilemEmulatorWindow *ewin)
+static gboolean is_wide_screen(TilemCalcEmulator *emu)
 {
-	TilemCalcEmulator *emu = ewin->emu;
-	char* basename = g_strdup("screenshot");
-	char* folder, *filename;
+	g_return_val_if_fail(emu != NULL, FALSE);
+	g_return_val_if_fail(emu->calc != NULL, FALSE);
 
-	/* FIXME: not really sure what the intention is here.
-	   Presumably what we'd like to do is to use the filename
-	   found by find_free_filename() as a *default*, but then
-	   prompt the user using a GtkFileChooser, and save the chosen
-	   directory back in the config file for the future. */
+	return (emu->calc->hw.lcdwidth == 128);
+}
 
-	/* Taking screenshot (png not gif) should be really easy and quickly done.
-	   That's why I don't ask user for the filename.
-	   The directory could be modified using the GtkFileChooserDialog in the screenshot menu.
-	   I prefer do not ask for the filename because it's waste of time I think.
-	   This is not the same thing for animated gif, because user probably do animation.
-	   not so often than simple screenshot. So in this case tilem ask for filename.
-	   But if you prefer to ask filename no problem ;)
-	*/
-	
-	char* format = g_strdup("gif");
-	if(GTK_IS_COMBO_BOX(emu->ssdlg->ss_ext_combo))
-		format = gtk_combo_box_get_active_text(GTK_COMBO_BOX(emu->ssdlg->ss_ext_combo));
-	
-	/* Look for the next free filename (don't erase previous screenshots) */
-	tilem_config_get("screenshot",
-	                 "screenshot_directory/f", &folder,
+/* Quick screenshot: save a screenshot with predefined settings,
+   without prompting the user */
+void quick_screenshot(TilemEmulatorWindow *ewin)
+{
+	char *folder, *filename, *format;
+	int grayscale, w96, h96, w128, h128, width, height;
+	TilemAnimation *anim;
+	GError *err = NULL;
+
+	tilem_config_get("quick_screenshot",
+	                 "directory/f", &folder,
+	                 "format/s", &format,
+	                 "grayscale/b", &grayscale,
+	                 "width_96x64/i", &w96,
+	                 "height_96x64/i", &h96,
+	                 "width_128x64/i", &w128,
+	                 "height_128x64/i", &h128,
 	                 NULL);
-	if (!folder)
-		folder = g_get_current_dir();
-	filename = find_free_filename(folder, basename, format);
-	printf("filename test : %s\n", filename);
 
-	if(filename) {
-		if(strcmp(format, "gif") == 0)
-			static_screenshot_save_with_parameters(emu, filename, 192, 128);
-		else
-			save_screenshot(emu, filename, format);
+	anim = tilem_calc_emulator_get_screenshot(ewin->emu, grayscale);
+	if (!anim) {
+		g_free(folder);
+		g_free(format);
+		return;
 	}
-	/*tilem_config_universal_setter("screenshot", "screenshot_recent", filename);*/
-	change_review_image(emu, filename);
+
+	if (is_wide_screen(ewin->emu)) {
+		width = (w128 > 0 ? w128 : DEFAULT_WIDTH_128);
+		height = (h128 > 0 ? h128 : DEFAULT_HEIGHT_128);
+	}
+	else {
+		width = (w96 > 0 ? w96 : DEFAULT_WIDTH_96);
+		height = (h96 > 0 ? h96 : DEFAULT_HEIGHT_96);
+	}
+
+	tilem_animation_set_size(anim, width, height);
+
+	if (!folder)
+		folder = get_config_file_path("screenshots", NULL);
+
+	if (!format)
+		format = g_strdup(DEFAULT_FORMAT);
+
+	g_mkdir_with_parents(folder, 0755);
+
+	filename = find_free_filename(folder, "screenshot", format);
+	if (!filename) {
+		g_free(folder);
+		g_free(format);
+		g_object_unref(anim);
+		return;
+	}
+
+	if (!tilem_animation_save(anim, filename, format, NULL, NULL, &err)) {
+		messagebox01(ewin->window, GTK_MESSAGE_ERROR,
+		             "Unable to save screenshot",
+		             "%s", err->message);
+		g_error_free(err);
+	}
+
+	g_object_unref(anim);
 	g_free(filename);
 	g_free(folder);
-	g_free(basename);
 	g_free(format);
-	
 }
 
 /* Look for a free filename by testing [folder]/[basename]000.[extension] to [folder]/[basename]999.[extension]

@@ -350,7 +350,7 @@ void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
 void create_screenshot_window(TilemEmulatorWindow* ewin);
 
 /* Take a single screenshot */
-void screenshot(TilemEmulatorWindow *ewin);
+void quick_screenshot(TilemEmulatorWindow *ewin);
 
 
 
