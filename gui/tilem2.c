@@ -48,8 +48,6 @@ int main(int argc, char **argv)
 
 	emu = tilem_calc_emulator_new();
 
-	emu->ssdlg = g_slice_new0(TilemScreenshotDialog);
-	emu->ssdlg->emu = emu;
 	emu->linkpb = g_slice_new0(TilemLinkProgress);
 	emu->linkpb->emu = emu;
 

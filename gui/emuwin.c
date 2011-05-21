@@ -364,8 +364,6 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 	tilem_emulator_window_calc_changed(ewin);
 	redraw_screen(ewin);
 
-	g_timeout_add(100, tilem_animation_record,  ewin->emu);
-
 	return ewin;
 }
 

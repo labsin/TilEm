@@ -42,6 +42,7 @@ typedef struct _TilemCmdlineArg {
 typedef struct _TilemScreenshotDialog {
 	TilemCalcEmulator *emu;
 	
+	GtkWidget* window;
 	GtkWidget* screenshot_win;
 
 	/* Buttons */
@@ -347,7 +348,7 @@ void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
 /* ##### screenshot.c ##### */
 
 /* create the screenshot popup */
-void create_screenshot_window(TilemEmulatorWindow* ewin);
+void popup_screenshot_window(TilemEmulatorWindow* ewin);
 
 /* Take a single screenshot */
 void quick_screenshot(TilemEmulatorWindow *ewin);
