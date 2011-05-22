@@ -45,7 +45,7 @@ m4_define(with_flags, [
 # GLib and GTK+
 
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6.0
-                       glib-2.0 >= 2.10.0
+                       glib-2.0 >= 2.12.0
                        gthread-2.0)
 
 AC_ARG_ENABLE([gtk-deprecated],
