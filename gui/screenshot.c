@@ -83,7 +83,7 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 	tilem_config_get("quick_screenshot",
 	                 "directory/f", &folder,
 	                 "format/s", &format,
-	                 "grayscale/b", &grayscale,
+	                 "grayscale/b=1", &grayscale,
 	                 "width_96x64/i", &w96,
 	                 "height_96x64/i", &h96,
 	                 "width_128x64/i", &w128,
@@ -479,7 +479,7 @@ void popup_screenshot_window(TilemEmulatorWindow *ewin)
 	ssdlg = ewin->emu->ssdlg;
 
 	tilem_config_get("screenshot",
-	                 "grayscale/b", &grayscale,
+	                 "grayscale/b=1", &grayscale,
 	                 "width_96x64/i", &w96,
 	                 "height_96x64/i", &h96,
 	                 "width_128x64/i", &w128,

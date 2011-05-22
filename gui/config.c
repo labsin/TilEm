@@ -174,7 +174,8 @@ void tilem_config_get(const char *group, const char *option, ...)
 {
 	va_list ap;
 	GKeyFile *gkf;
-	const char *type;
+	const char *type, *defvalue;
+	GError *err = NULL;
 	char *key;
 	char **strp;
 	int *intp;
@@ -188,32 +189,48 @@ void tilem_config_get(const char *group, const char *option, ...)
 	va_start(ap, option);
 	while (option != NULL) {
 		type = strrchr(option, '/');
-		if (type == NULL || type[1] == 0 || type[2] != 0) {
+		if (type == NULL || type[1] == 0
+		    || (type[2] != 0 && type[2] != '=')) {
 			g_critical("invalid argument\n");
 			break;
 		}
+
+		if (type[2] == '=')
+			defvalue = &type[3];
+		else
+			defvalue = NULL;
 
 		key = g_strndup(option, type - option);
 
 		if (type[1] == 'f') {
 			strp = va_arg(ap, char **);
-			*strp = key_file_get_filename(gkf, group, key, NULL);
+			*strp = key_file_get_filename(gkf, group, key, &err);
+			if (err && defvalue)
+				*strp = g_strdup(defvalue);
 		}
 		else if (type[1] == 's') {
 			strp = va_arg(ap, char **);
-			*strp = g_key_file_get_string(gkf, group, key, NULL);
+			*strp = g_key_file_get_string(gkf, group, key, &err);
+			if (err && defvalue)
+				*strp = g_strdup(defvalue);
 		}
 		else if (type[1] == 'i') {
 			intp = va_arg(ap, int *);
-			*intp = g_key_file_get_integer(gkf, group, key, NULL);
+			*intp = g_key_file_get_integer(gkf, group, key, &err);
+			if (err && defvalue)
+				*intp = g_ascii_strtoll(defvalue, NULL, 10);
 		}
 		else if (type[1] == 'r') {
 			dblp = va_arg(ap, double *);
-			*dblp = g_key_file_get_double(gkf, group, key, NULL);
+			*dblp = g_key_file_get_double(gkf, group, key, &err);
+			if (err && defvalue)
+				*dblp = g_ascii_strtod(defvalue, NULL);
 		}
 		else if (type[1] == 'b') {
 			intp = va_arg(ap, int *);
-			*intp = g_key_file_get_boolean(gkf, group, key, NULL);
+			*intp = g_key_file_get_boolean(gkf, group, key, &err);
+			if (err && defvalue)
+				*intp = g_ascii_strtoll(defvalue, NULL, 10);
 		}
 		else {
 			g_critical("invalid argument\n");
@@ -221,6 +238,7 @@ void tilem_config_get(const char *group, const char *option, ...)
 			break;
 		}
 
+		g_clear_error(&err);
 		g_free(key);
 		option = va_arg(ap, const char *);
 	}

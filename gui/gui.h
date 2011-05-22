@@ -191,13 +191,16 @@ void copy_paste(const char* src, const char* dest);
    strings, each followed by a pointer to a variable that will receive
    the value.  The list of options is terminated by NULL.
 
-   Each OPTION is a string of the form "KEY/TYPE", where KEY is the
-   name of the configuration property, and TYPE is either 'f' for a
-   filename (char*), 's' for a UTF-8 string (char*), 'i' for an
-   integer (int), 'r' for a real number (double), or 'b' for a boolean
-   (int).
+   Each OPTION is a string of the form "KEY/TYPE" or "KEY/TYPE=VALUE",
+   where KEY is the name of the configuration property, and TYPE is
+   either 'f' for a filename (char*), 's' for a UTF-8 string (char*),
+   'i' for an integer (int), 'r' for a real number (double), or 'b'
+   for a boolean (int).
 
-   Values that have not been set by the user are set to zero or NULL.
+   VALUE, if specified, is the default value for the option if it has
+   not been defined by the user.  If no VALUE is specified, the option
+   defaults to zero or NULL.
+
    Strings returned by this function must be freed by the caller
    (using g_free().) */
 void tilem_config_get(const char *group, const char *option, ...)
