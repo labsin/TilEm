@@ -55,8 +55,10 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* ss_size_combo; /* Combo box for size */
 	GtkWidget* width_spin;
 	GtkWidget* height_spin;
+	GtkWidget* grayscale_tb;
 
 	TilemAnimation *current_anim;
+	gboolean current_anim_grayscale;
 
 	/* Flags */
 	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */

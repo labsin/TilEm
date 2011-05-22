@@ -389,14 +389,18 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 
 	config_expander = gtk_expander_new("Options");
 
-	tbl = gtk_table_new(3, 2, FALSE);
+	tbl = gtk_table_new(4, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(tbl), 6);
 	gtk_table_set_col_spacings(GTK_TABLE(tbl), 6);
+
+	ssdlg->grayscale_tb = gtk_check_button_new_with_mnemonic("Gra_yscale");
+	gtk_table_attach(GTK_TABLE(tbl), ssdlg->grayscale_tb,
+	                 0, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 
 	lbl = gtk_label_new_with_mnemonic("Image si_ze:");
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
-	                 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+	                 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
 
 	ssdlg->ss_size_combo = gtk_combo_box_new();
 	cell = gtk_cell_renderer_text_new();
@@ -406,31 +410,31 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                               cell, "text", COL_TEXT, NULL);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->ss_size_combo);
 	gtk_table_attach(GTK_TABLE(tbl), ssdlg->ss_size_combo,
-	                 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+	                 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 
 	lbl = gtk_label_new_with_mnemonic("_Width:");
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
-	                 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	                 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
 	ssdlg->width_spin = gtk_spin_button_new_with_range(1, 500, 1);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->width_spin);
 	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
 	gtk_container_add(GTK_CONTAINER(align), ssdlg->width_spin);
 	gtk_table_attach(GTK_TABLE(tbl), align,
-	                 1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	                 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
 	lbl = gtk_label_new_with_mnemonic("_Height:");
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
-	                 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	                 0, 1, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
 
 	ssdlg->height_spin = gtk_spin_button_new_with_range(1, 500, 1);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->height_spin);
 	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
 	gtk_container_add(GTK_CONTAINER(align), ssdlg->height_spin);
 	gtk_table_attach(GTK_TABLE(tbl), align,
-	                 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	                 1, 2, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
 
 	align = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, 12, 0);
@@ -465,7 +469,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 void popup_screenshot_window(TilemEmulatorWindow *ewin)
 {
 	TilemScreenshotDialog *ssdlg;
-	int w96, h96, w128, h128, width, height;
+	int w96, h96, w128, h128, width, height, grayscale;
 
 	g_return_if_fail(ewin != NULL);
 	g_return_if_fail(ewin->emu != NULL);
@@ -475,11 +479,15 @@ void popup_screenshot_window(TilemEmulatorWindow *ewin)
 	ssdlg = ewin->emu->ssdlg;
 
 	tilem_config_get("screenshot",
+	                 "grayscale/b", &grayscale,
 	                 "width_96x64/i", &w96,
 	                 "height_96x64/i", &h96,
 	                 "width_128x64/i", &w128,
 	                 "height_128x64/i", &h128,
 	                 NULL);
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb),
+	                             grayscale);
 
 	if (is_wide_screen(ewin->emu)) {
 		fill_size_combobox(GTK_COMBO_BOX(ssdlg->ss_size_combo),
@@ -499,23 +507,6 @@ void popup_screenshot_window(TilemEmulatorWindow *ewin)
 
 	grab_screen(NULL, ssdlg);
 	gtk_window_present(GTK_WINDOW(ssdlg->window));
-}
-
-/* Callback for record button */
-static void begin_animation(G_GNUC_UNUSED GtkButton *btn,
-                            TilemScreenshotDialog *ssdlg)
-{
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), TRUE);
-	gtk_dialog_set_response_sensitive(GTK_DIALOG(ssdlg->window),
-	                                  GTK_RESPONSE_ACCEPT, FALSE);
-
-	tilem_calc_emulator_begin_animation(ssdlg->emu, TRUE);
-
-	/* You can choose to hide current animation while recording or not
-	   It's as you prefer... For the moment I hide it */
-	gtk_widget_hide(GTK_WIDGET(ssdlg->screenshot_preview_image));
 }
 
 static gboolean save_output(TilemScreenshotDialog *ssdlg)
@@ -638,6 +629,7 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 
 	tilem_config_set("screenshot",
 	                 "directory/f", dir,
+	                 "grayscale/b", ssdlg->current_anim_grayscale,
 	                 width_opt, width,
 	                 height_opt, height,
 	                 format_opt, format,
@@ -647,6 +639,29 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	g_free(filename);
 	g_free(format);
 	return TRUE;
+}
+
+/* Callback for record button */
+static void begin_animation(G_GNUC_UNUSED GtkButton *btn,
+                            TilemScreenshotDialog *ssdlg)
+{
+	gboolean grayscale = gtk_toggle_button_get_active
+		(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb));
+
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), TRUE);
+	gtk_dialog_set_response_sensitive(GTK_DIALOG(ssdlg->window),
+	                                  GTK_RESPONSE_ACCEPT, FALSE);
+
+	tilem_calc_emulator_begin_animation(ssdlg->emu, grayscale);
+	ssdlg->current_anim_grayscale = grayscale;
+
+	/* You can choose to hide current animation while recording or not
+	   It's as you prefer... For the moment I hide it */
+	gtk_widget_hide(GTK_WIDGET(ssdlg->screenshot_preview_image));
+
+	set_current_animation(ssdlg, NULL);
 }
 
 /* Callback for stop button (stop the recording) */
@@ -674,8 +689,11 @@ static void grab_screen(G_GNUC_UNUSED GtkButton *btn,
                         TilemScreenshotDialog *ssdlg)
 {
 	TilemAnimation *anim;
+	gboolean grayscale = gtk_toggle_button_get_active
+		(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb));
 
-	anim = tilem_calc_emulator_get_screenshot(ssdlg->emu, TRUE);
+	anim = tilem_calc_emulator_get_screenshot(ssdlg->emu, grayscale);
+	ssdlg->current_anim_grayscale = grayscale;
 	set_current_animation(ssdlg, anim);
 	g_object_unref(anim);
 }
