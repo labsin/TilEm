@@ -182,7 +182,7 @@ static void set_current_animation(TilemScreenshotDialog *ssdlg,
 	ssdlg->current_anim = anim;
 
 	if (!anim) {
-		gtk_image_clear(img);
+		gtk_image_set_from_animation(img, NULL);
 		gtk_dialog_set_response_sensitive(GTK_DIALOG(ssdlg->window),
 		                                  GTK_RESPONSE_ACCEPT, FALSE);
 	}
