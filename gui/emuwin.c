@@ -361,6 +361,8 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 	g_signal_connect(ewin->window, "key-release-event",
 	                 G_CALLBACK(key_release_event), ewin);
 
+	build_menu(ewin);
+
 	tilem_emulator_window_calc_changed(ewin);
 	redraw_screen(ewin);
 
@@ -379,6 +381,10 @@ void tilem_emulator_window_free(TilemEmulatorWindow *ewin)
 		gtk_widget_destroy(ewin->layout);
 	if (ewin->window)
 		gtk_widget_destroy(ewin->window);
+	if (ewin->popup_menu)
+		gtk_widget_destroy(ewin->popup_menu);
+	if (ewin->actions)
+		g_object_unref(ewin->actions);
 
 	g_free(ewin->lcd_image_buf);
 
@@ -521,26 +527,5 @@ void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin)  /* Absolument ne
 		fclose(lcd_content_file);
 		printf("\n### END ###\n\nSaved into lcd_content.txt (You're really geek!)");
 	}	
-
-}
-
-void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget * menu_items)
-{
-	
-	DLCD_L2_A0("Entering : create_menus...\n");
-	GtkAccelGroup *accel_group;
-	GdkEventButton *bevent = (GdkEventButton *) event;
-
-
-	accel_group = gtk_accel_group_new();
-	//factory = gtk_item_factory_new(GTK_TYPE_MENU, menuname, accel_group);
-	/* translatefunc */
-	//gtk_item_factory_create_items(factory, thisitems, menu_items, emu);
-	//menu = factory->widget;
-
-	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
-	gtk_menu_popup(GTK_MENU(menu_items), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
-	gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
-	DLCD_L2_A0("Exiting create_menus...\n");
 
 }

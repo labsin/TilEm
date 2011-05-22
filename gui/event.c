@@ -274,7 +274,9 @@ gboolean mouse_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventButton *event,
 	}
 	else if (event->button == 3) {
 		/* button 3: popup menu */
-		show_popup_menu(ewin, (GdkEvent*) event);
+		gtk_menu_popup(GTK_MENU(ewin->popup_menu),
+		               NULL, NULL, NULL, NULL,
+		               event->button, event->time);
 		return TRUE;
 	}
 	else

@@ -118,9 +118,6 @@ gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 /* Switch borderless. */
 void switch_borderless(TilemEmulatorWindow *ewin);
 
-/* Create the right click menu */
-void create_menus(GtkWidget *window,GdkEvent *event, GtkWidget *items);
-
 /* Load a file from PC to TI */
 void load_file(TilemEmulatorWindow *ewin);
 
@@ -357,11 +354,8 @@ void tilem_keybindings_init(TilemCalcEmulator* emu, const char* model);
 
 /* ##### menu.c ##### */
 
-/* Print the menu */
-void show_popup_menu(TilemEmulatorWindow* ewin, GdkEvent* event);
-
 /* Build the menu (do not print it) */
-GtkWidget * build_menu(TilemEmulatorWindow* ewin);
+void build_menu(TilemEmulatorWindow* ewin);
 
 
 

@@ -26,6 +26,9 @@ typedef struct _TilemEmulatorWindow {
 	GtkWidget *layout; /* Layout */
 	GtkWidget *lcd;
 	GtkWidget *background;
+	GtkWidget *popup_menu;
+
+	GtkActionGroup *actions;
 
 	GdkGeometry geomhints;
 	GdkWindowHints geomhintmask;

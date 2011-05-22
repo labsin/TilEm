@@ -28,191 +28,244 @@
 
 #include "gui.h"
 
-
-static GtkWidget* create_menu_item(const char* label, const char* stock_img);
-
-
-static void switch_view(TilemEmulatorWindow *ewin)
+static void action_send_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
-	tilem_emulator_window_set_skin_disabled(ewin, !ewin->skin_disabled);
+	TilemEmulatorWindow *ewin = data;
+	load_file(ewin);
+}
+
+static void action_receive_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	tilem_rcvmenu_new(ewin->emu);
+}
+
+static void action_start_debugger(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	launch_debugger(ewin);
+}
+
+static void action_open_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	/* FIXME */
+}
+
+static void action_save_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	/* FIXME */
+}
+
+static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	/* FIXME */
+}
+
+static void action_reset_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+
+	g_return_if_fail(ewin != NULL);
+	g_return_if_fail(ewin->emu != NULL);
+	g_return_if_fail(ewin->emu->calc != NULL);
+
+	g_mutex_lock(ewin->emu->calc_mutex);
+	tilem_calc_reset(ewin->emu->calc);
+	g_cond_broadcast(ewin->emu->calc_wakeup_cond);
+	g_mutex_unlock(ewin->emu->calc_mutex);
+}
+
+static void action_begin_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	start_record_macro(ewin);
+}
+
+static void action_end_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	stop_record_macro(ewin);
+}
+
+static void action_play_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	play_macro(ewin);
+}
+
+static void action_open_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	/* FIXME */
+}
+
+static void action_save_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	/* FIXME */
+}
+
+static void action_screenshot(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	popup_screenshot_window(ewin);
+}
+
+static void action_quick_screenshot(G_GNUC_UNUSED GtkAction *act,
+                                    gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	quick_screenshot(ewin);
+}
+
+static void action_quit(G_GNUC_UNUSED GtkAction *act,
+                        G_GNUC_UNUSED gpointer data)
+{
+	gtk_main_quit();
+}
+
+static const GtkActionEntry main_action_ents[] =
+	{{ "send-file",
+	   GTK_STOCK_OPEN, "Send _File...", "<ctrl>O",
+	   "Send a program or variable file to the calculator",
+	   G_CALLBACK(action_send_file) },
+
+	 { "receive-file",
+	   GTK_STOCK_SAVE_AS, "Re_ceive File...", "<ctrl>S",
+	   "Receive a program or variable from the calculator",
+	   G_CALLBACK(action_receive_file) },
+ 
+	 { "open-calc",
+	   GTK_STOCK_OPEN, "_Open Calculator...", "<shift><ctrl>O",
+	   "Open a calculator ROM file",
+	   G_CALLBACK(action_open_calc) },
+	 { "save-calc",
+	   GTK_STOCK_SAVE, "_Save Calculator", "<shift><ctrl>S",
+	   "Save current calculator state",
+	   G_CALLBACK(action_save_calc) },
+	 { "revert-calc",
+	   GTK_STOCK_REVERT_TO_SAVED, "Re_vert Calculator State", 0,
+	   "Revert to saved calculator state",
+	   G_CALLBACK(action_revert_calc) },
+	 { "reset-calc",
+	   GTK_STOCK_CLEAR, "_Reset Calculator", "<shift><ctrl>Delete",
+	   "Reset the calculator",
+	   G_CALLBACK(action_reset_calc) },
+
+	 { "start-debugger",
+	   0, "_Debugger", "Pause",
+	   "Pause emulation and start the debugger",
+	   G_CALLBACK(action_start_debugger) },
+
+	 { "begin-macro",
+	   GTK_STOCK_MEDIA_RECORD, "_Record", 0,
+	   "Begin recording a macro",
+	   G_CALLBACK(action_begin_macro) },
+	 { "end-macro",
+	   GTK_STOCK_MEDIA_STOP, "S_top", 0,
+	   "Begin recording a macro",
+	   G_CALLBACK(action_end_macro) },
+	 { "play-macro",
+	   GTK_STOCK_MEDIA_PLAY, "_Play", 0,
+	   "Play back the current macro",
+	   G_CALLBACK(action_play_macro) },
+	 { "open-macro",
+	   GTK_STOCK_OPEN, "_Open Macro File...", "",
+	   "Load a macro from a file",
+	   G_CALLBACK(action_open_macro) },
+	 { "save-macro",
+	   GTK_STOCK_SAVE_AS, "_Save Macro File...", "",
+	   "Save current macro to a file",
+	   G_CALLBACK(action_save_macro) },
+
+	 { "screenshot",
+	   0, "S_creenshot...", "<ctrl>Print",
+	   "Save a screenshot",
+	   G_CALLBACK(action_screenshot) },
+	 { "quick-screenshot",
+	   0, "_Quick Screenshot", "<shift><ctrl>Print",
+	   "Save a screenshot using default settings",
+	   G_CALLBACK(action_quick_screenshot) },
+
+	 { "quit",
+	   GTK_STOCK_QUIT, "_Quit", "<ctrl>Q",
+	   "Quit the application",
+	   G_CALLBACK(action_quit) }};
+
+static GtkWidget *add_item(GtkWidget *menu, GtkAccelGroup *accelgrp,
+                           GtkActionGroup *actions, const char *name)
+{
+	GtkAction *action;
+	GtkWidget *item;
+
+	action = gtk_action_group_get_action(actions, name);
+	g_return_val_if_fail(action != NULL, NULL);
+
+	gtk_action_set_accel_group(action, accelgrp);
+	item = gtk_action_create_menu_item(action);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_widget_show(item);
+	return item;
+}
+
+static GtkWidget *add_separator(GtkWidget *menu)
+{
+	GtkWidget *item;
+	item = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_widget_show(item);
+	return item;
+}
+
+static GtkWidget *add_submenu(GtkWidget *menu, const char *label)
+{
+	GtkWidget *item, *submenu;
+
+	item = gtk_menu_item_new_with_mnemonic(label);
+	submenu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_widget_show(item);
+	return submenu;
 }
 
 /* Build the menu */
-GtkWidget * build_menu(TilemEmulatorWindow* ewin) {
-
-	/* TODO : use create_menu_item everywhere to minimize the code :) */
-	GtkWidget* right_click_menu = gtk_menu_new ();    
-
-	/* Create the items for the menu */
-	//GtkAccelGroup* accelgrp = gtk_accel_group_new();
-	//gtk_accel_group_connect(accelgrp, gdk_keyval_from_name("F11"), GDK_SHIFT_MASK,  GTK_ACCEL_VISIBLE , g_cclosure_new(G_CALLBACK(load_file), emu, NULL)); 
-	GtkWidget* send_file_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(send_file_item), "Load file...");
-	GtkWidget* rcv_file_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_GOTO_BOTTOM, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(rcv_file_item), "Receive file...");
-	GtkWidget* load_skin_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(load_skin_item), "Change skin...");
-
-	/* We can easily use user defined icons like this */
-	GtkWidget* launch_debugger_item =  gtk_image_menu_item_new_from_stock("tilem-db-step", NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(launch_debugger_item), "Debugger...");
-	GtkWidget* toggle_speed_item;
-	if(ewin->emu->limit_speed) {
-		toggle_speed_item =  create_menu_item("Toggle speed limit", GTK_STOCK_MEDIA_FORWARD);
-	} else {
-		toggle_speed_item =  create_menu_item("Toggle speed limit", GTK_STOCK_MEDIA_PLAY);
-	}
-		
-	gtk_menu_item_set_label(GTK_MENU_ITEM(toggle_speed_item), "Toggle speed");
-
-	/* >>>> Sub menu screenshot */
-	GtkWidget* screenshot_submenu = gtk_menu_new();
-	GtkWidget* screenshot_item =  create_menu_item("Screenshot menu...", GTK_STOCK_ORIENTATION_LANDSCAPE);
-	GtkWidget* screenshot_menu_item = create_menu_item("Screenshot menu", GTK_STOCK_SELECT_COLOR); 
-	GtkWidget* quick_screenshot_item = create_menu_item("Quick screenshot !", GTK_STOCK_PASTE); 
-	/* <<<< */
-	
-	GtkWidget* display_lcd_into_console_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SORT_ASCENDING, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(display_lcd_into_console_item), "Display LCD into console...");
-	GtkWidget* switch_view_item;
-	if(ewin->skin_disabled) {
-		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FULLSCREEN, NULL);
-		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Show skin");
-	} else {
-		switch_view_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_LEAVE_FULLSCREEN, NULL);
-		gtk_menu_item_set_label(GTK_MENU_ITEM(switch_view_item), "Hide skin");
-	}
-	GtkWidget* switch_borderless_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_LEAVE_FULLSCREEN, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(switch_borderless_item), "Switch borderless");
-	
-
-	/* >>>> Sub menu save */
-	GtkWidget* save_submenu = gtk_menu_new();
-	GtkWidget* save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(save_item), "Save current state/config...");
-	GtkWidget* save_state_item = create_menu_item ("Save state...", GTK_STOCK_SAVE);
-	/* <<<< */
-	
-	/* >>>> Sub menu macro */
-	GtkWidget* macro_submenu = gtk_menu_new();
-	GtkWidget* macro_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(macro_item), "Macro...");
-	GtkWidget* start_record_macro_item = create_menu_item("Start recording macro...", GTK_STOCK_MEDIA_RECORD);
-	GtkWidget* stop_record_macro_item = create_menu_item("Stop recording macro...", GTK_STOCK_MEDIA_STOP);
-	GtkWidget* play_item = create_menu_item("Play macro !", GTK_STOCK_MEDIA_PLAY);
-	GtkWidget* play_from_file_item = create_menu_item("Play macro from file", GTK_STOCK_OPEN);
-	/* <<<< */
-
-	GtkWidget* about_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(about_item), "About");
-	GtkWidget* reset_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_DIALOG_ERROR, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(reset_item), "Reset");
-	GtkWidget* quit_with_save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_REVERT_TO_SAVED, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(quit_with_save_item), "Exit and save state");
-	GtkWidget* quit_no_save_item =  gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(quit_no_save_item), "Quit without saving state");
-
-
-	/* Add items to the menu */
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), send_file_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), rcv_file_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), load_skin_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), launch_debugger_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), toggle_speed_item);
-
-	/* Sub menu screenshot */
-	gtk_menu_shell_append(GTK_MENU_SHELL(screenshot_submenu), screenshot_menu_item);
-	gtk_menu_shell_append(GTK_MENU_SHELL(screenshot_submenu), quick_screenshot_item);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(screenshot_item), screenshot_submenu);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), screenshot_item);
-	
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), display_lcd_into_console_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_view_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), switch_borderless_item);
-
-	/* Sub menu save */
-	gtk_menu_shell_append (GTK_MENU_SHELL (save_submenu), save_state_item);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(save_item), save_submenu);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), save_item);
-	/* <<<< */
-	
-	/* >>>> Sub menu macro */
-	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), start_record_macro_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), stop_record_macro_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), play_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (macro_submenu), play_from_file_item);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(macro_item), macro_submenu);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), macro_item);
-	/* <<<< */
-	
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), about_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), reset_item);
-	gtk_menu_shell_append(GTK_MENU_SHELL (right_click_menu), quit_with_save_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (right_click_menu), quit_no_save_item);
-
-
-	/* Callback */
-	g_signal_connect_swapped (GTK_OBJECT (rcv_file_item), "activate", G_CALLBACK (on_receive), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (send_file_item), "activate", G_CALLBACK (load_file), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (load_skin_item), "activate", G_CALLBACK (tilem_user_change_skin), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (launch_debugger_item), "activate", G_CALLBACK (launch_debugger), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (toggle_speed_item), "activate", G_CALLBACK (tilem_change_speed), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (screenshot_menu_item), "activate", G_CALLBACK (popup_screenshot_window), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (quick_screenshot_item), "activate", G_CALLBACK (quick_screenshot), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (display_lcd_into_console_item), "activate", G_CALLBACK (display_lcdimage_into_terminal), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (switch_view_item), "activate", G_CALLBACK (switch_view), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (switch_borderless_item), "activate", G_CALLBACK (switch_borderless), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (save_state_item), "activate", G_CALLBACK (save_state), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (start_record_macro_item), "activate", G_CALLBACK (start_record_macro), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (stop_record_macro_item), "activate", G_CALLBACK (stop_record_macro), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (play_item), "activate", G_CALLBACK (play_macro), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (play_from_file_item), "activate", G_CALLBACK (play_macro_from_file), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (about_item), "activate", G_CALLBACK (show_about), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (reset_item), "activate", G_CALLBACK (on_reset), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (quit_no_save_item), "activate", G_CALLBACK (on_destroy), (gpointer) ewin);
-	g_signal_connect_swapped (GTK_OBJECT (quit_with_save_item), "activate", G_CALLBACK (quit_with_save), (gpointer) ewin);
-	
-	/* Show the items */
-	gtk_widget_show (load_skin_item);
-	gtk_widget_show (rcv_file_item);
-	gtk_widget_show (send_file_item);
-	gtk_widget_show (launch_debugger_item);
-	gtk_widget_show (toggle_speed_item);
-	gtk_widget_show (screenshot_item);
-	gtk_widget_show (screenshot_menu_item);
-	gtk_widget_show (quick_screenshot_item);
-	gtk_widget_show (display_lcd_into_console_item);
-	gtk_widget_show (switch_view_item);
-	gtk_widget_show (switch_borderless_item);
-	gtk_widget_show (save_item);
-	gtk_widget_show (save_state_item);
-	gtk_widget_show (macro_item);
-	gtk_widget_show (start_record_macro_item);
-	gtk_widget_show (stop_record_macro_item);
-	gtk_widget_show (play_item);
-	gtk_widget_show (play_from_file_item);
-	gtk_widget_show (about_item);
-	gtk_widget_show (reset_item);
-	gtk_widget_show (quit_no_save_item);
-	gtk_widget_show (quit_with_save_item);
-
-	return right_click_menu;
-}
-
-/* Create a menu item with an icon (stock_img) and a label (label) */
-static GtkWidget* create_menu_item(const char* label, const char* stock_img) {
-	GtkWidget* item =  gtk_image_menu_item_new_from_stock(stock_img, NULL);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), label);
-	return item;
-}	
-
-/* Print the right click menu */
-void show_popup_menu(TilemEmulatorWindow* ewin, GdkEvent* event)
+void build_menu(TilemEmulatorWindow* ewin)
 {
-	GtkWidget* right_click_menu = build_menu(ewin);
-	create_menus(ewin->window, event, right_click_menu);
-	
-	
-}
+	GtkActionGroup *acts;
+	GtkAccelGroup *ag;
+	GtkWidget *menu, *submenu;
 
+	ewin->actions = acts = gtk_action_group_new("Emulator");
+	gtk_action_group_add_actions(ewin->actions, main_action_ents,
+	                             G_N_ELEMENTS(main_action_ents), ewin);
 
+	ag = gtk_accel_group_new();
+	gtk_window_add_accel_group(GTK_WINDOW(ewin->window), ag);
+
+	ewin->popup_menu = menu = gtk_menu_new();
+
+	add_item(menu, ag, acts, "send-file");
+	add_item(menu, ag, acts, "receive-file");
+	add_separator(menu);
+
+	add_item(menu, ag, acts, "open-calc");
+	add_item(menu, ag, acts, "save-calc");
+	add_item(menu, ag, acts, "revert-calc");
+	add_item(menu, ag, acts, "reset-calc");
+	add_separator(menu);
+
+	add_item(menu, ag, acts, "start-debugger");
+
+	submenu = add_submenu(menu, "_Macro");
+	add_item(submenu, ag, acts, "begin-macro");
+	add_item(submenu, ag, acts, "end-macro");
+	add_item(submenu, ag, acts, "play-macro");
+	add_separator(submenu);
+	add_item(submenu, ag, acts, "open-macro");
+	add_item(submenu, ag, acts, "save-macro");
+
+	add_item(menu, ag, acts, "screenshot");
+	add_item(menu, ag, acts, "quick-screenshot");
+	add_separator(menu);
+
+	add_item(menu, ag, acts, "quit");
+}	
