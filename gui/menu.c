@@ -46,19 +46,23 @@ static void action_start_debugger(G_GNUC_UNUSED GtkAction *act, gpointer data)
 	launch_debugger(ewin);
 }
 
-static void action_open_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
+static void action_open_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
 	/* FIXME */
 }
 
-static void action_save_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
+static void action_save_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
-	/* FIXME */
+	TilemEmulatorWindow *ewin = data;
+	tilem_calc_emulator_save_state(ewin->emu);
+	
 }
 
-static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
+static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
 	/* FIXME */
+	/* I don't know what should be done here ? */
+	/* Which state should be loaded? We need to prompt the user to choose a save state? */
 }
 
 static void action_reset_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
@@ -93,12 +97,15 @@ static void action_play_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
 	play_macro(ewin);
 }
 
-static void action_open_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
+static void action_open_macro(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
-	/* FIXME */
+	TilemEmulatorWindow *ewin = data;
+	play_macro_from_file(ewin);
 }
 
-static void action_save_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
+/* I will improve macro creation by saving it firstly into a macro object
+ * Save macro will only be done if user choose to save it */
+static void action_save_macro(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
 	/* FIXME */
 }
@@ -116,9 +123,50 @@ static void action_quick_screenshot(G_GNUC_UNUSED GtkAction *act,
 	quick_screenshot(ewin);
 }
 
+
+static void action_hide_skin(G_GNUC_UNUSED GtkAction *act,
+                                    gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	ewin->skin_disabled = !ewin->skin_disabled;
+	redraw_screen(ewin);
+}
+
+static void action_hide_border(G_GNUC_UNUSED GtkAction *act,
+                                    gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	switch_borderless(ewin);
+}
+
+
+static void action_print_lcd_into_terminal(G_GNUC_UNUSED GtkAction *act,
+                                    gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	display_lcdimage_into_terminal(ewin);
+}
+
+static void action_toggle_speed_limit(G_GNUC_UNUSED GtkAction *act,
+                                    gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	tilem_change_speed(ewin);
+}
+
+static void action_about(G_GNUC_UNUSED GtkAction *act,
+                                    gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	show_about();
+}
+
 static void action_quit(G_GNUC_UNUSED GtkAction *act,
                         G_GNUC_UNUSED gpointer data)
 {
+	
+	TilemEmulatorWindow *ewin = data;
+	save_root_window_dimension(ewin);	
 	gtk_main_quit();
 }
 
@@ -184,6 +232,29 @@ static const GtkActionEntry main_action_ents[] =
 	   0, "_Quick Screenshot", "<shift><ctrl>Print",
 	   "Save a screenshot using default settings",
 	   G_CALLBACK(action_quick_screenshot) },
+	
+	{ "hide-skin",
+	   GTK_STOCK_LEAVE_FULLSCREEN, "_Hide Skin", "",
+	   "Hide the calculator skin",
+	   G_CALLBACK(action_hide_skin) },
+	{ "hide-border",
+	   GTK_STOCK_LEAVE_FULLSCREEN, "_Hide Border", "",
+	   "Hide the window border if your window manager allows it",
+	   G_CALLBACK(action_hide_border) },
+	{ "toggle-speed",
+	   GTK_STOCK_MEDIA_FORWARD, "_Toggle speed limit", "",
+	   "Toggle the calc speed limit",
+	   G_CALLBACK(action_toggle_speed_limit) },
+	{ "output-terminal",
+	   GTK_STOCK_SORT_ASCENDING, "_Print the lcd into the terminal", "",
+	   "Print the lcd content into the terminal",
+	   G_CALLBACK(action_print_lcd_into_terminal) },
+	
+	{ "about",
+	   GTK_STOCK_ABOUT, "_About", "",
+	   "Print some informations about TilEm 2 and its authors",
+	   G_CALLBACK(action_about) },
+
 
 	 { "quit",
 	   GTK_STOCK_QUIT, "_Quit", "<ctrl>Q",
@@ -254,7 +325,7 @@ void build_menu(TilemEmulatorWindow* ewin)
 	add_separator(menu);
 
 	add_item(menu, ag, acts, "start-debugger");
-
+	
 	submenu = add_submenu(menu, "_Macro");
 	add_item(submenu, ag, acts, "begin-macro");
 	add_item(submenu, ag, acts, "end-macro");
@@ -265,7 +336,17 @@ void build_menu(TilemEmulatorWindow* ewin)
 
 	add_item(menu, ag, acts, "screenshot");
 	add_item(menu, ag, acts, "quick-screenshot");
+	
+	submenu = add_submenu(menu, "Miscellaneous");
+	add_item(submenu, ag, acts, "hide-skin");
+	add_item(submenu, ag, acts, "hide-border");
+	add_separator(submenu);
+	add_item(submenu, ag, acts, "output-terminal");
+	add_separator(submenu);
+	add_item(submenu, ag, acts, "toggle-speed");
+	
 	add_separator(menu);
+	add_item(menu, ag, acts, "about");
 
 	add_item(menu, ag, acts, "quit");
 }	

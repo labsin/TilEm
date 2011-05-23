@@ -190,7 +190,7 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
 }
 
 /* Used when you load another skin */
-static void redraw_screen(TilemEmulatorWindow *ewin)
+void redraw_screen(TilemEmulatorWindow *ewin)
 {
 	GtkWidget *pImage;
 	GtkWidget *emuwin;
@@ -468,7 +468,7 @@ void tilem_emulator_window_refresh_lcd(TilemEmulatorWindow *ewin)
 
 
 /* Display the lcd image into the terminal */
-void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin)  /* Absolument necessaire */
+void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin)
 {
 	
 	int width, height;
@@ -525,7 +525,7 @@ void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin)  /* Absolument ne
 	}	
 	if(lcd_content_file != NULL) {	
 		fclose(lcd_content_file);
-		printf("\n### END ###\n\nSaved into lcd_content.txt (You're really geek!)");
+		printf("\n### END ###\n\nSaved into lcd_content.txt");
 	}	
 
 }

@@ -152,10 +152,13 @@ void tilem_choose_skin_filename_by_default(TilemEmulatorWindow *ewin);
 
 
 
-/* ###### screen.c ##### */
+/* ###### emuwin.c ##### */
 
 /* Display the lcd image into the terminal */
 void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin);
+
+/* Redraw the screen with or without skin */
+void redraw_skin(TilemEmulatorWindow *ewin);
 
 
 

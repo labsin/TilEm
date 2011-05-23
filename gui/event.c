@@ -164,28 +164,6 @@ void on_destroy()
 	gtk_main_quit();
 }
 
-
-/* Save state */
-void save_state(TilemEmulatorWindow *ewin)
-{
-	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
-	DGLOBAL_L2_A1("*  YES (%d)                                             *\n",SAVE_STATE);
-	DGLOBAL_L2_A0("********************************************************\n\n");
-	tilem_calc_emulator_save_state(ewin->emu);
-}
-
-/* Save tilem and save state */
-void quit_with_save(TilemEmulatorWindow *ewin)
-{
-	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
-	SAVE_STATE=1;
-	DGLOBAL_L2_A1("*  YES (%d)                                             *\n",SAVE_STATE);
-	DGLOBAL_L2_A0("********************************************************\n\n");
-	save_root_window_dimension(ewin);
-	printf("\nThank you for using tilem...\n");
-	gtk_main_quit();
-}
-
 /* Save the dimension before exit for next times we use tilem */
 void save_root_window_dimension(TilemEmulatorWindow *ewin)
 {
@@ -220,14 +198,6 @@ void show_about()
 
 }
 
-/* Reset the calc */
-void on_reset(TilemEmulatorWindow *ewin)
-{
-	g_mutex_lock(ewin->emu->calc_mutex);
-	tilem_calc_reset(ewin->emu->calc);
-	g_cond_broadcast(ewin->emu->calc_wakeup_cond);
-	g_mutex_unlock(ewin->emu->calc_mutex);
-}
 
 void launch_debugger(TilemEmulatorWindow *ewin)
 {
