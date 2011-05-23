@@ -290,8 +290,6 @@ void start_record_macro(TilemEmulatorWindow *ewin) ;
 /* Turn off the recording */
 void stop_record_macro(TilemEmulatorWindow *ewin) ;
 
-/* Run slowly to play macro */
-void run_with_key_slowly(TilemCalc* calc, int key);
 
 
 

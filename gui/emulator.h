@@ -26,6 +26,19 @@ typedef struct _TilemKeyBinding {
 	byte *scancodes;         /* calculator scancodes */
 } TilemKeyBinding;
 
+/* A single action */
+typedef struct _TilemMacroAtom {
+	char* value;
+	int type;
+} TilemMacroAtom;
+
+/* All the actions */
+typedef struct _TilemMacro {
+	TilemMacroAtom** actions;
+	int n;
+} TilemMacro;
+	
+
 /* Internal link cable state */
 typedef struct _TilemInternalLink {
 	gboolean active;       /* internal link cable active */
@@ -74,6 +87,8 @@ typedef struct _TilemCalcEmulator {
 	/* List of key bindings */
 	TilemKeyBinding *keybindings;
 	int nkeybindings;
+	
+	struct _TilemMacro *macro;
 
 	/* Link transfer state */
 	GThread *link_thread;
@@ -160,3 +175,14 @@ void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
 
 /* Abort any pending link transfers. */
 void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu);
+
+
+/* Run slowly to play macro */
+void run_with_key_slowly(TilemCalc* calc, int key);
+
+/* Macros */
+void tilem_macro_start(TilemCalcEmulator *emu);
+void tilem_macro_add_action(TilemMacro* macro, int type, char * value);
+void tilem_macro_stop(TilemCalcEmulator *emu);
+void tilem_macro_print(TilemMacro *macro);
+void tilem_macro_write_file(TilemCalcEmulator *emu);

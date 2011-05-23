@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -96,19 +97,20 @@ static void action_reset_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
 static void action_begin_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	start_record_macro(ewin);
+	tilem_macro_start(ewin->emu);
 }
 
 static void action_end_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	stop_record_macro(ewin);
+	tilem_macro_stop(ewin->emu);
+	tilem_macro_print(ewin->emu->macro);
 }
 
 static void action_play_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	play_macro(ewin);
+	tilem_macro_play(ewin->emu);
 }
 
 static void action_open_macro(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
@@ -121,7 +123,8 @@ static void action_open_macro(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpoint
  * Save macro will only be done if user choose to save it */
 static void action_save_macro(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
-	/* FIXME */
+	TilemEmulatorWindow *ewin = data;
+	tilem_macro_write_file(ewin->emu);
 }
 
 static void action_screenshot(G_GNUC_UNUSED GtkAction *act, gpointer data)
@@ -169,9 +172,8 @@ static void action_toggle_speed_limit(G_GNUC_UNUSED GtkAction *act,
 }
 
 static void action_about(G_GNUC_UNUSED GtkAction *act,
-                                    gpointer data)
+                                    G_GNUC_UNUSED gpointer data)
 {
-	TilemEmulatorWindow *ewin = data;
 	show_about();
 }
 

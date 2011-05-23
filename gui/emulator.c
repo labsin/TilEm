@@ -534,10 +534,11 @@ void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
 static void record_key(TilemCalcEmulator* emu, int code)
 {
 	char* codechar;
+	int type = 0;
 
 	if (emu->isMacroRecording) {
-		codechar= g_strdup_printf("%04d", code);
-		add_event_in_macro_file(emu, codechar);     
+		codechar = g_strdup_printf("%04d", code);
+		tilem_macro_add_action(emu->macro, type, codechar);     
 		g_free(codechar);
 	}
 }
@@ -738,4 +739,14 @@ TilemAnimation * tilem_calc_emulator_end_animation(TilemCalcEmulator *emu)
 	g_mutex_unlock(emu->calc_mutex);
 
 	return anim;
+}
+
+/* Run slowly to play macro (used instead run_with_key() function) */
+void run_with_key_slowly(TilemCalc* calc, int key)
+{
+	tilem_z80_run_time(calc, 5000000, NULL); /* Wait */
+	tilem_keypad_press_key(calc, key); /* Press */
+	tilem_z80_run_time(calc, 10000, NULL); /* Wait (don't forget to wait) */
+	tilem_keypad_release_key(calc, key); /* Release */
+	tilem_z80_run_time(calc, 50, NULL); /* Wait */
 }
