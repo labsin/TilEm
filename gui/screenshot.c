@@ -517,7 +517,7 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	const char *format_opt, *width_opt, *height_opt;
 	gboolean is_static;
 	int width, height;
-	GError *err;
+	GError *err = NULL;
 
 	g_return_val_if_fail(anim != NULL, FALSE);
 
@@ -604,7 +604,7 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	dir = g_path_get_dirname(filename);
 
 
-	if (!err) {
+	if (err) {
 		messagebox01(ssdlg->window, GTK_MESSAGE_ERROR,
 		             "Unable to save screenshot",
 		             "%s", err->message);

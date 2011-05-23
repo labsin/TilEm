@@ -504,7 +504,7 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 	g_return_val_if_fail(TILEM_IS_ANIMATION(anim), FALSE);
 	g_return_val_if_fail(fname != NULL, FALSE);
 	g_return_val_if_fail(type != NULL, FALSE);
-	g_return_val_if_fail(err != NULL || *err != NULL, FALSE);
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
 	if (strcmp(type, "gif") != 0) {
 		pb = gdk_pixbuf_animation_get_static_image
