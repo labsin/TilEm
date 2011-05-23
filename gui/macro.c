@@ -99,7 +99,6 @@ void tilem_macro_print(TilemMacro *macro) {
 	}
 }
 
-
 void tilem_macro_write_file(TilemCalcEmulator *emu) {
 	char *dir, *filename;
 	tilem_config_get("macro",
@@ -119,13 +118,26 @@ void tilem_macro_write_file(TilemCalcEmulator *emu) {
 			int i = 0;
 			for(i = 0; i< emu->macro->n; i++ ){
 				printf("type : %d    value : %s\n", emu->macro->actions[i]->type, emu->macro->actions[i]->value);
-				fwrite(emu->macro->actions[i]->value, 1, 4, fp);
-				fwrite(",", 1, 1, fp);
+				/* Test if it's a key press or a file loading action */
+				if(emu->macro->actions[i]->type == 1) {
+					char * lengthchar = g_new0(char, 4);
+					int length = strlen(emu->macro->actions[i]->value);
+					fwrite("file=", 1, 5, fp);
+					sprintf(lengthchar, "%04d", strlen(emu->macro->actions[i]->value));
+					fwrite(lengthchar, 1, sizeof(int), fp);
+					fwrite("-", 1, 1, fp);
+					fwrite(emu->macro->actions[i]->value, 1, length, fp);
+					g_free(lengthchar);
+				} else {
+					fwrite(emu->macro->actions[i]->value, 1, 4, fp);
+					fwrite(",", 1, 1, fp);
+				}
 			}
-		tilem_config_set("macro", "directory/f", g_path_get_dirname(filename), NULL);
-		fclose(fp);
+			tilem_config_set("macro", "directory/f", g_path_get_dirname(filename), NULL);
+			fclose(fp);
 		}
 		g_free(filename);
+		g_free(dir);
 	}
 }
 
@@ -137,13 +149,18 @@ void tilem_macro_play(TilemCalcEmulator *emu) {
 	emu->isMacroPlaying = TRUE;
 	int i;
 	for(i = 0; i< emu->macro->n; i++ ){
+
+		if(emu->macro->actions[i]->type == 1) {
+			load_file_from_file(emu, emu->macro->actions[i]->value);
+		} else {
+			int code = atoi(emu->macro->actions[i]->value);
+			DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", emu->macro->actions[i]->value, code);
+			g_mutex_lock(emu->calc_mutex);
+			run_with_key_slowly(emu->calc, code);			
+			g_cond_broadcast(emu->calc_wakeup_cond);
+			g_mutex_unlock(emu->calc_mutex);
+		}
 		printf("type : %d    value : %s\n", emu->macro->actions[i]->type, emu->macro->actions[i]->value);
-		int code = atoi(emu->macro->actions[i]->value);
-		DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", emu->macro->actions[i]->value, code);
-		g_mutex_lock(emu->calc_mutex);
-		run_with_key_slowly(emu->calc, code);			
-		g_cond_broadcast(emu->calc_wakeup_cond);
-		g_mutex_unlock(emu->calc_mutex);
 
 	}
 
@@ -169,160 +186,70 @@ void tilem_macro_load(TilemCalcEmulator *emu) {
 		
 		tilem_macro_start(emu);	
 		while(c != EOF) {	
-			char* codechar= (char*) malloc(4 * sizeof(char) + 1);
-			memset(codechar, 0, 5);
+			char* codechar = g_new0(char, 4);
 			fread(codechar, 1, 4, fp);
-			int code = atoi(codechar);
-			if(code <= 0)
-				break;
-			printf("code : %d, codechar : %s\n",code,  codechar);
-			tilem_macro_add_action(emu->macro, 0, codechar);	
-			c = fgetc(fp);
+			if(strcmp(codechar, "file") == 0) {
+				c = fgetc(fp); /* Drop the "="*/
+				char *lengthchar = g_new0(char, 4);
+				fread(lengthchar, 1, 4, fp);
+				c = fgetc(fp); /* Drop the "-"*/
+				int length = atoi(lengthchar);
+				char* filetoload= g_new0(char, length);
+				fread(filetoload, 1, length, fp);
+				//load_file_from_file(emu, filetoload);
+				tilem_macro_add_action(emu->macro, 1, filetoload);	
+				g_free(lengthchar);
+				g_free(filetoload);
+			} else {
+				int code = atoi(codechar);
+				if(code <= 0)
+					break;
+				printf("code : %d, codechar : %s\n",code,  codechar);
+				tilem_macro_add_action(emu->macro, 0, codechar);	
+				c = fgetc(fp);
+			}
 		}
 		tilem_macro_stop(emu);
+		fclose(fp);
 	}
 	tilem_macro_play(emu);
 	g_free(filename);
 }
 	
-/* Recording */
-void add_load_file_in_macro_file(TilemCalcEmulator* emu, int length, char* filename) {
-	
-	char * lengthchar;
-	lengthchar= (char*) malloc(4 * sizeof(char));
-	memset(lengthchar, 0 ,4);	
-	
+
+void tilem_macro_load_from_file(TilemCalcEmulator *emu, char* filename) {
+	char c = 'a';
+	if(filename) {
+		FILE * fp = g_fopen(filename, "r");
 		
-	DMACRO_L0_A0("************** fct : add_load_file_in_macro_file *****\n");	
-	DMACRO_L0_A2("* filename = %s, length = %d                *\n", filename, length);	
-	
-	/* First time ? So create the file */
-	if(emu->macro_file == NULL) {
-		//create_or_replace_macro_file(emu);
-	} else {
-		fwrite(",", 1, 1, emu->macro_file);
+		tilem_macro_start(emu);	
+		while(c != EOF) {	
+			char* codechar = g_new0(char, 4);
+			fread(codechar, 1, 4, fp);
+			if(strcmp(codechar, "file") == 0) {
+				c = fgetc(fp); /* Drop the "="*/
+				char *lengthchar = g_new0(char, 4);
+				fread(lengthchar, 1, 4, fp);
+				c = fgetc(fp); /* Drop the "-"*/
+				int length = atoi(lengthchar);
+				char* filetoload= g_new0(char, length);
+				fread(filetoload, 1, length, fp);
+				//load_file_from_file(emu, filetoload);
+				tilem_macro_add_action(emu->macro, 1, filetoload);	
+				g_free(lengthchar);
+				g_free(filetoload);
+			} else {
+				int code = atoi(codechar);
+				if(code <= 0)
+					break;
+				printf("code : %d, codechar : %s\n",code,  codechar);
+				tilem_macro_add_action(emu->macro, 0, codechar);	
+				c = fgetc(fp);
+			}
+		}
+		tilem_macro_stop(emu);
+		fclose(fp);
 	}
-	/* Write  title */
-	fwrite("file=", 1, 5, emu->macro_file);
-	sprintf(lengthchar, "%04d",length);
-	/* Write length */
-	fwrite(lengthchar, 1, sizeof(int), emu->macro_file);
-	fwrite("-", 1, 1, emu->macro_file);
-	/* Write path */
-	fwrite(filename, 1, length, emu->macro_file);
-	
-	DMACRO_L0_A0("***************************************************\n");	
-	/* Write the comma to seperate */
-}
-
-/* Open the file for reading value to play */
-int open_macro_file(TilemCalcEmulator* emu, char* macro_name) {
-	FILE * macro_file;
-
-	if(macro_name == NULL) {
-		macro_name = (char*) malloc(8 * sizeof(char) + 1),
-		memset(macro_name, 0, 9);
-		strcpy(macro_name, "play.txt");
-	} 
-
-	if((macro_file = g_fopen(macro_name, "r")) != NULL) {
-		emu->macro_file= macro_file;
-	} else {
-		return 1;
-	}
-	return 0;
-
-}
-
-/* Callback signal (rightclick menu) */
-void play_macro(TilemEmulatorWindow *ewin) {
-	play_macro_default(ewin->emu, NULL);
-	if(ewin->emu->macro_file != NULL)
-		fclose(ewin->emu->macro_file);
-	//	emu->gw->mc->macro_file = NULL;
-}
-
-
-
-	
-
-/* Callback signal (rightclick menu) */
-void play_macro_from_file(TilemEmulatorWindow *ewin) {
-	char *dir, *filename;
-
-	tilem_config_get("macro",
-	                 "loadmacro_recentdir/f", &dir,
-	                 NULL);
-
-	filename = prompt_open_file("Play Macro",
-	                            GTK_WINDOW(ewin->window),
-	                            dir,
-	                            "Text files", "*.txt",
-	                            "All files", "*",
-	                            NULL);
-	if(filename)
-		play_macro_default(ewin->emu, filename);
-
-	g_free(dir);
+	tilem_macro_play(emu);
 	g_free(filename);
 }
-	
-
-/* Play the partition (macro) */
-int play_macro_default(TilemCalcEmulator* emu, char* macro_name) {
-	int code;
-	char* codechar;
-	char c = 'a'; /* Just give a value to do not have warning */
-	char* lengthchar;
-	int length;
-	char* filename;
-	
-	/* Turn on the macro playing state */
-	emu->isMacroPlaying = TRUE;
-
-	/* Test if play.txt exists ? */
-	if(open_macro_file(emu, macro_name)==1) 
-		return 1;
-
-	DMACRO_L0_A0("************** fct : play_macro *******************\n");	
-	while(c != EOF) {	
-		codechar= (char*) malloc(4 * sizeof(char) + 1);
-		memset(codechar, 0, 5);
-		fread(codechar, 1, 4, emu->macro_file);
-		
-		if(strcmp(codechar, "file") == 0 ) {
-			c = fgetc(emu->macro_file); /* Drop the "="*/
-			lengthchar= (char*) malloc(4 * sizeof(char) + 1);
-			memset(lengthchar, 0, 5);
-			fread(lengthchar, 1, 4, emu->macro_file);
-			c = fgetc(emu->macro_file); /* Drop the "-"*/
-			length= atoi(lengthchar);
-			DMACRO_L0_A2("* lengthchar = %s,    length = %d         *\n", lengthchar, length);
-			filename= (char*) malloc(length * sizeof(char)+1);
-			memset(filename, 0, length + 1);
-			fread(filename, 1, length, emu->macro_file);
-			load_file_from_file(emu, filename);
-			DMACRO_L0_A1("* send file = %s               *\n", filename);
-		} else {
-			code = atoi(codechar);
-			DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", codechar, code);
-			g_mutex_lock(emu->calc_mutex);
-			run_with_key_slowly(emu->calc, code);			
-			g_cond_broadcast(emu->calc_wakeup_cond);
-			g_mutex_unlock(emu->calc_mutex);
-		
-		}
-
-
-		c = fgetc(emu->macro_file);
-	}
-	/* Turn off the macro playing state */
-	emu->isMacroPlaying = FALSE;
-	
-	DMACRO_L0_A0("***************************************\n");	
-	
-	return 0;
-
-}
-
-

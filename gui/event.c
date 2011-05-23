@@ -527,7 +527,7 @@ void load_file(TilemEmulatorWindow *ewin)
 		load_file_from_file(ewin->emu, filenames[i]);
 
 		if(ewin->emu->isMacroRecording)
-			add_load_file_in_macro_file(ewin->emu, strlen(filenames[i]), filenames[i]);
+			tilem_macro_add_action(ewin->emu->macro , 1, filenames[i]);
 	}
 
 	g_strfreev(filenames);

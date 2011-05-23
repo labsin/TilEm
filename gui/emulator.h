@@ -188,3 +188,4 @@ void tilem_macro_print(TilemMacro *macro);
 void tilem_macro_write_file(TilemCalcEmulator *emu);
 void tilem_macro_play(TilemCalcEmulator *emu);
 void tilem_macro_load(TilemCalcEmulator *emu);
+void tilem_macro_load_from_file(TilemCalcEmulator *emu, char* filename);
