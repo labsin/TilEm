@@ -27,6 +27,7 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "filedlg.h"
 
 static void action_send_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
@@ -48,7 +49,20 @@ static void action_start_debugger(G_GNUC_UNUSED GtkAction *act, gpointer data)
 
 static void action_open_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
-	/* FIXME */
+	TilemEmulatorWindow *ewin = data;
+	char * basename;
+	tilem_config_get("recent", "basedir/f", &basename, NULL);
+	char * RomName = prompt_open_file("Open rom", NULL, basename, "ROM files", "*.rom", "All files", "*", NULL);
+	tilem_calc_emulator_pause(ewin->emu);
+	tilem_calc_emulator_load_state(ewin->emu, RomName);
+	tilem_calc_emulator_run(ewin->emu);
+	gchar* folder = g_path_get_dirname(RomName);
+	printf("basename : %s\n", folder);
+	tilem_config_set("recent", "rom/f", RomName, "basedir/f", folder, NULL);		
+	g_free(basename);
+	g_free(folder);
+	g_free(RomName);
+
 }
 
 static void action_save_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
