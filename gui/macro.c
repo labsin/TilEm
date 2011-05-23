@@ -68,23 +68,22 @@ void tilem_macro_start(TilemCalcEmulator *emu) {
 /* Recording */
 void tilem_macro_add_action(TilemMacro* macro, int type, char * value) {
 	
-	macro->n++;
 	int n = macro->n;
-	if(n == 1) {
-		macro->actions = g_new(TilemMacroAtom*, macro->n);
+	if(n == 0) {
+		macro->actions = g_new(TilemMacroAtom*, macro->n + 1);
 		printf("new\n");
 	} else {
-		macro->actions = g_renew(TilemMacroAtom*, macro->actions, macro->n);
+		macro->actions = g_renew(TilemMacroAtom*, macro->actions, macro->n + 1);
 		printf("renew\n");
 	}
 	printf("n : %d\n", n);
-	macro->actions[n-1] = g_new(char, strlen(value));
-	macro->actions[n-1]->value = g_strdup(value);
-	macro->actions[n-1]->type = type;
+	macro->actions[n] = g_new(char, strlen(value));
+	macro->actions[n]->value = g_strdup(value);
+	macro->actions[n]->type = type;
+	macro->n++;
 }
 
 
-/* Turn off recording macro */
 void tilem_macro_stop(TilemCalcEmulator *emu)
 {
 	if(emu->isMacroRecording)
@@ -95,7 +94,7 @@ void tilem_macro_print(TilemMacro *macro) {
 	int i = 0;
 
 	printf("macro->n : %d\n", macro->n);
-	for(i = 0; i< macro->n; i++ ){
+	for(i = 0; i < macro->n; i++ ){
 		printf("type : %d    value : %s\n", macro->actions[i]->type, macro->actions[i]->value);
 	}
 }
@@ -104,7 +103,7 @@ void tilem_macro_print(TilemMacro *macro) {
 void tilem_macro_write_file(TilemCalcEmulator *emu) {
 	char *dir, *filename;
 	tilem_config_get("macro",
-                 "savemacro_recentdir/f", &dir,
+                 "directory/f", &dir,
                  NULL);
 
 	filename = prompt_save_file("Save macro", 
@@ -123,6 +122,7 @@ void tilem_macro_write_file(TilemCalcEmulator *emu) {
 				fwrite(emu->macro->actions[i]->value, 1, 4, fp);
 				fwrite(",", 1, 1, fp);
 			}
+		tilem_config_set("macro", "directory/f", g_path_get_dirname(filename), NULL);
 		fclose(fp);
 		}
 		g_free(filename);
@@ -151,38 +151,40 @@ void tilem_macro_play(TilemCalcEmulator *emu) {
 	emu->isMacroPlaying = FALSE;
 }
 
-	
-	
-/* Create the macro file */
-void create_or_replace_macro_file(TilemCalcEmulator* emu) {
-	FILE * macro_file;		
-	
-	/* if a macro already exists */
-	macro_file = g_fopen("play.txt", "w");
-	if(macro_file != NULL) {
-		fclose(macro_file);
+void tilem_macro_load(TilemCalcEmulator *emu) {
+	char *dir, *filename;
+	char c = 'a';
+	tilem_config_get("macro",
+                 "directory/f", &dir,
+                 NULL);
+
+	filename = prompt_open_file("Save macro", 
+				    GTK_WINDOW(emu->ewin->window),
+				    dir,
+				    "Macro files", "*.txt",
+                                    "All files", "*",
+				    NULL);
+	if(filename) {
+		FILE * fp = g_fopen(filename, "r");
+		
+		tilem_macro_start(emu);	
+		while(c != EOF) {	
+			char* codechar= (char*) malloc(4 * sizeof(char) + 1);
+			memset(codechar, 0, 5);
+			fread(codechar, 1, 4, fp);
+			int code = atoi(codechar);
+			if(code <= 0)
+				break;
+			printf("code : %d, codechar : %s\n",code,  codechar);
+			tilem_macro_add_action(emu->macro, 0, codechar);	
+			c = fgetc(fp);
+		}
+		tilem_macro_stop(emu);
 	}
-	
-
-	macro_file = g_fopen("play.txt", "a+");
-	emu->macro_file= macro_file;
+	tilem_macro_play(emu);
+	g_free(filename);
 }
-
-/* Recording */
-void add_event_in_macro_file(TilemCalcEmulator* emu, char * string) {
 	
-	/* First time ? So create the file */
-	if(emu->macro_file == NULL) {
-		create_or_replace_macro_file(emu);
-	} else {
-		/* Write the comma to seperate */
-		fwrite(",", 1, 1, emu->macro_file);
-	}
-	/* Write the event */
-	fwrite(string, 1, sizeof(int), emu->macro_file);
-	
-}
-
 /* Recording */
 void add_load_file_in_macro_file(TilemCalcEmulator* emu, int length, char* filename) {
 	
@@ -196,7 +198,7 @@ void add_load_file_in_macro_file(TilemCalcEmulator* emu, int length, char* filen
 	
 	/* First time ? So create the file */
 	if(emu->macro_file == NULL) {
-		create_or_replace_macro_file(emu);
+		//create_or_replace_macro_file(emu);
 	} else {
 		fwrite(",", 1, 1, emu->macro_file);
 	}

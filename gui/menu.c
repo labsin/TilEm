@@ -116,7 +116,7 @@ static void action_play_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
 static void action_open_macro(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	play_macro_from_file(ewin);
+	tilem_macro_load(ewin->emu);
 }
 
 /* I will improve macro creation by saving it firstly into a macro object

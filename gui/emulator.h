@@ -186,3 +186,5 @@ void tilem_macro_add_action(TilemMacro* macro, int type, char * value);
 void tilem_macro_stop(TilemCalcEmulator *emu);
 void tilem_macro_print(TilemMacro *macro);
 void tilem_macro_write_file(TilemCalcEmulator *emu);
+void tilem_macro_play(TilemCalcEmulator *emu);
+void tilem_macro_load(TilemCalcEmulator *emu);
