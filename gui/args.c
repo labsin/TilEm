@@ -71,7 +71,7 @@ int tilem_cmdline_get_args(int argc, char* argv[], TilemCmdlineArgs* cmdline) {
        	char options;
 
 	if (argc <= 2)
-                tilem_cmdline_help(argv[0],-1);
+                return 0;
         else if (strcmp(argv[1], "--help") == 0)
                 tilem_cmdline_help(argv[0],0);
 

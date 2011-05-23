@@ -29,6 +29,7 @@
 
 #include "gui.h"
 #include "icons.h"
+#include "filedlg.h"
 
 
 
@@ -53,7 +54,29 @@ int main(int argc, char **argv)
 
 	cl = tilem_cmdline_new();
 	tilem_cmdline_get_args(argc, argv, cl);
+	
 
+	/* Check if user give a romfile as cmd line parameter */
+	if(!cl->RomName)
+		tilem_config_get("recent", "rom/f", &cl->RomName, NULL);
+
+	/* If no saved romfile */
+	if(!cl->RomName) {
+		char * basename;
+		tilem_config_get("recent", "basedir/f", &basename, NULL);
+		cl->RomName = prompt_open_file("Open rom", NULL, basename, "ROM files", "*.rom", "All files", "*", NULL);
+		g_free(basename);
+	}
+
+	if(!cl->RomName) {	
+		return 0;
+	} else {
+		gchar* folder = g_path_get_dirname(cl->RomName);
+		printf("basename : %s\n", folder);
+		tilem_config_set("recent", "rom/f", cl->RomName, "basedir/f", folder, NULL);		
+		g_free(folder);
+	}
+	
 	if (!tilem_calc_emulator_load_state(emu, cl->RomName)) {
 		tilem_calc_emulator_free(emu);
 		return 1;
