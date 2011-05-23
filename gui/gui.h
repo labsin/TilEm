@@ -158,7 +158,7 @@ void tilem_choose_skin_filename_by_default(TilemEmulatorWindow *ewin);
 void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin);
 
 /* Redraw the screen with or without skin */
-void redraw_skin(TilemEmulatorWindow *ewin);
+void redraw_screen(TilemEmulatorWindow *ewin);
 
 
 

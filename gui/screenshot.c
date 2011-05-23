@@ -600,9 +600,11 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 
 	tilem_animation_save(anim, filename, format, NULL, NULL, &err);
 
+	/* printf("filename : %s , format : %s \n", filename, format); */
 	dir = g_path_get_dirname(filename);
 
-	if (err) {
+
+	if (!err) {
 		messagebox01(ssdlg->window, GTK_MESSAGE_ERROR,
 		             "Unable to save screenshot",
 		             "%s", err->message);
