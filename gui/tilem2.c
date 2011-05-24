@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	if (cl->FileToLoad) /* Given as parameter ? */
 		tilem_load_file_from_file_at_startup(emu, cl->FileToLoad);
 	if (cl->MacroToPlay) { /* Given as parameter ? */
-		tilem_macro_load_from_file(emu, cl->MacroToPlay); 		
+		tilem_macro_load(emu, cl->MacroToPlay); 		
 	}
 
 	gtk_main();

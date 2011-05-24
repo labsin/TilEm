@@ -31,30 +31,41 @@
 #include "gui.h"
 #include "filedlg.h"
 
-TilemMacroAtom* tilem_macro_atom_new();
-TilemMacro* tilem_macro_new();
-void tilem_macro_finalize(TilemMacro* macro);
+static TilemMacroAtom** tilem_macro_actions_new(TilemMacro *macro, int n);
+static TilemMacro* tilem_macro_new();
+static void tilem_macro_finalize(TilemMacro* macro);
 
-
-TilemMacroAtom* tilem_macro_atom_new() {
-	TilemMacroAtom *atom = g_new(TilemMacroAtom, 1);
-	
-	return atom;
-}
-
-TilemMacro* tilem_macro_new() {
+/* Allocate a new TilemMacro structure which is empty */
+static TilemMacro* tilem_macro_new() {
 	TilemMacro *macro = g_new(TilemMacro, 1);
 	macro->n = 0;
 	macro->actions = NULL;
 	return macro;
 }
 
-void tilem_macro_finalize(TilemMacro* macro) {
-	if(macro)
-		g_free(macro);
+/* New or renew the table of actions (each TilemMacroAtom is an action) */
+static TilemMacroAtom** tilem_macro_actions_new(TilemMacro *macro, int n) {
+	TilemMacroAtom **atom; 
+	if(n == 0) {
+		atom =  g_new(TilemMacroAtom*, n);
+		printf("new\n");
+	} else {
+		atom =  g_renew(TilemMacroAtom*, macro->actions, n);
+		printf("renew\n");
+	}
+	return atom;
 }
 
-/* Turn on recording macro */
+/* Try to destroy the TilemMacro if really allocated */
+static void tilem_macro_finalize(TilemMacro* macro) {
+	if(macro) {
+		if(macro->actions)
+			g_free(macro->actions);
+		g_free(macro);
+	}
+}
+
+/* Firstly free the memory then create a new TilemMacro */
 void tilem_macro_start(TilemCalcEmulator *emu) {
 	emu->isMacroRecording = TRUE;
 
@@ -65,33 +76,39 @@ void tilem_macro_start(TilemCalcEmulator *emu) {
 	emu->macro = tilem_macro_new(emu);
 }
 
-/* Recording */
+/* Add an action to the macro. The action could be :
+ * A keypress (type == 0) 
+ * A file load (type == 1)
+ * Or something else if I implement it :)
+ */
 void tilem_macro_add_action(TilemMacro* macro, int type, char * value) {
 	
-	printf("Add action\n");
 	int n = macro->n;
-	if(n == 0) {
-		macro->actions = g_new(TilemMacroAtom*, macro->n + 1);
-		printf("new\n");
-	} else {
-		macro->actions = g_renew(TilemMacroAtom*, macro->actions, macro->n + 1);
-		printf("renew\n");
-	}
+
+	/* We want to allocate for 1 object, but index is 0 */
+	macro->actions = tilem_macro_actions_new(macro, n + 1);
+
+	/* Then we need to save the action */	
 	printf("n : %d\n", n);
+
+	/* Benjamin, what's the problem here : 
+	 * gcc says : "assignment from incompatible pointer type" 
+	 * ???????
+	 */
 	macro->actions[n] = g_new(char, strlen(value));
 	macro->actions[n]->value = g_strdup(value);
 	macro->actions[n]->type = type;
 	macro->n++;
 }
 
-
+/* Stop the macro */
 void tilem_macro_stop(TilemCalcEmulator *emu)
 {
-	printf("Stop\n");
 	if(emu->isMacroRecording)
 		emu->isMacroRecording = FALSE;
 }
 
+/* Print the macro actions content (debug) */
 void tilem_macro_print(TilemMacro *macro) {
 	int i = 0;
 
@@ -101,6 +118,7 @@ void tilem_macro_print(TilemMacro *macro) {
 	}
 }
 
+/* Write a file using TilemMacro structure */
 void tilem_macro_write_file(TilemCalcEmulator *emu) {
 	char *dir, *filename;
 	tilem_config_get("macro",
@@ -143,6 +161,7 @@ void tilem_macro_write_file(TilemCalcEmulator *emu) {
 	}
 }
 
+/* Play the macro (macro should be created or loaded before else it does nothing) */
 void tilem_macro_play(TilemCalcEmulator *emu) {
 
 	printf("Play\n");
@@ -150,40 +169,51 @@ void tilem_macro_play(TilemCalcEmulator *emu) {
 		return ;
 	/* Turn on the macro playing state */
 	emu->isMacroPlaying = TRUE;
+
 	int i;
 	for(i = 0; i < emu->macro->n; i++ ){
-
+		
+		/* Type == 1 is load file */
 		if(emu->macro->actions[i]->type == 1) {
 			load_file_from_file(emu, emu->macro->actions[i]->value);
 		} else {
+			/* type == 0 is keypress */
 			int code = atoi(emu->macro->actions[i]->value);
-			DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", emu->macro->actions[i]->value, code);
+			//DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", emu->macro->actions[i]->value, code);
 			g_mutex_lock(emu->calc_mutex);
 			run_with_key_slowly(emu->calc, code);			
 			g_cond_broadcast(emu->calc_wakeup_cond);
 			g_mutex_unlock(emu->calc_mutex);
 		}
-		printf("type : %d    value : %s\n", emu->macro->actions[i]->type, emu->macro->actions[i]->value);
+		//printf("type : %d    value : %s\n", emu->macro->actions[i]->type, emu->macro->actions[i]->value);
 	}
 
-	printf("Play end\n");
+	//printf("Play end\n");
 	/* Turn off the macro playing state */
 	emu->isMacroPlaying = FALSE;
 }
 
-void tilem_macro_load(TilemCalcEmulator *emu) {
-	char *dir, *filename;
+/* Load a macro from filename. 
+ * If filename == NULL prompt the user
+ */
+void tilem_macro_load(TilemCalcEmulator *emu, char* filename) {
 	char c = 'a';
-	tilem_config_get("macro",
-                 "directory/f", &dir,
-                 NULL);
+	
+	if(!filename) {
+		char *dir;
+		tilem_config_get("macro",
+	                 "directory/f", &dir,
+	                 NULL);
 
-	filename = prompt_open_file("Save macro", 
-				    GTK_WINDOW(emu->ewin->window),
-				    dir,
-				    "Macro files", "*.txt",
-                                    "All files", "*",
-				    NULL);
+		filename = prompt_open_file("Save macro", 
+					    GTK_WINDOW(emu->ewin->window),
+					    dir,
+					    "Macro files", "*.txt",
+	                                    "All files", "*",
+					    NULL);
+		g_free(dir);
+	}
+
 	if(filename) {
 		FILE * fp = g_fopen(filename, "r");
 		
@@ -199,7 +229,6 @@ void tilem_macro_load(TilemCalcEmulator *emu) {
 				int length = atoi(lengthchar);
 				char* filetoload= g_new0(char, length);
 				fread(filetoload, 1, length, fp);
-				//load_file_from_file(emu, filetoload);
 				tilem_macro_add_action(emu->macro, 1, filetoload);	
 				g_free(lengthchar);
 				g_free(filetoload);
@@ -216,42 +245,5 @@ void tilem_macro_load(TilemCalcEmulator *emu) {
 		fclose(fp);
 	}
 	tilem_macro_play(emu);
-	g_free(filename);
 }
 	
-
-void tilem_macro_load_from_file(TilemCalcEmulator *emu, char* filename) {
-	char c = 'a';
-	if(filename) {
-		FILE * fp = g_fopen(filename, "r");
-		
-		tilem_macro_start(emu);	
-		while(c != EOF) {	
-			char* codechar = g_new0(char, 4);
-			fread(codechar, 1, 4, fp);
-			if(strcmp(codechar, "file") == 0) {
-				c = fgetc(fp); /* Drop the "="*/
-				char *lengthchar = g_new0(char, 4);
-				fread(lengthchar, 1, 4, fp);
-				c = fgetc(fp); /* Drop the "-"*/
-				int length = atoi(lengthchar);
-				char* filetoload= g_new0(char, length);
-				fread(filetoload, 1, length, fp);
-				//load_file_from_file(emu, filetoload);
-				tilem_macro_add_action(emu->macro, 1, filetoload);	
-				g_free(lengthchar);
-				g_free(filetoload);
-			} else {
-				int code = atoi(codechar);
-				if(code <= 0)
-					break;
-				printf("code : %d, codechar : %s\n",code,  codechar);
-				tilem_macro_add_action(emu->macro, 0, codechar);	
-				c = fgetc(fp);
-			}
-		}
-		tilem_macro_stop(emu);
-		fclose(fp);
-	}
-	tilem_macro_play(emu);
-}

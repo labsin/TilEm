@@ -180,12 +180,33 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu);
 /* Run slowly to play macro */
 void run_with_key_slowly(TilemCalc* calc, int key);
 
+
 /* Macros */
+
+/* Start to record a macro */
 void tilem_macro_start(TilemCalcEmulator *emu);
+
+
+/* Add an action to the macro */
 void tilem_macro_add_action(TilemMacro* macro, int type, char * value);
+
+
+/* Stop recording a macro */
 void tilem_macro_stop(TilemCalcEmulator *emu);
+
+
+/* Print the macro (debug) */
 void tilem_macro_print(TilemMacro *macro);
+
+
+/* Write a macro file */
 void tilem_macro_write_file(TilemCalcEmulator *emu);
+
+
+/* Play a macro (loaded or recorded before) */
 void tilem_macro_play(TilemCalcEmulator *emu);
-void tilem_macro_load(TilemCalcEmulator *emu);
-void tilem_macro_load_from_file(TilemCalcEmulator *emu, char* filename);
+
+
+/* Load a macro from filename or if filename == NULL prompt user */
+void tilem_macro_load(TilemCalcEmulator *emu, char* filename);
+

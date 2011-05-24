@@ -209,5 +209,32 @@
 * - Refactor a lot of gif header's code.
 * ---12/05/11---
 * - I finally found what's wrong in my gif creation. So I can do multicolor gif now.
+* ---14/05/11---
+* - We have finally completely reoganized the code to drop GLOBAL_SKIN_INFOS, and rename a lot of stuff including files (emuwin instead screen by example).
+* - Benjamin have imported his nice filedlg functions (filedlg.c) from flashbook ui (see it on SF.net). Now use it for the entire code.
+* ---14/05/11---
+* - Refactor the gif creation to separate clearly which value can be modified, which one are magic number etc... Create separate functions for each task.
+* - Benjamin begins to work on animation (instead of writing file while recording it). It provides a wonderful objects to handle screenshot.
+* ---15/05/11---
+* - Add a doxyfile for generating documentation including callgraphs.
+* - Improvement to keybindings (Benjamin).
+* ---16/05/11---
+* - Add some preliminary work on get var stuff. Only dirlist and allow user to retrieve a var using cmd line but it works. The list is printed in a tree view.
+* - Add multi drag and drop feature.
+* ---19/05/11---
+* - Add functions for animations (Benjamin). Could now save a animation into a gif file.
+* - Improve screenshot menu by setting some buttons inactives depending the current state of screenshot creation.
+* - Add combo box for size to screenshot menu.
+* ---21/05/11---
+* - A lot of improvement on screenshot menu (Benjamin). Settings are now independent of screenshot dialog. Default directory for output.
+* - Add mnemonic label to screenshot menu buttons (Benjamin).
+* ---22/05/11---
+* - Benjamin redesign the entire menu popup to use the better GtkAction system. Now there's keybindings for menu and code is really beautiful and shorter.
+* - Add grayscale option to screenshot menu (Benjamin).
+* ---23/05/11---
+* - Save the last rom opened and use it at startup if no rom is given.
+* - Allow user to load another rom while running.
+* - Refactor the entire macro creation to separate creation from writing as TilemAnimation does. Code is cleaner and simply better.
+
 */
 
