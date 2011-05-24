@@ -56,21 +56,26 @@ int main(int argc, char **argv)
 	tilem_cmdline_get_args(argc, argv, cl);
 	
 
-	/* Check if user give a romfile as cmd line parameter */
+	/* Check if user gives a romfile as cmd line parameter */
+	/* In this cas, try to load a saved rom */
 	if(!cl->RomName)
 		tilem_config_get("recent", "rom/f", &cl->RomName, NULL);
 
 	/* If no saved romfile */
+	/* In this case, prompt the user wich file he want to load */
 	if(!cl->RomName) {
 		char * basename;
 		tilem_config_get("recent", "basedir/f", &basename, NULL);
 		cl->RomName = prompt_open_file("Open rom", NULL, basename, "ROM files", "*.rom", "All files", "*", NULL);
 		g_free(basename);
 	}
-
+	
+	/* Check if user cancelled the prompt */
+	/* In this case, jut close tilem2 (can't choose for him) */
 	if(!cl->RomName) {	
 		return 0;
 	} else {
+		/* Save the directory */
 		gchar* folder = g_path_get_dirname(cl->RomName);
 		printf("basename : %s\n", folder);
 		tilem_config_set("recent", "rom/f", cl->RomName, "basedir/f", folder, NULL);		
@@ -99,7 +104,7 @@ int main(int argc, char **argv)
 	if (cl->FileToLoad) /* Given as parameter ? */
 		tilem_load_file_from_file_at_startup(emu, cl->FileToLoad);
 	if (cl->MacroToPlay) { /* Given as parameter ? */
-		tilem_macro_load_from_file(emu, "/home/tib/83p/yoyo.txt"); 		
+		tilem_macro_load_from_file(emu, cl->MacroToPlay); 		
 	}
 
 	gtk_main();

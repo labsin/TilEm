@@ -68,6 +68,7 @@ void tilem_macro_start(TilemCalcEmulator *emu) {
 /* Recording */
 void tilem_macro_add_action(TilemMacro* macro, int type, char * value) {
 	
+	printf("Add action\n");
 	int n = macro->n;
 	if(n == 0) {
 		macro->actions = g_new(TilemMacroAtom*, macro->n + 1);
@@ -86,6 +87,7 @@ void tilem_macro_add_action(TilemMacro* macro, int type, char * value) {
 
 void tilem_macro_stop(TilemCalcEmulator *emu)
 {
+	printf("Stop\n");
 	if(emu->isMacroRecording)
 		emu->isMacroRecording = FALSE;
 }
@@ -143,12 +145,13 @@ void tilem_macro_write_file(TilemCalcEmulator *emu) {
 
 void tilem_macro_play(TilemCalcEmulator *emu) {
 
+	printf("Play\n");
 	if(!emu->macro)	
 		return ;
 	/* Turn on the macro playing state */
 	emu->isMacroPlaying = TRUE;
 	int i;
-	for(i = 0; i< emu->macro->n; i++ ){
+	for(i = 0; i < emu->macro->n; i++ ){
 
 		if(emu->macro->actions[i]->type == 1) {
 			load_file_from_file(emu, emu->macro->actions[i]->value);
@@ -161,9 +164,9 @@ void tilem_macro_play(TilemCalcEmulator *emu) {
 			g_mutex_unlock(emu->calc_mutex);
 		}
 		printf("type : %d    value : %s\n", emu->macro->actions[i]->type, emu->macro->actions[i]->value);
-
 	}
 
+	printf("Play end\n");
 	/* Turn off the macro playing state */
 	emu->isMacroPlaying = FALSE;
 }
@@ -251,5 +254,4 @@ void tilem_macro_load_from_file(TilemCalcEmulator *emu, char* filename) {
 		fclose(fp);
 	}
 	tilem_macro_play(emu);
-	g_free(filename);
 }
