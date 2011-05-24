@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -251,6 +252,15 @@ static void size_combo_changed(GtkComboBox *combo,
 	}
 }
 
+
+/*static void on_config_expander_activate(GtkExpander *expander,
+                               TilemScreenshotDialog *ssdlg)
+{
+	//printf("activate\n");
+	gtk_widget_queue_resize (ssdlg->window);
+	gtk_widget_queue_draw (ssdlg->window);
+}	
+*/
 static void size_spin_changed(G_GNUC_UNUSED GtkSpinButton *sb,
                               TilemScreenshotDialog *ssdlg)
 {
@@ -335,6 +345,8 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 		 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 		 GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
 		 NULL);
+	
+	gtk_window_set_resizable(GTK_WINDOW(ssdlg->window), FALSE);
 
 	gtk_dialog_set_alternative_button_order(GTK_DIALOG(ssdlg->window),
 	                                        GTK_RESPONSE_ACCEPT,
@@ -417,7 +429,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
-	ssdlg->width_spin = gtk_spin_button_new_with_range(1, 500, 1);
+	ssdlg->width_spin = gtk_spin_button_new_with_range(1, 750, 1);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->width_spin);
 	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
 	gtk_container_add(GTK_CONTAINER(align), ssdlg->width_spin);
@@ -458,7 +470,10 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 G_CALLBACK(size_spin_changed), ssdlg);
 	g_signal_connect(ssdlg->height_spin, "value-changed",
 	                 G_CALLBACK(size_spin_changed), ssdlg);
-
+	
+	/*g_signal_connect(config_expander, "activate",
+	                 G_CALLBACK(on_config_expander_activate), ssdlg);
+	*/
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(ssdlg->window));
 	gtk_container_add(GTK_CONTAINER(vbox), main_table);
 	gtk_widget_show_all(main_table);

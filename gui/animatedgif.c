@@ -72,7 +72,9 @@ static void write_global_header(FILE* fp, int width, int height) {
 
 	/* FIXME : allow size superior to 256 */
 	global_header_canvas[0] = width; 
+	global_header_canvas[1] = (width >> 8) ; 
 	global_header_canvas[2] = height; 
+	global_header_canvas[3] = (height >> 8); 
 
 	/* Flag */
 	/* The 11th byte is a set of flags  : 
@@ -141,8 +143,11 @@ static void write_image_block_start(FILE *fp, int width, int height) {
 	char image_block_header[] = { 0x2c};
 	/* Left corner x (2 bytes), left corner y (2 bytes), width (2 bytes), height (2 bytes) */
 	char image_block_canvas[] = { 0, 0, 0, 0, 96, 0, 64, 0};
-	image_block_canvas[4] = width;
-	image_block_canvas[6] = height;
+	
+	image_block_canvas[4] = width; 
+	image_block_canvas[5] = (width >> 8) ; 
+	image_block_canvas[6] = height; 
+	image_block_canvas[7] = (height >> 8); 
 	/* Flag */
 	char image_block_flag[] = { 0x09};
 
