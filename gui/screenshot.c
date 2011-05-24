@@ -206,7 +206,7 @@ static void set_current_animation(TilemScreenshotDialog *ssdlg,
 	}
 }
 
-static void dialog_response(GtkDialog *dialog, gint response, gpointer data)
+static void dialog_response(G_GNUC_UNUSED GtkDialog *dialog, gint response, gpointer data)
 {
 	TilemScreenshotDialog *ssdlg = data;
 
@@ -676,9 +676,9 @@ static void begin_animation(G_GNUC_UNUSED GtkButton *btn,
 
 	/* You can choose to hide current animation while recording or not
 	   It's as you prefer... For the moment I hide it */
-	gtk_widget_hide(GTK_WIDGET(ssdlg->screenshot_preview_image));
+	/*gtk_widget_hide(GTK_WIDGET(ssdlg->screenshot_preview_image)); */
 
-	set_current_animation(ssdlg, NULL);
+	//set_current_animation(ssdlg, NULL);
 }
 
 /* Callback for stop button (stop the recording) */
