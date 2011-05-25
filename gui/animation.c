@@ -468,7 +468,10 @@ void tilem_anim_frame_set_duration(TilemAnimFrame *frm,
 	g_return_if_fail(frm != NULL);
 	/* Calculate n * duration  */
 	int calculated_duration = (int) (frm->duration / current_duration) * new_duration; 
-	printf("nbframes : %d, new duration calculated : %d\n", (frm->duration / current_duration) , calculated_duration);
+	/* printf("frm->duration : %d, current_duration : %d, duration calculated : %d\n", frm->duration, current_duration , calculated_duration);*/
+	if(calculated_duration < 1)
+		calculated_duration = 1;
+	/* printf("nbframes : %d, new duration calculated : %d\n", (frm->duration / current_duration) , calculated_duration);*/
 	frm->duration = calculated_duration;
 }
 

@@ -56,6 +56,7 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* width_spin;
 	GtkWidget* height_spin;
 	GtkWidget* grayscale_tb;
+	GtkWidget* delay_scale;
 
 	TilemAnimation *current_anim;
 	gboolean current_anim_grayscale;

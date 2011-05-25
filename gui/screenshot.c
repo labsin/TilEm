@@ -238,12 +238,11 @@ static void delay_changed(GtkButton *delaybutton,
 {
 	
 	TilemScreenshotDialog *ssdlg = data;
-	printf("test\n");
 	TilemAnimation * anim = ssdlg->current_anim;
 	gdouble value = gtk_range_get_value(GTK_RANGE(delaybutton));
-	printf("value : %f\n", value);
+	/*printf("value : %f\n", value); */
 	int new_duration = (int) (value);
-	printf("new duration : %d\n", new_duration);
+	/*printf("new duration : %d\n", new_duration); */
 	tilem_animation_set_duration(anim, new_duration, ssdlg->current_duration);
 	ssdlg->current_duration = new_duration;
 	
@@ -463,20 +462,14 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), delay,
 	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 	
-	//GtkWidget *delaybutton = gtk_button_new_with_label("Delay");
-	//gtk_misc_set_alignment(GTK_MISC(delaybutton), LABEL_X_ALIGN, 0.5);
-	//gtk_table_attach(GTK_TABLE(tbl), delaybutton,
-	  //             1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 	
 	ssdlg->current_duration = 24; /* Default value */
 
-	GtkWidget *delaybutton = gtk_hscale_new_with_range(1, 100, 1);
-	gtk_table_attach(GTK_TABLE(tbl), delaybutton,
+	ssdlg->delay_scale = gtk_hscale_new_with_range(1, 100, 1);
+	gtk_range_set_value(GTK_RANGE(ssdlg->delay_scale), 40);
+	gtk_table_attach(GTK_TABLE(tbl), ssdlg->delay_scale,
 	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
-	/*GtkWidget *delaybutton = gtk_scale_button_new(GTK_ICON_SIZE_BUTTON, 0, 10, 1, NULL);
-	gtk_table_attach(GTK_TABLE(tbl), delaybutton,
-	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
-*/
+
 	ssdlg->height_spin = gtk_spin_button_new_with_range(1, 500, 1);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->height_spin);
 	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
@@ -506,7 +499,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 G_CALLBACK(size_spin_changed), ssdlg);
 	g_signal_connect(ssdlg->height_spin, "value-changed",
 	                 G_CALLBACK(size_spin_changed), ssdlg);
-	g_signal_connect(delaybutton, "value-changed",
+	g_signal_connect(ssdlg->delay_scale, "value-changed",
 	                 G_CALLBACK(delay_changed), ssdlg);
 	
 	/*g_signal_connect(config_expander, "activate",
@@ -700,9 +693,12 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 static void begin_animation(G_GNUC_UNUSED GtkButton *btn,
                             TilemScreenshotDialog *ssdlg)
 {
+	
+	ssdlg->isAnimScreenshotRecording = TRUE;
 	gboolean grayscale = gtk_toggle_button_get_active
 		(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb));
 
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->delay_scale), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), TRUE);
@@ -728,15 +724,19 @@ static void end_animation(G_GNUC_UNUSED GtkButton *btn,
 	if (ssdlg->emu->anim) {
 		anim = tilem_calc_emulator_end_animation(ssdlg->emu);
 		set_current_animation(ssdlg, anim);
+		//ssdlg->current_duration = 40;
+		//gtk_range_set_value(GTK_RANGE(ssdlg->delay_scale), 40);
 		g_object_unref(anim);
 	}
 	else {
 		set_current_animation(ssdlg, NULL);
 	}
 
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->delay_scale), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), FALSE);
+	ssdlg->isAnimScreenshotRecording = FALSE;
 }
 
 /* Callback for screenshot button (take a screenshot) */

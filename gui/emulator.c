@@ -116,13 +116,13 @@ static void update_screen(TilemCalcEmulator *emu)
 		if (emu->anim_grayscale) {
 			tilem_animation_append_frame(emu->anim,
 			                             emu->lcd_buffer,
-			                             MILLISEC_PER_FRAME);
+			                             emu->ssdlg->current_duration);
 		}
 		else {
 			tilem_lcd_get_frame(emu->calc, emu->tmp_lcd_buffer);
 			tilem_animation_append_frame(emu->anim,
 			                             emu->tmp_lcd_buffer,
-			                             MILLISEC_PER_FRAME);
+			                             emu->ssdlg->current_duration);
 		}
 	}
 
