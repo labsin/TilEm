@@ -78,4 +78,8 @@ gboolean tilem_animation_save(TilemAnimation *anim,
                               char **option_keys, char **option_values,
                               GError **err);
 
+/* Set the duration of an entire animation */
+void tilem_animation_set_duration(TilemAnimation *anim,
+                                  int new_duration, int current_duration);
+
 G_END_DECLS

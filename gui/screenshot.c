@@ -233,6 +233,23 @@ enum {
 	COL_HEIGHT
 };
 
+static void delay_changed(GtkButton *delaybutton,
+                               gpointer data)
+{
+	
+	TilemScreenshotDialog *ssdlg = data;
+	printf("test\n");
+	TilemAnimation * anim = ssdlg->current_anim;
+	gdouble value = gtk_range_get_value(GTK_RANGE(delaybutton));
+	printf("value : %f\n", value);
+	int new_duration = (int) (value);
+	printf("new duration : %d\n", new_duration);
+	tilem_animation_set_duration(anim, new_duration, ssdlg->current_duration);
+	ssdlg->current_duration = new_duration;
+	
+		
+}
+
 /* Combo box changed.  Update spin buttons accordingly. */
 static void size_combo_changed(GtkComboBox *combo,
                                TilemScreenshotDialog *ssdlg)
@@ -401,7 +418,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 
 	config_expander = gtk_expander_new("Options");
 
-	tbl = gtk_table_new(4, 2, FALSE);
+	tbl = gtk_table_new(5, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(tbl), 6);
 	gtk_table_set_col_spacings(GTK_TABLE(tbl), 6);
 
@@ -440,7 +457,26 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	
+	GtkWidget *delay = gtk_label_new_with_mnemonic("_Delay:");
+	gtk_misc_set_alignment(GTK_MISC(delay), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), delay,
+	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	
+	//GtkWidget *delaybutton = gtk_button_new_with_label("Delay");
+	//gtk_misc_set_alignment(GTK_MISC(delaybutton), LABEL_X_ALIGN, 0.5);
+	//gtk_table_attach(GTK_TABLE(tbl), delaybutton,
+	  //             1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	
+	ssdlg->current_duration = 24; /* Default value */
 
+	GtkWidget *delaybutton = gtk_hscale_new_with_range(1, 100, 1);
+	gtk_table_attach(GTK_TABLE(tbl), delaybutton,
+	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	/*GtkWidget *delaybutton = gtk_scale_button_new(GTK_ICON_SIZE_BUTTON, 0, 10, 1, NULL);
+	gtk_table_attach(GTK_TABLE(tbl), delaybutton,
+	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+*/
 	ssdlg->height_spin = gtk_spin_button_new_with_range(1, 500, 1);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->height_spin);
 	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
@@ -470,6 +506,8 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 G_CALLBACK(size_spin_changed), ssdlg);
 	g_signal_connect(ssdlg->height_spin, "value-changed",
 	                 G_CALLBACK(size_spin_changed), ssdlg);
+	g_signal_connect(delaybutton, "value-changed",
+	                 G_CALLBACK(delay_changed), ssdlg);
 	
 	/*g_signal_connect(config_expander, "activate",
 	                 G_CALLBACK(on_config_expander_activate), ssdlg);

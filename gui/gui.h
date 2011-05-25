@@ -59,6 +59,8 @@ typedef struct _TilemScreenshotDialog {
 
 	TilemAnimation *current_anim;
 	gboolean current_anim_grayscale;
+	
+	int current_duration;
 
 	/* Flags */
 	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */

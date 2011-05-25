@@ -461,6 +461,36 @@ TilemAnimFrame *tilem_animation_next_frame(TilemAnimation *anim,
 		return anim->start;
 }
 
+/* Set the duration of a frame */
+void tilem_anim_frame_set_duration(TilemAnimFrame *frm, 
+				   int new_duration, int current_duration)
+{
+	g_return_if_fail(frm != NULL);
+	/* Calculate n * duration  */
+	int calculated_duration = (int) (frm->duration / current_duration) * new_duration; 
+	printf("nbframes : %d, new duration calculated : %d\n", (frm->duration / current_duration) , calculated_duration);
+	frm->duration = calculated_duration;
+}
+
+/* Set the duration of the entire animation */
+void tilem_animation_set_duration(TilemAnimation *anim,
+				  int new_duration, int current_duration)
+{
+	TilemAnimFrame *frm;	
+	g_return_if_fail(TILEM_IS_ANIMATION(anim));
+	frm = tilem_animation_next_frame(anim, NULL);
+	
+	while(frm) {
+		printf("testfrm\n");	
+		if (new_duration > 0xffff)
+			new_duration = 0xffff;
+		tilem_anim_frame_set_duration(frm, new_duration, current_duration);
+	        frm = tilem_animation_next_frame(anim, frm);	
+	}
+}
+	
+
+
 int tilem_anim_frame_get_duration(TilemAnimFrame *frm)
 {
 	g_return_val_if_fail(frm != NULL, 0);

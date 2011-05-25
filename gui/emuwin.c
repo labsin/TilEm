@@ -525,7 +525,7 @@ void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin)
 	}	
 	if(lcd_content_file != NULL) {	
 		fclose(lcd_content_file);
-		printf("\n### END ###\n\nSaved into lcd_content.txt");
+		printf("\n### END ###\n\nSaved into lcd_content.txt\n");
 	}	
 
 }
