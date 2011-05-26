@@ -524,7 +524,7 @@ void tilem_animation_get_indexed_image(TilemAnimation *anim,
 }
 
 gboolean tilem_animation_save(TilemAnimation *anim,
-                              const char *fname, const char *type,
+                              const char *fname, byte* palette, int palette_size, const char *type,
                               char **option_keys, char **option_values,
                               GError **err)
 {
@@ -560,8 +560,9 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 		g_free(dname);
 		return FALSE;
 	}
-
-	tilem_animation_write_gif(anim, fp);
+	
+	
+	tilem_animation_write_gif(anim, palette, palette_size, fp);
 
 	if (fclose(fp)) {
 		errnum = errno;

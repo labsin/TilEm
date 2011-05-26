@@ -57,6 +57,9 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* height_spin;
 	GtkWidget* grayscale_tb;
 	GtkWidget* delay_scale;
+	GtkWidget* customcolor_tb;
+	GtkWidget* background_color;
+	GtkWidget* foreground_color;
 
 	TilemAnimation *current_anim;
 	gboolean current_anim_grayscale;
@@ -333,7 +336,7 @@ gboolean tilem_animation_record(gpointer data);
 void tilem_animation_stop(TilemCalcEmulator* emu);
 
 /* Save a TilemAnimation to a GIF file. */
-void tilem_animation_write_gif(TilemAnimation *anim, FILE *fp);
+void tilem_animation_write_gif(TilemAnimation *anim, byte* palette, int palette_size, FILE *fp);
 
 
 

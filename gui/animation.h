@@ -74,7 +74,7 @@ void tilem_animation_get_indexed_image(TilemAnimation *anim,
    type.  Options are specified by OPTION_KEYS and OPTION_VALUES (see
    gdk_pixbuf_savev().) */
 gboolean tilem_animation_save(TilemAnimation *anim,
-                              const char *fname, const char *type,
+                              const char *fname, byte* palette, int palette_size, const char *type,
                               char **option_keys, char **option_values,
                               GError **err);
 

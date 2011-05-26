@@ -125,7 +125,7 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 		return;
 	}
 
-	if (!tilem_animation_save(anim, filename, format, NULL, NULL, &err)) {
+	if (!tilem_animation_save(anim, filename, NULL, 256, format, NULL, NULL, &err)) {
 		messagebox01(ewin->window, GTK_MESSAGE_ERROR,
 		             "Unable to save screenshot",
 		             "%s", err->message);
@@ -265,6 +265,23 @@ static void size_combo_changed(GtkComboBox *combo,
 		                   -1);
 		if (width && height)
 			set_size_spin_buttons(ssdlg, width, height);
+	}
+}
+
+
+static void customcolor_toggled(GtkCheckButton *customcolor_tb,
+                               TilemScreenshotDialog *ssdlg)
+{
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(customcolor_tb))) {
+		//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb), FALSE);
+		//gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->grayscale_tb), FALSE);
+		gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->background_color), TRUE);
+		gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->foreground_color), TRUE);
+	} else {
+		//gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->grayscale_tb), TRUE);
+		//gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb), TRUE);
+		gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->background_color), FALSE);
+		gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->foreground_color), FALSE);
 	}
 }
 
@@ -417,7 +434,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 
 	config_expander = gtk_expander_new("Options");
 
-	tbl = gtk_table_new(5, 2, FALSE);
+	tbl = gtk_table_new(8, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(tbl), 6);
 	gtk_table_set_col_spacings(GTK_TABLE(tbl), 6);
 
@@ -462,7 +479,6 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), delay,
 	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 	
-	
 	ssdlg->current_duration = 24; /* Default value */
 
 	ssdlg->delay_scale = gtk_hscale_new_with_range(1, 100, 1);
@@ -476,6 +492,38 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_container_add(GTK_CONTAINER(align), ssdlg->height_spin);
 	gtk_table_attach(GTK_TABLE(tbl), align,
 	                 1, 2, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+
+	/* check button to use custom color */
+	ssdlg->customcolor_tb = gtk_check_button_new_with_mnemonic("Custom color");
+	gtk_table_attach(GTK_TABLE(tbl), ssdlg->customcolor_tb,
+	                 0, 1, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+
+	/* Foreground color and background color */
+	GtkWidget *foreground = gtk_label_new_with_mnemonic("_Foreground:");
+	gtk_misc_set_alignment(GTK_MISC(foreground), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), foreground,
+	                 0, 1, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
+	
+	GtkWidget *background = gtk_label_new_with_mnemonic("_Background:");
+	gtk_misc_set_alignment(GTK_MISC(background), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), background,
+	                 0, 1, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+
+	ssdlg->foreground_color = gtk_color_button_new();
+	gtk_table_attach(GTK_TABLE(tbl), ssdlg->foreground_color,
+	                 1, 2, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
+	ssdlg->background_color = gtk_color_button_new();
+	gtk_table_attach(GTK_TABLE(tbl), ssdlg->background_color,
+	                 1, 2, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb), TRUE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssdlg->customcolor_tb), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->background_color), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->foreground_color), FALSE);
+
+
+	
 
 	align = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, 12, 0);
@@ -501,7 +549,10 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 G_CALLBACK(size_spin_changed), ssdlg);
 	g_signal_connect(ssdlg->delay_scale, "value-changed",
 	                 G_CALLBACK(delay_changed), ssdlg);
+	g_signal_connect(ssdlg->customcolor_tb, "toggled",
+	                 G_CALLBACK(customcolor_toggled), ssdlg);
 	
+
 	/*g_signal_connect(config_expander, "activate",
 	                 G_CALLBACK(on_config_expander_activate), ssdlg);
 	*/
@@ -643,8 +694,23 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 			format = g_strdup(format + 1);
 		}
 	}
-
-	tilem_animation_save(anim, filename, format, NULL, NULL, &err);
+	
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ssdlg->customcolor_tb))) {
+		printf("change palette\n");
+		GdkColor *fg = g_new(GdkColor, 1);	
+		GdkColor *bg = g_new(GdkColor, 1);
+		gtk_color_button_get_color(GTK_COLOR_BUTTON(ssdlg->foreground_color), fg);
+		gtk_color_button_get_color(GTK_COLOR_BUTTON(ssdlg->background_color), bg);
+		printf("fg : %s\n", gdk_color_to_string(fg));
+		printf("bg : %s\n", gdk_color_to_string(bg));
+		
+	        byte* palette = tilem_color_palette_new_packed((int)(bg->red/256), (int)(bg->green/256), (int)(bg->blue/256), (int)(fg->red/256), (int)(fg->green/256), (int)(fg->blue/256),  2.2);	
+	        //byte* palette = tilem_color_palette_new_packed(0, 0, 122, 0, 60, 0, 2.2);	
+		tilem_animation_save(anim, filename, palette, 256, format, NULL, NULL, &err);
+	} else {
+	        byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);	
+		tilem_animation_save(anim, filename, palette, 256, format, NULL, NULL, &err);
+	}
 
 	/* printf("filename : %s , format : %s \n", filename, format); */
 	dir = g_path_get_dirname(filename);

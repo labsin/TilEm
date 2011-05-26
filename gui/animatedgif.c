@@ -28,7 +28,7 @@
 #include "gui.h"
 
 
-static void write_global_header(FILE* fp, int width, int height);
+static void write_global_header(FILE* fp, int width, int height, byte* palette, int palette_size);
 static void write_global_footer(FILE* fp);
 static void write_extension_block(FILE* fout, word delay);
 static void write_image_block_start(FILE *fp, int width, int height);
@@ -43,7 +43,9 @@ void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filena
 	printf("GIF ENCODER\n");
 	FILE *fp = fopen(filename, "w");
 	
-	write_global_header(fp, width, height);
+	byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);
+
+	write_global_header(fp, width, height, palette, 256);
 	write_extension_block(fp, 10);	
 	write_image_block_start(fp, width, height);	
 	write_image_block(emu, fp, width, height);
@@ -63,14 +65,13 @@ static void write_image_block(TilemCalcEmulator * emu, FILE *fp, int width, int 
 }
 
 	
-static void write_global_header(FILE* fp, int width, int height) {
+static void write_global_header(FILE* fp, int width, int height, byte* palette, int palette_size) {
 	
 	/* Magic number for Gif file format */
     	char global_header_magic_number[] = {'G', 'I', 'F', '8', '7', 'a'};
     	/* Size of canvas width on 2 bytes, heigth on 2 bytes */
 	char global_header_canvas[] = {96, 0, 64, 0 };
 
-	/* FIXME : allow size superior to 256 */
 	global_header_canvas[0] = width; 
 	global_header_canvas[1] = (width >> 8) ; 
 	global_header_canvas[2] = height; 
@@ -85,6 +86,7 @@ static void write_global_header(FILE* fp, int width, int height) {
 	It means "use the GCT wich is given after (from the size bit 5..7) and a resolution bit 1..3 
 	The Background color is an index in the Global Color Table
 	*/
+	/* FIXME : if we change the palette size, we need to change this flag too and I don't do this currently */
     	char global_header_flag[] = { 0xf7 };
 	/* The index in global color table */
 	char global_header_background_index[] = {0x00};
@@ -98,9 +100,9 @@ static void write_global_header(FILE* fp, int width, int height) {
 	fwrite(global_header_background_index, 1, 1, fp);
 	fwrite(global_header_aspect_pixel_ratio, 1, 1, fp);
 	
-	byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);
+	//byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);
 	
-	fwrite(palette, 256 * 3, 1, fp);
+	fwrite(palette, palette_size * 3, 1, fp);
 }
 
 static void write_global_footer(FILE* fp) {
@@ -206,7 +208,9 @@ void tilem_animation_start(TilemCalcEmulator* emu) {
 	FILE* fp;
 	fp = fopen("gifencod.gif", "w");
   	if(fp) { 
-		write_global_header(fp, width, height)	;
+		
+		byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);
+		write_global_header(fp, width, height, palette, 256);
 		write_application_extension(fp);
 		write_comment(fp);
 		write_extension_block(fp, 16);
@@ -262,7 +266,7 @@ gboolean tilem_animation_record(gpointer data) {
 }
 
 
-void tilem_animation_write_gif(TilemAnimation *anim, FILE *fp)
+void tilem_animation_write_gif(TilemAnimation *anim, byte* palette, int palette_size, FILE *fp)
 {
 	GdkPixbufAnimation *ganim;
 	int width, height, delay;
@@ -281,7 +285,7 @@ void tilem_animation_write_gif(TilemAnimation *anim, FILE *fp)
 	frm = tilem_animation_next_frame(anim, NULL);
 	g_return_if_fail(frm != NULL);
 
-	write_global_header(fp, width, height);
+	write_global_header(fp, width, height, palette, palette_size);
 
 	if (!is_static)
 		write_application_extension(fp);
