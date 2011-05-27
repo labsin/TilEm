@@ -42,6 +42,13 @@ static void action_receive_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 	tilem_rcvmenu_new(ewin->emu);
 }
 
+static void action_load_skin(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	tilem_user_change_skin(ewin);
+}
+
+
 static void action_start_debugger(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
@@ -104,7 +111,7 @@ static void action_end_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
 	tilem_macro_stop(ewin->emu);
-	tilem_macro_print(ewin->emu->macro);
+	/* tilem_macro_print(ewin->emu->macro); */
 }
 
 static void action_play_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)
@@ -196,6 +203,11 @@ static const GtkActionEntry main_action_ents[] =
 	   GTK_STOCK_SAVE_AS, "Re_ceive File...", "<ctrl>S",
 	   "Receive a program or variable from the calculator",
 	   G_CALLBACK(action_receive_file) },
+	{ "load-skin",
+	   GTK_STOCK_REFRESH, "_Load skin...", "<ctrl>L",
+	   "Load a skin",
+	   G_CALLBACK(action_load_skin) },
+
  
 	 { "open-calc",
 	   GTK_STOCK_OPEN, "_Open Calculator...", "<shift><ctrl>O",
@@ -254,7 +266,7 @@ static const GtkActionEntry main_action_ents[] =
 	   "Hide the calculator skin",
 	   G_CALLBACK(action_hide_skin) },
 	{ "hide-border",
-	   GTK_STOCK_LEAVE_FULLSCREEN, "_Hide Border", "",
+	   GTK_STOCK_LEAVE_FULLSCREEN, "Hide _Border", "",
 	   "Hide the window border if your window manager allows it",
 	   G_CALLBACK(action_hide_border) },
 	{ "toggle-speed",
@@ -334,6 +346,9 @@ void build_menu(TilemEmulatorWindow* ewin)
 	add_item(menu, ag, acts, "receive-file");
 	add_separator(menu);
 
+	add_item(menu, ag, acts, "load-skin");
+	add_separator(menu);
+
 	add_item(menu, ag, acts, "open-calc");
 	add_item(menu, ag, acts, "save-calc");
 	add_item(menu, ag, acts, "revert-calc");
@@ -353,7 +368,7 @@ void build_menu(TilemEmulatorWindow* ewin)
 	add_item(menu, ag, acts, "screenshot");
 	add_item(menu, ag, acts, "quick-screenshot");
 	
-	submenu = add_submenu(menu, "Miscellaneous");
+	submenu = add_submenu(menu, "_Miscellaneous");
 	add_item(submenu, ag, acts, "hide-skin");
 	add_item(submenu, ag, acts, "hide-border");
 	add_separator(submenu);

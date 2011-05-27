@@ -235,6 +235,12 @@
 * - Save the last rom opened and use it at startup if no rom is given.
 * - Allow user to load another rom while running.
 * - Refactor the entire macro creation to separate creation from writing as TilemAnimation does. Code is cleaner and simply better.
-
+* ---25/05/11---
+* - Add an option to change animation speed. The current printed animation is updated on change.
+* ---26/05/11---
+* - Add an option to change foreground and background color. No visual feedback.
+* ---27/05/11---
+* - Correct some stuff (see mailing list to know why). And add a palette setter in animation.c and a visual feedback when foreground/background color are changed.
+* - Some other minor improvement.
 */
 

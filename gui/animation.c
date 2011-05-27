@@ -380,6 +380,14 @@ TilemAnimation * tilem_animation_new(int display_width, int display_height)
 	return anim;
 }
 
+void tilem_animation_set_palette(TilemAnimation *anim, int rlight, int glight, int blight,
+                                int rdark, int gdark, int bdark,
+                                double gamma)
+{
+	anim->palette = tilem_color_palette_new(rlight, glight, blight, rdark, gdark, bdark, gamma);
+}
+
+
 gboolean tilem_animation_append_frame(TilemAnimation *anim,
                                       const TilemLCDBuffer *buf,
                                       int duration)
@@ -484,7 +492,6 @@ void tilem_animation_set_duration(TilemAnimation *anim,
 	frm = tilem_animation_next_frame(anim, NULL);
 	
 	while(frm) {
-		printf("testfrm\n");	
 		if (new_duration > 0xffff)
 			new_duration = 0xffff;
 		tilem_anim_frame_set_duration(frm, new_duration, current_duration);

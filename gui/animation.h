@@ -82,4 +82,9 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 void tilem_animation_set_duration(TilemAnimation *anim,
                                   int new_duration, int current_duration);
 
+/* Set a palette for anim */
+void tilem_animation_set_palette(TilemAnimation *anim, int rlight, int glight, int blight,
+                                int rdark, int gdark, int bdark,
+                                double gamma);
+
 G_END_DECLS

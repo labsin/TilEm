@@ -55,6 +55,7 @@ static const struct imgsize wide_sizes[] =
 	  { 219, 128 }, { 256, 128 }, { 256, 150 },
 	  { 328, 192 }, { 384, 192 } };
 
+static void reset_custom_color(TilemScreenshotDialog *ssdlg);
 static void grab_screen(GtkButton *btn, TilemScreenshotDialog *ssdlg);
 static void begin_animation(GtkButton *btn, TilemScreenshotDialog *ssdlg);
 static void end_animation(GtkButton *btn, TilemScreenshotDialog *ssdlg);
@@ -361,6 +362,37 @@ static void fill_size_combobox(GtkComboBox *combo,
 	gtk_combo_box_set_model(GTK_COMBO_BOX(combo), GTK_TREE_MODEL(store));
 }
 
+/* This method is called when a color is set (foreground or background)
+ * It set a new palette based on new custom colors
+ * It refresh the screen to print new colors 
+ */
+static void color_changed(G_GNUC_UNUSED GtkSpinButton *sb,
+                              TilemScreenshotDialog *ssdlg)
+{
+	
+	/* printf("custom color changed\n"); */
+	GdkColor *fg = g_new(GdkColor, 1);	
+	GdkColor *bg = g_new(GdkColor, 1);
+
+	gtk_color_button_get_color(GTK_COLOR_BUTTON(ssdlg->foreground_color), fg);
+	gtk_color_button_get_color(GTK_COLOR_BUTTON(ssdlg->background_color), bg);
+	tilem_animation_set_palette(ssdlg->current_anim, (int)(bg->red/256), (int)(bg->green/256), (int)(bg->blue/256), (int)(fg->red/256), (int)(fg->green/256), (int)(fg->blue/256),  2.2);
+	set_current_animation(ssdlg, ssdlg->current_anim);
+}
+
+/* Reset the color and set the custom_color check button inactive */
+static void reset_custom_color(TilemScreenshotDialog *ssdlg) 
+{
+	GdkColor *fg = g_new(GdkColor, 1);	
+	GdkColor *bg = g_new(GdkColor, 1);
+	fg->red = fg->green = fg->blue = 0; /* BLACK */
+	bg->red = bg->green = bg->blue = 65535; /* WHITE */
+		
+	gtk_color_button_set_color(GTK_COLOR_BUTTON(ssdlg->foreground_color), fg);
+	gtk_color_button_set_color(GTK_COLOR_BUTTON(ssdlg->background_color), bg);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssdlg->customcolor_tb), FALSE);
+}
+
 /* Create the screenshot menu */
 static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 {
@@ -474,7 +506,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
 	
-	GtkWidget *animation_speed_lbl = gtk_label_new_with_mnemonic("_Delay:");
+	GtkWidget *animation_speed_lbl = gtk_label_new_with_mnemonic("_Speed:");
 	gtk_misc_set_alignment(GTK_MISC(animation_speed_lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), animation_speed_lbl,
 	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
@@ -529,6 +561,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->background_color), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->foreground_color), FALSE);
 
+	reset_custom_color(ssdlg);
 
 	
 
@@ -559,7 +592,10 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	g_signal_connect(ssdlg->customcolor_tb, "toggled",
 	                 G_CALLBACK(customcolor_toggled), ssdlg);
 	
-
+	g_signal_connect(ssdlg->foreground_color, "color-set",
+	                 G_CALLBACK(color_changed), ssdlg);
+	g_signal_connect(ssdlg->background_color, "color-set",
+	                 G_CALLBACK(color_changed), ssdlg);
 	/*g_signal_connect(config_expander, "activate",
 	                 G_CALLBACK(on_config_expander_activate), ssdlg);
 	*/
@@ -570,6 +606,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	return ssdlg;
 }
 
+/* Popup the screenshot window */
 void popup_screenshot_window(TilemEmulatorWindow *ewin)
 {
 	TilemScreenshotDialog *ssdlg;
@@ -613,6 +650,7 @@ void popup_screenshot_window(TilemEmulatorWindow *ewin)
 	gtk_window_present(GTK_WINDOW(ssdlg->window));
 }
 
+/* Save the current (static) output */
 static gboolean save_output(TilemScreenshotDialog *ssdlg)
 {
 	char *dir, *format, *filename, *basename;
@@ -701,25 +739,27 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 			format = g_strdup(format + 1);
 		}
 	}
-	
+
+	/* Check if the custom_color_tb toggle button is active
+         * If active, use the color for the output 
+         */	
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ssdlg->customcolor_tb))) {
 		printf("change palette\n");
 		GdkColor *fg = g_new(GdkColor, 1);	
 		GdkColor *bg = g_new(GdkColor, 1);
 		gtk_color_button_get_color(GTK_COLOR_BUTTON(ssdlg->foreground_color), fg);
 		gtk_color_button_get_color(GTK_COLOR_BUTTON(ssdlg->background_color), bg);
-		printf("fg : %s\n", gdk_color_to_string(fg));
-		printf("bg : %s\n", gdk_color_to_string(bg));
+		/* printf("fg : %s\n", gdk_color_to_string(fg)); */
+		/* printf("bg : %s\n", gdk_color_to_string(bg)); */
 		
 	        byte* palette = tilem_color_palette_new_packed((int)(bg->red/256), (int)(bg->green/256), (int)(bg->blue/256), (int)(fg->red/256), (int)(fg->green/256), (int)(fg->blue/256),  2.2);	
-	        //byte* palette = tilem_color_palette_new_packed(0, 0, 122, 0, 60, 0, 2.2);	
 		tilem_animation_save(anim, filename, palette, 256, format, NULL, NULL, &err);
 	} else {
+		/* If user do not use custom color, use default */
 	        byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);	
 		tilem_animation_save(anim, filename, palette, 256, format, NULL, NULL, &err);
 	}
 
-	/* printf("filename : %s , format : %s \n", filename, format); */
 	dir = g_path_get_dirname(filename);
 
 
@@ -766,7 +806,8 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 static void begin_animation(G_GNUC_UNUSED GtkButton *btn,
                             TilemScreenshotDialog *ssdlg)
 {
-	
+
+	reset_custom_color(ssdlg);	
 	ssdlg->isAnimScreenshotRecording = TRUE;
 	gboolean grayscale = gtk_toggle_button_get_active
 		(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb));
@@ -817,6 +858,8 @@ static void grab_screen(G_GNUC_UNUSED GtkButton *btn,
                         TilemScreenshotDialog *ssdlg)
 {
 	TilemAnimation *anim;
+		
+	reset_custom_color(ssdlg);	
 	gboolean grayscale = gtk_toggle_button_get_active
 		(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb));
 
