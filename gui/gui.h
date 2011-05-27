@@ -56,7 +56,7 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* width_spin;
 	GtkWidget* height_spin;
 	GtkWidget* grayscale_tb;
-	GtkWidget* delay_scale;
+	GtkWidget* animation_speed;
 	GtkWidget* customcolor_tb;
 	GtkWidget* background_color;
 	GtkWidget* foreground_color;

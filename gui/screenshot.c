@@ -233,13 +233,13 @@ enum {
 	COL_HEIGHT
 };
 
-static void delay_changed(GtkButton *delaybutton,
+static void animation_speed_changed(GtkButton *animation_speed,
                                gpointer data)
 {
 	
 	TilemScreenshotDialog *ssdlg = data;
 	TilemAnimation * anim = ssdlg->current_anim;
-	gdouble value = gtk_range_get_value(GTK_RANGE(delaybutton));
+	gdouble value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(animation_speed));
 	/*printf("value : %f\n", value); */
 	int new_duration = (int) (value);
 	/*printf("new duration : %d\n", new_duration); */
@@ -474,16 +474,19 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
 	
-	GtkWidget *delay = gtk_label_new_with_mnemonic("_Delay:");
-	gtk_misc_set_alignment(GTK_MISC(delay), LABEL_X_ALIGN, 0.5);
-	gtk_table_attach(GTK_TABLE(tbl), delay,
+	GtkWidget *animation_speed_lbl = gtk_label_new_with_mnemonic("_Delay:");
+	gtk_misc_set_alignment(GTK_MISC(animation_speed_lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), animation_speed_lbl,
 	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 	
 	ssdlg->current_duration = 24; /* Default value */
 
-	ssdlg->delay_scale = gtk_hscale_new_with_range(1, 100, 1);
-	gtk_range_set_value(GTK_RANGE(ssdlg->delay_scale), 40);
-	gtk_table_attach(GTK_TABLE(tbl), ssdlg->delay_scale,
+	ssdlg->animation_speed = gtk_spin_button_new_with_range(1, 100, 1);
+	//gtk_hscale_new_with_range(1, 100, 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(ssdlg->animation_speed), 40.0);
+	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->animation_speed);
+	gtk_table_attach(GTK_TABLE(tbl), align,
 	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 
 	ssdlg->height_spin = gtk_spin_button_new_with_range(1, 500, 1);
@@ -510,10 +513,14 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 0, 1, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
 
 	ssdlg->foreground_color = gtk_color_button_new();
-	gtk_table_attach(GTK_TABLE(tbl), ssdlg->foreground_color,
+	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->foreground_color);
+	gtk_table_attach(GTK_TABLE(tbl), align,
 	                 1, 2, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
 	ssdlg->background_color = gtk_color_button_new();
-	gtk_table_attach(GTK_TABLE(tbl), ssdlg->background_color,
+	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->background_color);
+	gtk_table_attach(GTK_TABLE(tbl), align,
 	                 1, 2, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
 
 
@@ -547,8 +554,8 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 G_CALLBACK(size_spin_changed), ssdlg);
 	g_signal_connect(ssdlg->height_spin, "value-changed",
 	                 G_CALLBACK(size_spin_changed), ssdlg);
-	g_signal_connect(ssdlg->delay_scale, "value-changed",
-	                 G_CALLBACK(delay_changed), ssdlg);
+	g_signal_connect(ssdlg->animation_speed, "value-changed",
+	                 G_CALLBACK(animation_speed_changed), ssdlg);
 	g_signal_connect(ssdlg->customcolor_tb, "toggled",
 	                 G_CALLBACK(customcolor_toggled), ssdlg);
 	
@@ -764,7 +771,7 @@ static void begin_animation(G_GNUC_UNUSED GtkButton *btn,
 	gboolean grayscale = gtk_toggle_button_get_active
 		(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb));
 
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->delay_scale), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->animation_speed), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), TRUE);
@@ -791,14 +798,14 @@ static void end_animation(G_GNUC_UNUSED GtkButton *btn,
 		anim = tilem_calc_emulator_end_animation(ssdlg->emu);
 		set_current_animation(ssdlg, anim);
 		//ssdlg->current_duration = 40;
-		//gtk_range_set_value(GTK_RANGE(ssdlg->delay_scale), 40);
+		//gtk_range_set_value(GTK_RANGE(ssdlg->animation_speed), 40);
 		g_object_unref(anim);
 	}
 	else {
 		set_current_animation(ssdlg, NULL);
 	}
 
-	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->delay_scale), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->animation_speed), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->screenshot), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->record), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), FALSE);
