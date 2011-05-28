@@ -364,7 +364,6 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 	build_menu(ewin);
 
 	tilem_emulator_window_calc_changed(ewin);
-	redraw_screen(ewin);
 
 	return ewin;
 }

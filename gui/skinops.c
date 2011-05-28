@@ -201,7 +201,7 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 	gsize count;
 	struct stat st;
 
-	fp = fopen(filename, "rb");
+	fp = g_fopen(filename, "rb");
 	if (fp == NULL) {
 		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
 		return -1;
@@ -214,14 +214,17 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 
 	buf = g_malloc(count * sizeof(guchar));
 	count = fread(buf, sizeof(guchar), count, fp);
+	fclose(fp);
 
 	// Feed the pixbuf loader with our jpeg data
 	loader = gdk_pixbuf_loader_new();
 	result = gdk_pixbuf_loader_write(loader, buf, count, &error);
+	g_free(buf);
+
 	if(result == FALSE) {
 		fprintf(stderr, "Failed to load pixbuf file: %s\n", filename);
 		g_error_free(error);
-
+		g_object_unref(loader);
 		return -1;
 	}
 
@@ -229,7 +232,7 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 	if(result == FALSE) {
 		fprintf(stderr, "Failed to close pixbuf file: %s\n", filename);
 		g_error_free(error);
-
+		g_object_unref(loader);
 		return -1;
 	}
 
@@ -238,16 +241,19 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 	if(si->raw == NULL) {
 		fprintf(stderr, "Failed to load pixbuf file: %s\n", filename);
 		g_error_free(error);
-
+		g_object_unref(loader);
 		return -1;
 	}
 
 	si->sx = si->sy = 1.0;
 	si->image = g_object_ref(si->raw);
+	g_object_ref(si->raw);
 
 	// Get new skin size
 	si->width = gdk_pixbuf_get_width(si->image);
 	si->height = gdk_pixbuf_get_height(si->image);
+
+	g_object_unref(loader);
 
 	return 0;
 }
@@ -276,9 +282,14 @@ int skin_load(SKIN_INFOS *si, const char *filename)
 /* Unload skin by freeing allocated memory */
 int skin_unload(SKIN_INFOS *si)
 {
-	if(si->image != NULL) {
+	if (si->image != NULL) {
 		g_object_unref(si->image);
 		si->image = NULL;
+	}
+
+	if (si->raw) {
+		g_object_unref(si->raw);
+		si->raw = NULL;
 	}
 
 	free(si->name);
