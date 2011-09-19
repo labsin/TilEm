@@ -63,7 +63,7 @@ static GtkWidget *new_scrolled_window(GtkWidget *contents)
 
 
 
-/* Create the GtkTreeView to show the stack */
+/* Create the GtkTreeView to show the vars list */
 static GtkWidget *create_varlist()
 {
 	GtkCellRenderer   *renderer;
@@ -87,7 +87,7 @@ static GtkWidget *create_varlist()
 	return treeview;
 }
 
-/* Create a new TilemDebugger. */
+/* Create a new menu for receiving vars. */
 void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 {
 	int defwidth, defheight;
@@ -136,11 +136,10 @@ static GtkTreeModel* fill_varlist(char** list)
 	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 	int i = 0;
 	for(i = 0; list[i]; i++) {
-		char* name = g_strdup( list[i]);
+		char* name = g_strdup(list[i]);
 		gtk_list_store_append (store, &iter);
 		gtk_list_store_set (store, &iter, COL_NAME, name, -1);
 	}
-
 	return GTK_TREE_MODEL (store);
 }
 

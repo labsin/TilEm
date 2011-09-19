@@ -211,6 +211,7 @@ static int ilp_check(CableHandle* cbl, int* status)
 	return 0;
 }
 
+/* Open a cable */
 CableHandle* internal_link_handle_new(TilemCalcEmulator* emu)
 {
 	CableHandle* cbl;
@@ -432,6 +433,10 @@ int get_calc_model(TilemCalc* calc)
 	}
 }
 
+/****************/
+/* PROGRESS BAR */
+/****************/
+
 /* idle callback to start progress bar */
 static gboolean pbar_start(gpointer data)
 {
@@ -590,13 +595,6 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 	update->cancel = 0;
 }
 
-void print_child(G_GNUC_UNUSED GNode *vars, G_GNUC_UNUSED gpointer data) {
-
-	printf("print child \n");
-
-}
-
-
 
 /* Display the list of vars/app */		
 /* This is a modified version of get_dirlist (ticalc) 
@@ -676,7 +674,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	i = 0;
 	GNode *parent = g_node_nth_child(vars, i);
 		
-	char ** list = g_new(char*, g_node_n_children(parent));
+	char ** list = g_new(char*, g_node_n_children(parent) + 1);
 	//printf("Number of children : %d\n", g_node_n_children(parent));
 
 
@@ -688,8 +686,13 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
 
 		list[j] = g_strdup(utf8);
+		printf ("utf8 : %s\n", utf8);
 		g_free(utf8);
 	}
+	j++;
+	list[j] = NULL;
+	
+	//dirlist_print_debug(list);
 	printf("\n");
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
@@ -717,6 +720,13 @@ gint tilem_get_dirlist_size(GNode* tree)
 
 }
 
+/* Just print the list content (debug)*/
+void dirlist_print_debug(char **list) {
+	int i = 0;
+	for(i = 0; list[i]; i++) {
+		printf("%d. Var : %s\n", i, list[i]);
+	}
+}
 
 /* Get var from calc to PC */
 /* This function should really use a separate thread because it freeze the calc

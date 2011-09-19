@@ -255,6 +255,8 @@ void tilem_dirlist_display(GNode* tree);
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 char ** tilem_get_dirlist(TilemCalcEmulator *emu);
 
+/* Print dirlist (debug) */
+void dirlist_print_debug(char **list);
 
 
 /* ##### pbar.c ##### */
