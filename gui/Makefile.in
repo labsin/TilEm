@@ -61,6 +61,7 @@ objects = tilem2.o \
 	ti81prg.o \
 	menu.o \
 	rcvmenu.o \
+	getvar.o \
 	tool.o
 
 libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
@@ -177,10 +178,13 @@ keybindings.o: keybindings.c files.h $(common_headers)
 menu.o: menu.c $(common_headers)
 	$(compile) -c $(srcdir)/menu.c
 
-
 # Menu
 rcvmenu.o: rcvmenu.c $(common_headers)
 	$(compile) -c $(srcdir)/rcvmenu.c
+
+# Handle getting vars
+getvar.o: getvar.c $(common_headers)
+	$(compile) -c $(srcdir)/getvar.c
 
 
 
