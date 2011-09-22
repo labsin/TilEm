@@ -65,6 +65,7 @@ static char* find_free_filename(const char* directory,
                                 const char* filename,
                                 const char* extension);
 
+/* Test if the calc has a wide screen (ti86) */
 static gboolean is_wide_screen(TilemCalcEmulator *emu)
 {
 	g_return_val_if_fail(emu != NULL, FALSE);

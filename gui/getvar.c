@@ -131,7 +131,6 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 		printf ("utf8 : %s\n", utf8);
 		g_free(utf8);
 	}
-	j++;
 	list[j] = NULL;
 	
 	//dirlist_print_debug(list);

@@ -87,40 +87,38 @@ static GtkWidget *create_varlist()
 	return treeview;
 }
 
+static void tilem_rcvmenu_on_receive(GtkWidget* w, G_GNUC_UNUSED gpointer data) {
+	printf("receive !!!!\n");
+	gtk_widget_destroy(w);
+}
+
 /* Create a new menu for receiving vars. */
 void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 {
 	int defwidth, defheight;
 
-
 	//GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	GtkWidget *window = gtk_dialog_new();
-	//gtk_window_set_title(GTK_WINDOW(window), "TilEm receive Menu");
 	gtk_window_set_title(GTK_WINDOW(window), "TilEm receive Menu");
-	gtk_dialog_add_button(GTK_DIALOG(window), "Save", 0);
-	gtk_dialog_add_button(GTK_DIALOG(window), "Cancel", 1);
+	GtkWidget* button_save = gtk_dialog_add_button(GTK_DIALOG(window), "Save file to disk", 0);
+	GtkWidget* button_close = gtk_dialog_add_button(GTK_DIALOG(window), "Close", 1);
 
+	/* Set the size of the dialog */
 	defwidth = 200;
-	defheight = 100;
-
+	defheight = 400;
 	gtk_window_set_default_size(GTK_WINDOW(window), defwidth, defheight);
 	
+	/* Create and fill tree view */
 	GtkWidget* treeview = create_varlist();  	
 	GtkTreeModel *model = fill_varlist(tilem_get_dirlist(emu));
         gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);	
 
-	GtkWidget * hbox = gtk_hbox_new(TRUE, 0);
+	/* Allow scrolling the list because we can't know how many vars the calc contains */
 	GtkWidget * scroll = new_scrolled_window(treeview);
-	gtk_box_pack_start(GTK_BOX(hbox), scroll, TRUE, TRUE, FALSE);
+	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(window))), scroll);
+
+	g_signal_connect_swapped (window, "response", G_CALLBACK (gtk_widget_hide), window);
 	
-	GtkWidget* vbox = gtk_vbox_new(TRUE, 0);
-	GtkWidget * save_button = gtk_button_new_with_label("Save");
-	gtk_box_pack_start(GTK_BOX(vbox), save_button, FALSE, FALSE, FALSE);
-	
-	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, FALSE);
-	
-	
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(window))), hbox);
 
 	
 	gtk_widget_show_all(GTK_WIDGET(window));

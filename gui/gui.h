@@ -243,6 +243,10 @@ int get_calc_model(TilemCalc* calc);
 /* Simply emulate a click on key (use to prepare link -> come into receive mode) */
 void run_with_key(TilemCalc* calc, int key);
 
+
+
+/* ##### getvar.c ##### */
+
 /* Get directory list */
 void get_var(TilemCalcEmulator *emu);
 
@@ -257,6 +261,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu);
 
 /* Print dirlist (debug) */
 void dirlist_print_debug(char **list);
+
 
 
 /* ##### pbar.c ##### */
