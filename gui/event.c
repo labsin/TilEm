@@ -513,6 +513,7 @@ void load_file(TilemEmulatorWindow *ewin)
 	filenames = prompt_link_files("Send File",
 	                              GTK_WINDOW(ewin->window),
 	                              dir, ewin->emu->calc->hw.model_id);
+	printf("File to send : %s\n", filenames[0]);
 	g_free(dir);
 
 	if (filenames && filenames[0]) {

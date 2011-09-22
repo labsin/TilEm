@@ -102,6 +102,7 @@ gboolean SAVE_STATE;
 
 #define LABEL_X_ALIGN 0.0
 
+
 /* ###### event.c ##### */
 
 /* Detect and handle a "destroy" event */
@@ -278,6 +279,9 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu);
 
 /* Print dirlist (debug) */
 void dirlist_print_debug(char **list);
+
+/* Receive a var */
+int tilem_receive_var(TilemCalcEmulator* emu, char* varname, char* destination);
 
 
 

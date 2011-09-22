@@ -82,6 +82,7 @@ void tilem_dirlist_display(GNode* tree)
 	printf("\n");
 }
 
+int receive_var_cmdline(CalcHandle * ch);
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 /* Terminated by NULL */
 char ** tilem_get_dirlist(TilemCalcEmulator *emu)
@@ -104,8 +105,10 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	if (!ch) {
 		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
 	}
+	
 
 	ticalcs_cable_attach(ch, cbl);
+	
 	GNode *vars, *apps;
 	ticalcs_calc_get_dirlist(ch, &vars, &apps);
 
@@ -133,8 +136,8 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	}
 	list[j] = NULL;
 	
-	//dirlist_print_debug(list);
 	printf("\n");
+	
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
 
@@ -180,6 +183,20 @@ void get_var(TilemCalcEmulator *emu)
 	//receive_var(ch);
 }
 
+static int get_dirlist(CalcHandle *h) 
+{
+        GNode *vars, *apps;
+
+        ticalcs_calc_get_dirlist(h, &vars, &apps);
+        ticalcs_dirlist_display(vars);
+        ticalcs_dirlist_display(apps);
+        ticalcs_dirlist_destroy(&vars);
+        ticalcs_dirlist_destroy(&apps);
+
+        return 0;
+}
+
+
 /* Get a var from calc and save it into filename on PC */
 int receive_var_cmdline(CalcHandle * ch) {
 
@@ -207,3 +224,59 @@ int receive_var_cmdline(CalcHandle * ch) {
 	return 0;
 }
 
+/* Get a var from calc and save it into filename on PC */
+int tilem_receive_var(TilemCalcEmulator* emu, char* varname, char* destination) {
+	
+	CableHandle* cbl;
+	CalcHandle* ch;
+	
+	/* Init the libtis */
+	ticables_library_init();
+	tifiles_library_init();
+	ticalcs_library_init();
+	
+	/* Create cable (here an internal an dvirtual cabla) */
+	cbl = internal_link_handle_new(emu);
+	if (!cbl) 
+		fprintf(stderr, "Cannot create ilp handle\n");
+	
+
+	ch = ticalcs_handle_new(get_calc_model(emu->calc));
+	if (!ch) {
+		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
+	}
+	
+
+	ticalcs_cable_attach(ch, cbl);
+	
+	
+
+	/* Currently, this code is based on romain lievins example */
+	VarRequest ve ;
+	FileContent* filec;
+
+	filec = tifiles_content_create_regular(ch->model);
+
+	//strncpy(ve.name, varname, 8);
+	get_dirlist(ch);
+	printf("varname : %s\n", varname);
+	strcpy(ve.name, varname);	
+	printf("ve.name : %s\n", ve.name);
+	
+
+        ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, &ve);	
+	tifiles_file_write_regular(destination, filec, NULL);
+	
+	ticalcs_cable_detach(ch);
+	ticalcs_handle_del(ch);
+
+	ticables_handle_del(cbl);
+
+	/* Exit the libtis */
+	ticalcs_library_exit();
+	tifiles_library_exit();
+	ticables_library_exit();
+
+
+	return 0;
+}

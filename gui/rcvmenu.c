@@ -97,7 +97,13 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	gtk_tree_selection_get_selected(selection, &rcvdialog->model, &rcvdialog->iter);
 	gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, 0, &varname, -1);
 	printf("choice : %s\n", varname);
-
+	
+	gchar* path = prompt_save_file("Save file", rcvdialog->window, NULL, NULL, NULL, NULL);
+	printf("Destination : %s\n", path);
+	
+	tilem_receive_var(rcvdialog->emu, varname, path);
+	
+	
 	g_free(varname);
  
 }
@@ -105,6 +111,8 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 /* Close the window */
 static void tilem_rcvmenu_on_close(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
 	printf("close !!!!\n");
+	
+	
 	gtk_widget_destroy(w);
 }
 
@@ -115,6 +123,7 @@ void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 
 	TilemReceiveDialog* rcvdialog = g_slice_new0(TilemReceiveDialog);
 	rcvdialog->emu = emu;
+	emu->rcvdlg = rcvdialog;
 	//GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	rcvdialog->window = gtk_dialog_new();
 	gtk_window_set_title(GTK_WINDOW(rcvdialog->window), "TilEm receive Menu");
@@ -137,7 +146,7 @@ void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 
 	//g_signal_connect_swapped (window, "response", G_CALLBACK (gtk_widget_hide), window);
 	g_signal_connect(rcvdialog->button_save, "clicked", G_CALLBACK (tilem_rcvmenu_on_receive), rcvdialog);
-	g_signal_connect_swapped (rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog->window);
+	g_signal_connect_swapped(rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog->window);
 	
 	
 	gtk_widget_show_all(GTK_WIDGET(rcvdialog->window));
