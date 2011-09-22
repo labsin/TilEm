@@ -87,8 +87,24 @@ static GtkWidget *create_varlist()
 	return treeview;
 }
 
-static void tilem_rcvmenu_on_receive(GtkWidget* w, G_GNUC_UNUSED gpointer data) {
+/* Get the selected vars and print it */
+static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
+	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
 	printf("receive !!!!\n");
+	gchar* varname;
+	//gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, 0, &varname, -1);
+	GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
+	gtk_tree_selection_get_selected(selection, &rcvdialog->model, &rcvdialog->iter);
+	gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, 0, &varname, -1);
+	printf("choice : %s\n", varname);
+
+	g_free(varname);
+ 
+}
+
+/* Close the window */
+static void tilem_rcvmenu_on_close(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
+	printf("close !!!!\n");
 	gtk_widget_destroy(w);
 }
 
@@ -97,47 +113,49 @@ void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 {
 	int defwidth, defheight;
 
+	TilemReceiveDialog* rcvdialog = g_slice_new0(TilemReceiveDialog);
+	rcvdialog->emu = emu;
 	//GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	GtkWidget *window = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(window), "TilEm receive Menu");
-	GtkWidget* button_save = gtk_dialog_add_button(GTK_DIALOG(window), "Save file to disk", 0);
-	GtkWidget* button_close = gtk_dialog_add_button(GTK_DIALOG(window), "Close", 1);
+	rcvdialog->window = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(rcvdialog->window), "TilEm receive Menu");
+	rcvdialog->button_save = gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window), "Save file to disk", 0);
+	rcvdialog->button_close = gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window), "Close", 1);
 
 	/* Set the size of the dialog */
 	defwidth = 200;
 	defheight = 400;
-	gtk_window_set_default_size(GTK_WINDOW(window), defwidth, defheight);
+	gtk_window_set_default_size(GTK_WINDOW(rcvdialog->window), defwidth, defheight);
 	
 	/* Create and fill tree view */
-	GtkWidget* treeview = create_varlist();  	
-	GtkTreeModel *model = fill_varlist(tilem_get_dirlist(emu));
-        gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);	
+	rcvdialog->treeview = create_varlist();  	
+	rcvdialog->model = fill_varlist(rcvdialog, tilem_get_dirlist(emu));
+        gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
 
 	/* Allow scrolling the list because we can't know how many vars the calc contains */
-	GtkWidget * scroll = new_scrolled_window(treeview);
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(window))), scroll);
+	GtkWidget * scroll = new_scrolled_window(rcvdialog->treeview);
+	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window))), scroll);
 
-	g_signal_connect_swapped (window, "response", G_CALLBACK (gtk_widget_hide), window);
+	//g_signal_connect_swapped (window, "response", G_CALLBACK (gtk_widget_hide), window);
+	g_signal_connect(rcvdialog->button_save, "clicked", G_CALLBACK (tilem_rcvmenu_on_receive), rcvdialog);
+	g_signal_connect_swapped (rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog->window);
 	
-
 	
-	gtk_widget_show_all(GTK_WIDGET(window));
+	gtk_widget_show_all(GTK_WIDGET(rcvdialog->window));
 
 
 }
 
-static GtkTreeModel* fill_varlist(char** list)
+/* Fill the list of vars. In fact, add all vars from list to a GtkListStore */
+static GtkTreeModel* fill_varlist(TilemReceiveDialog * rcvdialog, char** list)
 {
-	GtkListStore  *store;
-	GtkTreeIter    iter;
 
-	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+	rcvdialog->store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 	int i = 0;
 	for(i = 0; list[i]; i++) {
 		char* name = g_strdup(list[i]);
-		gtk_list_store_append (store, &iter);
-		gtk_list_store_set (store, &iter, COL_NAME, name, -1);
+		gtk_list_store_append (rcvdialog->store, &rcvdialog->iter);
+		gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_NAME, name, -1);
 	}
-	return GTK_TREE_MODEL (store);
+	return GTK_TREE_MODEL (rcvdialog->store);
 }
 

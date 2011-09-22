@@ -70,6 +70,23 @@ typedef struct _TilemScreenshotDialog {
 	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
 } TilemScreenshotDialog;
 
+
+typedef struct _TilemReceiveDialog {
+	TilemCalcEmulator *emu;
+
+	GtkWidget* window;
+
+	GtkWidget* button_save;
+	GtkWidget* button_close;
+
+	GtkWidget* treeview;
+	GtkTreeModel* model;
+
+	GtkListStore* store;
+	GtkTreeIter iter;
+
+} TilemReceiveDialog;
+
 /* Handle the ilp progress stuff */
 typedef struct _TilemLinkProgress {
 	TilemCalcEmulator *emu;

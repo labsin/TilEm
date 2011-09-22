@@ -102,6 +102,7 @@ typedef struct _TilemCalcEmulator {
 	struct _TilemDebugger *dbg;
 	struct _TilemEmulatorWindow *ewin;
 	struct _TilemScreenshotDialog *ssdlg;
+	struct _TilemReceiveDialog *rcvdlg;
 	struct _TilemLinkProgress *linkpb;
 
 	FILE * macro_file;	/* The macro file */
