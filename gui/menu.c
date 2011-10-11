@@ -39,7 +39,8 @@ static void action_send_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 static void action_receive_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	tilem_rcvmenu_new(ewin->emu);
+	//tilem_rcvmenu_new(ewin->emu);
+	get_var(ewin->emu);
 }
 
 static void action_load_skin(G_GNUC_UNUSED GtkAction *act, gpointer data)

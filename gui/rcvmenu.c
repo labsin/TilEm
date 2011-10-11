@@ -34,6 +34,7 @@
 #include "disasmview.h"
 #include "memmodel.h"
 #include "files.h"
+#include "filedlg.h"
 #include "msgbox.h"
 
 static GtkTreeModel* fill_varlist();
@@ -98,10 +99,12 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, 0, &varname, -1);
 	printf("choice : %s\n", varname);
 	
-	gchar* path = prompt_save_file("Save file", rcvdialog->window, NULL, NULL, NULL, NULL);
+	gchar* path = prompt_save_file("Save file", GTK_WINDOW(rcvdialog->window), "", "", "destination", NULL, NULL);
+	if(path == NULL)
+		return;
 	printf("Destination : %s\n", path);
 	
-	tilem_receive_var(rcvdialog->emu, varname, path);
+	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varentry->vlist[10], path);
 	
 	
 	g_free(varname);
@@ -144,6 +147,7 @@ void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 	GtkWidget * scroll = new_scrolled_window(rcvdialog->treeview);
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window))), scroll);
 
+	
 	//g_signal_connect_swapped (window, "response", G_CALLBACK (gtk_widget_hide), window);
 	g_signal_connect(rcvdialog->button_save, "clicked", G_CALLBACK (tilem_rcvmenu_on_receive), rcvdialog);
 	g_signal_connect_swapped(rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog->window);

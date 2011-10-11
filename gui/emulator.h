@@ -37,7 +37,11 @@ typedef struct _TilemMacro {
 	TilemMacroAtom** actions;
 	int n;
 } TilemMacro;
-	
+
+typedef struct _TilemVarEntry {
+	VarEntry** vlist;	/* NULL terminated */
+	int n;
+} TilemVarEntry;
 
 /* Internal link cable state */
 typedef struct _TilemInternalLink {
@@ -89,6 +93,7 @@ typedef struct _TilemCalcEmulator {
 	int nkeybindings;
 	
 	struct _TilemMacro *macro;
+	struct _TilemVarEntry *varentry;
 
 	/* Link transfer state */
 	GThread *link_thread;

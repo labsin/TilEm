@@ -165,7 +165,7 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 }
 
 /* Receive data from calc */
-static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
+static int ilp_recv_new(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 	int status = 0;
@@ -192,6 +192,59 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 
 	g_mutex_unlock(emu->calc_mutex);
 	return status;
+}
+
+
+static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
+{
+	TilemCalcEmulator* emu = cbl->priv;
+	int status = 0;
+	int value;
+	unsigned int i;
+	dword prevmask;
+
+	g_mutex_lock(emu->calc_mutex);
+
+	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
+	prevmask = emu->calc->z80.stop_mask;
+	emu->calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE
+				      | TILEM_STOP_LINK_WRITE_BYTE
+				      | TILEM_STOP_LINK_ERROR);
+
+	tilem_z80_run_time(emu->calc, 1000, NULL);
+
+	printf(" <<");
+	while (count > 0) {
+		value = tilem_linkport_graylink_get_byte(emu->calc);
+
+		if (value != -1) {
+			printf(" %02X", value);
+			data[0] = value;
+			data++;
+			count--;
+			if (!count)
+				break;
+		}
+
+		for (i = 0; i < cbl->timeout; i++)
+			if (tilem_z80_run_time(emu->calc, 100000, NULL))
+				break;
+
+		if (i == cbl->timeout
+		    || (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR)) {
+			tilem_linkport_graylink_reset(emu->calc);
+			status = ERROR_READ_TIMEOUT;
+			break;
+		}
+	}
+	printf("\n");
+
+	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
+	emu->calc->z80.stop_mask = prevmask;
+
+	g_mutex_unlock(emu->calc_mutex);
+	return status;
+
 }
 
 /* Check if ready */
@@ -260,7 +313,7 @@ void run_with_key(TilemCalc* calc, int key)
 }
 
 /* Automatically press key to be in the receive mode (ti82 and ti85) */
-static void prepare_for_link(TilemCalc* calc)
+void prepare_for_link(TilemCalc* calc)
 {
 	run_with_key(calc, TILEM_KEY_ON);
 	run_with_key(calc, TILEM_KEY_ON);

@@ -118,6 +118,10 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
   
 	i = 0;
 	GNode *parent = g_node_nth_child(vars, i);
+
+	
+	emu->varentry = (TilemVarEntry*)g_new(TilemVarEntry*, 1);
+	emu->varentry->vlist = (VarEntry**) g_new(VarEntry**, (int)g_node_n_children(parent) + 1);
 		
 	char ** list = g_new(char*, g_node_n_children(parent) + 1);
 	//printf("Number of children : %d\n", g_node_n_children(parent));
@@ -129,12 +133,16 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 		VarEntry *ve = (VarEntry *) (child->data);
 
 		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
+		
+		emu->varentry->vlist[j] = g_new(VarEntry*, 1);
+		emu->varentry->vlist[j] = ve; 
 
 		list[j] = g_strdup(utf8);
 		printf ("utf8 : %s\n", utf8);
 		g_free(utf8);
 	}
 	list[j] = NULL;
+	emu->varentry->vlist[j] = NULL;
 	
 	printf("\n");
 	
@@ -151,6 +159,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 
 	return list;
 }
+
 
 /* Return the number of var */ 
 gint tilem_get_dirlist_size(GNode* tree)
@@ -172,6 +181,9 @@ void dirlist_print_debug(char **list) {
 	}
 }
 
+int get_dirlist(CalcHandle *h) ;
+
+
 /* Get var from calc to PC */
 /* This function should really use a separate thread because it freeze the calc
  * a long time. 
@@ -180,52 +192,12 @@ void get_var(TilemCalcEmulator *emu)
 {
 
 	tilem_rcvmenu_new(emu);
+	//official_get_var(emu);
 	//receive_var(ch);
 }
 
-static int get_dirlist(CalcHandle *h) 
-{
-        GNode *vars, *apps;
-
-        ticalcs_calc_get_dirlist(h, &vars, &apps);
-        ticalcs_dirlist_display(vars);
-        ticalcs_dirlist_display(apps);
-        ticalcs_dirlist_destroy(&vars);
-        ticalcs_dirlist_destroy(&apps);
-
-        return 0;
-}
-
-
 /* Get a var from calc and save it into filename on PC */
-int receive_var_cmdline(CalcHandle * ch) {
-
-	/* Currently, this code is based on romain lievins example */
-	char filename[1024] = ""; 
-        int ret;
-	VarEntry ve ;
-	FileContent* filec;
-
-	filec = tifiles_content_create_regular(ch->model);
-
-        printf("Enter filename: ");
-        ret = scanf("%1023s", filename);
-        if(ret < 1)
-                return 0;
-
-        printf("Enter variable name: ");
-        ret = scanf("%1023s", ve.name);
-        if(ret < 1)
-                return 0;
-
-        ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, &ve);	
-	tifiles_file_write_regular(filename, filec, NULL);
-
-	return 0;
-}
-
-/* Get a var from calc and save it into filename on PC */
-int tilem_receive_var(TilemCalcEmulator* emu, char* varname, char* destination) {
+int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination) {
 	
 	CableHandle* cbl;
 	CalcHandle* ch;
@@ -252,25 +224,27 @@ int tilem_receive_var(TilemCalcEmulator* emu, char* varname, char* destination) 
 	
 
 	/* Currently, this code is based on romain lievins example */
-	VarRequest ve ;
+	//VarRequest ve ;
+	
 	FileContent* filec;
 
 	filec = tifiles_content_create_regular(ch->model);
 
 	//strncpy(ve.name, varname, 8);
-	get_dirlist(ch);
-	printf("varname : %s\n", varname);
-	strcpy(ve.name, varname);	
-	printf("ve.name : %s\n", ve.name);
+	//printf("varname : %s\n", varname);
+	//strcpy(ve.name, varentry.name);	
+	
+	//printf("ve.name : %s\n", ve.name);
 	
 
-        ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, &ve);	
+        ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, varentry);	
+	tifiles_file_display_regular(filec);
 	tifiles_file_write_regular(destination, filec, NULL);
 	
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
-
 	ticables_handle_del(cbl);
+
 
 	/* Exit the libtis */
 	ticalcs_library_exit();
