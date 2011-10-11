@@ -148,7 +148,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	int k = j;	
 	int l = 0;	
 	
-	for (j; j < k + (int)g_node_n_children(appparent); j++)	//parse variables
+	for (j = j; j < k + (int)g_node_n_children(appparent); j++)	//parse variables
 	{
 		GNode *child = g_node_nth_child(appparent, l);
 		VarEntry *ve = (VarEntry *) (child->data);

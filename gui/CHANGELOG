@@ -251,5 +251,6 @@
 * - Add the ti83pfr.skn file. This skin is for ti83plus.fr. The creator is Claude Clerc (aka claudiux). He donates the skin under GPL v3+ licence.Thanks to him !!!
 * ---11/10/11---
 * - Correct the getvar.c code to work correctly. Add columns to the tree view.
+* - Add app receive handling. Set index column invisible.
 */
 

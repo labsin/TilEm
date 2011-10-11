@@ -90,6 +90,7 @@ static GtkWidget *create_varlist()
 
 	gtk_tree_view_column_set_sizing(c1, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_expand(c1, TRUE);
+	gtk_tree_view_column_set_visible(c1, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c1);
 
 
@@ -135,10 +136,14 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 
 /* Close the window */
 static void tilem_rcvmenu_on_close(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
-	printf("close !!!!\n");
-	
-	
-	gtk_widget_destroy(w);
+	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
+	if(rcvdialog->emu->varapp->vlist)
+		g_free(rcvdialog->emu->varapp->vlist);
+
+	if(rcvdialog->emu->varapp)
+		g_free(rcvdialog->emu->varapp);
+
+	gtk_widget_destroy(rcvdialog->window);
 }
 
 /* Create a new menu for receiving vars. */
@@ -172,7 +177,7 @@ void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 	
 	//g_signal_connect_swapped (window, "response", G_CALLBACK (gtk_widget_hide), window);
 	g_signal_connect(rcvdialog->button_save, "clicked", G_CALLBACK (tilem_rcvmenu_on_receive), rcvdialog);
-	g_signal_connect_swapped(rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog->window);
+	g_signal_connect(rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog);
 	
 	
 	gtk_widget_show_all(GTK_WIDGET(rcvdialog->window));
@@ -188,7 +193,9 @@ static GtkTreeModel* fill_varlist(TilemReceiveDialog * rcvdialog, char** list)
 	int i = 0;
 	for(i = 0; list[i]; i++) {
 		char* name = g_strdup(list[i]);
+		/* Append a row */
 		gtk_list_store_append (rcvdialog->store, &rcvdialog->iter);
+		/* Fill the row */ 
 		gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_INDEX, i, COL_NAME, name, COL_TYPE, rcvdialog->emu->varapp->vlist[i]->type, COL_SIZE, rcvdialog->emu->varapp->vlist[i]->size, -1);
 		
 	}
