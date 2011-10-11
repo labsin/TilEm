@@ -243,11 +243,13 @@
 * - Correct some stuff (see mailing list to know why). And add a palette setter in animation.c and a visual feedback when foreground/background color are changed.
 * - Some other minor improvement.
 * ---19/09/11---
-* - Restart working on tilem2 after holiday:)
+* - Restart working on tilem2 after holidays:)
 * - Add new file getvar.c to handle get var function (receiving var from calc to PC).
 * ---20/09/11---
 * - Some improvement to the rcvmenu. 
-* ---22/0911---
-* - Add the ti83pfr.skn file. This skin is for ti83plus.fr. The creator is Claude Clerc (aka claudiux). He donate the skin under GPL v3+ licence.Thanks to him !!!
+* ---22/09/11---
+* - Add the ti83pfr.skn file. This skin is for ti83plus.fr. The creator is Claude Clerc (aka claudiux). He donates the skin under GPL v3+ licence.Thanks to him !!!
+* ---11/10/11---
+* - Correct the getvar.c code to work correctly. Add columns to the tree view.
 */
 

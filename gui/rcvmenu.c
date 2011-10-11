@@ -42,7 +42,9 @@ static GtkTreeModel* fill_varlist();
 /* Stack list */
 enum
 {
-	COL_NAME = 0,
+	COL_INDEX = 0, 
+	COL_NAME,
+	COL_TYPE,
 	COL_SIZE,
   	NUM_COLS
 };
@@ -69,21 +71,40 @@ static GtkWidget *create_varlist()
 {
 	GtkCellRenderer   *renderer;
 	GtkWidget         *treeview;
-	GtkTreeViewColumn *column;
+	GtkTreeViewColumn *c1;
+	GtkTreeViewColumn *c2;
+	GtkTreeViewColumn *c3;
+	GtkTreeViewColumn *c4;
 	
 	/* Create the stack list tree view and set title invisible */
 	treeview = gtk_tree_view_new();
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("NAME", renderer, "text", COL_NAME, NULL);
+	c1 = gtk_tree_view_column_new_with_attributes ("INDEX", renderer, "text", COL_INDEX, NULL);
+	c2 = gtk_tree_view_column_new_with_attributes ("NAME", renderer, "text", COL_NAME, NULL);
+	c3 = gtk_tree_view_column_new_with_attributes ("TYPE", renderer, "text", COL_TYPE, NULL);
+	c4 = gtk_tree_view_column_new_with_attributes ("SIZE", renderer, "text", COL_SIZE, NULL);
 
-	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
-	
+	gtk_tree_view_column_set_sizing(c1, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_expand(c1, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c1);
+
+
+	gtk_tree_view_column_set_sizing(c2, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_expand(c2, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c2);
+
+		
+	gtk_tree_view_column_set_sizing(c3, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_expand(c3, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c3);
+		
+	gtk_tree_view_column_set_sizing(c4, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_expand(c4, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c4);
 	
 	return treeview;
 }
@@ -93,18 +114,19 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
 	printf("receive !!!!\n");
 	gchar* varname;
+	int index;
 	//gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, 0, &varname, -1);
 	GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
 	gtk_tree_selection_get_selected(selection, &rcvdialog->model, &rcvdialog->iter);
-	gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, 0, &varname, -1);
-	printf("choice : %s\n", varname);
+	gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, COL_INDEX, &index, COL_NAME, &varname, -1);
+	printf("choice : %d\t%s\n", index, varname);
 	
 	gchar* path = prompt_save_file("Save file", GTK_WINDOW(rcvdialog->window), "", "", "destination", NULL, NULL);
 	if(path == NULL)
 		return;
 	printf("Destination : %s\n", path);
 	
-	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varentry->vlist[10], path);
+	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varentry->vlist[index], path);
 	
 	
 	g_free(varname);
@@ -162,12 +184,13 @@ void tilem_rcvmenu_new(TilemCalcEmulator *emu)
 static GtkTreeModel* fill_varlist(TilemReceiveDialog * rcvdialog, char** list)
 {
 
-	rcvdialog->store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+	rcvdialog->store = gtk_list_store_new (4, G_TYPE_INT, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 	int i = 0;
 	for(i = 0; list[i]; i++) {
 		char* name = g_strdup(list[i]);
 		gtk_list_store_append (rcvdialog->store, &rcvdialog->iter);
-		gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_NAME, name, -1);
+		gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_INDEX, i, COL_NAME, name, COL_TYPE, rcvdialog->emu->varentry->vlist[i]->type, COL_SIZE, rcvdialog->emu->varentry->vlist[i]->size, -1);
+		
 	}
 	return GTK_TREE_MODEL (rcvdialog->store);
 }
