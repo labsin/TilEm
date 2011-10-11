@@ -126,7 +126,7 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		return;
 	printf("Destination : %s\n", path);
 	
-	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varentry->vlist[index], path);
+	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], path);
 	
 	
 	g_free(varname);
@@ -189,7 +189,7 @@ static GtkTreeModel* fill_varlist(TilemReceiveDialog * rcvdialog, char** list)
 	for(i = 0; list[i]; i++) {
 		char* name = g_strdup(list[i]);
 		gtk_list_store_append (rcvdialog->store, &rcvdialog->iter);
-		gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_INDEX, i, COL_NAME, name, COL_TYPE, rcvdialog->emu->varentry->vlist[i]->type, COL_SIZE, rcvdialog->emu->varentry->vlist[i]->size, -1);
+		gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_INDEX, i, COL_NAME, name, COL_TYPE, rcvdialog->emu->varapp->vlist[i]->type, COL_SIZE, rcvdialog->emu->varapp->vlist[i]->size, -1);
 		
 	}
 	return GTK_TREE_MODEL (rcvdialog->store);

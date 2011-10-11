@@ -117,38 +117,60 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	char *utf8;
   
 	i = 0;
-	GNode *parent = g_node_nth_child(vars, i);
+	/* Tree for vars */
+	GNode *varparent = g_node_nth_child(vars, i);
+	/* Tree for app */
+	GNode *appparent = g_node_nth_child(apps, i);
 
 	
-	emu->varentry = (TilemVarEntry*)g_new(TilemVarEntry*, 1);
-	emu->varentry->vlist = (VarEntry**) g_new(VarEntry**, (int)g_node_n_children(parent) + 1);
+	emu->varapp = (TilemVarApp*)g_new(TilemVarApp*, 1);
+	emu->varapp->vlist = (VarEntry**) g_new(VarEntry**, (int)g_node_n_children(varparent) + (int)g_node_n_children(appparent) + 1);
 		
-	char ** list = g_new(char*, g_node_n_children(parent) + 1);
+	char ** list = g_new(char*, g_node_n_children(varparent) + g_node_n_children(appparent) + 1);
 	//printf("Number of children : %d\n", g_node_n_children(parent));
 
 
-	for (j = 0; j < (int)g_node_n_children(parent); j++)	//parse variables
+	for (j = 0; j < (int)g_node_n_children(varparent); j++)	//parse variables
 	{
-		GNode *child = g_node_nth_child(parent, j);
+		GNode *child = g_node_nth_child(varparent, j);
 		VarEntry *ve = (VarEntry *) (child->data);
 
 		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
 		
-		emu->varentry->vlist[j] = g_new(VarEntry*, 1);
-		emu->varentry->vlist[j] = ve; 
+		emu->varapp->vlist[j] = (VarEntry*) g_new(VarEntry*, 1);
+		emu->varapp->vlist[j] = ve; 
 
 		list[j] = g_strdup(utf8);
 		printf ("utf8 : %s\n", utf8);
 		g_free(utf8);
 	}
+	
+	int k = j;	
+	int l = 0;	
+	
+	for (j; j < k + (int)g_node_n_children(appparent); j++)	//parse variables
+	{
+		GNode *child = g_node_nth_child(appparent, l);
+		VarEntry *ve = (VarEntry *) (child->data);
+
+		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
+		
+		emu->varapp->vlist[j] = (VarEntry*) g_new(VarEntry*, 1);
+		emu->varapp->vlist[j] = ve; 
+
+		list[j] = g_strdup(utf8);
+		printf ("utf8 : %s\n", utf8);
+		g_free(utf8);
+		l++;
+	}
+	
 	list[j] = NULL;
-	emu->varentry->vlist[j] = NULL;
+	emu->varapp->vlist[j] = NULL;
 	
 	printf("\n");
 	
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
-
 	ticables_handle_del(cbl);
 
 	/* Exit the libtis */
@@ -181,8 +203,6 @@ void dirlist_print_debug(char **list) {
 	}
 }
 
-int get_dirlist(CalcHandle *h) ;
-
 
 /* Get var from calc to PC */
 /* This function should really use a separate thread because it freeze the calc
@@ -192,8 +212,6 @@ void get_var(TilemCalcEmulator *emu)
 {
 
 	tilem_rcvmenu_new(emu);
-	//official_get_var(emu);
-	//receive_var(ch);
 }
 
 /* Get a var from calc and save it into filename on PC */
@@ -224,18 +242,10 @@ int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destinat
 	
 
 	/* Currently, this code is based on romain lievins example */
-	//VarRequest ve ;
 	
 	FileContent* filec;
 
 	filec = tifiles_content_create_regular(ch->model);
-
-	//strncpy(ve.name, varname, 8);
-	//printf("varname : %s\n", varname);
-	//strcpy(ve.name, varentry.name);	
-	
-	//printf("ve.name : %s\n", ve.name);
-	
 
         ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, varentry);	
 	tifiles_file_display_regular(filec);
