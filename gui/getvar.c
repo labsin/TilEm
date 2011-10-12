@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -227,6 +228,8 @@ int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destinat
 	ticables_library_init();
 	tifiles_library_init();
 	ticalcs_library_init();
+
+	
 	
 	/* Create cable (here an internal an dvirtual cabla) */
 	cbl = internal_link_handle_new(emu);
@@ -242,6 +245,7 @@ int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destinat
 
 	ticalcs_cable_attach(ch, cbl);
 	
+	ticalcs_update_set(ch, emu->link_update);
 	
 
 	/* Currently, this code is based on romain lievins example */
@@ -266,4 +270,144 @@ int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destinat
 
 
 	return 0;
+}
+
+/****************/
+/* PROGRESS BAR */
+/****************/
+
+/* idle callback to start progress bar */
+static gboolean pbar_start(gpointer data)
+{
+	TilemCalcEmulator *emu = data;
+
+	if (!emu->linkpb->ilp_progress_win)
+		progress_bar_init(emu);
+
+	return FALSE;
+}
+
+/* idle callback to close progress bar */
+static gboolean pbar_stop(gpointer data)
+{
+	TilemCalcEmulator *emu = data;
+
+	if (emu->linkpb->ilp_progress_win) {
+		gtk_widget_destroy(emu->linkpb->ilp_progress_win);
+		emu->linkpb->ilp_progress_win = NULL;
+		emu->linkpb->ilp_progress_bar1 = NULL;
+		emu->linkpb->ilp_progress_bar2 = NULL;
+		emu->linkpb->ilp_progress_label = NULL;
+	}
+
+	return FALSE;
+}
+
+/* idle callback to update progress bar */
+static gboolean pbar_update(gpointer data)
+{
+	TilemCalcEmulator *emu = data;
+
+	if (emu->linkpb->ilp_progress_win)
+		progress_bar_update_activity(emu);
+
+	return FALSE;
+}
+
+static GStaticPrivate current_emu_key = G_STATIC_PRIVATE_INIT;
+
+/* ticalcs progress bar callback */
+static void pbar_do_update()
+{
+	TilemCalcEmulator *emu = g_static_private_get(&current_emu_key);
+	g_idle_add(&pbar_update, emu);
+}
+
+
+/* Link thread main loop */
+static gpointer link_main2(gpointer data)
+{
+	TilemCalcEmulator *emu = data;
+	VarEntry* varentry;
+	char *fname;
+	CableHandle *cbl;
+
+	ticables_library_init();
+	tifiles_library_init();
+	ticalcs_library_init();
+
+	cbl = internal_link_handle_new(emu);
+
+	g_static_private_set(&current_emu_key, emu, NULL);
+
+	g_mutex_lock(emu->link_queue_mutex);
+	while (!emu->link_cancel) {
+		
+		if (!(varentry = (VarEntry*) g_queue_pop_head(emu->link_queue))) {
+			g_cond_wait(emu->link_queue_cond, emu->link_queue_mutex);
+			continue;
+		}
+		printf("varentry : ve.name = %s", varentry->name);
+		
+		
+		if (!(fname = g_queue_pop_head(emu->link_queue))) {
+			g_cond_wait(emu->link_queue_cond, emu->link_queue_mutex);
+			continue;
+		}
+		printf("fname : %s\n", fname);
+	
+	
+		g_mutex_unlock(emu->link_queue_mutex);
+
+		emu->link_update->max1 = 0;
+		emu->link_update->max2 = 0;
+		emu->link_update->text[0] = 0;
+
+		g_idle_add(&pbar_start, emu);
+
+		emu->link_update->pbar = &pbar_do_update;
+		emu->link_update->label = &pbar_do_update;
+
+		tilem_receive_var(emu, varentry, fname);
+
+		g_free(fname);
+
+		g_mutex_lock(emu->link_queue_mutex);
+
+		if (g_queue_is_empty(emu->link_queue))
+			g_idle_add(&pbar_stop, emu);
+	}
+	g_mutex_unlock(emu->link_queue_mutex);
+
+	ticables_handle_del(cbl);
+
+	ticalcs_library_exit();
+	tifiles_library_exit();
+	ticables_library_exit();
+
+	return NULL;
+}
+
+/* Send a file creating and using a separate thread */
+void tilem_calc_emulator_receive_file(TilemCalcEmulator *emu,
+                                   VarEntry* varentry, char* destination)
+{
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(emu->calc != NULL);
+	g_return_if_fail(varentry != NULL);
+	g_return_if_fail(destination != NULL);
+
+	emu->ilp.abort = FALSE;
+	emu->link_cancel = FALSE;
+
+	g_mutex_lock(emu->link_queue_mutex);
+	g_queue_push_tail(emu->link_queue, varentry);
+	g_queue_push_tail(emu->link_queue, g_strdup(destination));
+	g_cond_broadcast(emu->link_queue_cond);
+	g_mutex_unlock(emu->link_queue_mutex);
+	printf("Avant thread\n");
+
+	if (!emu->link_thread)
+		emu->link_thread = g_thread_create(&link_main2, emu, TRUE, NULL);
+	printf("Apres thread\n");
 }

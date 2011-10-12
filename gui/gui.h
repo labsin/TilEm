@@ -281,8 +281,11 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu);
 /* Print dirlist (debug) */
 void dirlist_print_debug(char **list);
 
-/* Receive a var */
+/* Receive a var  (no thread) */
 int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination);
+
+/* Receive var (thread) */
+void tilem_calc_emulator_receive_file(TilemCalcEmulator *emu, VarEntry* varentry, char* destination);
 
 
 

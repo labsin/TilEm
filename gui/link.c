@@ -589,7 +589,7 @@ static gpointer link_main(gpointer data)
 	return NULL;
 }
 
-/* Send a file creating an using a separate thread */
+/* Send a file creating and using a separate thread */
 void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
                                    const char *filename)
 {

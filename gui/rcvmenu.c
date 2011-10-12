@@ -127,7 +127,10 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		return;
 	printf("Destination : %s\n", path);
 	
-	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], path);
+//	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], path);
+	
+	tilem_calc_emulator_receive_file(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], path);
+
 	
 	
 	g_free(varname);
