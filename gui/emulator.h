@@ -109,6 +109,7 @@ typedef struct _TilemCalcEmulator {
 	struct _TilemScreenshotDialog *ssdlg;
 	struct _TilemReceiveDialog *rcvdlg;
 	struct _TilemLinkProgress *linkpb;
+	
 
 	FILE * macro_file;	/* The macro file */
 	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */

@@ -82,7 +82,6 @@ void tilem_dirlist_display(GNode* tree)
 	printf("\n");
 }
 
-int receive_var_cmdline(CalcHandle * ch);
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 /* Terminated by NULL */
 char ** tilem_get_dirlist(TilemCalcEmulator *emu)
@@ -129,7 +128,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	char ** list = g_new(char*, g_node_n_children(varparent) + g_node_n_children(appparent) + 1);
 	//printf("Number of children : %d\n", g_node_n_children(parent));
 
-
+	/* Get vars */
 	for (j = 0; j < (int)g_node_n_children(varparent); j++)	//parse variables
 	{
 		GNode *child = g_node_nth_child(varparent, j);
@@ -147,8 +146,9 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	
 	int k = j;	
 	int l = 0;	
-	
-	for (j = j; j < k + (int)g_node_n_children(appparent); j++)	//parse variables
+
+	/* Get apps */	
+	for (j = j; j < k + (int)g_node_n_children(appparent); j++)
 	{
 		GNode *child = g_node_nth_child(appparent, l);
 		VarEntry *ve = (VarEntry *) (child->data);
@@ -169,6 +169,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	
 	printf("\n");
 	
+	/* Detach and delete cable. Delete calc handle*/	
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
 	ticables_handle_del(cbl);
@@ -178,7 +179,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	tifiles_library_exit();
 	ticables_library_exit();
 
-
+	/* Return a list of entry names. terminated by NULL */
 	return list;
 }
 
@@ -204,17 +205,19 @@ void dirlist_print_debug(char **list) {
 }
 
 
-/* Get var from calc to PC */
-/* This function should really use a separate thread because it freeze the calc
- * a long time. 
- */
-void get_var(TilemCalcEmulator *emu)
+/* Entry point for receive menu (should be moved into rcvmenu.c maybe) */
+/*void get_var(TilemCalcEmulator *emu)
 {
 
 	tilem_rcvmenu_new(emu);
-}
+}*/
 
-/* Get a var from calc and save it into filename on PC */
+
+
+/* Get a var from calc and save it into filename on PC
+ * This function should really use a separate thread because it freeze the calc
+ * a long time. 
+ */
 int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination) {
 	
 	CableHandle* cbl;

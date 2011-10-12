@@ -95,7 +95,7 @@ void tilem_macro_add_action(TilemMacro* macro, int type, char * value) {
 	 * gcc says : "assignment from incompatible pointer type" 
 	 * ???????
 	 */
-	macro->actions[n] = g_new(char, strlen(value));
+	macro->actions[n] =  g_new(char, strlen(value));
 	macro->actions[n]->value = g_strdup(value);
 	macro->actions[n]->type = type;
 	macro->n++;

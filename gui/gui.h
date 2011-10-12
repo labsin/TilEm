@@ -76,6 +76,7 @@ typedef struct _TilemReceiveDialog {
 
 	GtkWidget* window;
 
+	GtkWidget* button_refresh;
 	GtkWidget* button_save;
 	GtkWidget* button_close;
 
@@ -265,8 +266,8 @@ void run_with_key(TilemCalc* calc, int key);
 
 /* ##### getvar.c ##### */
 
-/* Get directory list */
-void get_var(TilemCalcEmulator *emu);
+/* Createe the popup dialog */
+void popup_receive_menu(TilemEmulatorWindow *ewin);
 
 /* Receive a var (for the moment it's just for test)*/
 int receive_var(CalcHandle * h);
@@ -282,6 +283,7 @@ void dirlist_print_debug(char **list);
 
 /* Receive a var */
 int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination);
+
 
 
 

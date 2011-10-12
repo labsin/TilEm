@@ -601,7 +601,3 @@ gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragCon
 
 }
 
-/* Callback for the receive menu entry */
-void on_receive(TilemEmulatorWindow * ewin) {
-	get_var(ewin->emu);
-}

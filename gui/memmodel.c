@@ -162,12 +162,12 @@ static gint tilem_mem_model_iter_n_children(GtkTreeModel *model,
 }
 
 /* Get nth child (parent = NULL means get nth root node */
-static gboolean tilem_mem_model_iter_nth_child(GtkTreeModel *model,
+static gboolean tilem_mem_model_iter_nth_child( GtkTreeModel *model,
                                                GtkTreeIter *iter,
                                                GtkTreeIter *parent,
                                                gint n)
 {
-	TilemMemModel* mm;
+	G_GNUC_UNUSED TilemMemModel* mm;
 
 	g_return_val_if_fail(TILEM_IS_MEM_MODEL(model), FALSE);
 	mm = TILEM_MEM_MODEL(model);
