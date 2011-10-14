@@ -76,7 +76,6 @@ void tilem_dirlist_display(GNode* tree)
 	printf("%08X", ve->size);
 	printf(" | ");
 		printf("\n");
-
 		g_free(utf8);
 	}
 	printf("+------------------+----------+----------+");
@@ -85,7 +84,67 @@ void tilem_dirlist_display(GNode* tree)
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 /* Terminated by NULL */
-char ** tilem_get_dirlist(TilemCalcEmulator *emu)
+void tilem_get_dirlist_ns(TilemCalcEmulator *emu)
+{
+	CableHandle* cbl;
+	CalcHandle* ch;
+	
+	/* Init the libtis */
+	ticables_library_init();
+	tifiles_library_init();
+	ticalcs_library_init();
+	
+	/* Create cable (here an internal an dvirtual cabla) */
+	cbl = internal_link_handle_new(emu);
+	if (!cbl) 
+		fprintf(stderr, "Cannot create ilp handle\n");
+	
+
+	ch = ticalcs_handle_new(get_calc_model(emu->calc));
+	if (!ch) {
+		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
+	}
+	
+
+	ticalcs_cable_attach(ch, cbl);
+	
+	FileContent *content = tifiles_content_create_regular(ch->model);
+	VarEntry* ve;
+	ticalcs_calc_recv_var_ns(ch, MODE_NORMAL, content, &ve);
+
+	emu->varapp = (TilemVarApp*)g_new(TilemVarApp*, 1);
+	char** list = g_new(char*, content->num_entries + 1);
+	int i = 0;
+	for(i = 0; i < content->num_entries; i++) {
+		char* utf8 = ticonv_varname_to_utf8(ch->model, content->entries[i]->name, content->entries[i]->type);
+		printf("content->entries[%d] : ve.name = %s\n", i, utf8);
+		list[i] = utf8;
+	
+	}
+
+	list[i] = NULL;
+	printf("\n");
+	emu->varapp->vlist_utf8 = list;
+	emu->varapp->vlist = content->entries;
+	
+	
+	/* Detach and delete cable. Delete calc handle*/	
+	ticalcs_cable_detach(ch);
+	ticalcs_handle_del(ch);
+	ticables_handle_del(cbl);
+
+	/* Exit the libtis */
+	ticalcs_library_exit();
+	tifiles_library_exit();
+	ticables_library_exit();
+}
+
+
+
+
+/* Get the list of varname. I plan to use it into a list (in a menu) */
+/* Terminated by NULL */
+void tilem_get_dirlist(TilemCalcEmulator *emu)
 {
 	CableHandle* cbl;
 	CalcHandle* ch;
@@ -126,7 +185,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	emu->varapp = (TilemVarApp*)g_new(TilemVarApp*, 1);
 	emu->varapp->vlist = (VarEntry**) g_new(VarEntry**, (int)g_node_n_children(varparent) + (int)g_node_n_children(appparent) + 1);
 		
-	char ** list = g_new(char*, g_node_n_children(varparent) + g_node_n_children(appparent) + 1);
+	char** list = g_new(char*, g_node_n_children(varparent) + g_node_n_children(appparent) + 1);
 	//printf("Number of children : %d\n", g_node_n_children(parent));
 
 	/* Get vars */
@@ -167,6 +226,7 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	
 	list[j] = NULL;
 	emu->varapp->vlist[j] = NULL;
+	emu->varapp->vlist_utf8 = list;
 	
 	printf("\n");
 	
@@ -179,9 +239,6 @@ char ** tilem_get_dirlist(TilemCalcEmulator *emu)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
-
-	/* Return a list of entry names. terminated by NULL */
-	return list;
 }
 
 
@@ -204,16 +261,6 @@ void dirlist_print_debug(char **list) {
 		printf("%d. Var : %s\n", i, list[i]);
 	}
 }
-
-
-/* Entry point for receive menu (should be moved into rcvmenu.c maybe) */
-/*void get_var(TilemCalcEmulator *emu)
-{
-
-	tilem_rcvmenu_new(emu);
-}*/
-
-
 
 /* Get a var from calc and save it into filename on PC
  * This function should really use a separate thread because it freeze the calc

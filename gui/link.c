@@ -313,7 +313,7 @@ void run_with_key(TilemCalc* calc, int key)
 }
 
 /* Automatically press key to be in the receive mode (ti82 and ti85) */
-void prepare_for_link(TilemCalc* calc)
+void prepare_for_link_send(TilemCalc* calc)
 {
 	run_with_key(calc, TILEM_KEY_ON);
 	run_with_key(calc, TILEM_KEY_ON);
@@ -335,6 +335,34 @@ void prepare_for_link(TilemCalc* calc)
 		run_with_key(calc, TILEM_KEY_WINDOW);
 	}
 }
+
+/* Automatically press key to be in the send mode (ti82 and ti85) */
+void prepare_for_link_receive(TilemCalc* calc)
+{
+	run_with_key(calc, TILEM_KEY_ON);
+	run_with_key(calc, TILEM_KEY_ON);
+
+	if (calc->hw.model_id == TILEM_CALC_TI82) {
+		/* TODO : there's something wrong here */
+		run_with_key(calc, TILEM_KEY_2ND);
+		run_with_key(calc, TILEM_KEY_MODE);
+		run_with_key(calc, TILEM_KEY_2ND);
+		run_with_key(calc, TILEM_KEY_GRAPHVAR);
+		run_with_key(calc, TILEM_KEY_ENTER);
+		run_with_key(calc, TILEM_KEY_RIGHT);
+		run_with_key(calc, TILEM_KEY_ENTER);
+	}
+	else if (calc->hw.model_id == TILEM_CALC_TI85) {
+		/* TODO  : not the good key sequence...*/
+		run_with_key(calc, TILEM_KEY_MODE);
+		run_with_key(calc, TILEM_KEY_MODE);
+		run_with_key(calc, TILEM_KEY_MODE);
+		run_with_key(calc, TILEM_KEY_2ND);
+		run_with_key(calc, TILEM_KEY_GRAPHVAR);
+		run_with_key(calc, TILEM_KEY_WINDOW);
+	}
+}
+
 /* Press a key */
 static void tmr_press_key(TilemCalc* calc, void* data)
 {
@@ -353,7 +381,7 @@ void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)
 	FILE* f;
 
 	g_mutex_lock(emu->calc_mutex);
-	prepare_for_link(emu->calc);
+	prepare_for_link_send(emu->calc);
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
 
@@ -624,6 +652,7 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 	   link thread that it should exit */
 	g_mutex_lock(emu->link_queue_mutex);
 	emu->link_cancel = 1;
+	/* TODO : there's a problem with receiving file queue (contains VarEntry* and char*) */
 	while ((fname = g_queue_pop_head(emu->link_queue)))
 		g_free(fname);
 	g_cond_broadcast(emu->link_queue_cond);

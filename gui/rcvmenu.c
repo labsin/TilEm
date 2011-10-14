@@ -146,8 +146,9 @@ static void tilem_rcvmenu_on_refresh(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		g_free(rcvdialog->emu->varapp->vlist);
 	if(rcvdialog->emu->varapp)
 		g_free(rcvdialog->emu->varapp);
-	
-	rcvdialog->model = fill_varlist(rcvdialog, tilem_get_dirlist(rcvdialog->emu));
+	//tilem_get_dirlist(rcvdialog->emu);
+	load_entries(rcvdialog->emu);
+	rcvdialog->model = fill_varlist(rcvdialog, rcvdialog->emu->varapp->vlist_utf8);
         gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
 	gtk_widget_show(GTK_WIDGET(rcvdialog->window));
 }
@@ -183,8 +184,17 @@ TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu)
 	
 	/* Create and fill tree view */
 	rcvdialog->treeview = create_varlist();  	
-	rcvdialog->model = fill_varlist(rcvdialog, tilem_get_dirlist(emu));
-        gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
+	if(!rcvdialog->model) {
+		/*tilem_get_dirlist(emu);*/
+		load_entries(emu);
+		if(emu->varapp) {
+			rcvdialog->model = fill_varlist(rcvdialog, emu->varapp->vlist_utf8);
+		} else { 
+			rcvdialog->model = fill_varlist(rcvdialog, NULL);
+		}
+			
+        	gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
+	}
 
 	/* Allow scrolling the list because we can't know how many vars the calc contains */
 	GtkWidget * scroll = new_scrolled_window(rcvdialog->treeview);
@@ -204,7 +214,27 @@ TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu)
 
 }
 
+/* Use the appropriate method to load entries 
+ * This function is used to fill the emu->varapp structure
+ */
+void load_entries(TilemCalcEmulator *emu) {
 
+	if (emu->calc->hw.model_id == TILEM_CALC_TI81) {
+		// Nothing
+	} else if (emu->calc->hw.model_id == TILEM_CALC_TI82) {
+		/* TODO : use a atomatic prepare for link */
+		//prepare_for_link_receive(emu->calc);
+		tilem_get_dirlist_ns(emu);
+	} else if (emu->calc->hw.model_id == TILEM_CALC_TI85) {
+		/* TODO : use a atomatic prepare for link */
+		//prepare_for_link_receive(emu->calc);
+		tilem_get_dirlist_ns(emu);
+	} else {
+		tilem_get_dirlist(emu);
+	}
+
+
+}
 
 /* Popup the receive window */
 void popup_receive_menu(TilemEmulatorWindow *ewin)
@@ -225,16 +255,17 @@ void popup_receive_menu(TilemEmulatorWindow *ewin)
 static GtkTreeModel* fill_varlist(TilemReceiveDialog * rcvdialog, char** list)
 {
 	
-	
-	
 	rcvdialog->store = gtk_list_store_new (4, G_TYPE_INT, G_TYPE_STRING, G_TYPE_CHAR, G_TYPE_INT);
 	int i = 0;
-	for(i = 0; list[i]; i++) {
-		/* Append a row */
-		gtk_list_store_append (rcvdialog->store, &rcvdialog->iter);
-		/* Fill the row */ 
-		gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_INDEX, i, COL_NAME, list[i], COL_TYPE, rcvdialog->emu->varapp->vlist[i]->type, COL_SIZE, rcvdialog->emu->varapp->vlist[i]->size, -1);
-		
+	if(list){
+		for(i = 0; list[i]; i++) {
+			/* Append a row */
+			gtk_list_store_append (rcvdialog->store, &rcvdialog->iter);
+			/* Fill the row */ 
+			printf("list[%d] : %s\n", i, list[i]);
+			gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_INDEX, i, COL_NAME, list[i], COL_TYPE, rcvdialog->emu->varapp->vlist[i]->type, COL_SIZE, rcvdialog->emu->varapp->vlist[i]->size, -1);
+			
+		}
 	}
 	return GTK_TREE_MODEL (rcvdialog->store);
 }

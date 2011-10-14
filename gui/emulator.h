@@ -39,6 +39,7 @@ typedef struct _TilemMacro {
 } TilemMacro;
 
 typedef struct _TilemVarApp {
+	char** vlist_utf8;
 	VarEntry** vlist;	/* NULL terminated */
 	int n;
 } TilemVarApp;

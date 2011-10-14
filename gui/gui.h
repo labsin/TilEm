@@ -262,6 +262,12 @@ int get_calc_model(TilemCalc* calc);
 /* Simply emulate a click on key (use to prepare link -> come into receive mode) */
 void run_with_key(TilemCalc* calc, int key);
 
+/* Prepare ti82 and ti85 for link */
+void prepare_for_link_send(TilemCalc* calc);
+
+/* Prepare ti82 and ti85 for link (send) */
+void prepare_for_link_receive(TilemCalc* calc);
+
 
 
 /* ##### getvar.c ##### */
@@ -275,8 +281,11 @@ int receive_var(CalcHandle * h);
 /* List the name and size of a var tree */
 void tilem_dirlist_display(GNode* tree);
 
+/* Get the dirlist for ti82 and ti85 */
+void tilem_get_dirlist_ns(TilemCalcEmulator *emu);
+
 /* Get the list of varname. I plan to use it into a list (in a menu) */
-char ** tilem_get_dirlist(TilemCalcEmulator *emu);
+void tilem_get_dirlist(TilemCalcEmulator *emu);
 
 /* Print dirlist (debug) */
 void dirlist_print_debug(char **list);
@@ -287,6 +296,8 @@ int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destinat
 /* Receive var (thread) */
 void tilem_calc_emulator_receive_file(TilemCalcEmulator *emu, VarEntry* varentry, char* destination);
 
+/* Fill the TilemVarApp structure used by receive dialog */
+void load_entries(TilemCalcEmulator *emu);
 
 
 
