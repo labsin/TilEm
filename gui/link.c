@@ -194,7 +194,7 @@ G_GNUC_UNUSED static int ilp_recv_new(CableHandle* cbl, uint8_t* data, uint32_t 
 	return status;
 }
 
-
+/* Internal function to receive a var */
 static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	TilemCalcEmulator* emu = cbl->priv;

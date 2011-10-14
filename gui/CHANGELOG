@@ -255,5 +255,8 @@
 * ---12/10/11---
 * - Some corrections : receive dialog is transcient. Receive dialog is not destroyed when closed just hided. New refresh button to refresh var/app list.
 * - Use a separate thread to receive files.
+* ---14/10/11---
+* - Add a feature to list ti82 and ti85 entries. User must prepare manually the link. Can't save a ti82 or ti85 entry (when selected in the rcvdialog). 
+* - Lot of bug, code is really ugly. No error handling. The prepare_for_link_receive is not working. etc...
 */
 

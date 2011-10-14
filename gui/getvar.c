@@ -301,7 +301,7 @@ int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destinat
 
 	filec = tifiles_content_create_regular(ch->model);
 
-        ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, varentry);	
+	ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, varentry);	
 	tifiles_file_display_regular(filec);
 	tifiles_file_write_regular(destination, filec, NULL);
 	
