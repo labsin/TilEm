@@ -1,7 +1,7 @@
 ** About the format : **
 
-When I started to work on tilem 2, I decided firstly to use the old tilem format (4 pixs around a lcd).
-But that's not a good idea, and the new skin creation is so hard like this ... :(
+When I started to work on tilem 2, I firstly decided to use the old tilem format (4 pixs around a lcd).
+But that's not a good idea, and the new skin creation is too hard like this ... :(
 
 Finally, we (with Benjamin) have choosen the Tiemu skin format:
 This format consists in a binary file containing skin information (author, name, model, size etc...) and in the second part :the image data.
@@ -9,7 +9,7 @@ With this format, it becomes really simple and fun to create a skin.
 Tiemu Skinedit works perfectly for tilem 2 (how do you think I 've created these "officials skins :P).
 I hope this new format will pleased to you.
 
-Thank you Julien Blache for his help and his authorization to use Tiemu skin format and skinops.c/skinops.h.
+Thank you Julien Blache for his help and his authorization to use Tiemu skin format and skinops.c/skinops.h files.
 Thank you Romain Lievin too.
 
 
@@ -30,6 +30,7 @@ ti83.skn = My TI83 !!!
 ti83p.skn = no author (modified with The gimp)
 ti83pfr.skn = GPL v3+ given by Claude Clerc (aka claudiux). It's his calc. Thanks to him !!!
 ti84p.skn = My TI84plus !!! 
+ti86.skn = LGPL v2.1. Picture given by Danilo Segan. I've resized with the gimp and I've done the skin (the skin given by Danilo was perfect but too big).Thanks to him !!!
 ...
 ...
 Your contribution ...
