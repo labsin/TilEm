@@ -3393,6 +3393,7 @@ fi
 
 
 
+
 if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
 	if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
@@ -3527,6 +3528,7 @@ if test -n "$GTK_CFLAGS"; then
   pkg_cv_GTK_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= 2.6.0
                        glib-2.0 >= 2.12.0
                        gthread-2.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -3549,6 +3551,7 @@ if test -n "$GTK_LIBS"; then
   pkg_cv_GTK_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= 2.6.0
                        glib-2.0 >= 2.12.0
                        gthread-2.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -3568,11 +3571,11 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GTK_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gtk+-2.0 >= 2.6.0
+	        GTK_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gtk+-2.0 >= 2.6.0
                        glib-2.0 >= 2.12.0
                        gthread-2.0" 2>&1`
         else
-	        GTK_PKG_ERRORS=`$PKG_CONFIG --print-errors "gtk+-2.0 >= 2.6.0
+	        GTK_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gtk+-2.0 >= 2.6.0
                        glib-2.0 >= 2.12.0
                        gthread-2.0" 2>&1`
         fi
@@ -3706,6 +3709,7 @@ if test -n "$TICALCS_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_TICALCS_CFLAGS=`$PKG_CONFIG --cflags "ticalcs2 ticables2 tifiles2 ticonv" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -3722,6 +3726,7 @@ if test -n "$TICALCS_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_TICALCS_LIBS=`$PKG_CONFIG --libs "ticalcs2 ticables2 tifiles2 ticonv" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -3741,9 +3746,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        TICALCS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "ticalcs2 ticables2 tifiles2 ticonv" 2>&1`
+	        TICALCS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "ticalcs2 ticables2 tifiles2 ticonv" 2>&1`
         else
-	        TICALCS_PKG_ERRORS=`$PKG_CONFIG --print-errors "ticalcs2 ticables2 tifiles2 ticonv" 2>&1`
+	        TICALCS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "ticalcs2 ticables2 tifiles2 ticonv" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$TICALCS_PKG_ERRORS" >&5
@@ -3780,6 +3785,7 @@ if test -n "$CALCPROTOCOLS_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_CALCPROTOCOLS_CFLAGS=`$PKG_CONFIG --cflags "calcprotocols calccables calcfiles calcconv" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -3796,6 +3802,7 @@ if test -n "$CALCPROTOCOLS_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_CALCPROTOCOLS_LIBS=`$PKG_CONFIG --libs "calcprotocols calccables calcfiles calcconv" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -3815,9 +3822,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        CALCPROTOCOLS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "calcprotocols calccables calcfiles calcconv" 2>&1`
+	        CALCPROTOCOLS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "calcprotocols calccables calcfiles calcconv" 2>&1`
         else
-	        CALCPROTOCOLS_PKG_ERRORS=`$PKG_CONFIG --print-errors "calcprotocols calccables calcfiles calcconv" 2>&1`
+	        CALCPROTOCOLS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "calcprotocols calccables calcfiles calcconv" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$CALCPROTOCOLS_PKG_ERRORS" >&5
