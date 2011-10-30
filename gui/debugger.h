@@ -18,6 +18,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+typedef struct _TilemDebugBreakpoint {
+	enum {
+		TILEM_DB_BREAK_LOGICAL,
+		TILEM_DB_BREAK_PHYSICAL,
+		TILEM_DB_BREAK_PORT,
+		TILEM_DB_BREAK_OPCODE
+	} type;
+
+	unsigned int mode;
+	dword start;
+	dword end;
+	dword mask;
+
+	int disabled;
+	int id[3];
+} TilemDebugBreakpoint;
+
 typedef struct _TilemDebugger {
 	struct _TilemCalcEmulator *emu;
 	struct _TilemDisasm *dasm;

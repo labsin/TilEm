@@ -189,6 +189,9 @@ void redraw_screen(TilemEmulatorWindow *ewin);
 
 /* ##### tool.c ##### */
 
+/* Create a frame around the given widget */
+GtkWidget* new_frame(const gchar* label, GtkWidget* contents);
+
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
 char choose_rom_popup(GtkWidget *parent_window, const char *filename, char default_model);
 

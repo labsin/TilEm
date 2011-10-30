@@ -30,8 +30,9 @@
 
 #include "gui.h"
 
-/* Gtk style */
-static GtkWidget* new_gnome_style_frame(const gchar* label, GtkWidget* contents)
+/* Create a frame around the given widget, with a boldface label in
+   the GNOME style */
+GtkWidget* new_frame(const gchar* label, GtkWidget* contents)
 {
 	GtkWidget *frame, *align;
 	char *str;
@@ -124,7 +125,7 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 
 	fn = g_filename_display_basename(filename);
 	msg = g_strdup_printf("Calculator type for %s:", fn);
-	frame = new_gnome_style_frame(msg, vbox);
+	frame = new_frame(msg, vbox);
 	g_free(fn);
 	g_free(msg);
 

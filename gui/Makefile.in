@@ -40,6 +40,7 @@ objects = tilem2.o \
 	animatedgif.o \
 	animation.o \
 	args.o \
+	breakpoints.o \
 	config.o \
 	debugger.o \
 	disasmview.o \
@@ -97,6 +98,10 @@ disasmview.o: disasmview.c disasmview.h $(common_headers)
 # Tree model interface for calc memory
 memmodel.o: memmodel.c memmodel.h $(common_headers)
 	$(compile) -c $(srcdir)/memmodel.c
+
+# Breakpoint dialog
+breakpoints.o: breakpoints.c $(common_headers)
+	$(compile) -c $(srcdir)/breakpoints.c
 
 # Memory management and messages
 memory.o: memory.c ../emu/tilem.h
