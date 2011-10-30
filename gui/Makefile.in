@@ -19,6 +19,7 @@ DEFS = @DEFS@
 GUI_LDFLAGS = @GUI_LDFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+SHELL = @SHELL@
 
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
@@ -205,4 +206,12 @@ clean:
 	rm -f *.o
 	rm -f tilem2@EXEEXT@
 
+
+Makefile: Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status
+
+$(top_builddir)/config.status: $(top_srcdir)/configure
+	cd $(top_builddir) && $(SHELL) ./config.status --recheck
+
+.PRECIOUS: Makefile $(top_builddir)/config.status
 .PHONY: all clean

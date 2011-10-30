@@ -19,6 +19,7 @@ CPPFLAGS = @CPPFLAGS@
 DEFS = @DEFS@
 OPT_CFLAGS = @OPT_CFLAGS@
 RANLIB = @RANLIB@
+SHELL = @SHELL@
 
 core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o \
 	cert.o md5.o timers.o monolcd.o graylcd.o grayimage.o graycolor.o
@@ -206,4 +207,12 @@ clean:
 	rm -f *.o
 	rm -f libtilemcore.a
 
+
+Makefile: Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status
+
+$(top_builddir)/config.status: $(top_srcdir)/configure
+	cd $(top_builddir) && $(SHELL) ./config.status --recheck
+
+.PRECIOUS: Makefile $(top_builddir)/config.status
 .PHONY: clean all

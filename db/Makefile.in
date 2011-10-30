@@ -18,6 +18,7 @@ CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 DEFS = @DEFS@
 RANLIB = @RANLIB@
+SHELL = @SHELL@
 
 objects = disasm.o listing.o lstfile.o
 
@@ -47,4 +48,12 @@ clean:
 	rm -f *.o
 	rm -f libtilemdb.a
 
+
+Makefile: Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status
+
+$(top_builddir)/config.status: $(top_srcdir)/configure
+	cd $(top_builddir) && $(SHELL) ./config.status --recheck
+
+.PRECIOUS: Makefile $(top_builddir)/config.status
 .PHONY: all clean
