@@ -156,6 +156,7 @@ static gpointer core_thread(gpointer data)
 		if (emu->paused || (emu->calc->z80.halted
 		                    && !emu->calc->z80.interrupts
 		                    && !emu->calc->poweronhalt
+		                    && !emu->key_queue_timer
 		                    && ticks == TICKS_PER_FRAME)) {
 			/* CPU power off - wait until an external
 			   event wakes us up */
