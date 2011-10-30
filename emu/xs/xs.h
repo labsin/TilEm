@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -40,8 +40,8 @@ enum {
 	PORT21,			/* hardware type / RAM no-exec control */
 	PORT22,			/* Flash no-exec lower limit */
 	PORT23,			/* Flash no-exec upper limit */
-	PORT25,			/* unknown */
-	PORT26,			/* unknown */
+	PORT25,			/* RAM no-exec lower limit */
+	PORT26,			/* RAM no-exec upper limit */
 	PORT27,			/* bank C forced-page-0 limit */
 	PORT28,			/* bank B forced-page-1 limit */
 	PORT29,			/* LCD port delay (6 MHz) */
@@ -59,7 +59,9 @@ enum {
 	FLASH_WRITE_DELAY,
 	FLASH_EXEC_DELAY,
 	LCD_PORT_DELAY,
-	NO_EXEC_RAM,
+	NO_EXEC_RAM_MASK,
+	NO_EXEC_RAM_LOWER,
+	NO_EXEC_RAM_UPPER,
 
 	LCD_WAIT,		/* LCD wait timer active */
 	PROTECTSTATE,		/* port protection state */
@@ -73,7 +75,8 @@ enum {
 	  "port28", "port29", "port2A", "port2B", "port2C", "port2D", \
 	  "port2E", "port2F", "ram_read_delay", "ram_write_delay", \
 	  "ram_exec_delay", "flash_read_delay", "flash_write_delay", \
-	  "flash_exec_delay", "lcd_port_delay", "no_exec_ram", \
+	  "flash_exec_delay", "lcd_port_delay", "no_exec_ram_mask", \
+	  "no_exec_ram_lower", "no_exec_ram_upper", \
 	  "lcd_wait", "protectstate" }
 
 #define TIMER_INT1 (TILEM_NUM_SYS_TIMERS + 1)

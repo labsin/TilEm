@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -112,7 +112,7 @@ byte x4_z80_rdmem(TilemCalc* calc, dword A)
 byte x4_z80_rdmem_m1(TilemCalc* calc, dword A)
 {
 	byte page;
-	unsigned long pa;
+	unsigned long pa, m;
 	byte value;
 
 	page = calc->mempagemap[A>>14];
@@ -124,20 +124,6 @@ byte x4_z80_rdmem_m1(TilemCalc* calc, dword A)
 			page = 0x41;
 	}
 
-	if (TILEM_UNLIKELY((page & 0x40)
-			   && calc->hwregs[NO_EXEC_RAM] & (1 << (page&7)))) {
-		tilem_warning(calc, "Executing in restricted RAM area");
-		x4_reset(calc);
-		return (0x00);
-	}
-
-	if (TILEM_UNLIKELY(page >= calc->hwregs[PORT22]
-			   && page <= calc->hwregs[PORT23])) {
-		tilem_warning(calc, "Executing in restricted Flash area");
-		x4_reset(calc);
-		return (0x00);
-	}
-
 	if (TILEM_UNLIKELY(page == 0x3E && !calc->flash.unlock)) {
 		tilem_warning(calc, "Reading from read-protected sector");
 		return (0xff);
@@ -145,10 +131,27 @@ byte x4_z80_rdmem_m1(TilemCalc* calc, dword A)
 
 	pa = (A & 0x3FFF) + 0x4000L*page;
 
-	if (pa < 0x100000)
+	if (pa < 0x100000) {
 		calc->z80.clock += calc->hwregs[FLASH_EXEC_DELAY];
-	else
+
+		if (TILEM_UNLIKELY(page >= calc->hwregs[PORT22]
+		                   && page <= calc->hwregs[PORT23])) {
+			tilem_warning(calc, "Executing in restricted Flash area");
+			x4_reset(calc);
+			return (0x00);
+		}
+	}
+	else {
 		calc->z80.clock += calc->hwregs[RAM_EXEC_DELAY];
+
+		m = pa & calc->hwregs[NO_EXEC_RAM_MASK];
+		if (TILEM_UNLIKELY(m < calc->hwregs[NO_EXEC_RAM_LOWER]
+		                   || m > calc->hwregs[NO_EXEC_RAM_UPPER])) {
+			tilem_warning(calc, "Executing in restricted RAM area");
+			x4_reset(calc);
+			return (0x00);
+		}
+	}
 
 	value = readbyte(calc, pa);
 

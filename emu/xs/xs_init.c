@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -69,7 +69,9 @@ void xs_reset(TilemCalc* calc)
 	calc->hwregs[RAM_WRITE_DELAY] = 0;
 	calc->hwregs[RAM_EXEC_DELAY] = 0;
 	calc->hwregs[LCD_PORT_DELAY] = 5;
-	calc->hwregs[NO_EXEC_RAM] = 0x5555;
+	calc->hwregs[NO_EXEC_RAM_MASK] = 0x7C00;
+	calc->hwregs[NO_EXEC_RAM_LOWER] = 0x4000;
+	calc->hwregs[NO_EXEC_RAM_UPPER] = 0x8000;
 
 	calc->hwregs[PROTECTSTATE] = 0;
 

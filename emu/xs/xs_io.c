@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -511,28 +511,8 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 	case 0x21:
 		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT21] = value;
-
-			switch (value & 0x30) {
-			case 0x00:
-				/* restrict pp. 0, 2, 4, 6, 8, A, C, E */
-				calc->hwregs[NO_EXEC_RAM] = 0x5555;
-				break;
-
-			case 0x10:
-				/* restrict pp. 0, 3, 4, 7, 8, B, C, F */
-				calc->hwregs[NO_EXEC_RAM] = 0x9999;
-				break;
-
-			case 0x20:
-				/* restrict pp. 0, 3-7, 8, B-F */
-				calc->hwregs[NO_EXEC_RAM] = 0xF9F9;
-				break;
-
-			case 0x30:
-				/* restrict pp. 0, 3-F */
-				calc->hwregs[NO_EXEC_RAM] = 0xFFF9;
-				break;
-			}
+			t = (value >> 4) & 3;
+			calc->hwregs[NO_EXEC_RAM_MASK] = (0x8000 << t) - 0x400;
 		}
 		break;
 
@@ -551,12 +531,14 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 	case 0x25:
 		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT25] = value;
+			calc->hwregs[NO_EXEC_RAM_LOWER] = value * 0x400;
 		}
 		break;
 
 	case 0x26:
 		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			calc->hwregs[PORT26] = value;
+			calc->hwregs[NO_EXEC_RAM_UPPER] = value * 0x400;
 		}
 		break;
 
