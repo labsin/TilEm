@@ -31,6 +31,7 @@
 #include <tilemdb.h>
 
 #include "gui.h"
+#include "disasmview.h"
 
 /**************** Add/edit breakpoint dialog ****************/
 
@@ -648,6 +649,13 @@ static void unset_bp(TilemDebugger *dbg, TilemDebugBreakpoint *bp)
 	g_mutex_unlock(dbg->emu->calc_mutex);
 }
 
+static gboolean is_mem_exec_bp(const TilemDebugBreakpoint *bp)
+{
+	return ((bp->type == TILEM_DB_BREAK_LOGICAL
+	         || bp->type == TILEM_DB_BREAK_PHYSICAL)
+	        && (bp->mode & TILEM_DB_BREAK_EXEC));
+}
+
 /* Add a new debugger breakpoint */
 TilemDebugBreakpoint * tilem_debugger_add_breakpoint(TilemDebugger *dbg,
                                                      const TilemDebugBreakpoint *bp)
@@ -662,6 +670,9 @@ TilemDebugBreakpoint * tilem_debugger_add_breakpoint(TilemDebugger *dbg,
 	dbg->breakpoints = g_slist_append(dbg->breakpoints, bp2);
 	set_bp(dbg, bp2);
 
+	if (is_mem_exec_bp(bp) && dbg->disasm_view)
+		tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));
+
 	return bp2;
 }
 
@@ -669,13 +680,20 @@ TilemDebugBreakpoint * tilem_debugger_add_breakpoint(TilemDebugger *dbg,
 void tilem_debugger_remove_breakpoint(TilemDebugger *dbg,
                                       TilemDebugBreakpoint *bp)
 {
+	gboolean isexec;
+
 	g_return_if_fail(dbg != NULL);
 	g_return_if_fail(bp != NULL);
 	g_return_if_fail(g_slist_index(dbg->breakpoints, bp) != -1);
 
+	isexec = is_mem_exec_bp(bp);
+
 	unset_bp(dbg, bp);
 	dbg->breakpoints = g_slist_remove(dbg->breakpoints, bp);
 	g_slice_free(TilemDebugBreakpoint, bp);
+
+	if (isexec && dbg->disasm_view)
+		tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));
 }
 
 /* Modify a debugger breakpoint */
@@ -683,14 +701,21 @@ void tilem_debugger_change_breakpoint(TilemDebugger *dbg,
                                       TilemDebugBreakpoint *bp,
                                       const TilemDebugBreakpoint *newbp)
 {
+	gboolean isexec;
+
 	g_return_if_fail(dbg != NULL);
 	g_return_if_fail(bp != NULL);
 	g_return_if_fail(newbp != NULL);
 	g_return_if_fail(g_slist_index(dbg->breakpoints, bp) != -1);
 
+	isexec = (is_mem_exec_bp(bp) || is_mem_exec_bp(newbp));
+
 	unset_bp(dbg, bp);
 	*bp = *newbp;
 	set_bp(dbg, bp);
+
+	if (isexec && dbg->disasm_view)
+		tilem_disasm_view_refresh(TILEM_DISASM_VIEW(dbg->disasm_view));
 }
 
 /**************** Breakpoint list dialog ****************/

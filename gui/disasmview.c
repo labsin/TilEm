@@ -205,9 +205,20 @@ static dword pos_ltop(TilemCalc *calc, dword pos)
 
 /* Icons */
 
-static GdkPixbuf *get_pc_icon(TilemDisasmView *dv)
+static GdkPixbuf *get_icon(TilemDisasmView *dv, gboolean ispc, gboolean isbp)
 {
-	return gtk_widget_render_icon(GTK_WIDGET(dv), "tilem-disasm-pc",
+	const char *name;
+
+	if (ispc && isbp)
+		name = "tilem-disasm-break-pc";
+	else if (isbp)
+		name = "tilem-disasm-break";
+	else if (ispc)
+		name = "tilem-disasm-pc";
+	else
+		return NULL;
+
+	return gtk_widget_render_icon(GTK_WIDGET(dv), name,
 	                              GTK_ICON_SIZE_MENU, NULL);
 }
 
@@ -239,7 +250,7 @@ static void append_dummy_line(TilemDisasmView *dv, GtkTreeModel *model,
 
 	gtk_list_store_append(GTK_LIST_STORE(model), &iter1);
 
-	icon = get_pc_icon(dv);
+	icon = get_icon(dv, TRUE, FALSE);
 
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter1,
 	                   COL_ICON, icon,
@@ -256,6 +267,81 @@ static void append_dummy_line(TilemDisasmView *dv, GtkTreeModel *model,
 		*iter = iter1;
 }
 
+/* Check if given logical address is a breakpoint (according to
+   current mapping) */
+static gboolean check_bp_logical(TilemDebugger *dbg, TilemCalc *calc,
+                                 dword addr)
+{
+	GSList *l;
+	TilemDebugBreakpoint *bp;
+	dword pa = (*calc->hw.mem_ltop)(calc, addr);
+
+	for (l = dbg->breakpoints; l; l = l->next) {
+		bp = l->data;
+		if (!(bp->mode & TILEM_DB_BREAK_EXEC))
+			continue;
+
+		if (bp->type == TILEM_DB_BREAK_LOGICAL
+		    && bp->start <= addr
+		    && bp->end >= addr
+		    && !bp->disabled)
+			return TRUE;
+
+		if (bp->type == TILEM_DB_BREAK_PHYSICAL
+		    && bp->start <= pa
+		    && bp->end >= pa
+		    && !bp->disabled)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/* Check if given physical address is a breakpoint (according to
+   current mapping) */
+static gboolean check_bp_physical(TilemDebugger *dbg, TilemCalc *calc,
+                                 dword addr)
+{
+	GSList *l;
+	TilemDebugBreakpoint *bp;
+	dword la, pa;
+	int i, mapped[4];
+
+	/* NOTE: this assumes that bits 0-13 are unaffected by the
+	   mapping!  This is true for all current models, but might
+	   need to be changed in the future */
+	for (i = 0; i < 4; i++) {
+		la = (i << 14) + (addr & 0x3fff);
+		pa = (*calc->hw.mem_ltop)(calc, la);
+		mapped[i] = (addr == pa);
+	}
+
+	for (l = dbg->breakpoints; l; l = l->next) {
+		bp = l->data;
+		if (!(bp->mode & TILEM_DB_BREAK_EXEC))
+			continue;
+
+		if (bp->type == TILEM_DB_BREAK_PHYSICAL
+		    && bp->start <= addr
+		    && bp->end >= addr
+		    && !bp->disabled)
+			return TRUE;
+
+		if (bp->type == TILEM_DB_BREAK_LOGICAL
+		    && !bp->disabled) {
+			for (i = 0; i < 4; i++) {
+				la = (i << 14) + (addr & 0x3fff);
+				if (bp->start <= la
+				    && bp->end >= la
+				    && mapped[i])
+					return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
+
 /* Append a line to the dasm model */
 static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
                              GtkTreeModel *model, GtkTreeIter *iter,
@@ -264,6 +350,7 @@ static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
 	GtkTreeIter iter1;
 	char abuf[20], *mnem, *args;
 	dword addr, page, pc;
+	gboolean ispc, isbp;
 	GdkPixbuf *icon;
 
 	g_return_if_fail(calc != NULL);
@@ -273,6 +360,7 @@ static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
 	addr = POS_TO_ADDR(pos);
 	if (dv->use_logical) {
 		g_snprintf(abuf, sizeof(abuf), "%04X", addr);
+		isbp = check_bp_logical(dv->dbg, calc, addr);
 	}
 	else {
 		if (addr >= calc->hw.romsize) {
@@ -284,23 +372,23 @@ static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
 		}
 		g_snprintf(abuf, sizeof(abuf), "%02X:%04X",
 		           page, default_ptol(calc, addr));
+
+		isbp = check_bp_physical(dv->dbg, calc, addr);
 	}
 
 	disassemble(dv, calc, pos, nextpos, &mnem, &args);
 
 	if (!mnem || !dv->dbg->emu->paused) {
-		icon = NULL;
+		ispc = FALSE;
 	}
 	else {
 		pc = calc->z80.r.pc.w.l;
 		if (!dv->use_logical)
 			pc = (*calc->hw.mem_ltop)(calc, pc);
-
-		if (addr == pc)
-			icon = get_pc_icon(dv);
-		else
-			icon = NULL;
+		ispc = (addr == pc);
 	}
+
+	icon = get_icon(dv, ispc, isbp);
 
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter1,
 	                   COL_POSITION, (int) pos,
