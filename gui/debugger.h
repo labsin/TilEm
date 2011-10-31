@@ -26,7 +26,12 @@ typedef struct _TilemDebugBreakpoint {
 		TILEM_DB_BREAK_OPCODE
 	} type;
 
-	unsigned int mode;
+	enum {
+		TILEM_DB_BREAK_READ = 4,
+		TILEM_DB_BREAK_WRITE = 2,
+		TILEM_DB_BREAK_EXEC = 1
+	} mode;
+
 	dword start;
 	dword end;
 	dword mask;
@@ -61,6 +66,11 @@ typedef struct _TilemDebugger {
 	int mem_start;
 	gboolean mem_logical;
 
+	/* Breakpoints */
+	GSList *breakpoints;
+	int last_bp_type;
+	int last_bp_mode;
+
 	/* Temporary breakpoint info */
 	int step_bp; /* Breakpoint ID */
 	dword step_next_addr; /* Target address */
@@ -90,3 +100,6 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg);
 
 /* Update display. */
 void tilem_debugger_refresh(TilemDebugger *dbg, gboolean updatemem);
+
+/* Show a dialog letting the user add, remove, and edit breakpoints. */
+void tilem_debugger_edit_breakpoints(TilemDebugger *dbg);

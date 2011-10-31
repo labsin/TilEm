@@ -331,7 +331,12 @@ static void action_finish(G_GNUC_UNUSED GtkAction *a, gpointer data)
 	                        TILEM_DWORD_TO_PTR(sp));
 }
 
-/* Step over */
+/* Edit breakpoints */
+static void action_edit_breakpoints(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	tilem_debugger_edit_breakpoints(dbg);
+}
 
 /* Close debugger window */
 static void action_close(G_GNUC_UNUSED GtkAction *a, gpointer data)
@@ -353,7 +358,10 @@ static const GtkActionEntry paused_action_ents[] =
 	   "Run to the next line (skipping over subroutines)",
 	   G_CALLBACK(action_step_over) },
 	 { "finish", "tilem-db-finish", "_Finish Subroutine", "F9",
-	   "Run to end of the current subroutine", G_CALLBACK(action_finish) }};
+	   "Run to end of the current subroutine", G_CALLBACK(action_finish) },
+	 { "edit-breakpoints", NULL, "_Breakpoints...", "<control>B",
+	   "Add, remove, or modify breakpoints",
+	   G_CALLBACK(action_edit_breakpoints) }};
 
 static const GtkActionEntry misc_action_ents[] =
 	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
@@ -729,6 +737,7 @@ static const char uidesc[] =
 	"  <menuitem action='step'/>"
 	"  <menuitem action='step-over'/>"
 	"  <menuitem action='finish'/>"
+	"  <menuitem action='edit-breakpoints'/>"
 	"  <separator/>"
 	"  <menuitem action='close'/>"
 	" </menu>"
@@ -753,6 +762,9 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	dbg->mem_rowsize = 8;
 	dbg->mem_start = 0;
 	dbg->mem_logical = TRUE;
+
+	dbg->last_bp_type = TILEM_DB_BREAK_LOGICAL;
+	dbg->last_bp_mode = TILEM_DB_BREAK_EXEC;
 
 	dbg->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(dbg->window), "TilEm Debugger");
