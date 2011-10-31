@@ -675,6 +675,7 @@ void tilem_debugger_remove_breakpoint(TilemDebugger *dbg,
 
 	unset_bp(dbg, bp);
 	dbg->breakpoints = g_slist_remove(dbg->breakpoints, bp);
+	g_slice_free(TilemDebugBreakpoint, bp);
 }
 
 /* Modify a debugger breakpoint */
