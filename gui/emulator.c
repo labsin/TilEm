@@ -103,11 +103,11 @@ static gboolean show_debugger(gpointer data)
 	return FALSE;
 }
 
-static void update_screen(TilemCalcEmulator *emu)
+static void update_screen(TilemCalcEmulator *emu, gboolean force_mono)
 {
 	g_mutex_lock(emu->lcd_mutex);
 
-	if (emu->glcd)
+	if (emu->glcd && !force_mono)
 		tilem_gray_lcd_get_frame(emu->glcd, emu->lcd_buffer);
 	else
 		tilem_lcd_get_frame(emu->calc, emu->lcd_buffer);
@@ -156,10 +156,10 @@ static gpointer core_thread(gpointer data)
 		if (emu->paused || (emu->calc->z80.halted
 		                    && !emu->calc->z80.interrupts
 		                    && !emu->calc->poweronhalt
-		                    && !emu->key_queue_timer
-		                    && ticks == TICKS_PER_FRAME)) {
+		                    && !emu->key_queue_timer)) {
 			/* CPU power off - wait until an external
 			   event wakes us up */
+			update_screen(emu, TRUE);
 			g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
 			g_timer_elapsed(tmr, &tnext);
 			continue;
@@ -172,7 +172,7 @@ static gpointer core_thread(gpointer data)
 
 		ticks--;
 		if (!ticks)
-			update_screen(emu);
+			update_screen(emu, FALSE);
 
 		if (emu->calc->z80.stop_reason & TILEM_STOP_BREAKPOINT) {
 			emu->paused = TRUE;
