@@ -95,7 +95,7 @@ static void scale2d_smooth(const byte * restrict in,
 	while (i > 0) {
 		if (in_rem < out_rem) {
 			if (in_rem) {
-				if (inwidth % outwidth)
+				if (outwidth % inwidth)
 					add_scale1d_smooth(in, inwidth, out,
 							   outwidth, in_rem);
 				else
@@ -108,7 +108,7 @@ static void scale2d_smooth(const byte * restrict in,
 		}
 		else {
 			in_rem -= out_rem;
-			if (inwidth % outwidth)
+			if (outwidth % inwidth)
 				add_scale1d_smooth(in, inwidth, out, outwidth,
 						   out_rem);
 			else
