@@ -950,20 +950,28 @@ static GtkTreeModel* fill_stk_list(TilemDebugger *dbg)
 	GtkTreeIter    iter;
 	char stack_offset[10];
 	char stack_value[10];
- 	gushort i=0; 
-	dword phys;
+	dword phys, i, v;
+	int n;
 
 	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 	i = dbg->emu->calc->z80.r.sp.w.l;
-        while  (i > 0x0010) {
-	        g_snprintf(stack_offset, sizeof(stack_offset), "%04X:", i - 1);
-		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, i - 1);
-		g_snprintf(stack_value, sizeof(stack_value), "%02X%02X", dbg->emu->calc->mem[phys + 1],dbg->emu->calc->mem[phys] );
+	while  (i < 0x10000 && n < 512) {
+	        g_snprintf(stack_offset, sizeof(stack_offset), "%04X:", i);
 
-		gtk_list_store_append (store, &iter);
-		gtk_list_store_set (store, &iter, COL_OFFSET_STK, stack_offset, COL_VALUE_STK, stack_value, -1);
+		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, i);
+		v = dbg->emu->calc->mem[phys];
+		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, i + 1);
+		v += dbg->emu->calc->mem[phys] << 8;
+
+		g_snprintf(stack_value, sizeof(stack_value), "%04X", v);
+
+		gtk_list_store_append(store, &iter);
+		gtk_list_store_set(store, &iter,
+		                   COL_OFFSET_STK, stack_offset,
+		                   COL_VALUE_STK, stack_value, -1);
  
                 i += 0x0002;
+                n++;
         }
     
 	return GTK_TREE_MODEL (store);
