@@ -42,6 +42,7 @@ objects = tilem2.o \
 	args.o \
 	breakpoints.o \
 	config.o \
+	charmap.o \
 	debugger.o \
 	disasmview.o \
 	emulator.o \
@@ -202,6 +203,9 @@ filedlg.o: filedlg.c filedlg.h
 ti81prg.o: ti81prg.c ti81prg.h ../emu/tilem.h
 	$(compile) -c $(srcdir)/ti81prg.c
 
+# Character conversion
+charmap.o: charmap.c charmap.h ../emu/tilem.h
+	$(compile) -c $(srcdir)/charmap.c
 
 
 install: testemu2

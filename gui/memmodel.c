@@ -29,6 +29,7 @@
 
 #include "gui.h"
 #include "memmodel.h"
+#include "charmap.h"
 
 /* Get flags for the model */
 static GtkTreeModelFlags
@@ -234,7 +235,7 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 	TilemMemModel *mm;
 	dword n, addr, phys;
 	TilemCalc *calc;
-	char buf[100];
+	char buf[100], *s;
 	unsigned int page;
 
 	g_return_if_fail(TILEM_IS_MEM_MODEL(model));
@@ -288,16 +289,10 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 		break;
 
 	case MM_COL_CHAR_0:
-		/* FIXME */
-		if (calc->mem[phys] >= 0x20 && calc->mem[phys] <= 0x7e) {
-			buf[0] = calc->mem[phys];
-			buf[1] = 0;
-		}
-		else {
-			strcpy(buf, "\357\277\275");
-		}
+		s = ti_to_unicode(calc->hw.model_id, calc->mem[phys]);
 		g_value_init(value, G_TYPE_STRING);
-		g_value_set_string(value, buf);
+		g_value_set_string(value, s);
+		g_free(s);
 		break;
 
 	case MM_COL_BYTE_PTR_0:
