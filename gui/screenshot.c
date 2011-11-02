@@ -425,6 +425,9 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	g_signal_connect(ssdlg->window, "response",
 	                 G_CALLBACK(dialog_response), ssdlg);
 
+	g_signal_connect(ssdlg->window, "delete-event",
+	                 G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+
 	main_table = gtk_table_new(2, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(main_table), 6);
 	gtk_table_set_col_spacings(GTK_TABLE(main_table), 12);
