@@ -359,7 +359,7 @@ static const GtkActionEntry paused_action_ents[] =
 	   G_CALLBACK(action_step_over) },
 	 { "finish", "tilem-db-finish", "_Finish Subroutine", "F9",
 	   "Run to end of the current subroutine", G_CALLBACK(action_finish) },
-	 { "edit-breakpoints", NULL, "_Breakpoints...", "<control>B",
+	 { "edit-breakpoints", NULL, "_Breakpoints", "<control>B",
 	   "Add, remove, or modify breakpoints",
 	   G_CALLBACK(action_edit_breakpoints) }};
 
@@ -737,6 +737,7 @@ static const char uidesc[] =
 	"  <menuitem action='step'/>"
 	"  <menuitem action='step-over'/>"
 	"  <menuitem action='finish'/>"
+	"  <separator/>"
 	"  <menuitem action='edit-breakpoints'/>"
 	"  <separator/>"
 	"  <menuitem action='close'/>"
