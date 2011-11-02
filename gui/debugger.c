@@ -260,6 +260,13 @@ static int bptest_finish(TilemCalc *calc, dword op, void *data)
 	}
 }
 
+static gboolean post_resume_refresh(gpointer data)
+{
+	TilemDebugger *dbg = data;
+	tilem_debugger_refresh(dbg, FALSE);
+	return FALSE;
+}
+
 static void run_with_step_condition(TilemDebugger *dbg,
                                     TilemZ80BreakpointFunc func,
                                     void *data)
@@ -270,7 +277,8 @@ static void run_with_step_condition(TilemDebugger *dbg,
 	                                        func, data);
 	g_mutex_unlock(dbg->emu->calc_mutex);
 	tilem_calc_emulator_run(dbg->emu);
-	tilem_debugger_refresh(dbg, FALSE);
+	/* Don't refresh right away, to avoid flickering */
+	g_timeout_add(10, &post_resume_refresh, dbg);
 }
 
 /* Execute one instruction */
