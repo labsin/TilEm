@@ -81,6 +81,9 @@ typedef struct _TilemDebugger {
 	gboolean paused;
 	gboolean refreshing;
 	gboolean delayed_refresh;
+
+	/* Other windows */
+	struct _TilemKeypadDialog *keypad_dialog;
 } TilemDebugger;
 
 /* Create a new TilemDebugger. */
@@ -103,3 +106,30 @@ void tilem_debugger_refresh(TilemDebugger *dbg, gboolean updatemem);
 
 /* Show a dialog letting the user add, remove, and edit breakpoints. */
 void tilem_debugger_edit_breakpoints(TilemDebugger *dbg);
+
+
+/* Keypad dialog */
+
+typedef struct _TilemKeypadDialog {
+	TilemDebugger *dbg;
+
+	gboolean refreshing;
+
+	GtkWidget *window;
+	GtkWidget *output[7];
+	GtkWidget *keys[7][8];
+	GtkWidget *input[8];
+} TilemKeypadDialog;
+
+/* Create a new TilemKeypadDialog. */
+TilemKeypadDialog *tilem_keypad_dialog_new(TilemDebugger *dbg);
+
+/* Free a TilemKeypadDialog. */
+void tilem_keypad_dialog_free(TilemKeypadDialog *kpdlg);
+
+/* New calculator loaded. */
+void tilem_keypad_dialog_calc_changed(TilemKeypadDialog *kpdlg);
+
+/* Refresh key states. */
+void tilem_keypad_dialog_refresh(TilemKeypadDialog *kpdlg);
+

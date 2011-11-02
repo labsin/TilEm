@@ -53,6 +53,7 @@ objects = tilem2.o \
 	gifencod.o \
 	icons.o \
 	keybindings.o \
+	keypaddlg.o \
 	link.o \
 	macro.o \
 	memmodel.o \
@@ -69,7 +70,7 @@ objects = tilem2.o \
 
 libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
 
-compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(DEFS) \
+compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS) \
 	$(TILEMCORE_CFLAGS) $(TILEMDB_CFLAGS) \
 	$(GTK_CFLAGS) $(TICALCS_CFLAGS)
 
@@ -103,6 +104,10 @@ memmodel.o: memmodel.c memmodel.h $(common_headers)
 # Breakpoint dialog
 breakpoints.o: breakpoints.c $(common_headers)
 	$(compile) -c $(srcdir)/breakpoints.c
+
+# Keypad dialog
+keypaddlg.o: keypaddlg.c $(common_headers)
+	$(compile) -c $(srcdir)/keypaddlg.c
 
 # Memory management and messages
 memory.o: memory.c ../emu/tilem.h

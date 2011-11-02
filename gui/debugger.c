@@ -345,6 +345,30 @@ static void action_close(G_GNUC_UNUSED GtkAction *a, gpointer data)
 	tilem_debugger_hide(dbg);
 }
 
+static void keypad_dlg_response(G_GNUC_UNUSED GtkDialog *dlg,
+                                G_GNUC_UNUSED int response,
+                                gpointer data)
+{
+	gtk_toggle_action_set_active(data, FALSE);
+}
+
+/* Show/hide keypad dialog */
+static void action_view_keypad(GtkToggleAction *action, gpointer data)
+{
+	TilemDebugger *dbg = data;
+
+	if (!dbg->keypad_dialog) {
+		dbg->keypad_dialog = tilem_keypad_dialog_new(dbg);
+		g_signal_connect(dbg->keypad_dialog->window, "response",
+		                 G_CALLBACK(keypad_dlg_response), action);
+	}
+
+	if (gtk_toggle_action_get_active(action))
+		gtk_window_present(GTK_WINDOW(dbg->keypad_dialog->window));
+	else
+		gtk_widget_hide(dbg->keypad_dialog->window);
+}
+
 static const GtkActionEntry run_action_ents[] =
 	{{ "pause", GTK_STOCK_MEDIA_PAUSE, "_Pause", "Escape",
 	   "Pause emulation", G_CALLBACK(action_pause) }};
@@ -365,8 +389,14 @@ static const GtkActionEntry paused_action_ents[] =
 
 static const GtkActionEntry misc_action_ents[] =
 	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
+	 { "view-menu", 0, "_View", 0, 0, 0 },
 	 { "close", GTK_STOCK_CLOSE, 0, 0,
 	   "Close the debugger", G_CALLBACK(action_close) }};
+
+static const GtkToggleActionEntry misc_toggle_ents[] =
+	{{ "view-keypad", 0, "_Keypad", 0,
+	   "Show the calculator keypad state",
+	   G_CALLBACK(action_view_keypad), FALSE }};
 
 /* Callbacks */
 
@@ -742,6 +772,9 @@ static const char uidesc[] =
 	"  <separator/>"
 	"  <menuitem action='close'/>"
 	" </menu>"
+	" <menu action='view-menu'>"
+	"  <menuitem action='view-keypad'/>"
+	" </menu>"
 	"</menubar>";
 
 /* Create a new TilemDebugger. */
@@ -805,6 +838,8 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	dbg->misc_actions = gtk_action_group_new("Debug");
 	gtk_action_group_add_actions(dbg->misc_actions, misc_action_ents,
 	                             G_N_ELEMENTS(misc_action_ents), dbg);
+	gtk_action_group_add_toggle_actions(dbg->misc_actions, misc_toggle_ents,
+	                                    G_N_ELEMENTS(misc_toggle_ents), dbg);
 	gtk_ui_manager_insert_action_group(uimgr, dbg->misc_actions, 0);
 
 	accelgrp = gtk_ui_manager_get_accel_group(uimgr);
@@ -961,7 +996,7 @@ static GtkTreeModel* fill_stk_list(TilemDebugger *dbg)
 
 		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, i);
 		v = dbg->emu->calc->mem[phys];
-		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, i + 1);
+		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, (i + 1) & 0xffff);
 		v += dbg->emu->calc->mem[phys] << 8;
 
 		g_snprintf(stack_value, sizeof(stack_value), "%04X", v);
@@ -1044,6 +1079,9 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 		unselect_all(GTK_TREE_VIEW(dbg->mem_view));
 		unselect_all(GTK_TREE_VIEW(dbg->stack_view));
 	}
+
+	if (dbg->keypad_dialog)
+		tilem_keypad_dialog_refresh(dbg->keypad_dialog);
 
 	dbg->refreshing = FALSE;
 }

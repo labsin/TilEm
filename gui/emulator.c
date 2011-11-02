@@ -557,6 +557,9 @@ void tilem_calc_emulator_press_key(TilemCalcEmulator *emu, int key)
 	g_mutex_unlock(emu->calc_mutex);
 
 	record_key(emu, key);
+
+	if (emu->dbg && emu->dbg->keypad_dialog)
+		tilem_keypad_dialog_refresh(emu->dbg->keypad_dialog);
 }
 
 void tilem_calc_emulator_release_key(TilemCalcEmulator *emu, int key)
@@ -570,6 +573,19 @@ void tilem_calc_emulator_release_key(TilemCalcEmulator *emu, int key)
 	tilem_keypad_release_key(emu->calc, key);
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
+
+	if (emu->dbg && emu->dbg->keypad_dialog)
+		tilem_keypad_dialog_refresh(emu->dbg->keypad_dialog);
+}
+
+static gboolean refresh_kpd(gpointer data)
+{
+	TilemCalcEmulator *emu = data;
+
+	if (emu->dbg && emu->dbg->keypad_dialog)
+		tilem_keypad_dialog_refresh(emu->dbg->keypad_dialog);
+
+	return FALSE;
 }
 
 /* Timer callback for key sequences */
@@ -605,6 +621,8 @@ static void tmr_key_queue(TilemCalc* calc, void* data)
 			emu->key_queue_timer = 0;
 		}
 	}
+
+	g_idle_add(&refresh_kpd, emu);
 }
 
 static void queue_keys(TilemCalcEmulator *emu, const byte *keys, int nkeys)
@@ -662,6 +680,9 @@ void tilem_calc_emulator_release_queued_key(TilemCalcEmulator *emu)
 		g_cond_broadcast(emu->calc_wakeup_cond);
 	}
 	g_mutex_unlock(emu->calc_mutex);
+
+	if (emu->dbg && emu->dbg->keypad_dialog)
+		tilem_keypad_dialog_refresh(emu->dbg->keypad_dialog);
 }
 
 gboolean tilem_calc_emulator_press_or_queue(TilemCalcEmulator *emu,
@@ -685,6 +706,10 @@ gboolean tilem_calc_emulator_press_or_queue(TilemCalcEmulator *emu,
 	}
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
+
+	if (emu->dbg && emu->dbg->keypad_dialog)
+		tilem_keypad_dialog_refresh(emu->dbg->keypad_dialog);
+
 	return status;
 }
 
