@@ -775,13 +775,21 @@ static const char uidesc[] =
 	" <menu action='view-menu'>"
 	"  <menuitem action='view-keypad'/>"
 	" </menu>"
-	"</menubar>";
+	"</menubar>"
+	"<toolbar name='toolbar'>"
+	" <toolitem action='run'/>"
+	" <toolitem action='pause'/>"
+	" <separator/>"
+	" <toolitem action='step'/>"
+	" <toolitem action='step-over'/>"
+	" <toolitem action='finish'/>"
+	"</toolbar>";
 
 /* Create a new TilemDebugger. */
 TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 {
 	TilemDebugger *dbg;
-	GtkWidget *hbox, *vbox, *vbox2, *vpaned, *sw, *menubar;
+	GtkWidget *hbox, *vbox, *vbox2, *vpaned, *sw, *menubar, *toolbar;
 	GtkUIManager *uimgr;
 	GtkAccelGroup *accelgrp;
 	GError *err = NULL;
@@ -850,6 +858,9 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 
 	menubar = gtk_ui_manager_get_widget(uimgr, "/menu-bar");
 	gtk_box_pack_start(GTK_BOX(vbox2), menubar, FALSE, FALSE, 0);
+
+	toolbar = gtk_ui_manager_get_widget(uimgr, "/toolbar");
+	gtk_box_pack_start(GTK_BOX(vbox2), toolbar, FALSE, FALSE, 0);
 
 	g_object_unref(uimgr);
 
