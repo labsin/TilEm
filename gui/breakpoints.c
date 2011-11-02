@@ -960,6 +960,7 @@ static void clear_clicked(G_GNUC_UNUSED GtkButton *btn, gpointer data)
 			tilem_debugger_remove_breakpoint(bpldlg->dbg, bp);
 		}
 		gtk_list_store_clear(bpldlg->store);
+		update_buttons(bpldlg);
 	}
 
 	gtk_widget_destroy(dlg);
