@@ -46,7 +46,7 @@ GtkWidget* new_frame(const gchar* label, GtkWidget* contents)
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
 
 	align = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, 12, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 6, 0, 12, 0);
 	gtk_widget_show(align);
 	gtk_container_add(GTK_CONTAINER(frame), align);
 	gtk_container_add(GTK_CONTAINER(align), contents);

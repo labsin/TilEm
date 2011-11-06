@@ -186,6 +186,11 @@ void display_lcdimage_into_terminal(TilemEmulatorWindow *ewin);
 void redraw_screen(TilemEmulatorWindow *ewin);
 
 
+/* ##### preferences.c ##### */
+
+/* Run preferences dialog. */
+void tilem_preferences_dialog(TilemEmulatorWindow *ewin);
+
 
 /* ##### tool.c ##### */
 

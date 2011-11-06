@@ -59,6 +59,7 @@ objects = tilem2.o \
 	memmodel.o \
 	memory.o \
 	pbar.o \
+	preferences.o \
 	screenshot.o \
 	skin.o \
 	skinops.o \
@@ -124,6 +125,10 @@ emuwin.o: emuwin.c $(common_headers)
 # Handle events
 event.o: event.c $(common_headers)
 	$(compile) -c $(srcdir)/event.c
+
+# Preferences dialog
+preferences.o: preferences.c $(common_headers)
+	$(compile) -c $(srcdir)/preferences.c 
 
 # Open skin (skn format file) originally created by Julien Blache and Romain Lievins
 skinops.o: skinops.c skinops.h 

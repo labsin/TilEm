@@ -37,6 +37,7 @@ typedef struct _TilemEmulatorWindow {
 	int lcd_image_width;
 	int lcd_image_height;
 	GdkRgbCmap* lcd_cmap;
+	gboolean lcd_smooth_scale;
 
 	char *skin_file_name;
 	SKIN_INFOS *skin;

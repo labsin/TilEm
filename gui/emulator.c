@@ -223,7 +223,10 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 	emu->ilp.finished_cond = g_cond_new();
 	emu->lcd_mutex = g_mutex_new();
 
-	emu->limit_speed = TRUE;
+	tilem_config_get("emulation",
+	                 "grayscale/b=1", &emu->grayscale,
+	                 "limit_speed/b=1", &emu->limit_speed,
+	                 NULL);
 
 	emu->link_queue = g_queue_new();
 	emu->link_queue_mutex = g_mutex_new();
@@ -421,8 +424,12 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	emu->calc = calc;
 	emu->lcd_buffer = tilem_lcd_buffer_new();
 	emu->tmp_lcd_buffer = tilem_lcd_buffer_new();
-	emu->glcd = tilem_gray_lcd_new(calc, GRAY_WINDOW_SIZE,
-	                               GRAY_SAMPLE_INT);
+
+	if (emu->grayscale)
+		emu->glcd = tilem_gray_lcd_new(calc, GRAY_WINDOW_SIZE,
+		                               GRAY_SAMPLE_INT);
+	else
+		emu->glcd = NULL;
 
 	g_cond_broadcast(emu->calc_wakeup_cond);
 	g_mutex_unlock(emu->calc_mutex);
@@ -529,6 +536,25 @@ void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
                                          gboolean limit)
 {
 	emu->limit_speed = limit;
+}
+
+void tilem_calc_emulator_set_grayscale(TilemCalcEmulator *emu,
+                                       gboolean grayscale)
+{
+	emu->grayscale = grayscale;
+
+	if (grayscale && emu->calc && !emu->glcd) {
+		g_mutex_lock(emu->calc_mutex);
+		emu->glcd = tilem_gray_lcd_new(emu->calc, GRAY_WINDOW_SIZE,
+		                               GRAY_SAMPLE_INT);
+		g_mutex_unlock(emu->calc_mutex);
+	}
+	else if (!grayscale && emu->glcd) {
+		g_mutex_lock(emu->calc_mutex);
+		tilem_gray_lcd_free(emu->glcd);
+		emu->glcd = NULL;
+		g_mutex_unlock(emu->calc_mutex);
+	}
 }
 
 /* If currently recording a macro, record a keypress */

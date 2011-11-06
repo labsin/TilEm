@@ -83,6 +83,7 @@ typedef struct _TilemCalcEmulator {
 	TilemLCDBuffer *lcd_buffer;
 	TilemLCDBuffer *tmp_lcd_buffer;
 	TilemGrayLCD *glcd;
+	gboolean grayscale;
 
 	TilemAnimation *anim; /* animation being recorded */
 	gboolean anim_grayscale; /* use grayscale in animation */
@@ -145,6 +146,10 @@ void tilem_calc_emulator_run(TilemCalcEmulator *emu);
    actual CPU speed; FALSE means run as fast as we can.) */
 void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
                                          gboolean limit);
+
+/* Enable/disable grayscale */
+void tilem_calc_emulator_set_grayscale(TilemCalcEmulator *emu,
+                                       gboolean grayscale);
 
 /* Press a single key. */
 void tilem_calc_emulator_press_key(TilemCalcEmulator *emu, int key);

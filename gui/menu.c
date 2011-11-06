@@ -149,6 +149,12 @@ static void action_quick_screenshot(G_GNUC_UNUSED GtkAction *act,
 	quick_screenshot(ewin);
 }
 
+static void action_preferences(G_GNUC_UNUSED GtkAction *act,
+                               gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	tilem_preferences_dialog(ewin);
+}
 
 static void action_hide_skin(G_GNUC_UNUSED GtkAction *act,
                                     gpointer data)
@@ -262,7 +268,12 @@ static const GtkActionEntry main_action_ents[] =
 	   0, "_Quick Screenshot", "<shift><ctrl>Print",
 	   "Save a screenshot using default settings",
 	   G_CALLBACK(action_quick_screenshot) },
-	
+
+	 { "preferences",
+	   GTK_STOCK_PREFERENCES, 0, 0,
+	   "Edit emulator settings",
+	   G_CALLBACK(action_preferences) },
+
 	{ "hide-skin",
 	   GTK_STOCK_LEAVE_FULLSCREEN, "_Hide Skin", "",
 	   "Hide the calculator skin",
@@ -369,6 +380,8 @@ void build_menu(TilemEmulatorWindow* ewin)
 
 	add_item(menu, ag, acts, "screenshot");
 	add_item(menu, ag, acts, "quick-screenshot");
+
+	add_item(menu, ag, acts, "preferences");
 	
 	submenu = add_submenu(menu, "_Miscellaneous");
 	add_item(submenu, ag, acts, "hide-skin");

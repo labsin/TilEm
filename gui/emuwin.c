@@ -79,7 +79,9 @@ static gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	tilem_draw_lcd_image_indexed(ewin->emu->lcd_buffer,
 	                             ewin->lcd_image_buf,
 	                             alloc.width, alloc.height, alloc.width,
-	                             TILEM_SCALE_SMOOTH);
+	                             (ewin->lcd_smooth_scale
+	                              ? TILEM_SCALE_SMOOTH
+	                              : TILEM_SCALE_FAST));
 	g_mutex_unlock(ewin->emu->lcd_mutex);
 
 	/* Render buffer to the screen */
@@ -343,6 +345,7 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 
 	tilem_config_get("settings",
 	                 "skin_disabled/b", &ewin->skin_disabled,
+	                 "smooth_scaling/b=1", &ewin->lcd_smooth_scale,
 	                 NULL);
 
 	/* Create the window */
