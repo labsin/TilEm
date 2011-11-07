@@ -44,13 +44,6 @@ static void action_receive_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 	popup_receive_menu(ewin);
 }
 
-static void action_load_skin(G_GNUC_UNUSED GtkAction *act, gpointer data)
-{
-	TilemEmulatorWindow *ewin = data;
-	tilem_user_change_skin(ewin);
-}
-
-
 static void action_start_debugger(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
@@ -156,36 +149,6 @@ static void action_preferences(G_GNUC_UNUSED GtkAction *act,
 	tilem_preferences_dialog(ewin);
 }
 
-static void action_hide_skin(G_GNUC_UNUSED GtkAction *act,
-                                    gpointer data)
-{
-	TilemEmulatorWindow *ewin = data;
-	ewin->skin_disabled = !ewin->skin_disabled;
-	redraw_screen(ewin);
-}
-
-static void action_hide_border(G_GNUC_UNUSED GtkAction *act,
-                                    gpointer data)
-{
-	TilemEmulatorWindow *ewin = data;
-	switch_borderless(ewin);
-}
-
-
-static void action_print_lcd_into_terminal(G_GNUC_UNUSED GtkAction *act,
-                                    gpointer data)
-{
-	TilemEmulatorWindow *ewin = data;
-	display_lcdimage_into_terminal(ewin);
-}
-
-static void action_toggle_speed_limit(G_GNUC_UNUSED GtkAction *act,
-                                    gpointer data)
-{
-	TilemEmulatorWindow *ewin = data;
-	tilem_change_speed(ewin);
-}
-
 static void action_about(G_GNUC_UNUSED GtkAction *act,
                                     G_GNUC_UNUSED gpointer data)
 {
@@ -211,11 +174,6 @@ static const GtkActionEntry main_action_ents[] =
 	   GTK_STOCK_SAVE_AS, "Re_ceive File...", "<ctrl>S",
 	   "Receive a program or variable from the calculator",
 	   G_CALLBACK(action_receive_file) },
-	{ "load-skin",
-	   GTK_STOCK_REFRESH, "_Load skin...", "<ctrl>L",
-	   "Load a skin",
-	   G_CALLBACK(action_load_skin) },
-
  
 	 { "open-calc",
 	   GTK_STOCK_OPEN, "_Open Calculator...", "<shift><ctrl>O",
@@ -274,28 +232,10 @@ static const GtkActionEntry main_action_ents[] =
 	   "Edit emulator settings",
 	   G_CALLBACK(action_preferences) },
 
-	{ "hide-skin",
-	   GTK_STOCK_LEAVE_FULLSCREEN, "_Hide Skin", "",
-	   "Hide the calculator skin",
-	   G_CALLBACK(action_hide_skin) },
-	{ "hide-border",
-	   GTK_STOCK_LEAVE_FULLSCREEN, "Hide _Border", "",
-	   "Hide the window border if your window manager allows it",
-	   G_CALLBACK(action_hide_border) },
-	{ "toggle-speed",
-	   GTK_STOCK_MEDIA_FORWARD, "_Toggle speed limit", "",
-	   "Toggle the calc speed limit",
-	   G_CALLBACK(action_toggle_speed_limit) },
-	{ "output-terminal",
-	   GTK_STOCK_SORT_ASCENDING, "_Print the lcd into the terminal", "",
-	   "Print the lcd content into the terminal",
-	   G_CALLBACK(action_print_lcd_into_terminal) },
-	
-	{ "about",
+	 { "about",
 	   GTK_STOCK_ABOUT, "_About", "",
 	   "Print some informations about TilEm 2 and its authors",
 	   G_CALLBACK(action_about) },
-
 
 	 { "quit",
 	   GTK_STOCK_QUIT, "_Quit", "<ctrl>Q",
@@ -359,9 +299,6 @@ void build_menu(TilemEmulatorWindow* ewin)
 	add_item(menu, ag, acts, "receive-file");
 	add_separator(menu);
 
-	add_item(menu, ag, acts, "load-skin");
-	add_separator(menu);
-
 	add_item(menu, ag, acts, "open-calc");
 	add_item(menu, ag, acts, "save-calc");
 	add_item(menu, ag, acts, "revert-calc");
@@ -380,19 +317,11 @@ void build_menu(TilemEmulatorWindow* ewin)
 
 	add_item(menu, ag, acts, "screenshot");
 	add_item(menu, ag, acts, "quick-screenshot");
+	add_separator(menu);
 
 	add_item(menu, ag, acts, "preferences");
-	
-	submenu = add_submenu(menu, "_Miscellaneous");
-	add_item(submenu, ag, acts, "hide-skin");
-	add_item(submenu, ag, acts, "hide-border");
-	add_separator(submenu);
-	add_item(submenu, ag, acts, "output-terminal");
-	add_separator(submenu);
-	add_item(submenu, ag, acts, "toggle-speed");
-	
 	add_separator(menu);
-	add_item(menu, ag, acts, "about");
 
+	add_item(menu, ag, acts, "about");
 	add_item(menu, ag, acts, "quit");
 }	
