@@ -66,3 +66,20 @@ char * prompt_save_file(const char *title,         /* UTF-8 */
                         const char *pattern1,     /* ASCII */
                         ...)
 	G_GNUC_NULL_TERMINATED;
+
+/* Create a file entry or file-chooser button widget, allowing user to
+   select a single existing file to open. */
+GtkWidget * file_entry_new(const char *title, /* UTF-8 */
+                           const char *desc1, /* UTF-8 */
+                           const char *pattern1, /* ASCII */
+                           ...)
+	G_GNUC_NULL_TERMINATED;
+
+/* Set filename in a file entry. */
+void file_entry_set_filename(GtkWidget *fe,
+                             const char *filename); /* filename encoding */
+
+/* Get filename in a file entry.  Result is NULL if no file is
+   selected; otherwise, a string in filename encoding, which must be
+   freed with g_free(). */
+char * file_entry_get_filename(GtkWidget *fe);

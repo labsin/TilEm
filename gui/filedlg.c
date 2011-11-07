@@ -47,7 +47,7 @@ struct fcinfo {
 	char *filename;
 	char *dirname;
 	char *extension;
-	char *filters;
+	const char *filters;
 	unsigned int flags;
 };
 
@@ -239,15 +239,13 @@ static char * build_filter_string(const char *desc1,
 	return g_string_free(str, FALSE);
 }
 
-static char ** run_file_chooser(const char *title,
-                                GtkWindow *parent,
-                                gboolean save,
-                                gboolean multiple,
-                                const char *suggest_name,
-                                const char *suggest_dir,
-                                const char *desc1,
-                                const char *pattern1,
-                                va_list ap)
+static char ** run_file_chooser1(const char *title,
+                                 GtkWindow *parent,
+                                 gboolean save,
+                                 gboolean multiple,
+                                 const char *suggest_name,
+                                 const char *suggest_dir,
+                                 const char *filters)
 {
 	struct fcinfo fci;
 	GThread *thread;
@@ -290,7 +288,7 @@ static char ** run_file_chooser(const char *title,
 	else
 		fci.extension = NULL;
 
-	fci.filters = build_filter_string(desc1, pattern1, ap);
+	fci.filters = filters;
 
 	fci.flags = (OFN_HIDEREADONLY | OFN_EXPLORER);
 
@@ -316,7 +314,6 @@ static char ** run_file_chooser(const char *title,
 	g_free(fci.filename);
 	g_free(fci.dirname);
 	g_free(fci.extension);
-	g_free(fci.filters);
 
 	if (!fname) {
 		return NULL;
@@ -340,6 +337,25 @@ static char ** run_file_chooser(const char *title,
 		result[1] = NULL;
 		return result;
 	}
+}
+
+static char ** run_file_chooser(const char *title,
+                                GtkWindow *parent,
+                                gboolean save,
+                                gboolean multiple,
+                                const char *suggest_name,
+                                const char *suggest_dir,
+                                const char *desc1,
+                                const char *pattern1,
+                                va_list ap)
+{
+	char *filters;
+	char **result;
+	filters = build_filter_string(desc1, pattern1, ap);
+	result = run_file_chooser1(title, parent, save, multiple,
+	                           suggest_name, suggest_dir, filters);
+	g_free(filters);
+	return result;
 }
 
 #else  /* ! GDK_WINDOWING_WIN32 */
@@ -572,7 +588,7 @@ static char ** run_file_chooser(const char *title,
 	return NULL;
 }
 
-#endif  /* ! G_OS_WIN32 */
+#endif  /* ! GDK_WINDOWING_WIN32 */
 
 char * prompt_open_file(const char *title,
                         GtkWindow *parent,
@@ -647,3 +663,188 @@ char * prompt_save_file(const char *title,
 	}
 }
 
+/**************** File entry ****************/
+
+#ifdef GDK_WINDOWING_WIN32
+
+typedef struct _FileEntry {
+	GtkHBox parent;
+	GtkWidget *entry;
+	GtkWidget *button;
+	char *title;
+	char *filters;
+	char *filename;
+} FileEntry;
+
+typedef struct _FileEntryClass {
+	GtkHBoxClass parent;
+} FileEntryClass;
+
+static guint selection_changed_signal = 0;
+
+G_DEFINE_TYPE(FileEntry, file_entry, GTK_TYPE_HBOX);
+
+static void file_entry_finalize(GObject *obj)
+{
+	FileEntry *fe = (FileEntry*) obj;
+	g_free(fe->title);
+	g_free(fe->filters);
+	g_free(fe->filename);
+}
+
+void file_entry_set_filename(GtkWidget *entry,
+                             const char *filename)
+{
+	FileEntry *fe = (FileEntry*) entry;
+
+	if (filename && filename[0]) {
+		if (!fe->filename || strcmp(filename, fe->filename)) {
+			g_free(fe->filename);
+			fe->filename = g_strdup(filename);
+			gtk_entry_set_text(GTK_ENTRY(fe->entry), filename);
+			g_signal_emit(fe, selection_changed_signal, 0, NULL);
+		}
+	}
+	else if (fe->filename) {
+		g_free(fe->filename);
+		fe->filename = NULL;
+		g_signal_emit(fe, selection_changed_signal, 0, NULL);		
+	}
+}
+
+char * file_entry_get_filename(GtkWidget *entry)
+{
+	FileEntry *fe = (FileEntry*) entry;
+	if (fe->filename)
+		return g_strdup(fe->filename);
+	else
+		return NULL;
+}
+
+static void focus_changed(G_GNUC_UNUSED GObject *obj,
+                          G_GNUC_UNUSED GParamSpec *pspec,
+                          gpointer data)
+{
+	FileEntry *fe = data;
+	const char *text;
+	text = gtk_entry_get_text(GTK_ENTRY(fe->entry));
+	file_entry_set_filename(GTK_WIDGET(fe), text);
+}
+
+static void browse_for_files(G_GNUC_UNUSED GtkButton *btn, gpointer data)
+{
+	FileEntry *fe = data;
+	GtkWidget *parent;
+	char **result;
+	char *bname, *dname;
+
+	parent = gtk_widget_get_toplevel(GTK_WIDGET(fe));
+
+	if (fe->filename) {
+		bname = g_path_get_basename(fe->filename);
+		dname = g_path_get_dirname(fe->filename);
+	}
+	else {
+		bname = dname = NULL;
+	}
+
+	result = run_file_chooser1(fe->title, GTK_WINDOW(parent), FALSE, FALSE,
+	                           bname, dname, fe->filters);
+	g_free(bname);
+	g_free(dname);
+
+	if (result && result[0])
+		file_entry_set_filename(GTK_WIDGET(fe), result[0]);
+
+	g_strfreev(result);
+}
+
+static void file_entry_init(FileEntry *fe)
+{
+	gtk_box_set_spacing(GTK_BOX(fe), 6);
+
+	fe->entry = gtk_entry_new();
+	fe->button = gtk_button_new_with_label("Browse...");
+	gtk_box_pack_start(GTK_BOX(fe), fe->entry, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(fe), fe->button, FALSE, FALSE, 0);
+	gtk_widget_show(fe->entry);
+	gtk_widget_show(fe->button);
+
+	g_signal_connect(fe->entry, "notify::is-focus",
+	                 G_CALLBACK(focus_changed), fe);
+	g_signal_connect(fe->button, "clicked",
+	                 G_CALLBACK(browse_for_files), fe);
+}
+
+static void file_entry_class_init(FileEntryClass *class)
+{
+	GObjectClass *obj_class;
+
+	obj_class = G_OBJECT_CLASS(class);
+	obj_class->finalize = file_entry_finalize;
+
+	selection_changed_signal =
+		g_signal_new("selection-changed",
+		             G_OBJECT_CLASS_TYPE(obj_class),
+		             G_SIGNAL_RUN_LAST,
+		             0, NULL, NULL,
+		             g_cclosure_marshal_VOID__VOID,
+		             G_TYPE_NONE, 0);
+}
+
+GtkWidget * file_entry_new(const char *title,
+                           const char *desc1,
+                           const char *pattern1,
+                           ...)
+{
+	FileEntry *fe = g_object_new(file_entry_get_type(), NULL);
+	va_list ap;
+
+	fe->title = g_strdup(title);
+
+	va_start(ap, pattern1);
+	fe->filters = build_filter_string(desc1, pattern1, ap);
+	va_end(ap);
+
+	return GTK_WIDGET(fe);
+}
+
+
+#else /* ! GDK_WINDOWING_WIN32 */
+
+GtkWidget * file_entry_new(const char *title,
+                           const char *desc1,
+                           const char *pattern1,
+                           ...)
+{
+	GtkWidget *btn;
+	va_list ap;
+
+	btn = gtk_file_chooser_button_new(title, GTK_FILE_CHOOSER_ACTION_OPEN);
+
+	va_start(ap, pattern1);
+	setup_file_filters(GTK_FILE_CHOOSER(btn), desc1, pattern1, ap);
+	va_end(ap);
+
+	return btn;
+}
+
+void file_entry_set_filename(GtkWidget *fe,
+                             const char *filename)
+{
+	gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(fe), filename);
+}
+
+char * file_entry_get_filename(GtkWidget *fe)
+{
+	return gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fe));
+}
+
+void file_entry_connect_changed(GtkWidget *fe,
+                                void (*cb)(GtkWidget *w, gpointer userdata),
+                                gpointer data)
+{
+	g_signal_connect(fe, "selection-changed", G_CALLBACK(cb), data);
+}
+
+#endif /* ! GDK_WINDOWING_WIN32 */
