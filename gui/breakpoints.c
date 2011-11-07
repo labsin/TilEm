@@ -666,7 +666,8 @@ TilemDebugBreakpoint * tilem_debugger_add_breakpoint(TilemDebugger *dbg,
 	g_return_val_if_fail(bp != NULL, NULL);
 	g_return_val_if_fail(bp->mode != 0, NULL);
 
-	bp2 = g_slice_dup(TilemDebugBreakpoint, bp);
+	bp2 = g_slice_new(TilemDebugBreakpoint);
+	*bp2 = *bp;
 	dbg->breakpoints = g_slist_append(dbg->breakpoints, bp2);
 	set_bp(dbg, bp2);
 
