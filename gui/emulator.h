@@ -84,6 +84,7 @@ typedef struct _TilemCalcEmulator {
 	TilemLCDBuffer *tmp_lcd_buffer;
 	TilemGrayLCD *glcd;
 	gboolean grayscale;
+	gboolean lcd_update_pending;
 
 	TilemAnimation *anim; /* animation being recorded */
 	gboolean anim_grayscale; /* use grayscale in animation */

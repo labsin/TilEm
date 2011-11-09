@@ -126,9 +126,12 @@ static void update_screen(TilemCalcEmulator *emu, gboolean force_mono)
 		}
 	}
 
-	g_mutex_unlock(emu->lcd_mutex);
+	if (!emu->lcd_update_pending) {
+		emu->lcd_update_pending = TRUE;
+		g_idle_add_full(G_PRIORITY_DEFAULT, &refresh_lcd, emu, NULL);
+	}
 
-	g_idle_add_full(G_PRIORITY_DEFAULT, &refresh_lcd, emu, NULL);
+	g_mutex_unlock(emu->lcd_mutex);
 }
 
 static void cancel_animation(TilemCalcEmulator *emu)

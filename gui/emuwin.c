@@ -76,6 +76,7 @@ static gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	/* Draw LCD contents into the image buffer */
 
 	g_mutex_lock(ewin->emu->lcd_mutex);
+	ewin->emu->lcd_update_pending = FALSE;
 	tilem_draw_lcd_image_indexed(ewin->emu->lcd_buffer,
 	                             ewin->lcd_image_buf,
 	                             alloc.width, alloc.height, alloc.width,
