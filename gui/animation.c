@@ -52,6 +52,8 @@ struct _TilemAnimation {
 
 	TilemLCDBuffer *temp_buffer;
 
+	GdkPixbuf *static_pixbuf;
+
 	int base_contrast;
 	int display_width;
 	int display_height;
@@ -81,6 +83,7 @@ typedef struct _TilemAnimIter {
 	int time_elapsed;
 	TilemAnimation *anim;
 	TilemAnimFrame *frame;
+	GdkPixbuf *pixbuf;
 } TilemAnimIter;
 
 typedef struct _TilemAnimIterClass {
@@ -180,7 +183,10 @@ static GdkPixbuf * tilem_animation_get_static_image(GdkPixbufAnimation *ganim)
 	g_return_val_if_fail(TILEM_IS_ANIMATION(anim), NULL);
 	g_return_val_if_fail(anim->start != NULL, NULL);
 
-	return frame_to_pixbuf(anim, anim->start);
+	if (!anim->static_pixbuf)
+		anim->static_pixbuf = frame_to_pixbuf(anim, anim->start);
+
+	return anim->static_pixbuf;
 }
 
 static void tilem_animation_get_size(GdkPixbufAnimation *ganim,
@@ -240,6 +246,10 @@ static void tilem_animation_finalize(GObject *obj)
 		tilem_free(anim->palette);
 	anim->palette = NULL;
 
+	if (anim->static_pixbuf)
+		g_object_unref(anim->static_pixbuf);
+	anim->static_pixbuf = NULL;
+
 	if (G_OBJECT_CLASS(tilem_animation_parent_class)->finalize)
 		(*G_OBJECT_CLASS(tilem_animation_parent_class)->finalize)(obj);
 }
@@ -279,7 +289,10 @@ static GdkPixbuf * tilem_anim_iter_get_pixbuf(GdkPixbufAnimationIter *giter)
 	g_return_val_if_fail(iter->anim != NULL, NULL);
 	g_return_val_if_fail(iter->frame != NULL, NULL);
 
-	return frame_to_pixbuf(iter->anim, iter->frame);
+	if (!iter->pixbuf)
+		iter->pixbuf = frame_to_pixbuf(iter->anim, iter->frame);
+
+	return iter->pixbuf;
 }
 
 static gboolean tilem_anim_iter_on_currently_loading_frame(G_GNUC_UNUSED GdkPixbufAnimationIter *giter)
@@ -309,6 +322,10 @@ tilem_anim_iter_advance(GdkPixbufAnimationIter *giter,
 		return FALSE;
 	}
 
+	if (iter->pixbuf)
+		g_object_unref(iter->pixbuf);
+	iter->pixbuf = NULL;
+
 	while (ms >= iter->frame->duration) {
 		ms -= iter->frame->duration;
 		if (iter->frame->next)
@@ -334,6 +351,10 @@ static void tilem_anim_iter_finalize(GObject *obj)
 	if (iter->anim)
 		g_object_unref(iter->anim);
 	iter->anim = NULL;
+
+	if (iter->pixbuf)
+		g_object_unref(iter->pixbuf);
+	iter->pixbuf = NULL;
 
 	if (G_OBJECT_CLASS(tilem_anim_iter_parent_class)->finalize)
 		(*G_OBJECT_CLASS(tilem_anim_iter_parent_class)->finalize)(obj);
