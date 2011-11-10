@@ -206,12 +206,12 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 
 	tilem_z80_run_time(emu->calc, 1000, NULL);
 
-	printf(" <<");
+	/*printf(" <<"); */
 	while (count > 0) {
 		value = tilem_linkport_graylink_get_byte(emu->calc);
 
 		if (value != -1) {
-			printf(" %02X", value);
+			/* printf(" %02X", value); */
 			data[0] = value;
 			data++;
 			count--;
@@ -230,7 +230,7 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 			break;
 		}
 	}
-	printf("\n");
+	/*printf("\n");*/
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
 	emu->calc->z80.stop_mask = prevmask;
@@ -305,6 +305,12 @@ void run_with_key(TilemCalc* calc, int key)
 	tilem_z80_run_time(calc, 500000, NULL);
 }
 
+/* Press a key */
+void tmr_press_key(TilemCalc* calc, void* data)
+{
+	tilem_keypad_press_key(calc, TILEM_PTR_TO_DWORD(data));
+}
+
 /* Automatically press key to be in the receive mode (ti82 and ti85) */
 void prepare_for_link_send(TilemCalc* calc)
 {
@@ -316,6 +322,7 @@ void prepare_for_link_send(TilemCalc* calc)
 		run_with_key(calc, TILEM_KEY_MODE);
 		run_with_key(calc, TILEM_KEY_2ND);
 		run_with_key(calc, TILEM_KEY_GRAPHVAR);
+		run_with_key(calc, TILEM_KEY_ENTER);
 		run_with_key(calc, TILEM_KEY_RIGHT);
 		run_with_key(calc, TILEM_KEY_ENTER);
 	}
@@ -334,16 +341,18 @@ void prepare_for_link_receive(TilemCalc* calc)
 {
 	run_with_key(calc, TILEM_KEY_ON);
 	run_with_key(calc, TILEM_KEY_ON);
-
+	
 	if (calc->hw.model_id == TILEM_CALC_TI82) {
 		/* TODO : there's something wrong here */
+		printf("prepare_for_link_receive\n");
 		run_with_key(calc, TILEM_KEY_2ND);
 		run_with_key(calc, TILEM_KEY_MODE);
 		run_with_key(calc, TILEM_KEY_2ND);
-		run_with_key(calc, TILEM_KEY_GRAPHVAR);
-		run_with_key(calc, TILEM_KEY_ENTER);
-		run_with_key(calc, TILEM_KEY_RIGHT);
-		run_with_key(calc, TILEM_KEY_ENTER);
+		run_with_key_slowly(calc, TILEM_KEY_GRAPHVAR);
+		run_with_key_slowly(calc, TILEM_KEY_ENTER);
+		run_with_key_slowly(calc, TILEM_KEY_RIGHT);
+		run_with_key_slowly(calc, TILEM_KEY_ENTER);
+		
 	}
 	else if (calc->hw.model_id == TILEM_CALC_TI85) {
 		/* TODO  : not the good key sequence...*/
@@ -356,11 +365,7 @@ void prepare_for_link_receive(TilemCalc* calc)
 	}
 }
 
-/* Press a key */
-static void tmr_press_key(TilemCalc* calc, void* data)
-{
-	tilem_keypad_press_key(calc, TILEM_PTR_TO_DWORD(data));
-}
+
 
 /* Send a file to the calc */
 void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)

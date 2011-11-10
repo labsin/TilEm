@@ -84,8 +84,11 @@ void tilem_dirlist_display(GNode* tree)
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 /* Terminated by NULL */
-void tilem_get_dirlist_ns(TilemCalcEmulator *emu)
+gpointer tilem_get_dirlist_ns(gpointer data)
 {
+	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
+	
+	
 	CableHandle* cbl;
 	CalcHandle* ch;
 	
@@ -110,6 +113,8 @@ void tilem_get_dirlist_ns(TilemCalcEmulator *emu)
 	
 	FileContent *content = tifiles_content_create_regular(ch->model);
 	VarEntry* ve;
+		
+
 	ticalcs_calc_recv_var_ns(ch, MODE_NORMAL, content, &ve);
 
 	emu->varapp = (TilemVarApp*)g_new(TilemVarApp*, 1);
@@ -137,6 +142,8 @@ void tilem_get_dirlist_ns(TilemCalcEmulator *emu)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
+	
+	return NULL;
 }
 
 

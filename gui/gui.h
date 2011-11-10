@@ -272,12 +272,18 @@ void prepare_for_link_send(TilemCalc* calc);
 /* Prepare ti82 and ti85 for link (send) */
 void prepare_for_link_receive(TilemCalc* calc);
 
+/* Press a key */
+void tmr_press_key(TilemCalc* calc, void* data);
+
 
 
 /* ##### getvar.c ##### */
 
 /* Createe the popup dialog */
 void popup_receive_menu(TilemEmulatorWindow *ewin);
+
+/* Create the window */
+TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu);
 
 /* Receive a var (for the moment it's just for test)*/
 int receive_var(CalcHandle * h);
@@ -286,7 +292,7 @@ int receive_var(CalcHandle * h);
 void tilem_dirlist_display(GNode* tree);
 
 /* Get the dirlist for ti82 and ti85 */
-void tilem_get_dirlist_ns(TilemCalcEmulator *emu);
+gpointer tilem_get_dirlist_ns(gpointer data);
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 void tilem_get_dirlist(TilemCalcEmulator *emu);

@@ -141,6 +141,17 @@ static void action_preferences(G_GNUC_UNUSED GtkAction *act,
 	tilem_preferences_dialog(ewin);
 }
 
+/* TEST */
+static void action_test(G_GNUC_UNUSED GtkAction *act,
+                                    G_GNUC_UNUSED gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	
+	g_mutex_lock(ewin->emu->calc_mutex);
+        prepare_for_link_receive(ewin->emu->calc);
+        g_mutex_unlock(ewin->emu->calc_mutex);
+}
+
 static void action_about(G_GNUC_UNUSED GtkAction *act,
                                     G_GNUC_UNUSED gpointer data)
 {
@@ -228,6 +239,12 @@ static const GtkActionEntry main_action_ents[] =
 	   GTK_STOCK_ABOUT, "_About", "",
 	   "Print some informations about TilEm 2 and its authors",
 	   G_CALLBACK(action_about) },
+	{ "test",
+	   GTK_STOCK_ABOUT, "_Test", "",
+	   "Test",
+	   G_CALLBACK(action_test) },
+
+
 
 	 { "quit",
 	   GTK_STOCK_QUIT, "_Quit", "<ctrl>Q",
@@ -289,6 +306,7 @@ void build_menu(TilemEmulatorWindow* ewin)
 
 	add_item(menu, ag, acts, "send-file");
 	add_item(menu, ag, acts, "receive-file");
+	add_item(menu, ag, acts, "test");
 	add_separator(menu);
 
 	add_item(menu, ag, acts, "open-calc");
