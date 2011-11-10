@@ -245,10 +245,10 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 	
 	n = get_row_number(model, iter);
 
-	g_mutex_lock(mm->emu->calc_mutex);
+	tilem_calc_emulator_lock(mm->emu);
 	calc = mm->emu->calc;
 	if (!calc) {
-		g_mutex_unlock(mm->emu->calc_mutex);
+		tilem_calc_emulator_unlock(mm->emu);
 		return;
 	}
 
@@ -306,7 +306,7 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 		break;
 	}
 
-	g_mutex_unlock(mm->emu->calc_mutex);
+	tilem_calc_emulator_unlock(mm->emu);
 }
 
 static void tilem_mem_model_class_init(G_GNUC_UNUSED TilemMemModelClass *klass)

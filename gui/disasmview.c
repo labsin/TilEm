@@ -424,7 +424,7 @@ static void refresh_disassembly(TilemDisasmView *dv, dword pos, int nlines,
 
 	dv->startpos = pos;
 
-	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dv->dbg->emu);
 	calc = dv->dbg->emu->calc;
 
 	if (!calc)
@@ -439,7 +439,7 @@ static void refresh_disassembly(TilemDisasmView *dv, dword pos, int nlines,
 		pos = nextpos;
 	}
 
-	g_mutex_unlock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dv->dbg->emu);
 
 	dv->endpos = pos;
 	dv->nlines = nlines;
@@ -615,7 +615,7 @@ static gboolean move_up_lines(TilemDisasmView *dv, int count)
 	if (linenum >= count)
 		return FALSE;
 
-	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dv->dbg->emu);
 	calc = dv->dbg->emu->calc;
 
 	pos = dv->startpos;
@@ -625,7 +625,7 @@ static gboolean move_up_lines(TilemDisasmView *dv, int count)
 		count--;
 	}
 
-	g_mutex_unlock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dv->dbg->emu);
 
 	refresh_disassembly(dv, pos, dv->nlines, pos);
 
@@ -645,7 +645,7 @@ static gboolean move_down_lines(TilemDisasmView *dv, int count)
 	if (linenum + count < dv->nlines)
 		return FALSE;
 
-	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dv->dbg->emu);
 	calc = dv->dbg->emu->calc;
 
 	startpos = get_next_pos(dv, calc, dv->startpos);
@@ -658,7 +658,7 @@ static gboolean move_down_lines(TilemDisasmView *dv, int count)
 		count--;
 	}
 
-	g_mutex_unlock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dv->dbg->emu);
 
 	refresh_disassembly(dv, startpos, dv->nlines, selpos);
 
@@ -830,21 +830,21 @@ void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical)
 	get_cursor_line(dv, &curpos, NULL);
 
 	if (logical && !dv->use_logical) {
-		g_mutex_lock(dv->dbg->emu->calc_mutex);
+		tilem_calc_emulator_lock(dv->dbg->emu);
 		calc = dv->dbg->emu->calc;
 		curpos = pos_ptol(calc, curpos);
 		start = pos_ptol(calc, dv->startpos);
-		g_mutex_unlock(dv->dbg->emu->calc_mutex);
+		tilem_calc_emulator_unlock(dv->dbg->emu);
 
 		dv->use_logical = TRUE;
 		refresh_disassembly(dv, start, dv->nlines, curpos);
 	}
 	else if (!logical && dv->use_logical) {
-		g_mutex_lock(dv->dbg->emu->calc_mutex);
+		tilem_calc_emulator_lock(dv->dbg->emu);
 		calc = dv->dbg->emu->calc;
 		curpos = pos_ltop(calc, curpos);
 		start = pos_ltop(calc, dv->startpos);
-		g_mutex_unlock(dv->dbg->emu->calc_mutex);
+		tilem_calc_emulator_unlock(dv->dbg->emu);
 
 		dv->use_logical = FALSE;
 		refresh_disassembly(dv, start, dv->nlines, curpos);
@@ -889,7 +889,7 @@ void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
 
 	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
 
-	g_mutex_lock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dv->dbg->emu);
 	calc = dv->dbg->emu->calc;
 
 	addr &= 0xffff;
@@ -898,7 +898,7 @@ void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
 	else
 		pos = pos_ltop(calc, ADDR_TO_POS(addr));
 
-	g_mutex_unlock(dv->dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dv->dbg->emu);
 
 	if (pos >= dv->startpos && pos < dv->endpos) {
 		model = gtk_tree_view_get_model(GTK_TREE_VIEW(dv));

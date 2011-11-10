@@ -52,12 +52,12 @@ static void group_toggled(GtkToggleButton *btn, gpointer data)
 
 	for (i = 0; i < NGROUPS; i++) {
 		if (GTK_WIDGET(btn) == kpdlg->output[i]) {
-			g_mutex_lock(emu->calc_mutex);
+			tilem_calc_emulator_lock(emu);
 			if (state)
 				emu->calc->keypad.group &= ~(1 << i);
 			else
 				emu->calc->keypad.group |= (1 << i);
-			g_mutex_unlock(emu->calc_mutex);
+			tilem_calc_emulator_unlock(emu);
 
 			tilem_keypad_dialog_refresh(kpdlg);
 			return;
@@ -264,12 +264,12 @@ void tilem_keypad_dialog_refresh(TilemKeypadDialog *kpdlg)
 
 	kpdlg->refreshing = TRUE;
 
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 	for (i = 0; i < NGROUPS; i++)
 		keys[i] = emu->calc->keypad.keysdown[i];
 	outval = emu->calc->keypad.group;
 	inval = tilem_keypad_read_keys(emu->calc);
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 
 	for (i = 0; i < NGROUPS; i++) {
 		for (j = 0; j < NKEYS; j++) {

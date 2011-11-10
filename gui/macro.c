@@ -180,10 +180,9 @@ void tilem_macro_play(TilemCalcEmulator *emu) {
 			/* type == 0 is keypress */
 			int code = atoi(emu->macro->actions[i]->value);
 			//DMACRO_L0_A2("* codechar = %s,    code = %d         *\n", emu->macro->actions[i]->value, code);
-			g_mutex_lock(emu->calc_mutex);
+			tilem_calc_emulator_lock(emu);
 			run_with_key_slowly(emu->calc, code);			
-			g_cond_broadcast(emu->calc_wakeup_cond);
-			g_mutex_unlock(emu->calc_mutex);
+			tilem_calc_emulator_unlock(emu);
 		}
 		//printf("type : %d    value : %s\n", emu->macro->actions[i]->type, emu->macro->actions[i]->value);
 	}

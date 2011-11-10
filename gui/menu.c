@@ -85,15 +85,7 @@ static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpoin
 static void action_reset_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-
-	g_return_if_fail(ewin != NULL);
-	g_return_if_fail(ewin->emu != NULL);
-	g_return_if_fail(ewin->emu->calc != NULL);
-
-	g_mutex_lock(ewin->emu->calc_mutex);
-	tilem_calc_reset(ewin->emu->calc);
-	g_cond_broadcast(ewin->emu->calc_wakeup_cond);
-	g_mutex_unlock(ewin->emu->calc_mutex);
+	tilem_calc_emulator_reset(ewin->emu);
 }
 
 static void action_begin_macro(G_GNUC_UNUSED GtkAction *act, gpointer data)

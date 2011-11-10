@@ -64,11 +64,11 @@ static int ilp_open(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 
 	if (emu->ilp.active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already opened\n");
-		g_mutex_unlock(emu->calc_mutex);
+		tilem_calc_emulator_unlock(emu);
 		return 1;
 	}
 
@@ -84,8 +84,7 @@ static int ilp_open(CableHandle* cbl)
 	emu->ilp.read_count = 0;
 	tilem_linkport_graylink_reset(emu->calc);
 
-	g_cond_broadcast(emu->calc_wakeup_cond);
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 	return 0;
 }
 
@@ -94,11 +93,11 @@ static int ilp_close(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 
 	if (!emu->ilp.active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already closed\n");
-		g_mutex_unlock(emu->calc_mutex);
+		tilem_calc_emulator_unlock(emu);
 		return 1;
 	}
 
@@ -111,8 +110,7 @@ static int ilp_close(CableHandle* cbl)
 	emu->ilp.active = FALSE;
 	tilem_linkport_graylink_reset(emu->calc);
 
-	g_cond_broadcast(emu->calc_wakeup_cond);
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 	return 0;
 }
 
@@ -121,7 +119,7 @@ static int ilp_reset(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 
 	emu->ilp.error = FALSE;
 	emu->ilp.timeout = 0;
@@ -129,8 +127,7 @@ static int ilp_reset(CableHandle* cbl)
 	emu->ilp.read_count = 0;
 	tilem_linkport_graylink_reset(emu->calc);
 
-	g_cond_broadcast(emu->calc_wakeup_cond);
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 	return 0;
 }
 
@@ -140,9 +137,7 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 	TilemCalcEmulator* emu = cbl->priv;
 	int status = 0;
 
-	g_mutex_lock(emu->calc_mutex);
-
-	g_cond_broadcast(emu->calc_wakeup_cond);
+	tilem_calc_emulator_lock(emu);
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
 
@@ -155,12 +150,12 @@ static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 			status = ERROR_WRITE_TIMEOUT;
 			break;
 		}
-		g_cond_wait(emu->ilp.finished_cond, emu->calc_mutex);
+		tilem_calc_emulator_cond_wait(emu, emu->ilp.finished_cond);
 	}
 
 	emu->ilp.timeout = 0;
 
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 	return status;
 }
 
@@ -170,9 +165,7 @@ G_GNUC_UNUSED static int ilp_recv_new(CableHandle* cbl, uint8_t* data, uint32_t 
 	TilemCalcEmulator* emu = cbl->priv;
 	int status = 0;
 
-	g_mutex_lock(emu->calc_mutex);
-
-	g_cond_broadcast(emu->calc_wakeup_cond);
+	tilem_calc_emulator_lock(emu);
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
 
@@ -185,12 +178,12 @@ G_GNUC_UNUSED static int ilp_recv_new(CableHandle* cbl, uint8_t* data, uint32_t 
 			status = ERROR_WRITE_TIMEOUT;
 			break;
 		}
-		g_cond_wait(emu->ilp.finished_cond, emu->calc_mutex);
+		tilem_calc_emulator_cond_wait(emu, emu->ilp.finished_cond);
 	}
 
 	emu->ilp.timeout = 0;
 
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 	return status;
 }
 
@@ -203,7 +196,7 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 	unsigned int i;
 	dword prevmask;
 
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
 	prevmask = emu->calc->z80.stop_mask;
@@ -242,7 +235,7 @@ static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
 	emu->calc->z80.stop_mask = prevmask;
 
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 	return status;
 
 }
@@ -252,7 +245,7 @@ static int ilp_check(CableHandle* cbl, int* status)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 
 	*status = STATUS_NONE;
 	if (emu->calc->linkport.lines)
@@ -260,7 +253,7 @@ static int ilp_check(CableHandle* cbl, int* status)
 	if (emu->calc->linkport.extlines)
 		*status |= STATUS_TX;
 
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 	return 0;
 }
 
@@ -380,10 +373,9 @@ void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)
 	TI81Program* prgm = NULL;
 	FILE* f;
 
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 	prepare_for_link_send(emu->calc);
-	g_cond_broadcast(emu->calc_wakeup_cond);
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 
 	if (emu->calc->hw.model_id == TILEM_CALC_TI81) {
 		f = g_fopen(filename, "rb");
@@ -396,9 +388,9 @@ void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)
 		fclose(f);
 
 		if (prgm) {
-			g_mutex_lock(emu->calc_mutex);
+			tilem_calc_emulator_lock(emu);
 			ti81_load_program(emu->calc, prgm);
-			g_mutex_unlock(emu->calc_mutex);
+			tilem_calc_emulator_unlock(emu);
 			ti81_program_free(prgm);
 		}
 		return;
@@ -663,10 +655,10 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
 	update->cancel = 1;
 
 	/* cancel any ongoing transfer */
-	g_mutex_lock(emu->calc_mutex);
+	tilem_calc_emulator_lock(emu);
 	emu->ilp.abort = TRUE;
 	g_cond_broadcast(emu->ilp.finished_cond);
-	g_mutex_unlock(emu->calc_mutex);
+	tilem_calc_emulator_unlock(emu);
 
 	/* wait for link thread to exit */
 	g_thread_join(emu->link_thread);

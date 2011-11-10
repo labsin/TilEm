@@ -127,9 +127,9 @@ static void cancel_step_bp(TilemDebugger *dbg)
 		return;
 
 	g_return_if_fail(dbg->emu->calc != NULL);
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	tilem_z80_remove_breakpoint(dbg->emu->calc, dbg->step_bp);
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 	dbg->step_bp = 0;
 }
 
@@ -271,11 +271,11 @@ static void run_with_step_condition(TilemDebugger *dbg,
                                     TilemZ80BreakpointFunc func,
                                     void *data)
 {
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	dbg->step_bp = tilem_z80_add_breakpoint(dbg->emu->calc,
 	                                        TILEM_BREAK_EXECUTE, 0, 0, 0,
 	                                        func, data);
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 	tilem_calc_emulator_run(dbg->emu);
 	/* Don't refresh right away, to avoid flickering */
 	g_timeout_add(10, &post_resume_refresh, dbg);
@@ -308,12 +308,12 @@ static void action_step_over(G_GNUC_UNUSED GtkAction *a, gpointer data)
 
 	cancel_step_bp(dbg);
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	tilem_disasm_disassemble(dbg->dasm, dbg->emu->calc, 0,
 	                         dbg->emu->calc->z80.r.pc.w.l,
 	                         &dbg->step_next_addr,
 	                         NULL, 0);
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 
 	run_with_step_condition(dbg, &bptest_step_over, dbg);
 }
@@ -331,9 +331,9 @@ static void action_finish(G_GNUC_UNUSED GtkAction *a, gpointer data)
 
 	cancel_step_bp(dbg);
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	sp = dbg->emu->calc->z80.r.sp.w.l;
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 
 	run_with_step_condition(dbg, &bptest_finish,
 	                        TILEM_DWORD_TO_PTR(sp));
@@ -431,7 +431,7 @@ static void reg_edited(GtkEntry *ent, gpointer data)
 		if (ent == (GtkEntry*) dbg->reg_entries[i])
 			break;
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	switch (i) {
 	case R_AF: calc->z80.r.af.d = value; break;
 	case R_BC: calc->z80.r.bc.d = value; break;
@@ -447,7 +447,7 @@ static void reg_edited(GtkEntry *ent, gpointer data)
 	case R_IY: calc->z80.r.iy.d = value; break;
 	case R_I: calc->z80.r.ir.b.h = value; break;
 	}
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 
 	/* Set the value of the register immediately, but don't
 	   refresh the display: refreshing the registers themselves
@@ -476,12 +476,12 @@ static void flag_edited(GtkToggleButton *btn, gpointer data)
 		if (btn == (GtkToggleButton*) dbg->flag_buttons[i])
 			break;
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	if (gtk_toggle_button_get_active(btn))
 		calc->z80.r.af.d |= (1 << i);
 	else
 		calc->z80.r.af.d &= ~(1 << i);
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 
 	/* refresh AF */
 	tilem_debugger_refresh(dbg, FALSE);
@@ -505,10 +505,10 @@ static void im_edited(GtkEntry *ent, gpointer data)
 	text = gtk_entry_get_text(ent);
 	value = strtol(text, &end, 0);
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	if (value >= 0 && value <= 2)
 		calc->z80.r.im = value;
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 	/* no need to refresh */
 }
 
@@ -524,12 +524,12 @@ static void iff_edited(GtkToggleButton *btn, gpointer data)
 	calc = dbg->emu->calc;
 	g_return_if_fail(calc != NULL);
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	if (gtk_toggle_button_get_active(btn))
 		calc->z80.r.iff1 = calc->z80.r.iff2 = 1;
 	else
 		calc->z80.r.iff1 = calc->z80.r.iff2 = 0;
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 	/* no need to refresh */
 }
 
@@ -1054,7 +1054,7 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 	dbg->refreshing = TRUE;
 	dbg->delayed_refresh = FALSE;
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	calc = dbg->emu->calc;
 	paused = dbg->emu->paused;
 
@@ -1075,7 +1075,7 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 		dbg->lastpc = calc->z80.r.pc.d;
 	}
 
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 
 	gtk_widget_queue_draw(dbg->mem_view);
 

@@ -61,7 +61,12 @@ typedef struct _TilemInternalLink {
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
 
+	/* Mutex controlling access to the calc.  Use
+	   tilem_calc_emulator_lock()/unlock() rather than
+	   g_mutex_lock()/unlock() directly. */
 	GMutex *calc_mutex;
+	int calc_lock_waiting;
+
 	GCond *calc_wakeup_cond;
 	TilemCalc *calc;
 	gboolean paused;
@@ -125,6 +130,16 @@ TilemCalcEmulator *tilem_calc_emulator_new(void);
 
 /* Free a TilemCalcEmulator. */
 void tilem_calc_emulator_free(TilemCalcEmulator *emu);
+
+/* Lock calculator so we can directly access it from outside the core
+   thread. */
+void tilem_calc_emulator_lock(TilemCalcEmulator *emu);
+
+/* Unlock calculator and allow emulation to continue. */
+void tilem_calc_emulator_unlock(TilemCalcEmulator *emu);
+
+/* Unlock calculator while waiting on a condition variable */
+void tilem_calc_emulator_cond_wait(TilemCalcEmulator *emu, GCond *cond);
 
 /* Load the calculator state from the given ROM file (and accompanying
    sav file, if any.) */

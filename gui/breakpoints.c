@@ -619,7 +619,7 @@ static void set_bp(TilemDebugger *dbg, TilemDebugBreakpoint *bp)
 {
 	int i, t, n;
 
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	for (i = 0; i < 3; i++) {
 		if (!bp->disabled && (bp->mode & (1 << i))) {
 			t = get_core_bp_type(bp->type, (1 << i));
@@ -633,20 +633,20 @@ static void set_bp(TilemDebugger *dbg, TilemDebugBreakpoint *bp)
 			bp->id[i] = 0;
 		}
 	}
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 }
 
 /* Remove core breakpoint(s) */
 static void unset_bp(TilemDebugger *dbg, TilemDebugBreakpoint *bp)
 {
 	int i;
-	g_mutex_lock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_lock(dbg->emu);
 	for (i = 0; i < 3; i++) {
 		if (bp->id[i])
 			tilem_z80_remove_breakpoint(dbg->emu->calc, bp->id[i]);
 		bp->id[i] = 0;
 	}
-	g_mutex_unlock(dbg->emu->calc_mutex);
+	tilem_calc_emulator_unlock(dbg->emu);
 }
 
 static gboolean is_mem_exec_bp(const TilemDebugBreakpoint *bp)
