@@ -176,10 +176,11 @@ void tilem_config_get(const char *group, const char *option, ...)
 	GKeyFile *gkf;
 	const char *type, *defvalue;
 	GError *err = NULL;
-	char *key;
+	char *key, *p;
 	char **strp;
 	int *intp;
 	double *dblp;
+	GdkColor *colorp;
 
 	g_return_if_fail(group != NULL);
 	g_return_if_fail(option != NULL);
@@ -232,6 +233,21 @@ void tilem_config_get(const char *group, const char *option, ...)
 			if (err && defvalue)
 				*intp = g_ascii_strtoll(defvalue, NULL, 10);
 		}
+		else if (type[1] == 'c') {
+			colorp = va_arg(ap, GdkColor *);
+			p = g_key_file_get_string(gkf, group, key, &err);
+			if (p == NULL || !gdk_color_parse(p, colorp)) {
+				if (defvalue) {
+					gdk_color_parse(defvalue, colorp);
+				}
+				else {
+					colorp->red = 0;
+					colorp->green = 0;
+					colorp->blue = 0;
+				}
+			}
+			g_free(p);
+		}
 		else {
 			g_critical("invalid argument\n");
 			g_free(key);
@@ -257,6 +273,8 @@ void tilem_config_set(const char *group, const char *option, ...)
 	const char *strv;
 	int intv;
 	double dblv;
+	const GdkColor *colorv;
+	char *p;
 
 	g_return_if_fail(group != NULL);
 	g_return_if_fail(option != NULL);
@@ -292,6 +310,15 @@ void tilem_config_set(const char *group, const char *option, ...)
 		else if (type[1] == 'b') {
 			intv = va_arg(ap, int);
 			g_key_file_set_boolean(gkf, group, key, !!intv);
+		}
+		else if (type[1] == 'c') {
+			colorv = va_arg(ap, const GdkColor *);
+			p = g_strdup_printf("#%02x%02x%02x",
+			                    colorv->red >> 8,
+			                    colorv->green >> 8,
+			                    colorv->blue >> 8);
+			g_key_file_set_string(gkf, group, key, p);
+			g_free(p);
 		}
 		else {
 			g_critical("invalid argument\n");

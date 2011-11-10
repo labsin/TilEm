@@ -74,17 +74,12 @@ void tilem_animation_get_indexed_image(TilemAnimation *anim,
    type.  Options are specified by OPTION_KEYS and OPTION_VALUES (see
    gdk_pixbuf_savev().) */
 gboolean tilem_animation_save(TilemAnimation *anim,
-                              const char *fname, byte* palette, int palette_size, const char *type,
+                              const char *fname, const char *type,
                               char **option_keys, char **option_values,
                               GError **err);
 
 /* Set the duration of an entire animation */
 void tilem_animation_set_duration(TilemAnimation *anim,
                                   int new_duration, int current_duration);
-
-/* Set a palette for anim */
-void tilem_animation_set_palette(TilemAnimation *anim, int rlight, int glight, int blight,
-                                int rdark, int gdark, int bdark,
-                                double gamma);
 
 G_END_DECLS

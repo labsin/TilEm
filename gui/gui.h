@@ -57,7 +57,6 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* height_spin;
 	GtkWidget* grayscale_tb;
 	GtkWidget* animation_speed;
-	GtkWidget* customcolor_tb;
 	GtkWidget* background_color;
 	GtkWidget* foreground_color;
 
@@ -65,9 +64,6 @@ typedef struct _TilemScreenshotDialog {
 	gboolean current_anim_grayscale;
 	
 	int current_duration;
-
-	/* Flags */
-	gboolean isAnimScreenshotRecording; /* A flag to know everywhere that screenshot is recording (gif) */
 } TilemScreenshotDialog;
 
 

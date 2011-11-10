@@ -401,14 +401,6 @@ TilemAnimation * tilem_animation_new(int display_width, int display_height)
 	return anim;
 }
 
-void tilem_animation_set_palette(TilemAnimation *anim, int rlight, int glight, int blight,
-                                int rdark, int gdark, int bdark,
-                                double gamma)
-{
-	anim->palette = tilem_color_palette_new(rlight, glight, blight, rdark, gdark, bdark, gamma);
-}
-
-
 gboolean tilem_animation_append_frame(TilemAnimation *anim,
                                       const TilemLCDBuffer *buf,
                                       int duration)
@@ -471,12 +463,12 @@ void tilem_animation_set_colors(TilemAnimation *anim,
 	if (anim->palette)
 		tilem_free(anim->palette);
 
-	anim->palette = tilem_color_palette_new(foreground->red >> 8,
-	                                        foreground->green >> 8,
-	                                        foreground->blue >> 8,
-	                                        background->red >> 8,
+	anim->palette = tilem_color_palette_new(background->red >> 8,
 	                                        background->green >> 8,
 	                                        background->blue >> 8,
+	                                        foreground->red >> 8,
+	                                        foreground->green >> 8,
+	                                        foreground->blue >> 8,
 	                                        GAMMA);
 }
 
@@ -552,7 +544,7 @@ void tilem_animation_get_indexed_image(TilemAnimation *anim,
 }
 
 gboolean tilem_animation_save(TilemAnimation *anim,
-                              const char *fname, byte* palette, int palette_size, const char *type,
+                              const char *fname, const char *type,
                               char **option_keys, char **option_values,
                               GError **err)
 {
@@ -561,6 +553,8 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 	int errnum;
 	GdkPixbuf *pb;
 	gboolean status;
+	byte palette[768];
+	int i;
 
 	g_return_val_if_fail(TILEM_IS_ANIMATION(anim), FALSE);
 	g_return_val_if_fail(fname != NULL, FALSE);
@@ -588,9 +582,14 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 		g_free(dname);
 		return FALSE;
 	}
-	
-	
-	tilem_animation_write_gif(anim, palette, palette_size, fp);
+
+	for (i = 0; i < 256; i++) {
+		palette[3 * i] = anim->palette[i] >> 16;
+		palette[3 * i + 1] = anim->palette[i] >> 8;
+		palette[3 * i + 2] = anim->palette[i];
+	}
+
+	tilem_animation_write_gif(anim, palette, 256, fp);
 
 	if (fclose(fp)) {
 		errnum = errno;
