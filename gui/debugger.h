@@ -104,6 +104,19 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg);
 /* Update display. */
 void tilem_debugger_refresh(TilemDebugger *dbg, gboolean updatemem);
 
+/* Add a new breakpoint. */
+TilemDebugBreakpoint * tilem_debugger_add_breakpoint(TilemDebugger *dbg,
+                                                     const TilemDebugBreakpoint *bp);
+
+/* Remove an existing breakpoint. */
+void tilem_debugger_remove_breakpoint(TilemDebugger *dbg,
+                                      TilemDebugBreakpoint *bp);
+
+/* Modify an existing breakpoint. */
+void tilem_debugger_change_breakpoint(TilemDebugger *dbg,
+                                      TilemDebugBreakpoint *bp,
+                                      const TilemDebugBreakpoint *newbp);
+
 /* Show a dialog letting the user add, remove, and edit breakpoints. */
 void tilem_debugger_edit_breakpoints(TilemDebugger *dbg);
 
