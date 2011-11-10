@@ -937,6 +937,9 @@ static void save_debugger_dimension(TilemDebugger *dbg)
 /* Free a TilemDebugger. */
 void tilem_debugger_free(TilemDebugger *dbg)
 {
+	GSList *l;
+	TilemDebugBreakpoint *bp;
+
 	g_return_if_fail(dbg != NULL);
 
 	save_debugger_dimension(dbg);
@@ -954,6 +957,11 @@ void tilem_debugger_free(TilemDebugger *dbg)
 		g_object_unref(dbg->paused_actions);
 	if (dbg->misc_actions)
 		g_object_unref(dbg->misc_actions);
+
+	for (l = dbg->breakpoints; l; l = l->next) {
+		bp = l->data;
+		g_slice_free(TilemDebugBreakpoint, bp);
+	}
 
 	g_slice_free(TilemDebugger, dbg);
 }
