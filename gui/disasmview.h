@@ -39,6 +39,8 @@ typedef struct _TilemDisasmView {
 	dword startpos;   /* position at start of window */
 	dword endpos;     /* position at end of window */
 	int nlines;       /* number of lines visible */
+
+	GtkWidget *popup_menu;
 } TilemDisasmView;
 
 typedef struct _TilemDisasmViewClass {

@@ -236,7 +236,6 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 	dword n, addr, phys;
 	TilemCalc *calc;
 	char buf[100], *s;
-	unsigned int page;
 
 	g_return_if_fail(TILEM_IS_MEM_MODEL(model));
 	mm = TILEM_MEM_MODEL(model);
@@ -265,21 +264,10 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 
 	switch (column) {
 	case MM_COL_ADDRESS_0:
-		if (mm->use_logical)
-			g_snprintf(buf, sizeof(buf), "%04X", addr);
-		else {
-			if (addr >= calc->hw.romsize) {
-				addr -= calc->hw.romsize;
-				page = (addr >> 14) + calc->hw.rampagemask;
-			}
-			else {
-				page = addr >> 14;
-			}
-			g_snprintf(buf, sizeof(buf), "%02X:%04X",
-			           page, addr & 0x3fff);
-		}
+		s = tilem_format_addr(mm->emu->dbg, addr, !mm->use_logical);
 		g_value_init(value, G_TYPE_STRING);
-		g_value_set_string(value, buf);
+		g_value_set_string(value, s);
+		g_free(s);
 		break;
 
 	case MM_COL_HEX_0:

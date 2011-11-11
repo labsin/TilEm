@@ -37,6 +37,7 @@ DEF_SHARE_DIR = -DSHARE_DIR=\"$(pkgdatadir)\" \
 	-DUNINSTALLED_SHARE_DIR=\"$(top_srcdir)/data\"
 
 objects = tilem2.o \
+	address.o \
 	animatedgif.o \
 	animation.o \
 	args.o \
@@ -105,6 +106,10 @@ memmodel.o: memmodel.c memmodel.h $(common_headers)
 # Breakpoint dialog
 breakpoints.o: breakpoints.c $(common_headers)
 	$(compile) -c $(srcdir)/breakpoints.c
+
+# Utility functions for debugging
+address.o: address.c $(common_headers)
+	$(compile) -c $(srcdir)/address.c
 
 # Keypad dialog
 keypaddlg.o: keypaddlg.c $(common_headers)

@@ -269,8 +269,9 @@ static void append_dummy_line(TilemDisasmView *dv, GtkTreeModel *model,
 
 /* Check if given logical address is a breakpoint (according to
    current mapping) */
-static gboolean check_bp_logical(TilemDebugger *dbg, TilemCalc *calc,
-                                 dword addr)
+static TilemDebugBreakpoint *find_bp_logical(TilemDebugger *dbg,
+                                             TilemCalc *calc,
+                                             dword addr)
 {
 	GSList *l;
 	TilemDebugBreakpoint *bp;
@@ -285,22 +286,23 @@ static gboolean check_bp_logical(TilemDebugger *dbg, TilemCalc *calc,
 		    && bp->start <= addr
 		    && bp->end >= addr
 		    && !bp->disabled)
-			return TRUE;
+			return bp;
 
 		if (bp->type == TILEM_DB_BREAK_PHYSICAL
 		    && bp->start <= pa
 		    && bp->end >= pa
 		    && !bp->disabled)
-			return TRUE;
+			return bp;
 	}
 
-	return FALSE;
+	return NULL;
 }
 
 /* Check if given physical address is a breakpoint (according to
    current mapping) */
-static gboolean check_bp_physical(TilemDebugger *dbg, TilemCalc *calc,
-                                 dword addr)
+static TilemDebugBreakpoint *find_bp_physical(TilemDebugger *dbg,
+                                              TilemCalc *calc,
+                                              dword addr)
 {
 	GSList *l;
 	TilemDebugBreakpoint *bp;
@@ -325,7 +327,7 @@ static gboolean check_bp_physical(TilemDebugger *dbg, TilemCalc *calc,
 		    && bp->start <= addr
 		    && bp->end >= addr
 		    && !bp->disabled)
-			return TRUE;
+			return bp;
 
 		if (bp->type == TILEM_DB_BREAK_LOGICAL
 		    && !bp->disabled) {
@@ -334,12 +336,71 @@ static gboolean check_bp_physical(TilemDebugger *dbg, TilemCalc *calc,
 				if (bp->start <= la
 				    && bp->end >= la
 				    && mapped[i])
-					return TRUE;
+					return bp;
 			}
 		}
 	}
 
-	return FALSE;
+	return NULL;
+}
+
+/* Check if line has a breakpoint set */
+static TilemDebugBreakpoint *find_line_bp(TilemDisasmView *dv, dword pos)
+{
+	TilemDebugBreakpoint *bp;
+	dword addr = POS_TO_ADDR(pos);
+	TilemCalc *calc;
+
+	tilem_calc_emulator_lock(dv->dbg->emu);
+	calc = dv->dbg->emu->calc;
+
+	if (dv->use_logical)
+		bp = find_bp_logical(dv->dbg, calc, addr);
+	else
+		bp = find_bp_physical(dv->dbg, calc, addr);
+
+	tilem_calc_emulator_unlock(dv->dbg->emu);
+
+	return bp;
+}
+
+/* Enable breakpoint on the given line */
+static void enable_line_bp(TilemDisasmView *dv, dword pos)
+{
+	TilemDebugBreakpoint *bp, tmpbp;
+
+	if ((bp = find_line_bp(dv, pos)))
+		return;
+
+	tmpbp.type = (dv->use_logical
+	              ? TILEM_DB_BREAK_LOGICAL
+	              : TILEM_DB_BREAK_PHYSICAL);
+	tmpbp.mode = TILEM_DB_BREAK_EXEC;
+	tmpbp.start = POS_TO_ADDR(pos);
+	tmpbp.end = POS_TO_ADDR(pos);
+	tmpbp.mask = (dv->use_logical ? 0xffff : 0xffffffff);
+	tmpbp.disabled = 0;
+	tilem_debugger_add_breakpoint(dv->dbg, &tmpbp);
+}
+
+/* Disable breakpoint on the given line */
+static void disable_line_bp(TilemDisasmView *dv, dword pos)
+{
+	TilemDebugBreakpoint *bp, tmpbp;
+
+	if (!(bp = find_line_bp(dv, pos)))
+		return;
+
+	if (bp->mode != TILEM_DB_BREAK_EXEC || bp->start != bp->end) {
+		/* special breakpoint; do not delete it, just disable it */
+		tmpbp = *bp;
+		tmpbp.disabled = 1;
+		tilem_debugger_change_breakpoint(dv->dbg, bp, &tmpbp);
+	}
+	else {
+		/* regular breakpoint */
+		tilem_debugger_remove_breakpoint(dv->dbg, bp);
+	}
 }
 
 /* Append a line to the dasm model */
@@ -348,9 +409,10 @@ static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
                              dword pos, dword *nextpos)
 {
 	GtkTreeIter iter1;
-	char abuf[20], *mnem, *args;
-	dword addr, page, pc;
-	gboolean ispc, isbp;
+	char *astr, *mnem, *args;
+	dword addr, pc;
+	gboolean ispc;
+	TilemDebugBreakpoint *bp;
 	GdkPixbuf *icon;
 
 	g_return_if_fail(calc != NULL);
@@ -358,25 +420,16 @@ static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
 	gtk_list_store_append(GTK_LIST_STORE(model), &iter1);
 
 	addr = POS_TO_ADDR(pos);
-	if (dv->use_logical) {
-		g_snprintf(abuf, sizeof(abuf), "%04X", addr);
-		isbp = check_bp_logical(dv->dbg, calc, addr);
-	}
-	else {
-		if (addr >= calc->hw.romsize) {
-			page = (((addr - calc->hw.romsize) >> 14)
-			        + calc->hw.rampagemask);
-		}
-		else {
-			page = addr >> 14;
-		}
-		g_snprintf(abuf, sizeof(abuf), "%02X:%04X",
-		           page, default_ptol(calc, addr));
-
-		isbp = check_bp_physical(dv->dbg, calc, addr);
-	}
+	astr = tilem_format_addr(dv->dbg, addr, !dv->use_logical);
 
 	disassemble(dv, calc, pos, nextpos, &mnem, &args);
+
+	if (!mnem)
+		bp = NULL;
+	else if (dv->use_logical)
+		bp = find_bp_logical(dv->dbg, calc, addr);
+	else
+		bp = find_bp_physical(dv->dbg, calc, addr);
 
 	if (!mnem || !dv->dbg->emu->paused) {
 		ispc = FALSE;
@@ -388,11 +441,11 @@ static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
 		ispc = (addr == pc);
 	}
 
-	icon = get_icon(dv, ispc, isbp);
+	icon = get_icon(dv, ispc, (bp != NULL));
 
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter1,
 	                   COL_POSITION, (int) pos,
-	                   COL_ADDRESS, abuf,
+	                   COL_ADDRESS, astr,
 	                   COL_MNEMONIC, mnem,
 	                   COL_SHOW_MNEMONIC, (mnem ? TRUE : FALSE),
 	                   COL_ARGUMENTS, args,
@@ -402,6 +455,7 @@ static void append_dasm_line(TilemDisasmView *dv, TilemCalc *calc,
 	if (icon)
 		g_object_unref(icon);
 
+	g_free(astr);
 	g_free(mnem);
 	g_free(args);
 
@@ -737,6 +791,161 @@ static gboolean tilem_disasm_view_move_cursor(GtkTreeView *tv,
 	return (*GTK_TREE_VIEW_CLASS(parent_class)->move_cursor)(tv, step, count);
 }
 
+/* Popup menu */
+
+static void toggle_bp(G_GNUC_UNUSED GtkCheckMenuItem *item, gpointer data)
+{
+	TilemDisasmView *dv = data;
+	dword curpos;
+
+	get_cursor_line(dv, &curpos, NULL);
+	if (curpos == (dword) -1)
+		return;
+
+	if (find_line_bp(dv, curpos))
+		disable_line_bp(dv, curpos);
+	else
+		enable_line_bp(dv, curpos);
+}
+
+static void prompt_go_to(G_GNUC_UNUSED GtkMenuItem *item, gpointer data)
+{
+	TilemDisasmView *dv = data;
+	GtkWidget *window;
+	dword curpos, addr;
+
+	window = gtk_widget_get_toplevel(GTK_WIDGET(dv));
+
+	get_cursor_line(dv, &curpos, NULL);
+	addr = POS_TO_ADDR(curpos);
+
+	if (tilem_prompt_address(dv->dbg, GTK_WINDOW(window),
+	                         "Go to Address", "Address:",
+	                         &addr, !dv->use_logical,
+	                         (curpos != (dword) -1)))
+		tilem_disasm_view_go_to_address(dv, addr);
+}
+
+static void go_to_pc(G_GNUC_UNUSED GtkMenuItem *item, gpointer data)
+{
+	TilemDisasmView *dv = data;
+	TilemCalc *calc;
+	dword pc;
+
+	g_return_if_fail(dv->dbg != NULL);
+	g_return_if_fail(dv->dbg->emu != NULL);
+	g_return_if_fail(dv->dbg->emu->calc != NULL);
+
+	tilem_calc_emulator_lock(dv->dbg->emu);
+	calc = dv->dbg->emu->calc;
+	pc = calc->z80.r.pc.w.l;
+	if (!dv->use_logical)
+		pc = (*calc->hw.mem_ltop)(calc, pc);
+	tilem_calc_emulator_unlock(dv->dbg->emu);
+
+	tilem_disasm_view_go_to_address(dv, pc);
+}
+
+/* Determine where to pop up menu (if not activated by a mouse event) */
+static void place_menu(GtkMenu *menu, gint *x, gint *y,
+                       gboolean *push_in, gpointer data)
+{
+	TilemDisasmView *dv = data;
+	GtkTreePath *path;
+	GdkRectangle rect;
+	GdkWindow *win;
+	GdkScreen *screen;
+	int n;
+
+	win = gtk_tree_view_get_bin_window(GTK_TREE_VIEW(dv));
+	gdk_window_get_origin(win, x, y);
+
+	gtk_tree_view_get_cursor(GTK_TREE_VIEW(dv), &path, NULL);
+	if (path) {
+		gtk_tree_view_get_cell_area(GTK_TREE_VIEW(dv), path, NULL, &rect);
+		gtk_tree_path_free(path);
+		*y += rect.y + rect.height;
+	}
+
+	screen = gdk_drawable_get_screen(win);
+	n = gdk_screen_get_monitor_at_point(screen, *x, *y);
+	gtk_menu_set_monitor(menu, n);
+
+	*push_in = FALSE;
+}
+
+/* Create and show the popup menu */
+static void show_popup_menu(TilemDisasmView *dv, GdkEventButton *event)
+{
+	GtkWidget *menu, *item;
+	dword curpos;
+
+	if (dv->popup_menu)
+		gtk_widget_destroy(dv->popup_menu);
+	dv->popup_menu = menu = gtk_menu_new();
+
+	/* Enable/disable breakpoint */
+
+	item = gtk_check_menu_item_new_with_mnemonic("_Breakpoint Here");
+
+	get_cursor_line(dv, &curpos, NULL);
+	if (curpos == (dword) -1)
+		gtk_widget_set_sensitive(item, FALSE);
+	else if (find_line_bp(dv, curpos))
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+
+	g_signal_connect(item, "toggled",
+	                 G_CALLBACK(toggle_bp), dv);
+
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_widget_show(item);
+
+	item = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_widget_show(item);
+
+	/* Jump to address */
+
+	item = gtk_menu_item_new_with_mnemonic("_Go to Address...");
+	g_signal_connect(item, "activate", G_CALLBACK(prompt_go_to), dv);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_widget_show(item);
+
+	item = gtk_menu_item_new_with_mnemonic("Go to _PC");
+	g_signal_connect(item, "activate", G_CALLBACK(go_to_pc), dv);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_widget_show(item);
+
+	if (event)
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+		               event->button, event->time);
+	else
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, &place_menu, dv,
+		               0, gtk_get_current_event_time());
+}
+
+/* Button pressed */
+static gboolean tilem_disasm_view_button_press(GtkWidget *w,
+                                               GdkEventButton *event)
+{
+	g_return_val_if_fail(TILEM_IS_DISASM_VIEW(w), FALSE);
+
+	(*GTK_WIDGET_CLASS(parent_class)->button_press_event)(w, event);
+
+	if (event->button == 3)
+		show_popup_menu(TILEM_DISASM_VIEW(w), event);
+
+	return TRUE;
+}
+
+/* Key pressed to activate context menu */
+static gboolean tilem_disasm_view_popup_menu(GtkWidget *w)
+{
+	g_return_val_if_fail(TILEM_IS_DISASM_VIEW(w), FALSE);
+	show_popup_menu(TILEM_DISASM_VIEW(w), NULL);
+	return TRUE;
+}
+
 /* Initialize a new TilemDisasmView */
 static void tilem_disasm_view_init(TilemDisasmView *dv)
 {
@@ -786,6 +995,17 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 	gtk_tree_view_append_column(tv, col);
 }
 
+static void tilem_disasm_view_unrealize(GtkWidget *w)
+{
+	TilemDisasmView *dv = TILEM_DISASM_VIEW(w);
+
+	if (dv->popup_menu)
+		gtk_widget_destroy(dv->popup_menu);
+	dv->popup_menu = NULL;
+
+	(*GTK_WIDGET_CLASS(parent_class)->unrealize)(w);
+}
+
 static const char default_style[] =
 	"style \"tilem-disasm-default\" { font_name = \"Monospace\" } "
 	"widget \"*.TilemDisasmView\" style:application \"tilem-disasm-default\"";
@@ -803,6 +1023,9 @@ static void tilem_disasm_view_class_init(TilemDisasmViewClass *klass)
 	widget_class->style_set = &tilem_disasm_view_style_set;
 	widget_class->size_request = &tilem_disasm_view_size_request;
 	widget_class->size_allocate = &tilem_disasm_view_size_allocate;
+	widget_class->button_press_event = &tilem_disasm_view_button_press;
+	widget_class->popup_menu = &tilem_disasm_view_popup_menu;
+	widget_class->unrealize = &tilem_disasm_view_unrealize;
 	tv_class->move_cursor = &tilem_disasm_view_move_cursor;
 }
 
