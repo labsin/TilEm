@@ -186,6 +186,32 @@ void redraw_screen(TilemEmulatorWindow *ewin);
 void tilem_preferences_dialog(TilemEmulatorWindow *ewin);
 
 
+/* ##### address.c ##### */
+
+/* Convert address to a displayable string. */
+char * tilem_format_addr(TilemDebugger *dbg, dword addr, gboolean physical);
+
+/* Parse physical address expressed as page and offset. */
+gboolean tilem_parse_paged_addr(TilemDebugger *dbg, const char *pagestr,
+                                const char *offsstr, dword *value);
+
+/* Parse an address or hex constant.  If PHYSICAL is null, only a
+   logical address (simple hex value or symbol) is allowed.  If
+   PHYSICAL is non-null, physical addresses in the form "PAGE:OFFSET"
+   are also allowed.  *PHYSICAL will be set to true if the user
+   entered a physical address. */
+gboolean tilem_parse_addr(TilemDebugger *dbg, const char *string,
+                          dword *value, gboolean *physical);
+
+/* Open a dialog box prompting the user to enter an address.  PARENT
+   is the transient-for window; TITLE is the dialog's title; PROMPT is
+   a label for the input. */
+gboolean tilem_prompt_address(TilemDebugger *dbg, GtkWindow *parent,
+                              const char *title, const char *prompt,
+                              dword *value, gboolean physical,
+                              gboolean usedefault);
+
+
 /* ##### tool.c ##### */
 
 /* Create a frame around the given widget */
