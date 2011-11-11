@@ -946,6 +946,41 @@ static gboolean tilem_disasm_view_popup_menu(GtkWidget *w)
 	return TRUE;
 }
 
+/* Row activated (double-clicked) */
+static void tilem_disasm_view_row_activated(GtkTreeView *tv, GtkTreePath *path,
+                                            GtkTreeViewColumn *col)
+{
+	TilemDisasmView *dv = TILEM_DISASM_VIEW(tv);
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	gint pos;
+
+	model = gtk_tree_view_get_model(tv);
+	if (!gtk_tree_model_get_iter(model, &iter, path))
+		return;
+
+	gtk_tree_model_get(model, &iter, COL_POSITION, &pos, -1);
+
+	if (col == dv->icon_column) {
+		if (find_line_bp(dv, pos))
+			disable_line_bp(dv, pos);
+		else
+			enable_line_bp(dv, pos);
+	}
+}
+
+/* Unrealize widget */
+static void tilem_disasm_view_unrealize(GtkWidget *w)
+{
+	TilemDisasmView *dv = TILEM_DISASM_VIEW(w);
+
+	if (dv->popup_menu)
+		gtk_widget_destroy(dv->popup_menu);
+	dv->popup_menu = NULL;
+
+	(*GTK_WIDGET_CLASS(parent_class)->unrealize)(w);
+}
+
 /* Initialize a new TilemDisasmView */
 static void tilem_disasm_view_init(TilemDisasmView *dv)
 {
@@ -965,6 +1000,7 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 	                                               NULL);
 	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_append_column(tv, col);
+	dv->icon_column = col;
 
 	cell = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes("Addr", cell,
@@ -995,17 +1031,6 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 	gtk_tree_view_append_column(tv, col);
 }
 
-static void tilem_disasm_view_unrealize(GtkWidget *w)
-{
-	TilemDisasmView *dv = TILEM_DISASM_VIEW(w);
-
-	if (dv->popup_menu)
-		gtk_widget_destroy(dv->popup_menu);
-	dv->popup_menu = NULL;
-
-	(*GTK_WIDGET_CLASS(parent_class)->unrealize)(w);
-}
-
 static const char default_style[] =
 	"style \"tilem-disasm-default\" { font_name = \"Monospace\" } "
 	"widget \"*.TilemDisasmView\" style:application \"tilem-disasm-default\"";
@@ -1027,6 +1052,7 @@ static void tilem_disasm_view_class_init(TilemDisasmViewClass *klass)
 	widget_class->popup_menu = &tilem_disasm_view_popup_menu;
 	widget_class->unrealize = &tilem_disasm_view_unrealize;
 	tv_class->move_cursor = &tilem_disasm_view_move_cursor;
+	tv_class->row_activated = &tilem_disasm_view_row_activated;
 }
 
 GtkWidget * tilem_disasm_view_new(TilemDebugger *dbg)

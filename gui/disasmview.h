@@ -40,6 +40,7 @@ typedef struct _TilemDisasmView {
 	dword endpos;     /* position at end of window */
 	int nlines;       /* number of lines visible */
 
+	GtkTreeViewColumn *icon_column;
 	GtkWidget *popup_menu;
 } TilemDisasmView;
 
