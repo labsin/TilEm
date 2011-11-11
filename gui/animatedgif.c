@@ -197,12 +197,27 @@ static void write_application_extension(FILE * fp) {
 	fwrite(application_extension_terminator, 1, 1, fp);
 }
 
+/* Apparently, most current web browsers are seriously and
+   deliberately broken in their handling of animated GIFs.  Internet
+   Explorer does not allow any frame to be shorter than 60 ms, and
+   Gecko does not allow any frame shorter than 20 ms.  Furthermore,
+   rather than simply imposing a lower limit, or skipping frames,
+   these browsers take any frame they deem "too short" and extend it
+   to a full 100 ms out of sheer spite.
+
+   If we want animations to look correct in all web browsers (which
+   is, after all, the main reason for using GIF animations in the
+   first place), we have to limit ourselves to 60-ms frames or
+   longer. */
+#define MIN_FRAME_DELAY 6
+
 void tilem_animation_write_gif(TilemAnimation *anim, byte* palette, int palette_size, FILE *fp)
 {
 	GdkPixbufAnimation *ganim;
-	int width, height, delay;
+	int width, height, delay, n;
+	gdouble time_stretch, t;
 	byte *image;
-	TilemAnimFrame *frm;
+	TilemAnimFrame *frm, *next;
 	gboolean is_static;
 
 	g_return_if_fail(TILEM_IS_ANIMATION(anim));
@@ -212,6 +227,7 @@ void tilem_animation_write_gif(TilemAnimation *anim, byte* palette, int palette_
 	width = gdk_pixbuf_animation_get_width(ganim);
 	height = gdk_pixbuf_animation_get_height(ganim);
 	is_static = gdk_pixbuf_animation_is_static_image(ganim);
+	time_stretch = 1.0 / tilem_animation_get_speed(anim);
 
 	frm = tilem_animation_next_frame(anim, NULL);
 	g_return_if_fail(frm != NULL);
@@ -223,12 +239,30 @@ void tilem_animation_write_gif(TilemAnimation *anim, byte* palette, int palette_
 
 	write_comment(fp);
 
+	t = MIN_FRAME_DELAY * 5.0;
+
+	/* FIXME: combine multiple frames by averaging rather than
+	   simply taking the last one */
+
 	while (frm) {
+		next = tilem_animation_next_frame(anim, frm);
+
 		if (!is_static) {
-			delay = tilem_anim_frame_get_duration(frm) / 10;
-			if (delay > 0xffff)
-				delay = 0xffff;
-			write_extension_block(fp, delay);
+			delay = tilem_anim_frame_get_duration(frm);
+			t += delay * time_stretch;
+			n = t / 10.0;
+
+			if (n < MIN_FRAME_DELAY && next != NULL) {
+				frm = next;
+				continue;
+			}
+
+			t -= n * 10.0;
+			if (n > 0xffff)
+				n = 0xffff;
+			else if (n < MIN_FRAME_DELAY)
+				n = MIN_FRAME_DELAY;
+			write_extension_block(fp, n);
 		}
 
 		tilem_animation_get_indexed_image(anim, frm, &image,
@@ -238,7 +272,7 @@ void tilem_animation_write_gif(TilemAnimation *anim, byte* palette, int palette_
 		write_image_block_end(fp);
 		g_free(image);
 
-		frm = tilem_animation_next_frame(anim, frm);
+		frm = next;
 	}
 
 	write_global_footer(fp);

@@ -181,6 +181,7 @@ static void set_current_animation(TilemScreenshotDialog *ssdlg,
 	GtkImage *img = GTK_IMAGE(ssdlg->screenshot_preview_image);
 	int width, height;
 	GdkColor fg, bg;
+	gdouble speed;
 
 	if (anim)
 		g_object_ref(anim);
@@ -204,7 +205,11 @@ static void set_current_animation(TilemScreenshotDialog *ssdlg,
 			(GTK_COLOR_BUTTON(ssdlg->foreground_color), &fg);
 		gtk_color_button_get_color
 			(GTK_COLOR_BUTTON(ssdlg->background_color), &bg);
-		tilem_animation_set_colors(ssdlg->current_anim, &fg, &bg);
+		tilem_animation_set_colors(anim, &fg, &bg);
+
+		speed = gtk_spin_button_get_value
+			(GTK_SPIN_BUTTON(ssdlg->animation_speed));
+		tilem_animation_set_speed(anim, speed);
 
 		gtk_image_set_from_animation(img, GDK_PIXBUF_ANIMATION(anim));
 
@@ -244,20 +249,13 @@ enum {
 	COL_HEIGHT
 };
 
-static void animation_speed_changed(GtkButton *animation_speed,
-                               gpointer data)
+static void animation_speed_changed(GtkSpinButton *animation_speed,
+                                    gpointer data)
 {
-	
 	TilemScreenshotDialog *ssdlg = data;
 	TilemAnimation * anim = ssdlg->current_anim;
-	gdouble value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(animation_speed));
-	/*printf("value : %f\n", value); */
-	int new_duration = (int) (value);
-	/*printf("new duration : %d\n", new_duration); */
-	tilem_animation_set_duration(anim, new_duration, ssdlg->current_duration);
-	ssdlg->current_duration = new_duration;
-	
-		
+	gdouble value = gtk_spin_button_get_value(animation_speed);
+	tilem_animation_set_speed(anim, value);
 }
 
 /* Combo box changed.  Update spin buttons accordingly. */
@@ -471,21 +469,6 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
-	
-	GtkWidget *animation_speed_lbl = gtk_label_new_with_mnemonic("_Speed:");
-	gtk_misc_set_alignment(GTK_MISC(animation_speed_lbl), LABEL_X_ALIGN, 0.5);
-	gtk_table_attach(GTK_TABLE(tbl), animation_speed_lbl,
-	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
-	
-	ssdlg->current_duration = 24; /* Default value */
-
-	ssdlg->animation_speed = gtk_spin_button_new_with_range(1, 100, 1);
-	//gtk_hscale_new_with_range(1, 100, 1);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(ssdlg->animation_speed), 40.0);
-	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
-	gtk_container_add(GTK_CONTAINER(align), ssdlg->animation_speed);
-	gtk_table_attach(GTK_TABLE(tbl), align,
-	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 
 	ssdlg->height_spin = gtk_spin_button_new_with_range(1, 500, 1);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->height_spin);
@@ -493,6 +476,20 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_container_add(GTK_CONTAINER(align), ssdlg->height_spin);
 	gtk_table_attach(GTK_TABLE(tbl), align,
 	                 1, 2, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+
+
+	lbl = gtk_label_new_with_mnemonic("Animation s_peed:");
+	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), lbl,
+	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+
+	ssdlg->animation_speed = gtk_spin_button_new_with_range(0.1, 100.0, 0.1);
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->animation_speed);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(ssdlg->animation_speed), 1.0);
+	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->animation_speed);
+	gtk_table_attach(GTK_TABLE(tbl), align,
+	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 
 	/* Foreground color and background color */
 	lbl = gtk_label_new_with_mnemonic("_Foreground:");
@@ -782,8 +779,6 @@ static void end_animation(G_GNUC_UNUSED GtkButton *btn,
 	if (ssdlg->emu->anim) {
 		anim = tilem_calc_emulator_end_animation(ssdlg->emu);
 		set_current_animation(ssdlg, anim);
-		//ssdlg->current_duration = 40;
-		//gtk_range_set_value(GTK_RANGE(ssdlg->animation_speed), 40);
 		g_object_unref(anim);
 	}
 	else {

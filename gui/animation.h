@@ -53,13 +53,20 @@ void tilem_animation_set_colors(TilemAnimation *anim,
                                 const GdkColor *foreground,
                                 const GdkColor *background);
 
+/* Set animation speed factor */
+void tilem_animation_set_speed(TilemAnimation *anim, gdouble factor);
+
+/* Get animation speed factor */
+gdouble tilem_animation_get_speed(TilemAnimation *anim);
+
 /* Retrieve the next frame of the animation.  If FRM is NULL, retrieve
    the first frame.  If FRM is non-null, it must be a frame belonging
    to this animation. */
 TilemAnimFrame *tilem_animation_next_frame(TilemAnimation *anim,
                                            TilemAnimFrame *frm);
 
-/* Get the duration of this frame (milliseconds.) */
+/* Get the duration of this frame (milliseconds by the original
+   clock.) */
 int tilem_anim_frame_get_duration(TilemAnimFrame *frm);
 
 /* Convert frame to an indexed-color image buffer.  FRM must be a
@@ -77,9 +84,5 @@ gboolean tilem_animation_save(TilemAnimation *anim,
                               const char *fname, const char *type,
                               char **option_keys, char **option_values,
                               GError **err);
-
-/* Set the duration of an entire animation */
-void tilem_animation_set_duration(TilemAnimation *anim,
-                                  int new_duration, int current_duration);
 
 G_END_DECLS

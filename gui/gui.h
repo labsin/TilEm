@@ -62,8 +62,6 @@ typedef struct _TilemScreenshotDialog {
 
 	TilemAnimation *current_anim;
 	gboolean current_anim_grayscale;
-	
-	int current_duration;
 } TilemScreenshotDialog;
 
 

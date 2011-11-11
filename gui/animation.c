@@ -62,6 +62,8 @@ struct _TilemAnimation {
 	int image_width;
 	int image_height;
 	dword *palette;
+	gdouble speed;
+	gdouble time_stretch;
 
 	gboolean out_of_memory;
 };
@@ -278,7 +280,8 @@ static int tilem_anim_iter_get_delay_time(GdkPixbufAnimationIter *giter)
 	if (iter->anim->start == iter->anim->end)
 		return -1;
 	else
-		return (iter->frame->duration - iter->time_elapsed);
+		return ((iter->frame->duration - iter->time_elapsed)
+		        * iter->anim->time_stretch);
 }
 
 static GdkPixbuf * tilem_anim_iter_get_pixbuf(GdkPixbufAnimationIter *giter)
@@ -302,7 +305,7 @@ static gboolean tilem_anim_iter_on_currently_loading_frame(G_GNUC_UNUSED GdkPixb
 
 static gboolean
 tilem_anim_iter_advance(GdkPixbufAnimationIter *giter,
-                             const GTimeVal *current_time)
+                        const GTimeVal *current_time)
 {
 	TilemAnimIter *iter = TILEM_ANIM_ITER(giter);
 	int ms;
@@ -315,6 +318,8 @@ tilem_anim_iter_advance(GdkPixbufAnimationIter *giter,
 	      + (current_time->tv_sec - iter->current_time.tv_sec) * 1000);
 
 	g_time_val_add(&iter->current_time, ms * 1000);
+
+	ms *= iter->anim->speed;
 
 	ms += iter->time_elapsed;
 	if (ms < iter->frame->duration) {
@@ -389,6 +394,8 @@ TilemAnimation * tilem_animation_new(int display_width, int display_height)
 
 	anim->image_width = display_width;
 	anim->image_height = display_height;
+	anim->speed = 1.0;
+	anim->time_stretch = 1.0;
 
 	anim->temp_buffer = tilem_lcd_buffer_new();
 	anim->palette = tilem_color_palette_new(255, 255, 255, 0, 0, 0, GAMMA);
@@ -472,6 +479,20 @@ void tilem_animation_set_colors(TilemAnimation *anim,
 	                                        GAMMA);
 }
 
+void tilem_animation_set_speed(TilemAnimation *anim, gdouble factor)
+{
+	g_return_if_fail(TILEM_IS_ANIMATION(anim));
+	g_return_if_fail(factor > 0.0);
+	anim->speed = factor;
+	anim->time_stretch = 1.0 / factor;
+}
+
+gdouble tilem_animation_get_speed(TilemAnimation *anim)
+{
+	g_return_val_if_fail(TILEM_IS_ANIMATION(anim), 1.0);
+	return anim->speed;
+}
+
 TilemAnimFrame *tilem_animation_next_frame(TilemAnimation *anim,
                                            TilemAnimFrame *frm)
 {
@@ -481,38 +502,6 @@ TilemAnimFrame *tilem_animation_next_frame(TilemAnimation *anim,
 	else
 		return anim->start;
 }
-
-/* Set the duration of a frame */
-void tilem_anim_frame_set_duration(TilemAnimFrame *frm, 
-				   int new_duration, int current_duration)
-{
-	g_return_if_fail(frm != NULL);
-	/* Calculate n * duration  */
-	int calculated_duration = (int) (frm->duration / current_duration) * new_duration; 
-	/* printf("frm->duration : %d, current_duration : %d, duration calculated : %d\n", frm->duration, current_duration , calculated_duration);*/
-	if(calculated_duration < 1)
-		calculated_duration = 1;
-	/* printf("nbframes : %d, new duration calculated : %d\n", (frm->duration / current_duration) , calculated_duration);*/
-	frm->duration = calculated_duration;
-}
-
-/* Set the duration of the entire animation */
-void tilem_animation_set_duration(TilemAnimation *anim,
-				  int new_duration, int current_duration)
-{
-	TilemAnimFrame *frm;	
-	g_return_if_fail(TILEM_IS_ANIMATION(anim));
-	frm = tilem_animation_next_frame(anim, NULL);
-	
-	while(frm) {
-		if (new_duration > 0xffff)
-			new_duration = 0xffff;
-		tilem_anim_frame_set_duration(frm, new_duration, current_duration);
-	        frm = tilem_animation_next_frame(anim, frm);	
-	}
-}
-	
-
 
 int tilem_anim_frame_get_duration(TilemAnimFrame *frm)
 {
