@@ -115,8 +115,9 @@ gpointer tilem_get_dirlist_ns(gpointer data)
 	VarEntry* ve;
 		
 
-	ticalcs_calc_recv_var_ns(ch, MODE_NORMAL, content, &ve);
+	ticalcs_calc_recv_var_ns(ch, MODE_SEND_ONE_VAR, content, &ve);
 
+#if 0
 	emu->varapp = (TilemVarApp*)g_new(TilemVarApp*, 1);
 	char** list = g_new(char*, content->num_entries + 1);
 	int i = 0;
@@ -132,6 +133,7 @@ gpointer tilem_get_dirlist_ns(gpointer data)
 	emu->varapp->vlist_utf8 = list;
 	emu->varapp->vlist = content->entries;
 	
+#endif
 	
 	/* Detach and delete cable. Delete calc handle*/	
 	ticalcs_cable_detach(ch);

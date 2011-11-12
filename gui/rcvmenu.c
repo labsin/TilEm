@@ -73,14 +73,21 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, COL_INDEX, &index, COL_NAME, &varname, -1);
 	printf("choice : %d\t%s\n", index, varname);
 	
-	gchar* path = prompt_save_file("Save file", GTK_WINDOW(rcvdialog->window), "", "", "destination", NULL, NULL);
-	if(path == NULL)
+	char* dir;
+	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
+	if(!dir)
+		dir = g_get_current_dir();
+	
+	gchar* filename = prompt_save_file("Save file", GTK_WINDOW(rcvdialog->window), varname, dir, "*.82p", "TI82 file", "*.83p", "TI83 file", "*.8xp", "TI83+ or TI84+ file", "*.8xk", "TI83+ or TI84+ falsh app", NULL); /* FIXME : add the other extension */ 
+	if(filename == NULL)
 		return;
-	printf("Destination : %s\n", path);
+	printf("Destination : %s\n", filename);
 	
-//	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], path);
+	dir = g_path_get_dirname(filename);
+	tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
+	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
 	
-	tilem_calc_emulator_receive_file(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], path);
+	//tilem_calc_emulator_receive_file(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
 
 	
 	
@@ -167,14 +174,14 @@ static void on_ask_prepare_receive_response(G_GNUC_UNUSED GtkWidget* w, G_GNUC_U
 	gtk_main_iteration();
 	
 	/*tilem_calc_emulator_set_limit_speed(emu,TRUE); */
-	if (!emu->link_thread)
+	/*if (!emu->link_thread)
 		emu->link_thread = g_thread_create(&tilem_get_dirlist_ns, emu, TRUE, NULL);
-
+	*/
 	gtk_main_iteration();
 
 
 	
-	g_thread_join(emu->link_thread); /* Do not create the menu if getting vars is not done */
+	//g_thread_join(emu->link_thread); /* Do not create the menu if getting vars is not done */
 	
 	
 	emu->rcvdlg = create_receive_menu(emu);
@@ -353,6 +360,10 @@ void ask_prepare_receive (TilemCalcEmulator* emu)
 {
 	GtkWidget *dialog, *label, *content_area;
 
+	/* Start to wait the transmit state */
+	if (!emu->link_thread)
+		emu->link_thread = g_thread_create(&tilem_get_dirlist_ns, emu, TRUE, NULL);
+
 	/* Create the widgets */
 	dialog = gtk_dialog_new_with_buttons ("Message", GTK_WINDOW(emu->ewin->window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_OK, GTK_RESPONSE_NONE, NULL);
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
@@ -384,6 +395,8 @@ void ask_prepare_receive (TilemCalcEmulator* emu)
 
 	gtk_container_add (GTK_CONTAINER (content_area), label);
 	gtk_widget_show_all (dialog);
+	
+	
 }
 
 
