@@ -187,6 +187,10 @@ static void cancel_animation(TilemCalcEmulator *emu)
 	emu->anim = NULL;
 }
 
+#define BREAK_MASK (TILEM_STOP_BREAKPOINT \
+                    | TILEM_STOP_INVALID_INST \
+                    | TILEM_STOP_UNDOCUMENTED_INST)
+
 static gpointer core_thread(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -223,7 +227,7 @@ static gpointer core_thread(gpointer data)
 		if (!ticks)
 			update_screen(emu, FALSE);
 
-		if (emu->calc->z80.stop_reason & TILEM_STOP_BREAKPOINT) {
+		if (emu->calc->z80.stop_reason & BREAK_MASK) {
 			emu->paused = TRUE;
 			g_idle_add(&show_debugger, emu);
 		}

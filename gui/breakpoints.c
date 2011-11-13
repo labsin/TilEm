@@ -866,13 +866,15 @@ static void selection_changed(G_GNUC_UNUSED GtkTreeSelection *sel,
 void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 {
 	struct bplist_dlg bpldlg;
-	GtkWidget *dlg, *hbox, *treeview, *sw, *bbox, *btn, *vbox;
+	GtkWidget *dlg, *hbox, *treeview, *sw, *bbox, *btn, *vbox, *vbox2,
+		*invalid_cb, *undoc_cb;
 	GtkListStore *store;
 	GtkTreeViewColumn *col;
 	GtkCellRenderer *cell;
 	GtkTreeIter iter;
 	GSList *l;
 	GtkTreeSelection *sel;
+	unsigned int flags;
 
 	g_return_if_fail(dbg != NULL);
 	g_return_if_fail(dbg->emu != NULL);
@@ -901,8 +903,10 @@ void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 	bpldlg.dlg = dlg;
 	bpldlg.store = store;
 
+	vbox = gtk_vbox_new(FALSE, 6);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 6);
+
 	hbox = gtk_hbox_new(FALSE, 6);
-	gtk_container_set_border_width(GTK_CONTAINER(hbox), 6);
 
 	for (l = dbg->breakpoints; l; l = l->next) {
 		gtk_list_store_append(store, &iter);
@@ -1012,14 +1016,42 @@ void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 	update_buttons(&bpldlg);
 
 	gtk_box_pack_start(GTK_BOX(hbox), bbox, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
-	gtk_widget_show_all(hbox);
+	invalid_cb = gtk_check_button_new_with_mnemonic
+		("Break on _invalid instructions");
+	undoc_cb = gtk_check_button_new_with_mnemonic
+		("Break on _undocumented instructions");
+
+	tilem_calc_emulator_lock(dbg->emu);
+	flags = dbg->emu->calc->z80.emuflags;
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(invalid_cb),
+	                             (flags & TILEM_Z80_BREAK_INVALID));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(undoc_cb),
+	                             (flags & TILEM_Z80_BREAK_UNDOCUMENTED));
+	tilem_calc_emulator_unlock(dbg->emu);
+
+	gtk_box_pack_start(GTK_BOX(vbox), invalid_cb, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), undoc_cb, FALSE, FALSE, 0);
+
+	gtk_widget_show_all(vbox);
 
 	gtk_widget_grab_focus(treeview);
 
-	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	vbox2 = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+	gtk_box_pack_start(GTK_BOX(vbox2), vbox, TRUE, TRUE, 0);
 
 	gtk_dialog_run(GTK_DIALOG(dlg));
+
+	tilem_calc_emulator_lock(dbg->emu);
+	flags = dbg->emu->calc->z80.emuflags;
+	flags &= ~(TILEM_Z80_BREAK_INVALID | TILEM_Z80_BREAK_UNDOCUMENTED);
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(invalid_cb)))
+		flags |= TILEM_Z80_BREAK_INVALID;
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(undoc_cb)))
+		flags |= TILEM_Z80_BREAK_UNDOCUMENTED;
+	dbg->emu->calc->z80.emuflags = flags;
+	tilem_calc_emulator_unlock(dbg->emu);
+
 	gtk_widget_destroy(dlg);
 }
