@@ -28,6 +28,7 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "files.h"
 #include "icons.h"
 #include "filedlg.h"
 
@@ -39,11 +40,17 @@ int main(int argc, char **argv)
 {
 	TilemCalcEmulator* emu;
 	TilemCmdlineArgs* cl;
+	char *menurc_path;
 
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
 
 	g_set_application_name("TilEm");
+
+	menurc_path = get_shared_file_path("menurc", NULL);
+	if (menurc_path)
+		gtk_accel_map_load(menurc_path);
+	g_free(menurc_path);
 
 	init_custom_icons();
 
@@ -117,6 +124,10 @@ int main(int argc, char **argv)
 
 	tilem_emulator_window_free(emu->ewin);
 	tilem_calc_emulator_free(emu);
+
+	menurc_path = get_config_file_path("menurc", NULL);
+	gtk_accel_map_save(menurc_path);
+	g_free(menurc_path);
 
 	return 0;
 }

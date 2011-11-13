@@ -88,7 +88,7 @@ all: tilem2@EXEEXT@
 tilem2@EXEEXT@: $(objects) ../emu/libtilemcore.a
 	$(link) -o tilem2@EXEEXT@ $(objects) $(libs)
 
-tilem2.o: tilem2.c icons.h $(common_headers)
+tilem2.o: tilem2.c icons.h files.h $(common_headers)
 	$(compile) -c $(srcdir)/tilem2.c
 
 # Debugger
