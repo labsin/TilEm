@@ -40,7 +40,6 @@
 
 /* Display the list of vars/app */		
 /* This is a modified version of get_dirlist (ticalc) 
- * because tiz80 never have folders (can you confirm that Benjamin...?) 
  */
 void tilem_dirlist_display(GNode* tree)
 {
