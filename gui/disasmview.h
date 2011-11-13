@@ -59,8 +59,12 @@ void tilem_disasm_view_set_logical(TilemDisasmView *dv, gboolean logical);
 /* Refresh contents of view. */
 void tilem_disasm_view_refresh(TilemDisasmView *dv);
 
-/* Highlight the specified Z80 address. */
-void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr);
+/* Highlight the specified address. */
+void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr,
+                                     gboolean logical);
 
+/* Get currently selected address. */
+gboolean tilem_disasm_view_get_cursor(TilemDisasmView *dv, dword *addr,
+                                      gboolean *is_logical);
 
 G_END_DECLS

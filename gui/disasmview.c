@@ -823,7 +823,7 @@ static void prompt_go_to(G_GNUC_UNUSED GtkMenuItem *item, gpointer data)
 	                         "Go to Address", "Address:",
 	                         &addr, !dv->use_logical,
 	                         (curpos != (dword) -1)))
-		tilem_disasm_view_go_to_address(dv, addr);
+		tilem_disasm_view_go_to_address(dv, addr, dv->use_logical);
 }
 
 static void go_to_pc(G_GNUC_UNUSED GtkMenuItem *item, gpointer data)
@@ -839,11 +839,9 @@ static void go_to_pc(G_GNUC_UNUSED GtkMenuItem *item, gpointer data)
 	tilem_calc_emulator_lock(dv->dbg->emu);
 	calc = dv->dbg->emu->calc;
 	pc = calc->z80.r.pc.w.l;
-	if (!dv->use_logical)
-		pc = (*calc->hw.mem_ltop)(calc, pc);
 	tilem_calc_emulator_unlock(dv->dbg->emu);
 
-	tilem_disasm_view_go_to_address(dv, pc);
+	tilem_disasm_view_go_to_address(dv, pc, TRUE);
 }
 
 /* Determine where to pop up menu (if not activated by a mouse event) */
@@ -1128,8 +1126,9 @@ static GtkTreePath *find_path_for_position(GtkTreeModel *model, int pos)
 	return NULL;
 }
 
-/* Highlight the specified Z80 address. */
-void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
+/* Highlight the specified address. */
+void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr,
+                                     gboolean logical)
 {
 	dword pos;
 	GtkTreeModel *model;
@@ -1141,11 +1140,23 @@ void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
 	tilem_calc_emulator_lock(dv->dbg->emu);
 	calc = dv->dbg->emu->calc;
 
-	addr &= 0xffff;
-	if (dv->use_logical)
+	if (logical) {
+		addr &= 0xffff;
+		if (dv->use_logical)
+			pos = ADDR_TO_POS(addr);
+		else
+			pos = pos_ltop(calc, ADDR_TO_POS(addr));
+	}
+	else {
+		if (dv->use_logical) {
+			addr = (*calc->hw.mem_ptol)(calc, addr);
+			if (addr == (dword) -1) {
+				tilem_calc_emulator_unlock(dv->dbg->emu);
+				return;
+			}
+		}
 		pos = ADDR_TO_POS(addr);
-	else
-		pos = pos_ltop(calc, ADDR_TO_POS(addr));
+	}
 
 	tilem_calc_emulator_unlock(dv->dbg->emu);
 
@@ -1162,3 +1173,21 @@ void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr)
 
 	refresh_disassembly(dv, pos, dv->nlines, pos);
 }
+
+/* Get currently selected address. */
+gboolean tilem_disasm_view_get_cursor(TilemDisasmView *dv, dword *addr,
+                                      gboolean *is_logical)
+{
+	dword pos;
+
+	g_return_val_if_fail(TILEM_IS_DISASM_VIEW(dv), FALSE);
+
+	if (is_logical) *is_logical = dv->use_logical;
+
+	if (!get_cursor_line(dv, &pos, NULL))
+		return FALSE;
+
+	if (addr) *addr = POS_TO_ADDR(pos);
+	return TRUE;
+}
+

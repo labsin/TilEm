@@ -377,6 +377,40 @@ static void action_view_keypad(GtkToggleAction *action, gpointer data)
 		gtk_widget_hide(dbg->keypad_dialog->window);
 }
 
+/* Prompt for an address to view */
+static void action_go_to_address(G_GNUC_UNUSED GtkAction *action, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	TilemDisasmView *dv = TILEM_DISASM_VIEW(dbg->disasm_view);
+	dword addr;
+	gboolean addr_set, logical;
+
+	addr_set = tilem_disasm_view_get_cursor(dv, &addr, &logical);
+
+	if (!tilem_prompt_address(dbg, GTK_WINDOW(dbg->window),
+	                          "Go to Address", "Address:",
+	                          &addr, !logical, addr_set))
+		return;
+
+	tilem_disasm_view_go_to_address(dv, addr, logical);
+	gtk_widget_grab_focus(dbg->disasm_view);
+}
+
+/* Jump to current PC */
+static void action_go_to_pc(G_GNUC_UNUSED GtkAction *action, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	dword pc;
+
+	tilem_calc_emulator_lock(dbg->emu);
+	pc = dbg->emu->calc->z80.r.pc.w.l;
+	tilem_calc_emulator_unlock(dbg->emu);
+
+	tilem_disasm_view_go_to_address(TILEM_DISASM_VIEW(dbg->disasm_view),
+	                                pc, TRUE);
+	gtk_widget_grab_focus(dbg->disasm_view);
+}
+
 static const GtkActionEntry run_action_ents[] =
 	{{ "pause", GTK_STOCK_MEDIA_PAUSE, "_Pause", "Escape",
 	   "Pause emulation", G_CALLBACK(action_pause) }};
@@ -393,11 +427,18 @@ static const GtkActionEntry paused_action_ents[] =
 	   "Run to end of the current subroutine", G_CALLBACK(action_finish) },
 	 { "edit-breakpoints", NULL, "_Breakpoints", "<control>B",
 	   "Add, remove, or modify breakpoints",
-	   G_CALLBACK(action_edit_breakpoints) }};
+	   G_CALLBACK(action_edit_breakpoints) },
+	 { "go-to-address", NULL, "_Address...", "<control>L",
+	   "Jump to an address",
+	   G_CALLBACK(action_go_to_address) },
+	 { "go-to-pc", NULL, "_PC", "<control>Home",
+	   "Jump to the current program counter",
+	   G_CALLBACK(action_go_to_pc) }};
 
 static const GtkActionEntry misc_action_ents[] =
 	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
 	 { "view-menu", 0, "_View", 0, 0, 0 },
+	 { "go-menu", 0, "_Go", 0, 0, 0 },
 	 { "close", GTK_STOCK_CLOSE, 0, 0,
 	   "Close the debugger", G_CALLBACK(action_close) }};
 
@@ -784,6 +825,10 @@ static const char uidesc[] =
 	" <menu action='view-menu'>"
 	"  <menuitem action='view-keypad'/>"
 	" </menu>"
+	" <menu action='go-menu'>"
+	"  <menuitem action='go-to-address'/>"
+	"  <menuitem action='go-to-pc'/>"
+	" </menu>"
 	"</menubar>"
 	"<toolbar name='toolbar'>"
 	" <toolitem action='run'/>"
@@ -1122,7 +1167,7 @@ void tilem_debugger_show(TilemDebugger *dbg)
 	tilem_calc_emulator_pause(dbg->emu);
 	cancel_step_bp(dbg);
 	tilem_disasm_view_go_to_address(TILEM_DISASM_VIEW(dbg->disasm_view),
-	                                dbg->emu->calc->z80.r.pc.d);
+	                                dbg->emu->calc->z80.r.pc.d, TRUE);
 	refresh_all(dbg, TRUE);
 	gtk_widget_grab_focus(dbg->disasm_view);
 	gtk_window_present(GTK_WINDOW(dbg->window));
