@@ -706,6 +706,7 @@ static GtkWidget *create_memory_view(TilemDebugger *dbg)
 	treeview = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeview), TRUE);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
