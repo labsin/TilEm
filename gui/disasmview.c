@@ -909,7 +909,7 @@ static void show_popup_menu(TilemDisasmView *dv, GdkEventButton *event)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_widget_show(item);
 
-	item = gtk_menu_item_new_with_mnemonic("Go to _PC");
+	item = gtk_menu_item_new_with_mnemonic("Go to P_C");
 	g_signal_connect(item, "activate", G_CALLBACK(go_to_pc), dv);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_widget_show(item);

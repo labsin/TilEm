@@ -65,6 +65,18 @@ static const char flag_labels[][2] = {
 	"C", "N", "P", "X", "H", "Y", "Z", "S"
 };
 
+/* Read a word */
+static dword read_mem_word(TilemCalc *calc, dword addr)
+{
+	dword phys, v;
+
+	phys = (*calc->hw.mem_ltop)(calc, addr & 0xffff);
+	v = calc->mem[phys];
+	phys = (*calc->hw.mem_ltop)(calc, (addr + 1) & 0xffff);
+	v += calc->mem[phys] << 8;
+	return v;
+}
+
 /* Determine model name for the purpose of looking up default system
    symbols */
 static const char *get_sys_name(const TilemCalc *calc)
@@ -396,19 +408,63 @@ static void action_go_to_address(G_GNUC_UNUSED GtkAction *action, gpointer data)
 	gtk_widget_grab_focus(dbg->disasm_view);
 }
 
+/* Jump to address at given stack index */
+static void go_to_stack_pos(TilemDebugger *dbg, int pos)
+{
+	dword addr;
+	GtkTreePath *path;
+	GtkTreeSelection *sel;
+
+	dbg->stack_index = pos;
+
+	tilem_calc_emulator_lock(dbg->emu);
+	if (pos < 0)
+		addr = dbg->emu->calc->z80.r.pc.d;
+	else
+		addr = read_mem_word(dbg->emu->calc,
+		                     dbg->emu->calc->z80.r.sp.d + 2 * pos);
+	tilem_calc_emulator_unlock(dbg->emu);
+
+	tilem_disasm_view_go_to_address(TILEM_DISASM_VIEW(dbg->disasm_view),
+	                                addr, TRUE);
+	gtk_widget_grab_focus(dbg->disasm_view);
+
+	if (pos >= 0) {
+		path = gtk_tree_path_new_from_indices(pos, -1);
+		gtk_tree_view_set_cursor(GTK_TREE_VIEW(dbg->stack_view),
+		                         path, NULL, FALSE);
+		gtk_tree_path_free(path);
+	}
+	else {
+		sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(dbg->stack_view));
+		gtk_tree_selection_unselect_all(sel);
+	}
+
+	gtk_action_set_sensitive(dbg->prev_stack_action, (pos >= 0));
+}
+
 /* Jump to current PC */
 static void action_go_to_pc(G_GNUC_UNUSED GtkAction *action, gpointer data)
 {
 	TilemDebugger *dbg = data;
-	dword pc;
+	go_to_stack_pos(dbg, -1);
+}
 
-	tilem_calc_emulator_lock(dbg->emu);
-	pc = dbg->emu->calc->z80.r.pc.w.l;
-	tilem_calc_emulator_unlock(dbg->emu);
+/* Jump to previous stack entry */
+static void action_prev_stack_entry(G_GNUC_UNUSED GtkAction *action,
+                                        gpointer data)
+{
+	TilemDebugger *dbg = data;
+	if (dbg->stack_index >= 0)
+		go_to_stack_pos(dbg, dbg->stack_index - 1);
+}
 
-	tilem_disasm_view_go_to_address(TILEM_DISASM_VIEW(dbg->disasm_view),
-	                                pc, TRUE);
-	gtk_widget_grab_focus(dbg->disasm_view);
+/* Jump to next stack entry */
+static void action_next_stack_entry(G_GNUC_UNUSED GtkAction *action,
+                                    gpointer data)
+{
+	TilemDebugger *dbg = data;
+	go_to_stack_pos(dbg, dbg->stack_index + 1);
 }
 
 static const GtkActionEntry run_action_ents[] =
@@ -428,12 +484,18 @@ static const GtkActionEntry paused_action_ents[] =
 	 { "edit-breakpoints", NULL, "_Breakpoints", "<control>B",
 	   "Add, remove, or modify breakpoints",
 	   G_CALLBACK(action_edit_breakpoints) },
-	 { "go-to-address", NULL, "_Address...", "<control>L",
+	 { "go-to-address", GTK_STOCK_JUMP_TO, "_Address...", "<control>L",
 	   "Jump to an address",
 	   G_CALLBACK(action_go_to_address) },
-	 { "go-to-pc", NULL, "_PC", "<control>Home",
+	 { "go-to-pc", NULL, "Current P_C", "<alt>Home",
 	   "Jump to the current program counter",
-	   G_CALLBACK(action_go_to_pc) }};
+	   G_CALLBACK(action_go_to_pc) },
+	 { "prev-stack-entry", GTK_STOCK_GO_UP, "_Previous Stack Entry", "<alt>Page_Up",
+	   "Jump to the previous address in the stack",
+	   G_CALLBACK(action_prev_stack_entry) },
+	 { "next-stack-entry", GTK_STOCK_GO_DOWN, "_Next Stack Entry", "<alt>Page_Down",
+	   "Jump to the next address in the stack",
+	   G_CALLBACK(action_next_stack_entry) }};
 
 static const GtkActionEntry misc_action_ents[] =
 	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
@@ -828,6 +890,9 @@ static const char uidesc[] =
 	" <menu action='go-menu'>"
 	"  <menuitem action='go-to-address'/>"
 	"  <menuitem action='go-to-pc'/>"
+	"  <separator/>"
+	"  <menuitem action='prev-stack-entry'/>"
+	"  <menuitem action='next-stack-entry'/>"
 	" </menu>"
 	"</menubar>"
 	"<toolbar name='toolbar'>"
@@ -903,6 +968,9 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	gtk_action_group_add_toggle_actions(dbg->misc_actions, misc_toggle_ents,
 	                                    G_N_ELEMENTS(misc_toggle_ents), dbg);
 	gtk_ui_manager_insert_action_group(uimgr, dbg->misc_actions, 0);
+
+	dbg->prev_stack_action = gtk_action_group_get_action(dbg->paused_actions,
+	                                                     "prev-stack-entry");
 
 	accelgrp = gtk_ui_manager_get_accel_group(uimgr);
 	gtk_window_add_accel_group(GTK_WINDOW(dbg->window), accelgrp);
@@ -1059,7 +1127,7 @@ static GtkTreeModel* fill_stk_list(TilemDebugger *dbg)
 	GtkTreeIter    iter;
 	char stack_offset[10];
 	char stack_value[10];
-	dword phys, i, v;
+	dword i, v;
 	int n;
 
 	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
@@ -1067,11 +1135,7 @@ static GtkTreeModel* fill_stk_list(TilemDebugger *dbg)
 	while  (i < 0x10000 && n < 512) {
 	        g_snprintf(stack_offset, sizeof(stack_offset), "%04X:", i);
 
-		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, i);
-		v = dbg->emu->calc->mem[phys];
-		phys = dbg->emu->calc->hw.mem_ltop(dbg->emu->calc, (i + 1) & 0xffff);
-		v += dbg->emu->calc->mem[phys] << 8;
-
+		v = read_mem_word(dbg->emu->calc, i);
 		g_snprintf(stack_value, sizeof(stack_value), "%04X", v);
 
 		gtk_list_store_append(store, &iter);
@@ -1166,10 +1230,8 @@ void tilem_debugger_show(TilemDebugger *dbg)
 	g_return_if_fail(dbg->emu->calc != NULL);
 	tilem_calc_emulator_pause(dbg->emu);
 	cancel_step_bp(dbg);
-	tilem_disasm_view_go_to_address(TILEM_DISASM_VIEW(dbg->disasm_view),
-	                                dbg->emu->calc->z80.r.pc.d, TRUE);
 	refresh_all(dbg, TRUE);
-	gtk_widget_grab_focus(dbg->disasm_view);
+	go_to_stack_pos(dbg, -1);
 	gtk_window_present(GTK_WINDOW(dbg->window));
 }
 

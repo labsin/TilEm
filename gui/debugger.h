@@ -66,6 +66,10 @@ typedef struct _TilemDebugger {
 	int mem_start;
 	gboolean mem_logical;
 
+	/* Stack navigation */
+	GtkAction *prev_stack_action;
+	int stack_index;
+
 	/* Breakpoints */
 	GSList *breakpoints;
 	int last_bp_type;
