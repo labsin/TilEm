@@ -319,7 +319,7 @@ void tilem_dirlist_display(GNode* tree);
 gpointer tilem_get_dirlist_ns(gpointer data);
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
-void tilem_get_dirlist(TilemCalcEmulator *emu);
+gpointer tilem_get_dirlist(gpointer data);
 
 /* Print dirlist (debug) */
 void dirlist_print_debug(char **list);

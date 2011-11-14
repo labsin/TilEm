@@ -1128,7 +1128,7 @@ static GtkTreeModel* fill_stk_list(TilemDebugger *dbg)
 	char stack_offset[10];
 	char stack_value[10];
 	dword i, v;
-	int n;
+	int n = 0;
 
 	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 	i = dbg->emu->calc->z80.r.sp.w.l;

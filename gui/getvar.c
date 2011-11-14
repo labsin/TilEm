@@ -152,8 +152,10 @@ gpointer tilem_get_dirlist_ns(gpointer data)
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 /* Terminated by NULL */
-void tilem_get_dirlist(TilemCalcEmulator *emu)
+gpointer tilem_get_dirlist(gpointer data)
 {
+	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
+
 	CableHandle* cbl;
 	CalcHandle* ch;
 	
@@ -180,21 +182,19 @@ void tilem_get_dirlist(TilemCalcEmulator *emu)
 	ticalcs_calc_get_dirlist(ch, &vars, &apps);
 
 	TreeInfo *info = (TreeInfo *)(vars->data);
-	int i, j;
-	char *utf8;
+	int i = 0;
+	int j = 0;
   
-	i = 0;
 	/* Tree for vars */
 	GNode *varparent = g_node_nth_child(vars, i);
 	/* Tree for app */
 	GNode *appparent = g_node_nth_child(apps, i);
 
-	
+	/* Alloc memory for var/app structures */	
 	emu->varapp = (TilemVarApp*)g_new(TilemVarApp*, 1);
 	emu->varapp->vlist = (VarEntry**) g_new(VarEntry**, (int)g_node_n_children(varparent) + (int)g_node_n_children(appparent) + 1);
 		
-	char** list = g_new(char*, g_node_n_children(varparent) + g_node_n_children(appparent) + 1);
-	//printf("Number of children : %d\n", g_node_n_children(parent));
+	char** vlist_utf8 = g_new(char*, g_node_n_children(varparent) + g_node_n_children(appparent) + 1);
 
 	/* Get vars */
 	for (j = 0; j < (int)g_node_n_children(varparent); j++)	//parse variables
@@ -202,12 +202,12 @@ void tilem_get_dirlist(TilemCalcEmulator *emu)
 		GNode *child = g_node_nth_child(varparent, j);
 		VarEntry *ve = (VarEntry *) (child->data);
 
-		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
+		char* utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
 		
 		emu->varapp->vlist[j] = (VarEntry*) g_new(VarEntry*, 1);
 		emu->varapp->vlist[j] = ve; 
 
-		list[j] = g_strdup(utf8);
+		vlist_utf8[j] = g_strdup(utf8);
 		printf ("utf8 : %s\n", utf8);
 		g_free(utf8);
 	}
@@ -221,20 +221,20 @@ void tilem_get_dirlist(TilemCalcEmulator *emu)
 		GNode *child = g_node_nth_child(appparent, l);
 		VarEntry *ve = (VarEntry *) (child->data);
 
-		utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
+		char* utf8 = ticonv_varname_to_utf8(info->model, ve->name, ve->type);
 		
 		emu->varapp->vlist[j] = (VarEntry*) g_new(VarEntry*, 1);
 		emu->varapp->vlist[j] = ve; 
 
-		list[j] = g_strdup(utf8);
+		vlist_utf8[j] = g_strdup(utf8);
 		printf ("utf8 : %s\n", utf8);
 		g_free(utf8);
 		l++;
 	}
 	
-	list[j] = NULL;
+	vlist_utf8[j] = NULL;
 	emu->varapp->vlist[j] = NULL;
-	emu->varapp->vlist_utf8 = list;
+	emu->varapp->vlist_utf8 = vlist_utf8;
 	
 	printf("\n");
 	
@@ -247,6 +247,8 @@ void tilem_get_dirlist(TilemCalcEmulator *emu)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
+	
+	return NULL;
 }
 
 
@@ -260,14 +262,6 @@ gint tilem_get_dirlist_size(GNode* tree)
 		
 	return g_node_n_children(parent);
 
-}
-
-/* Just print the list content (debug)*/
-void dirlist_print_debug(char **list) {
-	int i = 0;
-	for(i = 0; list[i]; i++) {
-		printf("%d. Var : %s\n", i, list[i]);
-	}
 }
 
 /* Get a var from calc and save it into filename on PC
