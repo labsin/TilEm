@@ -47,6 +47,7 @@ objects = tilem2.o \
 	debugger.o \
 	disasmview.o \
 	emulator.o \
+	emucore.o \
 	emuwin.o \
 	event.o \
 	filedlg.o \
@@ -119,11 +120,15 @@ keypaddlg.o: keypaddlg.c $(common_headers)
 memory.o: memory.c ../emu/tilem.h
 	$(compile) -c $(srcdir)/memory.c
 
-# Main emulation loop
-emulator.o: emulator.c $(common_headers)
+# Emulator management
+emulator.o: emulator.c emucore.h $(common_headers)
 	$(compile) -c $(srcdir)/emulator.c
 
-# Print the skin and add the events. 
+# Emulator main loop
+emucore.o: emucore.c emucore.h $(common_headers)
+	$(compile) -c $(srcdir)/emucore.c
+
+# Emulator GUI (main window)
 emuwin.o: emuwin.c $(common_headers)
 	$(compile) -c $(srcdir)/emuwin.c
 

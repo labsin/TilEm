@@ -73,6 +73,16 @@ typedef struct _TilemCalcEmulator {
 	gboolean exiting;
 	gboolean limit_speed;   /* limit to actual speed */
 
+	/* Timer used for speed limiting */
+	GTimer *timer;
+	gulong timevalue;
+
+	/* Queue of tasks to be performed */
+	GQueue *task_queue;
+	gboolean task_busy;
+	gboolean task_abort;
+	GCond *task_finished_cond;
+
 	/* Internal link cable */
 	TilemInternalLink ilp;
 
@@ -208,6 +218,30 @@ void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu);
 
 /* Run slowly to play macro */
 void run_with_key_slowly(TilemCalc* calc, int key);
+
+
+/* Task handling */
+ 
+typedef gboolean (*TilemTaskMainFunc)(TilemCalcEmulator *emu, gpointer data);
+typedef void (*TilemTaskFinishedFunc)(TilemCalcEmulator *emu, gpointer data,
+                                      gboolean cancelled);
+ 
+/* Add a task to the queue.  MAINF is a function to perform in the
+   core thread.  If it returns FALSE, all further tasks will be
+   cancelled.  Tasks can also be cancelled early by calling
+   tilem_calc_emulator_cancel_tasks().
+
+   After the task finishes or is cancelled, FINISHEDF will be called
+   in the GUI thread.  Task-finished functions might not be called in
+   the same order the tasks were originally added to the queue. */
+void tilem_calc_emulator_begin(TilemCalcEmulator *emu,
+                               TilemTaskMainFunc taskf,
+                               TilemTaskFinishedFunc finishedf,
+                               gpointer data);
+
+/* Cancel all pending tasks.  If a task is currently running, this
+   will attempt to cancel it and wait for it to exit. */
+void tilem_calc_emulator_cancel_tasks(TilemCalcEmulator *emu);
 
 
 /* Macros */
