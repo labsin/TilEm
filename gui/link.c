@@ -553,6 +553,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct sendfileinfo *
 static gboolean send_file_main(TilemCalcEmulator *emu, gpointer data)
 {
 	struct sendfileinfo *sf = data;
+	/*emu->ilp.finished_cond = g_cond_new(); */
 
 	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
 		return send_file_ti81(emu, sf);
@@ -572,6 +573,10 @@ static void send_file_finished(TilemCalcEmulator *emu, gpointer data,
 	g_free(sf->display_name);
 	g_free(sf->error_message);
 	g_slice_free(struct sendfileinfo, sf);
+	
+	/*g_cond_broadcast(emu->ilp.finished_cond);*/
+	
+	
 }
 
 void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,

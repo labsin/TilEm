@@ -181,6 +181,7 @@ static gboolean tilem_macro_play_main(TilemCalcEmulator *emu, G_GNUC_UNUSED gpoi
 			printf("file to send : %s\n", emu->macro->actions[i]->value);
 			tilem_em_unlock(emu);
 			tilem_link_send_file(emu, emu->macro->actions[i]->value, -1, TRUE, TRUE);
+			/* tilem_calc_emulator_cond_wait(emu, emu->ilp.finished_cond);	*/
 			tilem_em_lock(emu);
 	
 			printf("send file end\n");
@@ -262,8 +263,6 @@ static gboolean tilem_macro_load_main(TilemCalcEmulator* emu, gpointer data) {
 static void tilem_macro_load_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, gpointer data,
                                G_GNUC_UNUSED gboolean cancelled)
 {
-        char* filename = (char*) data;
-        g_free(filename);
 	tilem_calc_emulator_begin(emu, &tilem_macro_play_main, &tilem_macro_play_finished, NULL);
 }
 
