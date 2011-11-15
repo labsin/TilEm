@@ -279,6 +279,9 @@ void tilem_config_set(const char *group, const char *option, ...)
 void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
                           int slot, gboolean first, gboolean last);
 
+void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch);
+void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch);
+
 
 
 /* ##### getvar.c ##### */
@@ -299,8 +302,9 @@ void tilem_dirlist_display(GNode* tree);
 gpointer tilem_get_dirlist_ns(gpointer data);
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
-gpointer tilem_get_dirlist(gpointer data);
+gboolean tilem_get_dirlist_main(TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data);
 
+void tilem_get_dirlist_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled);
 /* Print dirlist (debug) */
 void dirlist_print_debug(char **list);
 

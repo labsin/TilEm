@@ -323,8 +323,7 @@ static int get_calc_model(TilemCalc *calc)
 }
 
 /* Create a calc handle */
-static void begin_link(TilemCalcEmulator *emu,
-                       CableHandle **cbl, CalcHandle **ch)
+void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch)
 {
 	tilem_em_unlock(emu);
 
@@ -352,8 +351,7 @@ static void begin_link(TilemCalcEmulator *emu,
 }
 
 /* Destroy calc handle */
-static void end_link(TilemCalcEmulator *emu,
-                     CableHandle *cbl, CalcHandle *ch)
+void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch)
 {
 	g_idle_add(&pbar_stop, emu);
 	ticalcs_cable_detach(ch);

@@ -149,36 +149,21 @@ gpointer tilem_get_dirlist_ns(gpointer data)
 }
 
 
-
+void tilem_get_dirlist_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled) {
+	emu->rcvdlg = create_receive_menu(emu);
+	gtk_window_present(GTK_WINDOW(emu->rcvdlg->window));
+}
 
 /* Get the list of varname. I plan to use it into a list (in a menu) */
 /* Terminated by NULL */
-gpointer tilem_get_dirlist(gpointer data)
-{
-#if 0
-	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
+gboolean tilem_get_dirlist_main(TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data) {
+
 
 	CableHandle* cbl;
 	CalcHandle* ch;
-	
-	/* Init the libtis */
-	ticables_library_init();
-	tifiles_library_init();
-	ticalcs_library_init();
-	
-	/* Create cable (here an internal an dvirtual cabla) */
-	cbl = internal_link_handle_new(emu);
-	if (!cbl) 
-		fprintf(stderr, "Cannot create ilp handle\n");
-	
 
-	ch = ticalcs_handle_new(get_calc_model(emu->calc));
-	if (!ch) {
-		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
-	}
-	
-
-	ticalcs_cable_attach(ch, cbl);
+	/* Create cable handle and calc handle, attach, init pbar */
+	begin_link(emu, &cbl, &ch);	
 	
 	GNode *vars, *apps;
 	ticalcs_calc_get_dirlist(ch, &vars, &apps);
@@ -240,17 +225,9 @@ gpointer tilem_get_dirlist(gpointer data)
 	
 	printf("\n");
 	
-	/* Detach and delete cable. Delete calc handle*/	
-	ticalcs_cable_detach(ch);
-	ticalcs_handle_del(ch);
-	ticables_handle_del(cbl);
-
-	/* Exit the libtis */
-	ticalcs_library_exit();
-	tifiles_library_exit();
-	ticables_library_exit();
-#endif	
-	return NULL;
+	end_link(emu, cbl, ch);	
+	
+	return TRUE;
 }
 
 

@@ -142,6 +142,11 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		g_free(varname);
 }
 
+static void tilem_get_dirlist_refresh_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled) {
+	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
+	rcvdialog->model = fill_varlist(rcvdialog, rcvdialog->emu->varapp->vlist_utf8);
+        gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
+}
 
 /* This function is executed when user click on refresh button */
 static void tilem_rcvmenu_on_refresh(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
@@ -154,12 +159,11 @@ static void tilem_rcvmenu_on_refresh(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		g_free(rcvdialog->emu->varapp);
 	
 	/* Get the varlist and the applist */
-	load_entries(rcvdialog->emu);
+	tilem_calc_emulator_begin(rcvdialog->emu, &tilem_get_dirlist_main, &tilem_get_dirlist_refresh_finished, rcvdialog);	
 
 	/* Print the new varlist and applist into the treeview */
-	rcvdialog->model = fill_varlist(rcvdialog, rcvdialog->emu->varapp->vlist_utf8);
-        gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
 }
+
 
 
 /* A popup wich is needed because of the fact that ti82 and ti85 need to be in the "transmit" sate to get vars */
@@ -310,25 +314,6 @@ TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu)
 
 }
 
-/* #### GET DATA FROM CALC AND INSERT INTO THE WIDGETS #### */
-
-/* Use the appropriate method to load entries 
- * This function is used to fill the emu->varapp structure
- */
-void load_entries(TilemCalcEmulator *emu) {
-
-	if (emu->calc->hw.model_id == TILEM_CALC_TI81) {
-		// Nothing
-	} else if (emu->calc->hw.model_id == TILEM_CALC_TI82) {
-		tilem_get_dirlist_ns(emu);
-	} else if (emu->calc->hw.model_id == TILEM_CALC_TI85) {
-		tilem_get_dirlist_ns(emu);
-	} else {
-		tilem_get_dirlist(emu);
-	}
-
-
-}
 
 
 /* #### ENTRY POINT #### */
@@ -392,12 +377,14 @@ void popup_receive_menu(TilemEmulatorWindow *ewin)
 	} else if (ewin->emu->calc->hw.model_id == TILEM_CALC_TI85) {
 		ask_prepare_receive(ewin->emu); /* This function will create the receive menu when preparation is ok */
 	} else {
-		if(!ewin->emu->rcvdlg)
-			load_entries(ewin->emu);
-		ewin->emu->rcvdlg = create_receive_menu(ewin->emu);
-		rcvdlg = ewin->emu->rcvdlg;
-
-		gtk_window_present(GTK_WINDOW(rcvdlg->window));
+		/* If it's the first time we ask for this dialog, task manager do get dir list then finished function print the popup*/
+		if(!ewin->emu->rcvdlg) {
+			tilem_calc_emulator_begin(ewin->emu, &tilem_get_dirlist_main, &tilem_get_dirlist_finished, NULL);	
+		} else {
+			ewin->emu->rcvdlg = create_receive_menu(ewin->emu);
+			rcvdlg = ewin->emu->rcvdlg;
+			gtk_window_present(GTK_WINDOW(rcvdlg->window));
+		}
 	}
 }
 
