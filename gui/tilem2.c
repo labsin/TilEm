@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 	tilem_keybindings_init(emu, emu->calc->hw.name);
 		
 	if (cl->FileToLoad) /* Given as parameter ? */
-		tilem_load_file_from_file_at_startup(emu, cl->FileToLoad);
+		tilem_link_send_file(emu, cl->FileToLoad, -1, TRUE, TRUE);
 	if (cl->MacroToPlay) { /* Given as parameter ? */
 		tilem_macro_load(emu, cl->MacroToPlay); 		
 	}

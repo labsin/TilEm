@@ -186,8 +186,6 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 
 	g_free(emu->rom_file_name);
 
-	tilem_calc_emulator_cancel_link(emu);
-
 	g_mutex_free(emu->calc_mutex);
 	g_mutex_free(emu->lcd_mutex);
 	g_cond_free(emu->calc_wakeup_cond);

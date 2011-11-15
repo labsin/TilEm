@@ -61,7 +61,12 @@ static void destroy_progress(G_GNUC_UNUSED GtkDialog *dlg,
                              gpointer data)
 {
 	TilemCalcEmulator* emu = data;
-	tilem_calc_emulator_cancel_link(emu);
+	tilem_calc_emulator_cancel_tasks(emu);
+	gtk_widget_destroy(emu->linkpb->ilp_progress_win);
+	emu->linkpb->ilp_progress_win = NULL;
+	emu->linkpb->ilp_progress_bar1 = NULL;
+	emu->linkpb->ilp_progress_bar2 = NULL;
+	emu->linkpb->ilp_progress_label = NULL;
 }
 
 /* Create the progress bar window */

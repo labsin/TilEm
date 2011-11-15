@@ -175,7 +175,7 @@ void tilem_macro_play(TilemCalcEmulator *emu) {
 		
 		/* Type == 1 is load file */
 		if(emu->macro->actions[i]->type == 1) {
-			load_file_from_file(emu, emu->macro->actions[i]->value);
+			tilem_link_send_file(emu, emu->macro->actions[i]->value, -1, TRUE, TRUE);
 		} else {
 			/* type == 0 is keypress */
 			int code = atoi(emu->macro->actions[i]->value);

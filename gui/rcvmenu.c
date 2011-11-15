@@ -72,11 +72,14 @@ static char** tilem_rcvmenu_get_selected_vars(G_GNUC_UNUSED TilemReceiveDialog* 
 
 /* Get a default filename composed from the varname and the extension given by ticonv/tifiles (depends on var entry : is it var or app, calc model) */
 static gchar* tilem_rcvmenu_get_default_destination_filename(TilemReceiveDialog* rcvdialog, VarEntry* ve) {
-
+#if 0	
 	gchar* basename = ticonv_varname_to_filename(get_calc_model(rcvdialog->emu->calc),ve->name, ve->type);
         gchar* default_filename = g_strconcat(basename, ".", tifiles_vartype2fext(get_calc_model(rcvdialog->emu->calc), ve->type), NULL);
 	
 	return default_filename;
+#else
+	return NULL;
+#endif
 }
 	
 

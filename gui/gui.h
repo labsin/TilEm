@@ -272,32 +272,12 @@ void tilem_config_set(const char *group, const char *option, ...)
 
 /* ##### link.c ##### */
 
-/* Init libtis, create ch/cbl, attach cable, and send file to TI */
-void send_file(TilemCalcEmulator* emu, CableHandle* cbl, const char* filename);
-
-/* Init libtis, create ch/cbl, attach cable */ 
-CableHandle* internal_link_handle_new(TilemCalcEmulator* emu);
-
-/* Test if the calc is ready */
-int is_ready(CalcHandle* h);
-
-/* Simply print the error */
-void print_lc_error(int errnum);
-
-/* Get calc model from calc_id */
-int get_calc_model(TilemCalc* calc);
-
-/* Simply emulate a click on key (use to prepare link -> come into receive mode) */
-void run_with_key(TilemCalc* calc, int key);
-
-/* Prepare ti82 and ti85 for link */
-void prepare_for_link_send(TilemCalc* calc);
-
-/* Prepare ti82 and ti85 for link (send) */
-void prepare_for_link_receive(TilemCalc* calc);
-
-/* Press a key */
-void tmr_press_key(TilemCalc* calc, void* data);
+/* Send a file to the calculator through the GUI.  SLOT is the
+   destination program slot (for TI-81.)  FIRST must be true if this
+   is the first variable in a series; LAST must be true if this is the
+   last in a series. */
+void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
+                          int slot, gboolean first, gboolean last);
 
 
 

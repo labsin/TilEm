@@ -528,7 +528,8 @@ void load_file(TilemEmulatorWindow *ewin)
 	}
 
 	for (i = 0; filenames && filenames[i]; i++) {
-		load_file_from_file(ewin->emu, filenames[i]);
+		tilem_link_send_file(ewin->emu, filenames[i],
+		                     -1, (i == 0), (!filenames[i + 1]));
 
 		if(ewin->emu->isMacroRecording)
 			tilem_macro_add_action(ewin->emu->macro , 1, filenames[i]);
@@ -536,40 +537,6 @@ void load_file(TilemEmulatorWindow *ewin)
 
 	g_strfreev(filenames);
 }
-
-/* Load a file without file_selector */
-void load_file_from_file(TilemCalcEmulator *emu, char* filename)
-{
-	tilem_calc_emulator_send_file(emu, filename);
-}
-
-/* Load a file without file_selector old method without thread */
-void tilem_load_file_from_file_at_startup(TilemCalcEmulator *emu, char* filename)
-{
-		CableHandle* cbl;
-	
-		/* Init the libtis */
-		ticables_library_init();
-		tifiles_library_init();
-		ticalcs_library_init();
-		
-		/* Create cable (here an internal an dvirtual cabla) */
-		cbl = internal_link_handle_new(emu);
-		if (!cbl) 
-			fprintf(stderr, "Cannot create ilp handle\n");
-		
-		send_file(emu, cbl, filename); /* See link.c for send_file function */
-		
-		ticables_handle_del(cbl);
-
-		/* Exit the libtis */
-		ticalcs_library_exit();
-		tifiles_library_exit();
-		ticables_library_exit();
-
-}
-
-
 
 /* Toggle limit speed */
 void tilem_change_speed(TilemEmulatorWindow *ewin)
@@ -592,7 +559,7 @@ gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragCon
 		        char *filename = g_filename_from_uri(list[i], NULL, NULL);
 			/*printf("File to load : %s\n", filename);*/
 			if(filename)
-				load_file_from_file(ewin->emu, filename);
+				tilem_link_send_file(ewin->emu, filename, -1, TRUE, TRUE); /* FIXME */
 		       i++;
 		}
 		g_strfreev(list);	

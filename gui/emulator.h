@@ -208,13 +208,6 @@ void tilem_calc_emulator_begin_animation(TilemCalcEmulator *emu,
    reference count of 1 (free it with g_object_unref().) */
 TilemAnimation * tilem_calc_emulator_end_animation(TilemCalcEmulator *emu);
 
-/* Add a file to the link queue. */
-void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
-                                   const char *filename);
-
-/* Abort any pending link transfers. */
-void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu);
-
 
 /* Run slowly to play macro */
 void run_with_key_slowly(TilemCalc* calc, int key);

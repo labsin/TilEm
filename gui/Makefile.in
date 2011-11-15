@@ -157,7 +157,7 @@ config.o: config.c files.h $(common_headers)
 	$(compile) -c $(srcdir)/config.c
 
 # Handle internal link
-link.o: link.c ti81prg.h $(common_headers)
+link.o: link.c emucore.h ti81prg.h $(common_headers)
 	$(compile) -c $(srcdir)/link.c
 
 # Handle macro

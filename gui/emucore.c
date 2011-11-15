@@ -350,5 +350,5 @@ void tilem_em_wake_up(TilemCalcEmulator *emu, gboolean ff)
 	tilem_keypad_press_key(emu->calc, TILEM_KEY_ON);
 	tilem_em_delay(emu, 50000, ff);
 	tilem_keypad_release_key(emu->calc, TILEM_KEY_ON);
-	tilem_em_delay(emu, 50000, ff);
+	tilem_em_delay(emu, 500000, ff);
 }

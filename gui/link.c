@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <ticalcs.h>
@@ -33,58 +34,28 @@
 #include <scancodes.h>
 
 #include "gui.h"
+#include "emucore.h"
 #include "ti81prg.h"
+#include "msgbox.h"
 
-/* Test if the calc is ready */
-int is_ready(CalcHandle* h)
-{
-         int err;
-	  
-         err = ticalcs_calc_isready(h);
-         printf("Hand-held is %sready !\n", err ? "not " : "");
-		    
-         return err;
-}
-
-/* Print the error (libtis error) */
-void print_lc_error(int errnum)
-{
-	char *msg;
-
-        ticables_error_get(errnum, &msg);
-	fprintf(stderr, "Link cable error (code %i)...\n<<%s>>\n", errnum, msg);
-        free(msg);
-}
-
-
-/* Internal link emulation */
+/**************** Internal link emulation ****************/
 
 /* Open cable */
 static int ilp_open(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	tilem_calc_emulator_lock(emu);
+	tilem_em_lock(emu);
 
 	if (emu->ilp.active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already opened\n");
-		tilem_calc_emulator_unlock(emu);
+		tilem_em_unlock(emu);
 		return 1;
 	}
 
-	emu->calc->z80.stop_mask &= ~(TILEM_STOP_LINK_READ_BYTE
-	                              | TILEM_STOP_LINK_WRITE_BYTE
-	                              | TILEM_STOP_LINK_ERROR);
-
 	emu->ilp.active = TRUE;
-	emu->ilp.error = FALSE;
-	emu->ilp.abort = FALSE;
-	emu->ilp.timeout = 0;
-	emu->ilp.write_count = 0;
-	emu->ilp.read_count = 0;
 	tilem_linkport_graylink_reset(emu->calc);
-
-	tilem_calc_emulator_unlock(emu);
+	tilem_em_unlock(emu);
 	return 0;
 }
 
@@ -93,24 +64,17 @@ static int ilp_close(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	tilem_calc_emulator_lock(emu);
+	tilem_em_lock(emu);
 
 	if (!emu->ilp.active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already closed\n");
-		tilem_calc_emulator_unlock(emu);
+		tilem_em_unlock(emu);
 		return 1;
 	}
 
-	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
-	emu->calc->z80.stop_mask |= (TILEM_STOP_LINK_STATE
-	                             | TILEM_STOP_LINK_READ_BYTE
-	                             | TILEM_STOP_LINK_WRITE_BYTE
-	                             | TILEM_STOP_LINK_ERROR);
-
 	emu->ilp.active = FALSE;
 	tilem_linkport_graylink_reset(emu->calc);
-
-	tilem_calc_emulator_unlock(emu);
+	tilem_em_unlock(emu);
 	return 0;
 }
 
@@ -119,15 +83,9 @@ static int ilp_reset(CableHandle* cbl)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	tilem_calc_emulator_lock(emu);
-
-	emu->ilp.error = FALSE;
-	emu->ilp.timeout = 0;
-	emu->ilp.write_count = 0;
-	emu->ilp.read_count = 0;
+	tilem_em_lock(emu);
 	tilem_linkport_graylink_reset(emu->calc);
-
-	tilem_calc_emulator_unlock(emu);
+	tilem_em_unlock(emu);
 	return 0;
 }
 
@@ -135,109 +93,45 @@ static int ilp_reset(CableHandle* cbl)
 static int ilp_send(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	TilemCalcEmulator* emu = cbl->priv;
-	int status = 0;
+	int timeout = cbl->timeout * 100000;
 
-	tilem_calc_emulator_lock(emu);
-
-	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
-
-	emu->ilp.timeout = emu->ilp.timeout_max = cbl->timeout * 10;
-	emu->ilp.write_queue = data;
-	emu->ilp.write_count = count;
-
-	while (emu->ilp.write_count != 0) {
-		if (emu->ilp.abort || emu->ilp.error) {
-			status = ERROR_WRITE_TIMEOUT;
-			break;
+	tilem_em_lock(emu);
+	while (count > 0) {
+		if (tilem_em_send_byte(emu, data[0], timeout, TRUE)) {
+			tilem_em_unlock(emu);
+			return ERROR_WRITE_TIMEOUT;
 		}
-		tilem_calc_emulator_cond_wait(emu, emu->ilp.finished_cond);
+		data++;
+		count--;
 	}
-
-	emu->ilp.timeout = 0;
-
-	tilem_calc_emulator_unlock(emu);
-	return status;
+	tilem_em_unlock(emu);
+	return 0;
 }
+
+/* cool-down period required after receiving and before sending */
+#define COOLDOWN 10000
 
 /* Receive data from calc */
-G_GNUC_UNUSED static int ilp_recv_new(CableHandle* cbl, uint8_t* data, uint32_t count)
-{
-	TilemCalcEmulator* emu = cbl->priv;
-	int status = 0;
-
-	tilem_calc_emulator_lock(emu);
-
-	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
-
-	emu->ilp.timeout = emu->ilp.timeout_max = cbl->timeout * 10;
-	emu->ilp.read_queue = data;
-	emu->ilp.read_count = count;
-
-	while (emu->ilp.read_count != 0) {
-		if (emu->ilp.abort || emu->ilp.error) {
-			status = ERROR_WRITE_TIMEOUT;
-			break;
-		}
-		tilem_calc_emulator_cond_wait(emu, emu->ilp.finished_cond);
-	}
-
-	emu->ilp.timeout = 0;
-
-	tilem_calc_emulator_unlock(emu);
-	return status;
-}
-
-/* Internal function to receive a var */
 static int ilp_recv(CableHandle* cbl, uint8_t* data, uint32_t count)
 {
 	TilemCalcEmulator* emu = cbl->priv;
-	int status = 0;
+	int timeout = cbl->timeout * 100000;
 	int value;
-	unsigned int i;
-	dword prevmask;
 
-	tilem_calc_emulator_lock(emu);
-
-	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_GRAY;
-	prevmask = emu->calc->z80.stop_mask;
-	emu->calc->z80.stop_mask = ~(TILEM_STOP_LINK_READ_BYTE
-				      | TILEM_STOP_LINK_WRITE_BYTE
-				      | TILEM_STOP_LINK_ERROR);
-
-	tilem_z80_run_time(emu->calc, 1000, NULL);
-
-	/*printf(" <<"); */
+	tilem_em_lock(emu);
 	while (count > 0) {
-		value = tilem_linkport_graylink_get_byte(emu->calc);
-
-		if (value != -1) {
-			/* printf(" %02X", value); */
-			data[0] = value;
-			data++;
-			count--;
-			if (!count)
-				break;
+		value = tilem_em_get_byte(emu, timeout, TRUE);
+		if (value < 0) {
+			tilem_em_unlock(emu);
+			return ERROR_READ_TIMEOUT;
 		}
-
-		for (i = 0; i < cbl->timeout; i++)
-			if (tilem_z80_run_time(emu->calc, 100000, NULL))
-				break;
-
-		if (i == cbl->timeout
-		    || (emu->calc->z80.stop_reason & TILEM_STOP_LINK_ERROR)) {
-			tilem_linkport_graylink_reset(emu->calc);
-			status = ERROR_READ_TIMEOUT;
-			break;
-		}
+		data[0] = value;
+		data++;
+		count--;
 	}
-	/*printf("\n");*/
-
-	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
-	emu->calc->z80.stop_mask = prevmask;
-
-	tilem_calc_emulator_unlock(emu);
-	return status;
-
+	tilem_em_delay(emu, COOLDOWN, TRUE);
+	tilem_em_unlock(emu);
+	return 0;
 }
 
 /* Check if ready */
@@ -245,7 +139,7 @@ static int ilp_check(CableHandle* cbl, int* status)
 {
 	TilemCalcEmulator* emu = cbl->priv;
 
-	tilem_calc_emulator_lock(emu);
+	tilem_em_lock(emu);
 
 	*status = STATUS_NONE;
 	if (emu->calc->linkport.lines)
@@ -253,12 +147,12 @@ static int ilp_check(CableHandle* cbl, int* status)
 	if (emu->calc->linkport.extlines)
 		*status |= STATUS_TX;
 
-	tilem_calc_emulator_unlock(emu);
+	tilem_em_unlock(emu);
 	return 0;
 }
 
 /* Open a cable */
-CableHandle* internal_link_handle_new(TilemCalcEmulator* emu)
+static CableHandle* internal_link_handle_new(TilemCalcEmulator* emu)
 {
 	CableHandle* cbl;
 
@@ -277,243 +171,74 @@ CableHandle* internal_link_handle_new(TilemCalcEmulator* emu)
 	return cbl;
 }
 
-/* Print the tilibs error */
-static int print_tilibs_error(int errcode)
-{
-	char* p = NULL;
-	if (errcode) {
-		if (ticalcs_error_get(errcode, &p)
-		    && tifiles_error_get(errcode, &p)
-		    && ticables_error_get(errcode, &p)) {
-			fprintf(stderr, "Unknown error: %d\n", errcode);
-		}
-		else {
-			fprintf(stderr, "%s\n", p);
-			g_free(p);
-		}
-	}
-	return errcode;
-}
+/**************** Automatic link menu ****************/
 
 /* Run a key (wait, press, wait; release; wait) */
-void run_with_key(TilemCalc* calc, int key)
+static void run_with_key(TilemCalcEmulator* emu, int key)
 {
-	tilem_z80_run_time(calc, 500000, NULL);
-	tilem_keypad_press_key(calc, key);
-	tilem_z80_run_time(calc, 1000000, NULL);
-	tilem_keypad_release_key(calc, key);
-	tilem_z80_run_time(calc, 500000, NULL);
-}
-
-/* Press a key */
-void tmr_press_key(TilemCalc* calc, void* data)
-{
-	tilem_keypad_press_key(calc, TILEM_PTR_TO_DWORD(data));
+	tilem_em_delay(emu, 50000, TRUE);
+	tilem_keypad_press_key(emu->calc, key);
+	tilem_em_delay(emu, 50000, TRUE);
+	tilem_keypad_release_key(emu->calc, key);
+	tilem_em_delay(emu, 50000, TRUE);
 }
 
 /* Automatically press key to be in the receive mode (ti82 and ti85) */
-void prepare_for_link_send(TilemCalc* calc)
+static void prepare_for_link_send(TilemCalcEmulator* emu)
 {
-	run_with_key(calc, TILEM_KEY_ON);
-	run_with_key(calc, TILEM_KEY_ON);
-
-	if (calc->hw.model_id == TILEM_CALC_TI82) {
-		run_with_key(calc, TILEM_KEY_2ND);
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_2ND);
-		run_with_key(calc, TILEM_KEY_GRAPHVAR);
-		run_with_key(calc, TILEM_KEY_ENTER);
-		run_with_key(calc, TILEM_KEY_RIGHT);
-		run_with_key(calc, TILEM_KEY_ENTER);
+	tilem_em_lock(emu);
+	tilem_em_wake_up(emu, TRUE);
+	if (emu->calc->hw.model_id == TILEM_CALC_TI82) {
+		run_with_key(emu, TILEM_KEY_2ND);
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_2ND);
+		run_with_key(emu, TILEM_KEY_GRAPHVAR);
+		run_with_key(emu, TILEM_KEY_RIGHT);
+		run_with_key(emu, TILEM_KEY_ENTER);
 	}
-	else if (calc->hw.model_id == TILEM_CALC_TI85) {
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_2ND);
-		run_with_key(calc, TILEM_KEY_GRAPHVAR);
-		run_with_key(calc, TILEM_KEY_WINDOW);
+	else if (emu->calc->hw.model_id == TILEM_CALC_TI85) {
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_2ND);
+		run_with_key(emu, TILEM_KEY_GRAPHVAR);
+		run_with_key(emu, TILEM_KEY_WINDOW);
 	}
+	tilem_em_unlock(emu);
 }
 
 /* Automatically press key to be in the send mode (ti82 and ti85) */
-void prepare_for_link_receive(TilemCalc* calc)
+static void prepare_for_link_receive(TilemCalcEmulator *emu)
 {
-	run_with_key(calc, TILEM_KEY_ON);
-	run_with_key(calc, TILEM_KEY_ON);
-	
-	if (calc->hw.model_id == TILEM_CALC_TI82) {
-		/* TODO : there's something wrong here */
-		printf("prepare_for_link_receive\n");
-		run_with_key(calc, TILEM_KEY_2ND);
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_2ND);
-		run_with_key_slowly(calc, TILEM_KEY_GRAPHVAR);
-		run_with_key_slowly(calc, TILEM_KEY_ENTER);
-		run_with_key_slowly(calc, TILEM_KEY_RIGHT);
-		run_with_key_slowly(calc, TILEM_KEY_ENTER);
-		
+	tilem_em_lock(emu);
+	tilem_em_wake_up(emu, TRUE);
+	if (emu->calc->hw.model_id == TILEM_CALC_TI82) {
+		run_with_key(emu, TILEM_KEY_2ND);
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_2ND);
+		run_with_key(emu, TILEM_KEY_GRAPHVAR);
+		run_with_key(emu, TILEM_KEY_ENTER);
+		tilem_em_delay(emu, 10000000, TRUE);
+		run_with_key(emu, TILEM_KEY_RIGHT);
+		run_with_key(emu, TILEM_KEY_ENTER);
 	}
-	else if (calc->hw.model_id == TILEM_CALC_TI85) {
-		/* TODO  : not the good key sequence...*/
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_MODE);
-		run_with_key(calc, TILEM_KEY_2ND);
-		run_with_key(calc, TILEM_KEY_GRAPHVAR);
-		run_with_key(calc, TILEM_KEY_WINDOW);
+	else if (emu->calc->hw.model_id == TILEM_CALC_TI85) {
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_MODE);
+		run_with_key(emu, TILEM_KEY_2ND);
+		run_with_key(emu, TILEM_KEY_GRAPHVAR);
+		run_with_key(emu, TILEM_KEY_YEQU);
+		run_with_key(emu, TILEM_KEY_GRAPH);
+		tilem_em_delay(emu, 10000000, TRUE);
+		run_with_key(emu, TILEM_KEY_WINDOW);
+		tilem_em_delay(emu, 10000000, TRUE);
+		run_with_key(emu, TILEM_KEY_YEQU);
 	}
+	tilem_em_unlock(emu);
 }
 
-
-
-/* Send a file to the calc */
-void send_file(TilemCalcEmulator* emu, CableHandle *cbl, const char* filename)
-{
-	CalcHandle* ch;
-	CalcScreenCoord sc;
-	uint8_t *bitmap = NULL;
-	int tmr, k, err;
-	FileContent* filec;
-	TI81Program* prgm = NULL;
-	FILE* f;
-
-	tilem_calc_emulator_lock(emu);
-	prepare_for_link_send(emu->calc);
-	tilem_calc_emulator_unlock(emu);
-
-	if (emu->calc->hw.model_id == TILEM_CALC_TI81) {
-		f = g_fopen(filename, "rb");
-		if (!f) {
-			perror(filename);
-			return;
-		}
-
-		ti81_read_prg_file(f, &prgm);
-		fclose(f);
-
-		if (prgm) {
-			tilem_calc_emulator_lock(emu);
-			ti81_load_program(emu->calc, prgm);
-			tilem_calc_emulator_unlock(emu);
-			ti81_program_free(prgm);
-		}
-		return;
-	}
-
-	ch = ticalcs_handle_new(get_calc_model(emu->calc));
-	if (!ch) {
-		fprintf(stderr, "INTERNAL ERROR: unsupported calc\n");
-		return;
-	}
-
-	ticalcs_update_set(ch, emu->link_update);
-	ticalcs_cable_attach(ch, cbl);
-		
-	switch (tifiles_file_get_class(filename)) {
-	case TIFILE_SINGLE:
-	case TIFILE_GROUP:
-	case TIFILE_REGULAR:
-		filec = tifiles_content_create_regular(ch->model);
-		err = tifiles_file_read_regular(filename, filec);
-		if ( err )
-		{
-			print_tilibs_error(err);
-			tifiles_content_delete_regular(filec);
-		}
-		//mode = MODE_SEND_LAST_VAR;
-		//mode = MODE_NORMAL;
-
-		err = ticalcs_calc_send_var(ch, MODE_NORMAL, filec);
-		tifiles_content_delete_regular(filec);
-		break;	
-		
-		//print_tilibs_error(ticalcs_calc_send_var2(ch, MODE_NORMAL , filename));
-		//break;
-
-	case TIFILE_BACKUP:
-		/* press enter to accept backup */
-		if (emu->calc->hw.model_id == TILEM_CALC_TI85
-		    || emu->calc->hw.model_id == TILEM_CALC_TI86) {
-			k = TILEM_KEY_YEQU;
-		}
-		else {
-			k = TILEM_KEY_ENTER;
-		}
-
-		tmr = tilem_z80_add_timer(emu->calc, 100, 0, 1, tmr_press_key, TILEM_DWORD_TO_PTR(k));
-		//while(is_ready(ch)){ }
-		print_tilibs_error(ticalcs_calc_send_backup2(ch, filename));
-		tilem_z80_remove_timer(emu->calc, tmr);
-		tilem_keypad_release_key(emu->calc, k);
-
-		break;
-
-	case TIFILE_FLASH:
-	case TIFILE_OS:
-	case TIFILE_APP:
-		if (tifiles_file_is_os(filename))
-			print_tilibs_error(ticalcs_calc_send_os2(ch, filename));
-		else if (tifiles_file_is_app(filename))
-			print_tilibs_error(ticalcs_calc_send_app2(ch, filename));
-		break;
-
-	case TIFILE_TIGROUP:
-		print_tilibs_error(ticalcs_calc_send_tigroup2(ch, filename, TIG_ALL));
-		break;
-
-	default:
-		if (1) {
-			print_tilibs_error(ticalcs_calc_send_key(ch, 0xA0));
-		} else {
-			print_tilibs_error(ticalcs_calc_recv_screen(ch, &sc, &bitmap));
-			g_free(bitmap);
-		}
-		break;
-	}
-
-	ticalcs_cable_detach(ch);
-	ticalcs_handle_del(ch);
-}
-
-/* Get the calc model (compatible for ticalcs) */
-int get_calc_model(TilemCalc* calc)
-{
-	switch (calc->hw.model_id) {
-	case TILEM_CALC_TI73:
-		return CALC_TI73;
-
-	case TILEM_CALC_TI81:
-	case TILEM_CALC_TI82:
-		return CALC_TI82;
-
-	case TILEM_CALC_TI83:
-	case TILEM_CALC_TI76:
-		return CALC_TI83;
-
-	case TILEM_CALC_TI83P:
-	case TILEM_CALC_TI83P_SE:
-		return CALC_TI83P;
-
-	case TILEM_CALC_TI84P:
-	case TILEM_CALC_TI84P_SE:
-	case TILEM_CALC_TI84P_NSPIRE:
-		return CALC_TI84P;
-
-	case TILEM_CALC_TI85:
-		return CALC_TI85;
-
-	case TILEM_CALC_TI86:
-		return CALC_TI86;
-
-	default:
-		return CALC_NONE;
-	}
-}
-
-/****************/
-/* PROGRESS BAR */
-/****************/
+/**************** Calc handle ****************/
 
 /* idle callback to start progress bar */
 static gboolean pbar_start(gpointer data)
@@ -562,115 +287,305 @@ static void pbar_do_update()
 	g_idle_add(&pbar_update, emu);
 }
 
-/* Link thread main loop */
-static gpointer link_main(gpointer data)
+/* Get the calc model (compatible for ticalcs) */
+static int get_calc_model(TilemCalc *calc)
 {
-	TilemCalcEmulator *emu = data;
-	char *fname;
-	CableHandle *cbl;
+	switch (calc->hw.model_id) {
+	case TILEM_CALC_TI73:
+		return CALC_TI73;
 
-	ticables_library_init();
-	tifiles_library_init();
-	ticalcs_library_init();
+	case TILEM_CALC_TI81:
+	case TILEM_CALC_TI82:
+		return CALC_TI82;
 
-	cbl = internal_link_handle_new(emu);
+	case TILEM_CALC_TI83:
+	case TILEM_CALC_TI76:
+		return CALC_TI83;
+
+	case TILEM_CALC_TI83P:
+	case TILEM_CALC_TI83P_SE:
+		return CALC_TI83P;
+
+	case TILEM_CALC_TI84P:
+	case TILEM_CALC_TI84P_SE:
+	case TILEM_CALC_TI84P_NSPIRE:
+		return CALC_TI84P;
+
+	case TILEM_CALC_TI85:
+		return CALC_TI85;
+
+	case TILEM_CALC_TI86:
+		return CALC_TI86;
+
+	default:
+		return CALC_NONE;
+	}
+}
+
+/* Create a calc handle */
+static void begin_link(TilemCalcEmulator *emu,
+                       CableHandle **cbl, CalcHandle **ch)
+{
+	tilem_em_unlock(emu);
+
+	*cbl = internal_link_handle_new(emu);
+
+	emu->link_update->max1 = 0;
+	emu->link_update->max2 = 0;
+	emu->link_update->text[0] = 0;
+
+	emu->link_update->pbar = &pbar_do_update;
+	emu->link_update->label = &pbar_do_update;
 
 	g_static_private_set(&current_emu_key, emu, NULL);
 
-	g_mutex_lock(emu->link_queue_mutex);
-	while (!emu->link_cancel) {
-		if (!(fname = g_queue_pop_head(emu->link_queue))) {
-			g_cond_wait(emu->link_queue_cond, emu->link_queue_mutex);
-			continue;
-		}
-		g_mutex_unlock(emu->link_queue_mutex);
+	g_idle_add(&pbar_start, emu);
 
-		emu->link_update->max1 = 0;
-		emu->link_update->max2 = 0;
-		emu->link_update->text[0] = 0;
-
-		g_idle_add(&pbar_start, emu);
-
-		emu->link_update->pbar = &pbar_do_update;
-		emu->link_update->label = &pbar_do_update;
-
-		send_file(emu, cbl, fname);
-
-		g_free(fname);
-
-		g_mutex_lock(emu->link_queue_mutex);
-
-		if (g_queue_is_empty(emu->link_queue))
-			g_idle_add(&pbar_stop, emu);
+	*ch = ticalcs_handle_new(get_calc_model(emu->calc));
+	if (!*ch) {
+		g_critical("unsupported calc");
+		return;
 	}
-	g_mutex_unlock(emu->link_queue_mutex);
 
+	ticalcs_update_set(*ch, emu->link_update);
+	ticalcs_cable_attach(*ch, *cbl);
+}
+
+/* Destroy calc handle */
+static void end_link(TilemCalcEmulator *emu,
+                     CableHandle *cbl, CalcHandle *ch)
+{
+	g_idle_add(&pbar_stop, emu);
+	ticalcs_cable_detach(ch);
+	ticalcs_handle_del(ch);
 	ticables_handle_del(cbl);
 
-	ticalcs_library_exit();
-	tifiles_library_exit();
-	ticables_library_exit();
-
-	return NULL;
+	tilem_em_lock(emu);
 }
 
-/* Send a file creating and using a separate thread */
-void tilem_calc_emulator_send_file(TilemCalcEmulator *emu,
-                                   const char *filename)
+/**************** Error messages ****************/
+
+static char * get_tilibs_error(int errcode)
 {
-	g_return_if_fail(emu != NULL);
-	g_return_if_fail(emu->calc != NULL);
-	g_return_if_fail(filename != NULL);
+	char *p = NULL;
 
-	emu->ilp.abort = FALSE;
-	emu->link_cancel = FALSE;
-
-	g_mutex_lock(emu->link_queue_mutex);
-	g_queue_push_tail(emu->link_queue, g_strdup(filename));
-	g_cond_broadcast(emu->link_queue_cond);
-	g_mutex_unlock(emu->link_queue_mutex);
-
-	if (!emu->link_thread)
-		emu->link_thread = g_thread_create(&link_main, emu, TRUE, NULL);
+	if (!ticalcs_error_get(errcode, &p)
+	    || !ticables_error_get(errcode, &p)
+	    || !tifiles_error_get(errcode, &p))
+		return p;
+	else
+		return g_strdup_printf("Unknown error (%d)", errcode);
 }
 
-/* Cancel the transfert (used as signal callback) */
-void tilem_calc_emulator_cancel_link(TilemCalcEmulator *emu)
+static void show_error(TilemCalcEmulator *emu,
+                       const char *title, const char *message)
 {
-	char *fname;
-	CalcUpdate *update;
-
-	g_return_if_fail(emu != NULL);
-
-	if (!emu->link_thread)
-		return;
-
-	/* remove any queued files that haven't yet been sent, and notify
-	   link thread that it should exit */
-	g_mutex_lock(emu->link_queue_mutex);
-	emu->link_cancel = 1;
-	/* TODO : there's a problem with receiving file queue (contains VarEntry* and char*) */
-	while ((fname = g_queue_pop_head(emu->link_queue)))
-		g_free(fname);
-	g_cond_broadcast(emu->link_queue_cond);
-	g_mutex_unlock(emu->link_queue_mutex);
-
-	/* notify ticalcs that the operation is to be aborted */
-	update = emu->link_update;
-	update->cancel = 1;
-
-	/* cancel any ongoing transfer */
-	tilem_calc_emulator_lock(emu);
-	emu->ilp.abort = TRUE;
-	g_cond_broadcast(emu->ilp.finished_cond);
-	tilem_calc_emulator_unlock(emu);
-
-	/* wait for link thread to exit */
-	g_thread_join(emu->link_thread);
-	emu->link_thread = NULL;
-
-	pbar_stop(emu);
-
-	update->cancel = 0;
+	if (emu->ewin)
+		messagebox11(emu->ewin->window, GTK_MESSAGE_ERROR,
+		             "%s", title, "%s", message);
+	else
+		g_printerr("\n=== %s ===\n%s\n\n", title, message);
 }
 
+/**************** Sending files ****************/
+
+struct sendfileinfo {
+	char *filename;
+	char *display_name;
+	int slot;
+	int first;
+	int last;
+	char *error_message;
+};
+
+/* Send a file to TI-81 */
+static gboolean send_file_ti81(TilemCalcEmulator *emu, struct sendfileinfo *sf)
+{
+	TI81Program *prgm = NULL;
+	FILE *f;
+	int errnum;
+
+	f = g_fopen(sf->filename, "rb");
+	if (!f) {
+		sf->error_message = g_strdup_printf
+			("Failed to open %s for reading: %s",
+			 sf->display_name, g_strerror(errno));
+		return FALSE;
+	}
+
+	if (ti81_read_prg_file(f, &prgm)) {
+		sf->error_message = g_strdup_printf
+			("The file %s is not a valid TI-81 program file.",
+			 sf->display_name);
+		fclose(f);
+		return FALSE;
+	}
+
+	fclose(f);
+
+	prgm->info.slot = sf->slot;
+	errnum = ti81_load_program(emu->calc, prgm);
+	ti81_program_free(prgm);
+
+	switch (errnum) {
+	case 0:
+		return TRUE;
+
+	case TI81_ERR_MEMORY:
+		sf->error_message = g_strdup_printf
+			("The calculator does not have enough free memory"
+			 " to load the program.");
+		return FALSE;
+
+	case TI81_ERR_SLOTS_FULL:
+		sf->error_message = g_strdup_printf
+			("All calculator program slots are in use. "
+			 " You must delete an existing program before"
+			 " loading a new program.");
+		return FALSE;
+
+	case TI81_ERR_BUSY:
+		sf->error_message = g_strdup_printf
+			("The calculator is currently busy.  Please"
+			 " exit to the home screen before loading"
+			 " programs.");
+		return FALSE;
+
+	default:
+		sf->error_message = g_strdup_printf
+			("Unknown error code (%d)", errnum);
+		return FALSE;
+	}
+}
+
+/* Send a file using ticalcs2 */
+static gboolean send_file_linkport(TilemCalcEmulator *emu, struct sendfileinfo *sf)
+{
+	CalcModel model;
+	FileClass cls;
+	CableHandle *cbl;
+	CalcHandle *ch;
+	FileContent *filec;
+	BackupContent *backupc;
+	FlashContent *flashc;
+	TigContent *tigc;
+	CalcMode mode;
+	int e;
+
+	model = get_calc_model(emu->calc);
+	cls = tifiles_file_get_class(sf->filename);
+
+	/* Read input file */
+
+	switch (cls) {
+	case TIFILE_SINGLE:
+	case TIFILE_GROUP:
+	case TIFILE_REGULAR:
+		filec = tifiles_content_create_regular(model);
+		e = tifiles_file_read_regular(sf->filename, filec);
+		if (!e) {
+			begin_link(emu, &cbl, &ch);
+			if (sf->first)
+				prepare_for_link_send(emu);
+			mode = (sf->last ? MODE_SEND_LAST_VAR : MODE_NORMAL);
+			e = ticalcs_calc_send_var(ch, mode, filec);
+			end_link(emu, cbl, ch);
+		}
+		tifiles_content_delete_regular(filec);
+		break;
+
+	case TIFILE_BACKUP:
+		backupc = tifiles_content_create_backup(model);
+		e = tifiles_file_read_backup(sf->filename, backupc);
+		if (!e) {
+			begin_link(emu, &cbl, &ch);
+			prepare_for_link_send(emu);
+			e = ticalcs_calc_send_backup(ch, backupc);
+			end_link(emu, cbl, ch);
+		}
+		tifiles_content_delete_backup(backupc);
+		break;
+
+	case TIFILE_FLASH:
+	case TIFILE_OS:
+	case TIFILE_APP:
+		flashc = tifiles_content_create_flash(model);
+		e = tifiles_file_read_flash(sf->filename, flashc);
+		if (!e) {
+			begin_link(emu, &cbl, &ch);
+			prepare_for_link_send(emu);
+			if (tifiles_file_is_os(sf->filename))
+				e = ticalcs_calc_send_os(ch, flashc);
+			else if (tifiles_file_is_app(sf->filename))
+				e = ticalcs_calc_send_app(ch, flashc);
+			else
+				e = ticalcs_calc_send_cert(ch, flashc);
+			end_link(emu, cbl, ch);
+		}
+		tifiles_content_delete_flash(flashc);
+		break;
+
+	case TIFILE_TIGROUP:
+		tigc = tifiles_content_create_tigroup(model, 0);
+		e = tifiles_file_read_tigroup(sf->filename, tigc);
+		if (!e) {
+			begin_link(emu, &cbl, &ch);
+			prepare_for_link_send(emu);
+			e = ticalcs_calc_send_tigroup(ch, tigc, TIG_ALL);
+			end_link(emu, cbl, ch);
+		}
+		tifiles_content_delete_tigroup(tigc);
+		break;
+
+	default:
+		sf->error_message = g_strdup_printf
+			("The file %s is not a valid program or"
+			 " variable file.",
+			 sf->display_name);
+		return FALSE;
+	}
+
+	if (e && !emu->task_abort)
+		sf->error_message = get_tilibs_error(e);
+	return (e == 0);
+}
+
+static gboolean send_file_main(TilemCalcEmulator *emu, gpointer data)
+{
+	struct sendfileinfo *sf = data;
+
+	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
+		return send_file_ti81(emu, sf);
+	else
+		return send_file_linkport(emu, sf);
+}
+
+static void send_file_finished(TilemCalcEmulator *emu, gpointer data,
+                               G_GNUC_UNUSED gboolean cancelled)
+{
+	struct sendfileinfo *sf = data;
+
+	if (sf->error_message)
+		show_error(emu, "Unable to send file", sf->error_message);
+
+	g_free(sf->filename);
+	g_free(sf->display_name);
+	g_free(sf->error_message);
+	g_slice_free(struct sendfileinfo, sf);
+}
+
+void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
+                          int slot, gboolean first, gboolean last)
+{
+	struct sendfileinfo *sf;
+
+	sf = g_slice_new0(struct sendfileinfo);
+	sf->filename = g_strdup(filename);
+	sf->display_name = g_filename_display_basename(filename);
+	sf->slot = slot;
+	sf->first = first;
+	sf->last = last;
+
+	tilem_calc_emulator_begin(emu, &send_file_main,
+	                          &send_file_finished, sf);
+}

@@ -85,6 +85,7 @@ void tilem_dirlist_display(GNode* tree)
 /* Terminated by NULL */
 gpointer tilem_get_dirlist_ns(gpointer data)
 {
+#if 0
 	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
 	
 	
@@ -143,7 +144,7 @@ gpointer tilem_get_dirlist_ns(gpointer data)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
-	
+#endif	
 	return NULL;
 }
 
@@ -154,6 +155,7 @@ gpointer tilem_get_dirlist_ns(gpointer data)
 /* Terminated by NULL */
 gpointer tilem_get_dirlist(gpointer data)
 {
+#if 0
 	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
 
 	CableHandle* cbl;
@@ -247,7 +249,7 @@ gpointer tilem_get_dirlist(gpointer data)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
-	
+#endif	
 	return NULL;
 }
 
@@ -269,7 +271,7 @@ gint tilem_get_dirlist_size(GNode* tree)
  * a long time. 
  */
 int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination) {
-	
+#if 0	
 	CableHandle* cbl;
 	CalcHandle* ch;
 	
@@ -317,7 +319,7 @@ int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destinat
 	tifiles_library_exit();
 	ticables_library_exit();
 
-
+#endif
 	return 0;
 }
 
@@ -376,6 +378,7 @@ static void pbar_do_update()
 /* Link thread main loop */
 static gpointer link_main2(gpointer data)
 {
+#if 0
 	TilemCalcEmulator *emu = data;
 	VarEntry* varentry;
 	char *fname;
@@ -433,7 +436,7 @@ static gpointer link_main2(gpointer data)
 	ticalcs_library_exit();
 	tifiles_library_exit();
 	ticables_library_exit();
-
+#endif
 	return NULL;
 }
 
