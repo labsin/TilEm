@@ -258,5 +258,12 @@
 * ---14/10/11---
 * - Add a feature to list ti82 and ti85 entries. User must prepare manually the link. Can't save a ti82 or ti85 entry (when selected in the rcvdialog). 
 * - Lot of bug, code is really ugly. No error handling. The prepare_for_link_receive is not working. etc...
+* ---11/11/11---
+* - Benjamin add a totally new prefs dialog. Some unused function (print lcd in terminal by example) are deleted.
+* ---12/11/11---
+* - Working on ns silent get var.
+* ---14/11/11--- 
+* - Benjamin adds a totally new core task manager in the gui. Begin to convert the send files function to use it.
+* - Use this task manager for macro. There's a little priority problem when a macro load a file. Load a file then run a macro at startup works fine.
 */
 

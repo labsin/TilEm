@@ -174,20 +174,17 @@ static gboolean tilem_macro_play_main(TilemCalcEmulator *emu, G_GNUC_UNUSED gpoi
 
 	int i;
 	for(i = 0; i < emu->macro->n; i++ ){
-		printf("Into for loop\n");	
 		/* Type == 1 is load file */
 		if(emu->macro->actions[i]->type == 1) {
-			printf("send file\n");
 			printf("file to send : %s\n", emu->macro->actions[i]->value);
 			tilem_em_unlock(emu);
 			tilem_link_send_file(emu, emu->macro->actions[i]->value, -1, TRUE, TRUE);
-			/* tilem_calc_emulator_cond_wait(emu, emu->ilp.finished_cond);	*/
+			/* DO SOMETHING HERE TO FINISH TO SEND FILE BEFORE CONTINUE */
+			/* OFTEN A MACRO IS USED TO LOAD A FILE THEN LAUNCH IT, AND AT THE MOMENT IT DOES NOT WORK */
 			tilem_em_lock(emu);
 	
-			printf("send file end\n");
 		} else {
 			/* type == 0 is keypress */
-			printf("key press\n");
 			int code = atoi(emu->macro->actions[i]->value);
 			tilem_em_unlock(emu);
 			run_with_key_slowly(emu->calc, code);			
@@ -196,15 +193,14 @@ static gboolean tilem_macro_play_main(TilemCalcEmulator *emu, G_GNUC_UNUSED gpoi
 		printf("type : %d    value : %s\n", emu->macro->actions[i]->type, emu->macro->actions[i]->value);
 	}
 
-	printf("Play end\n");
-	/* Turn off the macro playing state */
-	emu->isMacroPlaying = FALSE;
 
 	return TRUE;
 }
 
 static void tilem_macro_play_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data,
                                G_GNUC_UNUSED gboolean cancelled) {
+	/* Turn off the macro playing state */
+	emu->isMacroPlaying = FALSE;
 
 }
 
@@ -216,6 +212,7 @@ void tilem_macro_play(TilemCalcEmulator* emu) {
 static gboolean tilem_macro_load_main(TilemCalcEmulator* emu, gpointer data) {
 
 	char* filename = (char*) data;
+	printf("filename : %s\n", filename);
 
 	char c = 'a';
 	
@@ -223,6 +220,7 @@ static gboolean tilem_macro_load_main(TilemCalcEmulator* emu, gpointer data) {
 
 	if(filename) {
 		FILE * fp = g_fopen(filename, "r");
+		printf("filename : %s\n", filename);
 		
 		tilem_macro_start(emu);	
 		while(c != EOF) {	
@@ -251,8 +249,11 @@ static gboolean tilem_macro_load_main(TilemCalcEmulator* emu, gpointer data) {
 		tilem_macro_stop(emu);
 		fclose(fp);
 	}
-	/*tilem_macro_play(emu);*/
+	
+	/* The play macro stuff is executed in the finished function */	
+	/* However it does not work as I want if I put it here xD */
 	/*tilem_calc_emulator_begin(emu, &tilem_macro_play_main, &tilem_macro_play_finished, NULL);	*/
+	
 	
 	return TRUE;
 }
@@ -263,6 +264,7 @@ static gboolean tilem_macro_load_main(TilemCalcEmulator* emu, gpointer data) {
 static void tilem_macro_load_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, gpointer data,
                                G_GNUC_UNUSED gboolean cancelled)
 {
+	/* I'm not sure if it's the right place to do that... */
 	tilem_calc_emulator_begin(emu, &tilem_macro_play_main, &tilem_macro_play_finished, NULL);
 }
 
@@ -271,6 +273,7 @@ static void tilem_macro_load_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, gpoi
  */
 void tilem_macro_load(TilemCalcEmulator *emu, char* filename) {
 	
+	printf("tilem_macro_load : filename : %s\n", filename);
 	if(!filename) {
 		char *dir;
 		tilem_config_get("macro",
@@ -283,7 +286,8 @@ void tilem_macro_load(TilemCalcEmulator *emu, char* filename) {
 					    "Macro files", "*.txt",
 	                                    "All files", "*",
 					    NULL);
-		g_free(dir);
+		if(dir)
+			g_free(dir);
 	}
 
 	tilem_calc_emulator_begin(emu, &tilem_macro_load_main, &tilem_macro_load_finished, filename);	

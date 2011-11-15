@@ -111,6 +111,7 @@ int main(int argc, char **argv)
 	if (cl->FileToLoad) /* Given as parameter ? */
 		tilem_link_send_file(emu, cl->FileToLoad, -1, TRUE, TRUE);
 	if (cl->MacroToPlay) { /* Given as parameter ? */
+		printf("macro to load : %s\n", cl->MacroToPlay);
 		tilem_macro_load(emu, cl->MacroToPlay); 		
 	}
 
