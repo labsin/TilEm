@@ -72,14 +72,10 @@ static char** tilem_rcvmenu_get_selected_vars(G_GNUC_UNUSED TilemReceiveDialog* 
 
 /* Get a default filename composed from the varname and the extension given by ticonv/tifiles (depends on var entry : is it var or app, calc model) */
 static gchar* tilem_rcvmenu_get_default_filename(TilemReceiveDialog* rcvdialog, VarEntry* ve) {
-#if 0	
 	gchar* basename = ticonv_varname_to_filename(get_calc_model(rcvdialog->emu->calc),ve->name, ve->type);
         gchar* default_filename = g_strconcat(basename, ".", tifiles_vartype2fext(get_calc_model(rcvdialog->emu->calc), ve->type), NULL);
 	
 	return default_filename;
-#else
-	return NULL;
-#endif
 }
 	
 
@@ -128,9 +124,9 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 
 	/* Save config */
 	tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
-	tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
+	//tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
 	
-	//tilem_calc_emulator_receive_file(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
+	tilem_calc_emulator_receive_file(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
 
 	if(filename)	
 		g_free(filename);	
@@ -142,8 +138,10 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		g_free(varname);
 }
 
+/* This function is executed when the dirlist asked by the refresh button is finished */
 static void tilem_get_dirlist_refresh_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled) {
 	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
+	
 	rcvdialog->model = fill_varlist(rcvdialog, rcvdialog->emu->varapp->vlist_utf8);
         gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
 }
@@ -161,7 +159,6 @@ static void tilem_rcvmenu_on_refresh(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	/* Get the varlist and the applist */
 	tilem_calc_emulator_begin(rcvdialog->emu, &tilem_get_dirlist_main, &tilem_get_dirlist_refresh_finished, rcvdialog);	
 
-	/* Print the new varlist and applist into the treeview */
 }
 
 

@@ -279,8 +279,11 @@ void tilem_config_set(const char *group, const char *option, ...)
 void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
                           int slot, gboolean first, gboolean last);
 
+/* FIXME : maybe move the link function from getvar.c to keep static visibility of these functions ?? */
 void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch);
 void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch);
+int get_calc_model(TilemCalc *calc);
+void show_error(TilemCalcEmulator *emu, const char *title, const char *message);
 
 
 
@@ -309,7 +312,7 @@ void tilem_get_dirlist_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNU
 void dirlist_print_debug(char **list);
 
 /* Receive a var  (no thread) */
-int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination);
+int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination, CalcHandle *ch, CableHandle *cbl);
 
 /* Receive var (thread) */
 void tilem_calc_emulator_receive_file(TilemCalcEmulator *emu, VarEntry* varentry, char* destination);

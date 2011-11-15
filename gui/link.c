@@ -288,7 +288,7 @@ static void pbar_do_update()
 }
 
 /* Get the calc model (compatible for ticalcs) */
-static int get_calc_model(TilemCalc *calc)
+int get_calc_model(TilemCalc *calc)
 {
 	switch (calc->hw.model_id) {
 	case TILEM_CALC_TI73:
@@ -375,7 +375,7 @@ static char * get_tilibs_error(int errcode)
 		return g_strdup_printf("Unknown error (%d)", errcode);
 }
 
-static void show_error(TilemCalcEmulator *emu,
+void show_error(TilemCalcEmulator *emu,
                        const char *title, const char *message)
 {
 	if (emu->ewin)
