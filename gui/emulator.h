@@ -44,20 +44,6 @@ typedef struct _TilemVarApp {
 	int n;
 } TilemVarApp;
 
-/* Internal link cable state */
-typedef struct _TilemInternalLink {
-	gboolean active;       /* internal link cable active */
-	GCond *finished_cond;  /* used to signal when transfer finishes */
-	gboolean error;        /* error (collision or timeout) */
-	gboolean abort;        /* transfer aborted */
-	int timeout_max;       /* time allowed per byte */
-	int timeout;           /* time left for next byte */
-	byte *read_queue;      /* buffer for received data */
-	int read_count;        /* number of bytes left to read */
-	const byte *write_queue; /* data to be sent */
-	int write_count;         /* number of bytes left to send */
-} TilemInternalLink;
-
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
 
@@ -82,9 +68,6 @@ typedef struct _TilemCalcEmulator {
 	gboolean task_busy;
 	gboolean task_abort;
 	GCond *task_finished_cond;
-
-	/* Internal link cable */
-	TilemInternalLink ilp;
 
 	/* Sequence of keys to be pressed */
 	byte *key_queue;
@@ -114,11 +97,7 @@ typedef struct _TilemCalcEmulator {
 	struct _TilemVarApp *varapp;
 
 	/* Link transfer state */
-	GThread *link_thread;
-	GMutex *link_queue_mutex;
-	GCond *link_queue_cond;
-	GQueue *link_queue;      /* queue of filenames to be sent */
-	gboolean link_cancel;    /* cancel_link() has been called */
+	gboolean ilp_active;
 	CalcUpdate *link_update; /* CalcUpdate (status and callbacks for ticalcs) */
 
 	/* GUI widgets */

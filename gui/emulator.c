@@ -140,17 +140,12 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 
 	emu->calc_mutex = g_mutex_new();
 	emu->calc_wakeup_cond = g_cond_new();
-	emu->ilp.finished_cond = g_cond_new();
 	emu->lcd_mutex = g_mutex_new();
 
 	tilem_config_get("emulation",
 	                 "grayscale/b=1", &emu->grayscale,
 	                 "limit_speed/b=1", &emu->limit_speed,
 	                 NULL);
-
-	emu->link_queue = g_queue_new();
-	emu->link_queue_mutex = g_mutex_new();
-	emu->link_queue_cond = g_cond_new();
 
 	emu->task_queue = g_queue_new();
 	emu->task_finished_cond = g_cond_new();
@@ -189,11 +184,6 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 	g_mutex_free(emu->calc_mutex);
 	g_mutex_free(emu->lcd_mutex);
 	g_cond_free(emu->calc_wakeup_cond);
-	g_cond_free(emu->ilp.finished_cond);
-
-	g_mutex_free(emu->link_queue_mutex);
-	g_cond_free(emu->link_queue_cond);
-	g_queue_free(emu->link_queue);
 
 	g_cond_free(emu->task_finished_cond);
 	g_queue_free(emu->task_queue);

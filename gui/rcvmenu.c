@@ -321,8 +321,10 @@ void ask_prepare_receive (TilemCalcEmulator* emu)
 	GtkWidget *dialog, *label, *content_area;
 
 	/* Start to wait the transmit state */
+	/*
 	if (!emu->link_thread)
 		emu->link_thread = g_thread_create(&tilem_get_dirlist_ns, emu, TRUE, NULL);
+	*/
 
 	/* Create the widgets */
 	dialog = gtk_dialog_new_with_buttons ("Message", GTK_WINDOW(emu->ewin->window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_OK, GTK_RESPONSE_NONE, NULL);

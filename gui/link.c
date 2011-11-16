@@ -47,13 +47,13 @@ static int ilp_open(CableHandle* cbl)
 
 	tilem_em_lock(emu);
 
-	if (emu->ilp.active) {
+	if (emu->ilp_active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already opened\n");
 		tilem_em_unlock(emu);
 		return 1;
 	}
 
-	emu->ilp.active = TRUE;
+	emu->ilp_active = TRUE;
 	tilem_linkport_graylink_reset(emu->calc);
 	tilem_em_unlock(emu);
 	return 0;
@@ -66,13 +66,13 @@ static int ilp_close(CableHandle* cbl)
 
 	tilem_em_lock(emu);
 
-	if (!emu->ilp.active) {
+	if (!emu->ilp_active) {
 		fprintf(stderr, "INTERNAL ERROR: cable already closed\n");
 		tilem_em_unlock(emu);
 		return 1;
 	}
 
-	emu->ilp.active = FALSE;
+	emu->ilp_active = FALSE;
 	tilem_linkport_graylink_reset(emu->calc);
 	tilem_em_unlock(emu);
 	return 0;

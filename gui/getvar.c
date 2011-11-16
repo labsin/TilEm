@@ -267,15 +267,11 @@ static gboolean receive_file_main(TilemCalcEmulator* emu, gpointer data)
 	printf("rf->ve : ve.name = %s", rf->ve->name);
 
 
-	g_mutex_unlock(emu->link_queue_mutex);
-
 	FileContent* filec;
 	filec = tifiles_content_create_regular(ch->model);
 	ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, rf->ve);	
 	tifiles_file_display_regular(filec);
 	tifiles_file_write_regular(rf->destination, filec, NULL);
-
-	g_mutex_lock(emu->link_queue_mutex);
 
 	
 	end_link(emu, cbl, ch);
@@ -317,9 +313,6 @@ void tilem_calc_emulator_receive_file(TilemCalcEmulator *emu, VarEntry* varentry
 	g_return_if_fail(emu->calc != NULL);
 	g_return_if_fail(varentry != NULL);
 	g_return_if_fail(destination != NULL);
-
-	emu->ilp.abort = FALSE;
-	emu->link_cancel = FALSE;
 
 	tilem_calc_emulator_begin(emu, &receive_file_main, &receive_file_finished, rf);
 }
