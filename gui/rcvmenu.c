@@ -178,37 +178,62 @@ static GtkWidget *new_scrolled_window(GtkWidget *contents)
 }
 
 /* Create the (empty) GtkTreeView to show the vars list */
-static GtkWidget *create_varlist()
+static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 {
 	GtkCellRenderer   *renderer;
 	GtkWidget         *treeview;
 	GtkTreeViewColumn *c1, *c2, *c3, *c4;
-	
+	gboolean           is_81;
+
+	g_return_val_if_fail(rcvdialog->emu != NULL, NULL);
+	g_return_val_if_fail(rcvdialog->emu->calc != NULL, NULL);
+
+	is_81 = (rcvdialog->emu->calc->hw.model_id == TILEM_CALC_TI81);
+
 	/* Create the stack list tree view and set title invisible */
 	treeview = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
+	gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
 
 	/* Create the columns */
-	renderer = gtk_cell_renderer_text_new ();
-	c1 = gtk_tree_view_column_new_with_attributes("Slot", renderer, "text", COL_SLOT_STR, NULL);
-	c2 = gtk_tree_view_column_new_with_attributes("Name", renderer, "text", COL_NAME_STR, NULL);
-	c3 = gtk_tree_view_column_new_with_attributes("Type", renderer, "text", COL_TYPE_STR, NULL);
-	c4 = gtk_tree_view_column_new_with_attributes("Size", renderer, "text", COL_SIZE_STR, NULL);
+	renderer = gtk_cell_renderer_text_new();
 
-	gtk_tree_view_column_set_sizing(c1, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_expand(c1, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c1);
+	if (is_81) {
+		c1 = gtk_tree_view_column_new_with_attributes
+			("Slot", renderer, "text", COL_SLOT_STR, NULL);
+
+		gtk_tree_view_column_set_sizing(c1, GTK_TREE_VIEW_COLUMN_FIXED);
+		gtk_tree_view_column_set_sort_column_id(c1, COL_SLOT_STR);
+		gtk_tree_view_column_set_expand(c1, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c1);
+	}
+
+	c2 = gtk_tree_view_column_new_with_attributes
+		("Name", renderer, "text", COL_NAME_STR, NULL);
 
 	gtk_tree_view_column_set_sizing(c2, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_sort_column_id(c2, COL_NAME_STR);
 	gtk_tree_view_column_set_expand(c2, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c2);
+
+	if (!is_81) {
+		c3 = gtk_tree_view_column_new_with_attributes
+			("Type", renderer, "text", COL_TYPE_STR, NULL);
 		
-	gtk_tree_view_column_set_sizing(c3, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_expand(c3, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c3);
+		gtk_tree_view_column_set_sizing(c3, GTK_TREE_VIEW_COLUMN_FIXED);
+		gtk_tree_view_column_set_sort_column_id(c3, COL_TYPE_STR);
+		gtk_tree_view_column_set_expand(c3, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c3);
+	}
+
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set(renderer, "xalign", 1.0, NULL);
+	c4 = gtk_tree_view_column_new_with_attributes
+		("Size", renderer, "text", COL_SIZE_STR, NULL);
 		
 	gtk_tree_view_column_set_sizing(c4, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_sort_column_id(c4, COL_SIZE);
 	gtk_tree_view_column_set_expand(c4, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c4);
 	
@@ -271,7 +296,7 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 	gtk_window_set_default_size(GTK_WINDOW(rcvdialog->window), defwidth, defheight);
 	
 	/* Create and fill tree view */
-	rcvdialog->treeview = create_varlist();  	
+	rcvdialog->treeview = create_varlist(rcvdialog);
 
 	/* Allow scrolling the list because we can't know how many vars the calc contains */
 	GtkWidget * scroll = new_scrolled_window(rcvdialog->treeview);
@@ -299,7 +324,7 @@ void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
 
 	rcvdialog->vars = varlist;
 	rcvdialog->model = fill_varlist(rcvdialog);
-	gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
+	gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);
 }
 
 /* #### ENTRY POINT #### */
