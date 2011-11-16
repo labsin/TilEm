@@ -268,5 +268,7 @@
 * ---15/11/11--- 
 * - Receive non silent vars : Benjamin get it working!
 * - Remove unused getvar.c file.
+* ---16/11/11---
+* - Allow multiple selection and multiple receive file. Need to fix a segfault (tomorow... xD).
 */
 

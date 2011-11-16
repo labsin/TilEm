@@ -302,22 +302,14 @@ void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
 /* Request directory listing. */
 void tilem_link_get_dirlist(TilemCalcEmulator *emu);
 
-
-/* FIXME : maybe move the link function from getvar.c to keep static visibility of these functions ?? */
 void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch);
 void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch);
 int get_calc_model(TilemCalc *calc);
 void show_error(TilemCalcEmulator *emu, const char *title, const char *message);
 
 
-
-/* ##### getvar.c ##### */
-
 /* Receive a var (for the moment it's just for test)*/
 int receive_var(CalcHandle * h);
-
-/* List the name and size of a var tree */
-void tilem_dirlist_display(GNode* tree);
 
 /* Get the dirlist for ti82 and ti85 */
 gpointer tilem_get_dirlist_ns(gpointer data);

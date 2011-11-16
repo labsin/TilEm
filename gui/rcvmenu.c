@@ -65,22 +65,6 @@ static void tilem_rcvmenu_on_close(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpo
 	gtk_widget_hide(rcvdialog->window);
 }
 
-static char** tilem_rcvmenu_get_selected_vars(G_GNUC_UNUSED TilemReceiveDialog* rcvdialog) {
-
-	char* ve_list = NULL;	
-	
-	return NULL;
-}
-
-/* Get a default filename composed from the varname and the extension given by ticonv/tifiles (depends on var entry : is it var or app, calc model) */
-static gchar* tilem_rcvmenu_get_default_filename(TilemReceiveDialog* rcvdialog, VarEntry* ve) {
-	gchar* basename = ticonv_varname_to_filename(get_calc_model(rcvdialog->emu->calc),ve->name, ve->type);
-        gchar* default_filename = g_strconcat(basename, ".", tifiles_vartype2fext(get_calc_model(rcvdialog->emu->calc), ve->type), NULL);
-	
-	return default_filename;
-}
-	
-
 /* Event called on Send button click. Get the selected var/app and save it. */
 static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
 	
@@ -99,26 +83,36 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 
 	/* Get the selected entry */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
-	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(model, &iter, COL_ENTRY, &tve, -1);
+	
+	GList* list =   gtk_tree_selection_get_selected_rows(selection, &model);
+	while(list) {
+	 	GtkTreePath* path = (GtkTreePath*) list->data;
+	 	printf("Tree Path : %d\n", *gtk_tree_path_get_indices(path));
+		gtk_tree_model_get_iter(model, &iter, path);
+	 	list = list->next;
 
-	/*  Get the recent directory */	
-	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
-	if(!dir) dir = g_get_current_dir();
 
-	/* Get a default filename with a correct extension (to be used as default in the prompt file dialog) */
-	default_filename = g_strconcat(tve->name_str, ".", tve->file_ext, NULL);
+		/*gtk_tree_selection_get_selected(selection, &model, &iter); */ /* Used only when selection->type != GTK_SELECTION_MULTIPLE */
 
-	filename = prompt_save_file("Save file", GTK_WINDOW(rcvdialog->window), default_filename, dir, "All files", "*.*", "TI82 file", "*.82p", "TI83 file", "*.83p", "TI83+ or TI84+ file","*.8xp", "TI83+ or TI84+ falsh app", "*.8xk", NULL); /* FIXME : add the other extension */ 
-	if(filename == NULL) 
-		return;
+		gtk_tree_model_get(model, &iter, COL_ENTRY, &tve, -1);
+		/*  Get the recent directory */	
+		tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
+		if(!dir) dir = g_get_current_dir();
 
-	dir = g_path_get_dirname(filename);
+		/* Get a default filename with a correct extension (to be used as default in the prompt file dialog) */
+		default_filename = g_strconcat(tve->name_str, ".", tve->file_ext, NULL);
 
-	/* Save config */
-	tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
+		filename = prompt_save_file("Save file", GTK_WINDOW(rcvdialog->window), default_filename, dir, "All files", "*.*", "TI82 file", "*.82p", "TI83 file", "*.83p", "TI83+ or TI84+ file","*.8xp", "TI83+ or TI84+ falsh app", "*.8xk", NULL); /* FIXME : add the other extension */ 
+		if(filename == NULL) 
+			return;
 
-	tilem_link_receive_file(rcvdialog->emu, tve, filename);
+		dir = g_path_get_dirname(filename);
+
+		/* Save config */
+		tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
+
+		tilem_link_receive_file(rcvdialog->emu, tve, filename);
+	} 
 
 	if(filename)	
 		g_free(filename);	
@@ -136,30 +130,6 @@ static void tilem_rcvmenu_on_refresh(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	tilem_link_get_dirlist(rcvdialog->emu);
 }
 
-
-#if 0
-/* A popup wich is needed because of the fact that ti82 and ti85 need to be in the "transmit" sate to get vars */
-static void on_ask_prepare_receive_response(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED GtkResponseType t,   G_GNUC_UNUSED gpointer data) {
-	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
-
-	
-	/*if (!emu->link_thread)
-		emu->link_thread = g_thread_create(&tilem_get_dirlist_ns, emu, TRUE, NULL);
-	*/
-	
-	/*g_thread_join(emu->link_thread);*/ /* Do not create the menu if getting vars is not done */
-	
-	
-	
- 	/* Destroy the popup */
-	gtk_widget_destroy(GTK_WIDGET(w));
-
-	/* Print the window */
-	emu->rcvdlg = create_receive_menu(emu);
-	gtk_window_present(GTK_WINDOW(emu->rcvdlg->window));
-	
-}
-#endif
 
 /* #### WIDGET CREATION #### */
 
@@ -195,6 +165,9 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
+	
+	/* Allow multiple selection */
+	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview)), GTK_SELECTION_MULTIPLE);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new();
@@ -314,7 +287,7 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 
 void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
 {
-	GSList *list = NULL, *l;
+	GSList *l;
 
 	g_return_if_fail(rcvdialog != NULL);
 
