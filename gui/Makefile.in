@@ -68,7 +68,6 @@ objects = tilem2.o \
 	ti81prg.o \
 	menu.o \
 	rcvmenu.o \
-	getvar.o \
 	tool.o
 
 libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
@@ -208,12 +207,6 @@ menu.o: menu.c $(common_headers)
 # Menu
 rcvmenu.o: rcvmenu.c $(common_headers)
 	$(compile) -c $(srcdir)/rcvmenu.c
-
-# Handle getting vars
-getvar.o: getvar.c $(common_headers)
-	$(compile) -c $(srcdir)/getvar.c
-
-
 
 # File open/save dialogs
 filedlg.o: filedlg.c filedlg.h

@@ -430,6 +430,7 @@ static gboolean send_file_ti81(TilemCalcEmulator *emu, struct sendfileinfo *sf)
 	TI81Program *prgm = NULL;
 	FILE *f;
 	int errnum;
+	sf->error_message = NULL;
 
 	f = g_fopen(sf->filename, "rb");
 	if (!f) {

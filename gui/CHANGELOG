@@ -265,5 +265,8 @@
 * ---14/11/11--- 
 * - Benjamin adds a totally new core task manager in the gui. Begin to convert the send files function to use it.
 * - Use this task manager for macro. There's a little priority problem when a macro load a file. Load a file then run a macro at startup works fine.
+* ---15/11/11--- 
+* - Receive non silent vars : Benjamin get it working!
+* - Remove unused getvar.c file.
 */
 
