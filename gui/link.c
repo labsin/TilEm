@@ -610,7 +610,7 @@ TilemVarEntry *tilem_var_entry_copy(const TilemVarEntry *tve)
 	*nve = *tve;
 
 	if (tve->ve)
-		nve->ve = tifiles_ve_dup(tve->ve);
+		nve->ve->data = g_memdup(tve->ve->data, tve->ve->size);
 	if (tve->name_str)
 		nve->name_str = g_strdup(tve->name_str);
 	if (tve->type_str)
@@ -627,8 +627,10 @@ TilemVarEntry *tilem_var_entry_copy(const TilemVarEntry *tve)
 void tilem_var_entry_free(TilemVarEntry *tve)
 {
 	g_return_if_fail(tve != NULL);
-	if (tve->ve)
-		tifiles_ve_delete(tve->ve);
+	if (tve->ve) {
+		g_free(tve->ve->data);
+		g_slice_free(VarEntry, tve->ve);
+	}
 	g_free(tve->name_str);
 	g_free(tve->type_str);
 	g_free(tve->slot_str);
@@ -650,7 +652,11 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 
 	tve->model = emu->calc->hw.model_id;
 
-	tve->ve = tifiles_ve_dup(ve);
+	tve->ve = g_slice_new(VarEntry);
+	*tve->ve = *ve;
+	if (ve->data)
+		tve->ve->data = g_memdup(ve->data, ve->size);
+
 	tve->size = ve->size;
 	tve->archived = (ve->attr & ATTRB_ARCHIVED ? TRUE : FALSE);
 	tve->can_group = TRUE;
@@ -847,75 +853,145 @@ void tilem_link_get_dirlist(TilemCalcEmulator *emu)
 /**************** Receiving files ****************/
 
 struct receivefileinfo {
-	VarEntry* ve;
+	TilemVarEntry* tve;
 	char* destination;
-	int slot;
-	int first;
-	int last;
 	char *error_message;
 };
 
-
-/* Link thread main loop */
-static gboolean receive_file_main(TilemCalcEmulator* emu, gpointer data)
+static gboolean receive_file_silent(TilemCalcEmulator* emu,
+                                    struct receivefileinfo *rf)
 {
-	
-	struct receivefileinfo *rf = data;
 	CableHandle *cbl;
 	CalcHandle *ch;
+	FileContent* filec;
+	int e;
+
+	g_return_val_if_fail(rf->tve->ve != NULL, FALSE);
 
 	begin_link(emu, &cbl, &ch);
 
-	printf("rf->ve : ve.name = %s", rf->ve->name);
-
-
-	FileContent* filec;
 	filec = tifiles_content_create_regular(ch->model);
-	ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, rf->ve);	
-	tifiles_file_display_regular(filec);
-	tifiles_file_write_regular(rf->destination, filec, NULL);
+	e = ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, rf->tve->ve);
+	if (!e)
+		e = tifiles_file_write_regular(rf->destination, filec, NULL);
+	tifiles_content_delete_regular(filec);
 
-	
 	end_link(emu, cbl, ch);
+
+	if (e && !emu->task_abort)
+		rf->error_message = get_tilibs_error(e);
 
 	return TRUE;
 }
 
+static gboolean receive_file_ti81(TilemCalcEmulator* emu,
+                                  struct receivefileinfo *rf)
+{
+	TI81Program *prgm = NULL;
+	int e;
+	FILE *f;
+	char *dname;
+
+	e = ti81_get_program(emu->calc, rf->tve->slot, &prgm);
+	if (e) {
+		rf->error_message = get_ti81_error(e);
+		return FALSE;
+	}
+
+	f = g_fopen(rf->destination, "wb");
+	if (!f) {
+		e = errno;
+		dname = g_filename_display_basename(rf->destination);
+		rf->error_message = g_strdup_printf
+			("Failed to open %s for writing: %s",
+			 dname, g_strerror(e));
+		g_free(dname);
+		ti81_program_free(prgm);
+		return FALSE;
+	}
+
+	e = ti81_write_prg_file(f, prgm);
+	if (fclose(f) || e) {
+		e = errno;
+		dname = g_filename_display_basename(rf->destination);
+		rf->error_message = g_strdup_printf
+			("Error writing %s: %s",
+			 dname, g_strerror(e));
+		g_free(dname);
+		ti81_program_free(prgm);
+		return FALSE;
+	}
+
+	ti81_program_free(prgm);
+	return TRUE;
+}
+
+static gboolean receive_file_main(TilemCalcEmulator *emu, gpointer data)
+{
+	struct receivefileinfo *rf = data;
+
+	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
+		return receive_file_ti81(emu, rf);
+	else
+		return receive_file_silent(emu, rf);
+}
+
 static void receive_file_finished(TilemCalcEmulator *emu, gpointer data,
-                               G_GNUC_UNUSED gboolean cancelled)
+                                  G_GNUC_UNUSED gboolean cancelled)
 {
 	struct receivefileinfo *rf = data;
 
 	if (rf->error_message)
-		show_error(emu, "Unable to send file", rf->error_message);
+		show_error(emu, "Unable to save file", rf->error_message);
 
 	g_free(rf->destination);
 	g_free(rf->error_message);
-	g_free(rf->ve);
+	tilem_var_entry_free(rf->tve);
 	g_slice_free(struct receivefileinfo, rf);
-	
-	/*g_cond_broadcast(emu->ilp.finished_cond);*/
-	
-	
 }
 
-void tilem_calc_emulator_receive_file(TilemCalcEmulator *emu, VarEntry* varentry, char* destination)
+void tilem_link_receive_file(TilemCalcEmulator *emu,
+                             const TilemVarEntry *varentry,
+                             const char* destination)
 {
-	
 	struct receivefileinfo *rf;
-	rf = g_slice_new0(struct receivefileinfo);
-	rf->ve	     = varentry;
-	rf->destination = g_strdup(destination);
-	rf->slot = -1; /* FIXME */
-	rf->first = TRUE; /* FIXME */
-	rf->last = TRUE; /* FIXME */
-
+	FileContent *fc;
+	int e;
+	char *message;
 
 	g_return_if_fail(emu != NULL);
 	g_return_if_fail(emu->calc != NULL);
 	g_return_if_fail(varentry != NULL);
 	g_return_if_fail(destination != NULL);
+	g_return_if_fail(emu->calc->hw.model_id == varentry->model);
 
-	tilem_calc_emulator_begin(emu, &receive_file_main, &receive_file_finished, rf);
+	printf("RECEIVE [%p]: model=%c, ve=%p, slot=%d, nm=%s, ty=%s, sl=%s, fe=%s\n", varentry, varentry->model, varentry->ve, varentry->slot, varentry->name_str, varentry->type_str, varentry->slot_str, varentry->file_ext);
+
+	if (varentry->ve && varentry->ve->data) {
+		/* avoid copying variable data */
+
+		fc = tifiles_content_create_regular(get_calc_model(emu->calc));
+		fc->entries = g_new(VarEntry *, 1);
+		fc->num_entries = 1;
+		fc->entries[0] = varentry->ve;
+
+		e = tifiles_file_write_regular(destination, fc, NULL);
+
+		fc->num_entries = 0;
+		tifiles_content_delete_regular(fc);
+
+		if (e) {
+			message = get_tilibs_error(e);
+			show_error(emu, "Unable to save file", message);
+			g_free(message);
+		}
+	}
+	else {
+		rf = g_slice_new0(struct receivefileinfo);
+		rf->tve = tilem_var_entry_copy(varentry);
+		rf->destination = g_strdup(destination);
+		tilem_calc_emulator_begin(emu, &receive_file_main,
+		                          &receive_file_finished, rf);
+	}
 }
 

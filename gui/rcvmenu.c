@@ -89,47 +89,36 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	char* dir = NULL; 		/* The directory */
 	gchar* default_filename = NULL; /* Default filename (without directory) with extension */
 	gchar* filename = NULL; 	/* Filename */
-	gchar* varname = NULL;		/* Selected varname */
-	int index = 0;			/* Index of the selected row (and var entry in the vlist struct) */
+	TilemVarEntry *tve;		/* Variable entry */
 	GtkTreeSelection* selection = NULL; /* GtkTreeSelection */
+	GtkTreeModel *model;
+	GtkTreeIter iter;
 
 	/* FIXME : allow multiple var/app selection */
 	/* FIXME : handle error : no row selected */
 
-#if 0
-	/* Get the selected index */
+	/* Get the selected entry */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
-	gtk_tree_selection_get_selected(selection, &rcvdialog->model, &rcvdialog->iter);
-	GList* gl = gtk_tree_selection_get_selected_rows(selection, &rcvdialog->model);
-	while(gl) {
-		GtkTreePath* gtp = (GtkTreePath*) gl->data;
-		printf("Tree Path : %d\n", *gtk_tree_path_get_indices(gtp));
-		gl = gl->next;
-	}
-	gtk_tree_selection_get_selected(selection, &rcvdialog->model, &rcvdialog->iter);
-	gtk_tree_model_get (rcvdialog->model, &rcvdialog->iter, COL_INDEX, &index, COL_NAME, &varname, -1);
+	gtk_tree_selection_get_selected(selection, &model, &iter);
+	gtk_tree_model_get(model, &iter, COL_ENTRY, &tve, -1);
 
 	/*  Get the recent directory */	
 	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
 	if(!dir) dir = g_get_current_dir();
 
 	/* Get a default filename with a correct extension (to be used as default in the prompt file dialog) */
-	default_filename = tilem_rcvmenu_get_default_filename(rcvdialog, rcvdialog->emu->varapp->vlist[index]); 
-		
+	default_filename = g_strconcat(tve->name_str, ".", tve->file_ext, NULL);
 
 	filename = prompt_save_file("Save file", GTK_WINDOW(rcvdialog->window), default_filename, dir, "All files", "*.*", "TI82 file", "*.82p", "TI83 file", "*.83p", "TI83+ or TI84+ file","*.8xp", "TI83+ or TI84+ falsh app", "*.8xk", NULL); /* FIXME : add the other extension */ 
 	if(filename == NULL) 
 		return;
-	
-	
 
 	dir = g_path_get_dirname(filename);
 
 	/* Save config */
 	tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
-	//tilem_receive_var(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
-	
-	tilem_calc_emulator_receive_file(rcvdialog->emu, rcvdialog->emu->varapp->vlist[index], filename);
+
+	tilem_link_receive_file(rcvdialog->emu, tve, filename);
 
 	if(filename)	
 		g_free(filename);	
@@ -137,9 +126,6 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		g_free(default_filename);	
 	if(dir)
 		g_free(dir);	
-	if(varname)
-		g_free(varname);
-#endif
 }
 
 /* This function is executed when user click on refresh button */

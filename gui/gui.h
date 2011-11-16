@@ -332,8 +332,10 @@ void dirlist_print_debug(char **list);
 /* Receive a var  (no thread) */
 int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination, CalcHandle *ch, CableHandle *cbl);
 
-/* Receive var (thread) */
-void tilem_calc_emulator_receive_file(TilemCalcEmulator *emu, VarEntry* varentry, char* destination);
+/* Receive a variable and write it to a file. */
+void tilem_link_receive_file(TilemCalcEmulator *emu,
+                             const TilemVarEntry* varentry,
+                             const char* destination);
 
 /* Fill the TilemVarApp structure used by receive dialog */
 void load_entries(TilemCalcEmulator *emu);
