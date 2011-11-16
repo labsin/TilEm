@@ -148,7 +148,7 @@ gpointer tilem_get_dirlist_ns(G_GNUC_UNUSED gpointer data)
 	return NULL;
 }
 
-
+#if 0
 void tilem_get_dirlist_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled) {
 	emu->rcvdlg = create_receive_menu(emu);
 	gtk_window_present(GTK_WINDOW(emu->rcvdlg->window));
@@ -242,3 +242,4 @@ gint tilem_get_dirlist_size(GNode* tree)
 	return g_node_n_children(parent);
 
 }
+#endif

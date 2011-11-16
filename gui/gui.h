@@ -68,6 +68,8 @@ typedef struct _TilemScreenshotDialog {
 typedef struct _TilemReceiveDialog {
 	TilemCalcEmulator *emu;
 
+	GSList *vars;
+
 	GtkWidget* window;
 
 	GtkWidget* button_refresh;
@@ -76,10 +78,6 @@ typedef struct _TilemReceiveDialog {
 
 	GtkWidget* treeview;
 	GtkTreeModel* model;
-
-	GtkListStore* store;
-	GtkTreeIter iter;
-
 } TilemReceiveDialog;
 
 /* Handle the ilp progress stuff */
@@ -272,12 +270,38 @@ void tilem_config_set(const char *group, const char *option, ...)
 
 /* ##### link.c ##### */
 
+typedef struct {
+	int model;
+
+	VarEntry *ve;   /* Original variable info retrieved
+	                   from calculator */
+	int slot;       /* Slot number */
+
+	/* Strings for display (UTF-8) */
+	char *name_str; /* Variable name */
+	char *type_str; /* Variable type */
+	char *slot_str; /* Program slot */
+	char *file_ext; /* Default file extension */
+
+	int size;            /* Variable size */
+	gboolean archived;   /* Is archived */
+	gboolean can_group;  /* Can be stored in group file */
+
+} TilemVarEntry;
+
+TilemVarEntry *tilem_var_entry_copy(const TilemVarEntry *tve);
+void tilem_var_entry_free(TilemVarEntry *tve);
+
 /* Send a file to the calculator through the GUI.  SLOT is the
    destination program slot (for TI-81.)  FIRST must be true if this
    is the first variable in a series; LAST must be true if this is the
    last in a series. */
 void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
                           int slot, gboolean first, gboolean last);
+
+/* Request directory listing. */
+void tilem_link_get_dirlist(TilemCalcEmulator *emu);
+
 
 /* FIXME : maybe move the link function from getvar.c to keep static visibility of these functions ?? */
 void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch);
@@ -288,12 +312,6 @@ void show_error(TilemCalcEmulator *emu, const char *title, const char *message);
 
 
 /* ##### getvar.c ##### */
-
-/* Createe the popup dialog */
-void popup_receive_menu(TilemEmulatorWindow *ewin);
-
-/* Create the window */
-TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu);
 
 /* Receive a var (for the moment it's just for test)*/
 int receive_var(CalcHandle * h);
@@ -437,4 +455,18 @@ void build_menu(TilemEmulatorWindow* ewin);
 
 
 /* ##### rcvmenu.c ##### */
-void tilem_rcvmenu_new(TilemCalcEmulator *emu);
+
+/* Createe the popup dialog */
+void popup_receive_menu(TilemEmulatorWindow *ewin);
+
+/* Create a TilemReceiveDialog */
+TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu);
+
+/* Destroy a TilemReceiveDialog */
+void tilem_receive_dialog_free(TilemReceiveDialog *rcvdlg);
+
+/* Update TilemReceiveDialog with directory listing.  VARLIST is a
+   GSList of TilemVarEntries; the dialog assumes ownership of this
+   list.  Display the dialog if it's currently hidden. */
+void tilem_receive_dialog_update(TilemReceiveDialog *rcvdlg,
+                                 GSList *varlist);

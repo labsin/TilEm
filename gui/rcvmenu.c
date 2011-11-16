@@ -39,15 +39,17 @@
 #include "filedlg.h"
 #include "msgbox.h"
 
-static GtkTreeModel* fill_varlist();
+static GtkTreeModel* fill_varlist(TilemReceiveDialog *rcvdialog);
 TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu);
 
 /* Columns */
 enum
 {
-	COL_INDEX = 0, 
-	COL_NAME,
-	COL_TYPE,
+	COL_ENTRY = 0,
+	COL_SLOT_STR,
+	COL_NAME_STR,
+	COL_TYPE_STR,
+	COL_SIZE_STR,
 	COL_SIZE,
   	NUM_COLS
 };
@@ -94,6 +96,7 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	/* FIXME : allow multiple var/app selection */
 	/* FIXME : handle error : no row selected */
 
+#if 0
 	/* Get the selected index */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
 	gtk_tree_selection_get_selected(selection, &rcvdialog->model, &rcvdialog->iter);
@@ -136,33 +139,19 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		g_free(dir);	
 	if(varname)
 		g_free(varname);
-}
-
-/* This function is executed when the dirlist asked by the refresh button is finished */
-static void tilem_get_dirlist_refresh_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled) {
-	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
-	
-	rcvdialog->model = fill_varlist(rcvdialog, rcvdialog->emu->varapp->vlist_utf8);
-        gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
+#endif
 }
 
 /* This function is executed when user click on refresh button */
 static void tilem_rcvmenu_on_refresh(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
 	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
-
-	/* Freeing previous allocated varlist and applist */	
-	if(rcvdialog->emu->varapp->vlist)
-		g_free(rcvdialog->emu->varapp->vlist);
-	if(rcvdialog->emu->varapp)
-		g_free(rcvdialog->emu->varapp);
 	
 	/* Get the varlist and the applist */
-	tilem_calc_emulator_begin(rcvdialog->emu, &tilem_get_dirlist_main, &tilem_get_dirlist_refresh_finished, rcvdialog);	
-
+	tilem_link_get_dirlist(rcvdialog->emu);
 }
 
 
-
+#if 0
 /* A popup wich is needed because of the fact that ti82 and ti85 need to be in the "transmit" sate to get vars */
 static void on_ask_prepare_receive_response(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED GtkResponseType t,   G_GNUC_UNUSED gpointer data) {
 	TilemCalcEmulator* emu = (TilemCalcEmulator*) data;
@@ -184,7 +173,7 @@ static void on_ask_prepare_receive_response(G_GNUC_UNUSED GtkWidget* w, G_GNUC_U
 	gtk_window_present(GTK_WINDOW(emu->rcvdlg->window));
 	
 }
-	
+#endif
 
 /* #### WIDGET CREATION #### */
 
@@ -216,21 +205,18 @@ static GtkWidget *create_varlist()
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
-	c1 = gtk_tree_view_column_new_with_attributes ("INDEX", renderer, "text", COL_INDEX, NULL);
-	c2 = gtk_tree_view_column_new_with_attributes ("NAME", renderer, "text", COL_NAME, NULL);
-	c3 = gtk_tree_view_column_new_with_attributes ("TYPE", renderer, "text", COL_TYPE, NULL);
-	c4 = gtk_tree_view_column_new_with_attributes ("SIZE", renderer, "text", COL_SIZE, NULL);
+	c1 = gtk_tree_view_column_new_with_attributes("Slot", renderer, "text", COL_SLOT_STR, NULL);
+	c2 = gtk_tree_view_column_new_with_attributes("Name", renderer, "text", COL_NAME_STR, NULL);
+	c3 = gtk_tree_view_column_new_with_attributes("Type", renderer, "text", COL_TYPE_STR, NULL);
+	c4 = gtk_tree_view_column_new_with_attributes("Size", renderer, "text", COL_SIZE_STR, NULL);
 
 	gtk_tree_view_column_set_sizing(c1, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_expand(c1, TRUE);
-	gtk_tree_view_column_set_visible(c1, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c1);
-
 
 	gtk_tree_view_column_set_sizing(c2, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_expand(c2, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c2);
-
 		
 	gtk_tree_view_column_set_sizing(c3, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_expand(c3, TRUE);
@@ -244,27 +230,43 @@ static GtkWidget *create_varlist()
 }
 
 /* Fill the list of vars. In fact, add all vars from list to a GtkListStore */
-static GtkTreeModel* fill_varlist(TilemReceiveDialog * rcvdialog, char** list)
+static GtkTreeModel* fill_varlist(TilemReceiveDialog *rcvdialog)
 {
-	
-	rcvdialog->store = gtk_list_store_new (4, G_TYPE_INT, G_TYPE_STRING, G_TYPE_CHAR, G_TYPE_INT);
-	int i = 0;
-	if(list){
-		for(i = 0; list[i]; i++) {
-			/* Append a row */
-			gtk_list_store_append (rcvdialog->store, &rcvdialog->iter);
-			/* Fill the row */ 
-			printf("list[%d] : %s\n", i, list[i]);
-			gtk_list_store_set (rcvdialog->store, &rcvdialog->iter, COL_INDEX, i, COL_NAME, list[i], COL_TYPE, rcvdialog->emu->varapp->vlist[i]->type, COL_SIZE, rcvdialog->emu->varapp->vlist[i]->size, -1);
-			
-		}
+	GSList *l;
+	TilemVarEntry *tve;
+	GtkListStore *store;
+	GtkTreeIter iter;
+	char *size_str;
+
+	store = gtk_list_store_new(6,
+	                           G_TYPE_POINTER,
+	                           G_TYPE_STRING,
+	                           G_TYPE_STRING,
+	                           G_TYPE_STRING,
+	                           G_TYPE_STRING,
+	                           G_TYPE_INT);
+
+	for (l = rcvdialog->vars; l; l = l->next) {
+		tve = l->data;
+		gtk_list_store_append(store, &iter);
+		size_str = g_strdup_printf("%'d", tve->size);
+		gtk_list_store_set(store, &iter,
+		                   COL_ENTRY, tve,
+		                   COL_SLOT_STR, tve->slot_str,
+		                   COL_NAME_STR, tve->name_str,
+		                   COL_TYPE_STR, tve->type_str,
+		                   COL_SIZE_STR, size_str,
+		                   COL_SIZE, tve->size,
+		                   -1);
+		g_free(size_str);
 	}
-	return GTK_TREE_MODEL (rcvdialog->store);
+
+	return GTK_TREE_MODEL(store);
 }
 
 /* Create a new menu for receiving vars. */
 /* Previous allocated and filled varlist is needed */
-TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu)
+TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 {
 
 	TilemReceiveDialog* rcvdialog = g_slice_new0(TilemReceiveDialog);
@@ -284,20 +286,10 @@ TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu)
 	
 	/* Create and fill tree view */
 	rcvdialog->treeview = create_varlist();  	
-	if(!rcvdialog->model) {
-		if(emu->varapp) {
-			rcvdialog->model = fill_varlist(rcvdialog, emu->varapp->vlist_utf8);
-		} else { 
-			rcvdialog->model = fill_varlist(rcvdialog, NULL);
-		}
-			
-        	gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
-	}
 
 	/* Allow scrolling the list because we can't know how many vars the calc contains */
 	GtkWidget * scroll = new_scrolled_window(rcvdialog->treeview);
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window))), scroll);
-
 
 	/* Signals callback */	
 	g_signal_connect(rcvdialog->button_refresh, "clicked", G_CALLBACK (tilem_rcvmenu_on_refresh), rcvdialog);
@@ -307,14 +299,26 @@ TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu)
 	gtk_widget_show_all(GTK_WIDGET(rcvdialog->window));
 
 	return rcvdialog;
-
-
 }
 
+void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
+{
+	GSList *list = NULL, *l;
 
+	g_return_if_fail(rcvdialog != NULL);
+
+	for (l = rcvdialog->vars; l; l = l->next)
+		tilem_var_entry_free(l->data);
+	g_slist_free(rcvdialog->vars);
+
+	rcvdialog->vars = varlist;
+	rcvdialog->model = fill_varlist(rcvdialog);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);	
+}
 
 /* #### ENTRY POINT #### */
 
+#if 0
 /* Ask the user to to some action to have the calc in the send state */
 void ask_prepare_receive (TilemCalcEmulator* emu)
 {
@@ -357,38 +361,18 @@ void ask_prepare_receive (TilemCalcEmulator* emu)
 	gtk_widget_show_all (dialog);
 	
 }
-
+#endif
 
 /* Popup the receive window */
 /* This is the entry point */
 void popup_receive_menu(TilemEmulatorWindow *ewin)
 {
-	TilemReceiveDialog* rcvdlg;
-
 	g_return_if_fail(ewin != NULL);
 	g_return_if_fail(ewin->emu != NULL);
 
-
-	if (ewin->emu->calc->hw.model_id == TILEM_CALC_TI81) {
-		/* FIXME : do something for ti81 */
-	} else if (ewin->emu->calc->hw.model_id == TILEM_CALC_TI82) {
-		ask_prepare_receive(ewin->emu); /* This function will create the receive menu when preparation is ok */
-	} else if (ewin->emu->calc->hw.model_id == TILEM_CALC_TI85) {
-		ask_prepare_receive(ewin->emu); /* This function will create the receive menu when preparation is ok */
-	} else {
-		/* If it's the first time we ask for this dialog, task manager do get dir list then finished function print the popup*/
-		if(!ewin->emu->rcvdlg) {
-			tilem_calc_emulator_begin(ewin->emu, &tilem_get_dirlist_main, &tilem_get_dirlist_finished, NULL);	
-		} else {
-			ewin->emu->rcvdlg = create_receive_menu(ewin->emu);
-			rcvdlg = ewin->emu->rcvdlg;
-			gtk_window_present(GTK_WINDOW(rcvdlg->window));
-		}
-	}
+	if (ewin->emu->rcvdlg)
+		gtk_window_present(GTK_WINDOW(ewin->emu->rcvdlg->window));
+	else
+		tilem_link_get_dirlist(ewin->emu);
 }
-
-
-
-
-
 

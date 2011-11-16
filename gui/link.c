@@ -231,7 +231,7 @@ static void prepare_for_link_receive(TilemCalcEmulator *emu)
 		run_with_key(emu, TILEM_KEY_YEQU);
 		run_with_key(emu, TILEM_KEY_GRAPH);
 		tilem_em_delay(emu, 10000000, TRUE);
-		run_with_key(emu, TILEM_KEY_WINDOW);
+		run_with_key(emu, TILEM_KEY_ZOOM);
 		tilem_em_delay(emu, 10000000, TRUE);
 		run_with_key(emu, TILEM_KEY_YEQU);
 	}
@@ -375,6 +375,34 @@ static char * get_tilibs_error(int errcode)
 		return g_strdup_printf("Unknown error (%d)", errcode);
 }
 
+static char * get_ti81_error(int errcode)
+{
+	switch (errcode) {
+	case TI81_ERR_FILE_IO:
+		return g_strdup("File I/O error");
+
+	case TI81_ERR_INVALID_FILE:
+		return g_strdup("Not a valid PRG file");
+
+	case TI81_ERR_MEMORY:
+		return g_strdup("The calculator does not have enough free memory"
+		                " to load the program.");
+
+	case TI81_ERR_SLOTS_FULL:
+		return g_strdup("All calculator program slots are in use. "
+		                " You must delete an existing program before"
+		                " loading a new program.");
+
+	case TI81_ERR_BUSY:
+		return g_strdup("The calculator is currently busy.  Please"
+		                " exit to the home screen before loading"
+		                " programs.");
+
+	default:
+		return g_strdup_printf("Unknown error code (%d)", errcode);
+	}
+}
+
 void show_error(TilemCalcEmulator *emu,
                        const char *title, const char *message)
 {
@@ -421,39 +449,15 @@ static gboolean send_file_ti81(TilemCalcEmulator *emu, struct sendfileinfo *sf)
 
 	fclose(f);
 
+	tilem_em_wake_up(emu, TRUE);
+
 	prgm->info.slot = sf->slot;
 	errnum = ti81_load_program(emu->calc, prgm);
 	ti81_program_free(prgm);
 
-	switch (errnum) {
-	case 0:
-		return TRUE;
-
-	case TI81_ERR_MEMORY:
-		sf->error_message = g_strdup_printf
-			("The calculator does not have enough free memory"
-			 " to load the program.");
-		return FALSE;
-
-	case TI81_ERR_SLOTS_FULL:
-		sf->error_message = g_strdup_printf
-			("All calculator program slots are in use. "
-			 " You must delete an existing program before"
-			 " loading a new program.");
-		return FALSE;
-
-	case TI81_ERR_BUSY:
-		sf->error_message = g_strdup_printf
-			("The calculator is currently busy.  Please"
-			 " exit to the home screen before loading"
-			 " programs.");
-		return FALSE;
-
-	default:
-		sf->error_message = g_strdup_printf
-			("Unknown error code (%d)", errnum);
-		return FALSE;
-	}
+	if (errnum && !emu->task_abort)
+		sf->error_message = get_ti81_error(errnum);
+	return (errnum == 0);
 }
 
 /* Send a file using ticalcs2 */
@@ -591,6 +595,253 @@ void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
 
 	tilem_calc_emulator_begin(emu, &send_file_main,
 	                          &send_file_finished, sf);
+}
+
+/**************** Get directory listing ****************/
+
+/* Make a copy of a TilemVarEntry */
+TilemVarEntry *tilem_var_entry_copy(const TilemVarEntry *tve)
+{
+	TilemVarEntry *nve;
+
+	g_return_val_if_fail(tve != NULL, NULL);
+
+	nve = g_slice_new(TilemVarEntry);
+	*nve = *tve;
+
+	if (tve->ve)
+		nve->ve = tifiles_ve_dup(tve->ve);
+	if (tve->name_str)
+		nve->name_str = g_strdup(tve->name_str);
+	if (tve->type_str)
+		nve->type_str = g_strdup(tve->type_str);
+	if (tve->slot_str)
+		nve->slot_str = g_strdup(tve->slot_str);
+	if (tve->file_ext)
+		nve->file_ext = g_strdup(tve->file_ext);
+
+	return nve;
+}
+
+/* Free a TilemVarEntry */
+void tilem_var_entry_free(TilemVarEntry *tve)
+{
+	g_return_if_fail(tve != NULL);
+	if (tve->ve)
+		tifiles_ve_delete(tve->ve);
+	g_free(tve->name_str);
+	g_free(tve->type_str);
+	g_free(tve->slot_str);
+	g_free(tve->file_ext);
+	g_slice_free(TilemVarEntry, tve);
+}
+
+struct dirlistinfo {
+	GSList *list;
+	char *error_message;
+};
+
+/* Convert tifiles VarEntry into a TilemVarEntry */
+static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
+                                 gboolean is_flash)
+{
+	TilemVarEntry *tve = g_slice_new0(TilemVarEntry);
+	CalcModel tfmodel = get_calc_model(emu->calc);
+
+	tve->model = emu->calc->hw.model_id;
+
+	tve->ve = tifiles_ve_dup(ve);
+	tve->size = ve->size;
+	tve->archived = (ve->attr & ATTRB_ARCHIVED ? TRUE : FALSE);
+	tve->can_group = TRUE;
+
+	tve->name_str = ticonv_varname_to_utf8(tfmodel, ve->name, ve->type);
+	tve->type_str = g_strdup(tifiles_vartype2string(tfmodel, ve->type));
+	tve->file_ext = g_strdup(tifiles_vartype2fext(tfmodel, ve->type));
+
+	tve->can_group = !is_flash;
+
+	return tve;
+}
+
+/* Convert a complete directory listing */
+static void convert_dir_list(TilemCalcEmulator *emu, GNode *root,
+                             gboolean is_flash, GSList **list)
+{
+	GNode *dir, *var;
+	VarEntry *ve;
+	TilemVarEntry *tve;
+
+	if (!root)
+		return;
+
+	for (dir = root->children; dir; dir = dir->next) {
+		for (var = dir->children; var; var = var->next) {
+			ve = var->data;
+			tve = convert_ve(emu, ve, is_flash);
+			*list = g_slist_prepend(*list, tve);
+		}
+	}
+}
+
+/* Request directory listing using ticalcs */
+static gboolean get_dirlist_silent(TilemCalcEmulator *emu,
+                                   struct dirlistinfo *dl)
+{
+	CableHandle *cbl;
+	CalcHandle *ch;
+	GNode *vars = NULL, *apps = NULL;
+	GSList *list = NULL;
+	int e;
+
+	begin_link(emu, &cbl, &ch);
+	prepare_for_link_receive(emu);
+
+	if (ticalcs_calc_features(ch) & OPS_DIRLIST) {
+		e = ticalcs_calc_get_dirlist(ch, &vars, &apps);
+		if (!e) {
+			convert_dir_list(emu, vars, FALSE, &list);
+			convert_dir_list(emu, apps, TRUE, &list);
+		}
+		ticalcs_dirlist_destroy(&vars);
+		ticalcs_dirlist_destroy(&apps);
+	}
+
+	end_link(emu, cbl, ch);
+
+	dl->list = g_slist_reverse(list);
+
+	if (e && !emu->task_abort)
+		dl->error_message = get_tilibs_error(e);
+	return (e == 0);
+}
+
+/* Transfer variables non-silently using ticalcs */
+static gboolean get_dirlist_nonsilent(TilemCalcEmulator *emu,
+                                      struct dirlistinfo *dl)
+{
+	CableHandle *cbl;
+	CalcHandle *ch;
+	FileContent *fc;
+	VarEntry *head_entry;
+	TilemVarEntry *tve;
+	GSList *list = NULL;
+	int e, i;
+
+	begin_link(emu, &cbl, &ch);
+	prepare_for_link_receive(emu);
+
+	fc = tifiles_content_create_regular(ch->model);
+	e = ticalcs_calc_recv_var_ns(ch, MODE_BACKUP, fc, &head_entry);
+	if (!e) {
+		for (i = 0; i < fc->num_entries; i++) {
+			tve = convert_ve(emu, fc->entries[i], FALSE);
+			list = g_slist_prepend(list, tve);
+		}
+	}
+	if (head_entry)
+		tifiles_ve_delete(head_entry);
+	tifiles_content_delete_regular(fc);
+
+	end_link(emu, cbl, ch);
+
+	dl->list = g_slist_reverse(list);
+
+	if (e && !emu->task_abort)
+		dl->error_message = get_tilibs_error(e);
+	return (e == 0);
+}
+
+/* Get TI-81 directory listing */
+static gboolean get_dirlist_ti81(TilemCalcEmulator *emu,
+                                 struct dirlistinfo *dl)
+{
+	int i, slot;
+	TI81ProgInfo info;
+	GSList *list = NULL;
+	TilemVarEntry *tve;
+	int e;
+
+	tilem_em_wake_up(emu, TRUE);
+
+	for (i = 0; i < TI81_SLOT_MAX; i++) {
+		/* put Prgm0 after Prgm9, the way it appears in the menu */
+		if (i < 9)
+			slot = i + 1;
+		else if (i == 9)
+			slot = 0;
+		else
+			slot = i;
+
+		if ((e = ti81_get_program_info(emu->calc, slot, &info)))
+			break;
+
+		if (info.size == 0)
+			continue;
+
+		tve = g_slice_new0(TilemVarEntry);
+		tve->model = TILEM_CALC_TI81;
+		tve->slot = info.slot;
+		tve->name_str = ti81_program_name_to_string(info.name);
+		tve->slot_str = ti81_program_slot_to_string(info.slot);
+		tve->file_ext = g_strdup("prg");
+		tve->size = info.size;
+		tve->archived = FALSE;
+		tve->can_group = FALSE;
+
+		list = g_slist_prepend(list, tve);
+	}
+
+	dl->list = g_slist_reverse(list);
+
+	if (e && !emu->task_abort)
+		dl->error_message = get_ti81_error(e);
+	return (e == 0);
+}
+
+static gboolean get_dirlist_main(TilemCalcEmulator *emu, gpointer data)
+{
+	switch (emu->calc->hw.model_id) {
+	case TILEM_CALC_TI81:
+		return get_dirlist_ti81(emu, data);
+
+	case TILEM_CALC_TI82:
+	case TILEM_CALC_TI85:
+		return get_dirlist_nonsilent(emu, data);
+
+	default:
+		return get_dirlist_silent(emu, data);
+	}
+}
+
+static void get_dirlist_finished(TilemCalcEmulator *emu, gpointer data,
+                                 gboolean cancelled)
+{
+	GSList *l;
+	struct dirlistinfo *dl = data;
+
+	if (dl->error_message)
+		show_error(emu, "Unable to receive variable list",
+		           dl->error_message);
+	else if (!cancelled && emu->ewin) {
+		if (!emu->rcvdlg)
+			emu->rcvdlg = tilem_receive_dialog_new(emu);
+		tilem_receive_dialog_update(emu->rcvdlg, dl->list);
+		dl->list = NULL;
+	}
+
+	for (l = dl->list; l; l = l->next)
+		tilem_var_entry_free(l->data);
+
+	g_slist_free(dl->list);
+	g_slice_free(struct dirlistinfo, dl);
+}
+
+void tilem_link_get_dirlist(TilemCalcEmulator *emu)
+{
+	struct dirlistinfo *dl = g_slice_new0(struct dirlistinfo);
+	tilem_calc_emulator_begin(emu, &get_dirlist_main,
+	                          &get_dirlist_finished, dl);
 }
 
 /**************** Receiving files ****************/
