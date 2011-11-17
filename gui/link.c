@@ -565,11 +565,11 @@ static gboolean send_file_main(TilemCalcEmulator *emu, gpointer data)
 }
 
 static void send_file_finished(TilemCalcEmulator *emu, gpointer data,
-                               G_GNUC_UNUSED gboolean cancelled)
+                               gboolean cancelled)
 {
 	struct sendfileinfo *sf = data;
 
-	if (sf->error_message)
+	if (sf->error_message && !cancelled)
 		show_error(emu, "Unable to send file", sf->error_message);
 
 	g_free(sf->filename);
@@ -827,7 +827,7 @@ static void get_dirlist_finished(TilemCalcEmulator *emu, gpointer data,
 	GSList *l;
 	struct dirlistinfo *dl = data;
 
-	if (dl->error_message)
+	if (dl->error_message && !cancelled)
 		show_error(emu, "Unable to receive variable list",
 		           dl->error_message);
 	else if (!cancelled && emu->ewin) {
@@ -865,17 +865,28 @@ static gboolean receive_file_silent(TilemCalcEmulator* emu,
 	CableHandle *cbl;
 	CalcHandle *ch;
 	FileContent* filec;
+	FlashContent* flashc;
 	int e;
 
 	g_return_val_if_fail(rf->tve->ve != NULL, FALSE);
 
 	begin_link(emu, &cbl, &ch);
 
-	filec = tifiles_content_create_regular(ch->model);
-	e = ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, rf->tve->ve);
-	if (!e)
-		e = tifiles_file_write_regular(rf->destination, filec, NULL);
-	tifiles_content_delete_regular(filec);
+	if (rf->tve->ve->type == tifiles_flash_type(ch->model)) {
+		flashc = tifiles_content_create_flash(ch->model);
+		e = ticalcs_calc_recv_app(ch, flashc, rf->tve->ve);
+		if (!e)
+			e = tifiles_file_write_flash(rf->destination, flashc);
+		tifiles_content_delete_flash(flashc);
+	}
+	else {
+		filec = tifiles_content_create_regular(ch->model);
+		e = ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, rf->tve->ve);
+		if (!e)
+			e = tifiles_file_write_regular(rf->destination,
+			                               filec, NULL);
+		tifiles_content_delete_regular(filec);
+	}
 
 	end_link(emu, cbl, ch);
 
@@ -938,11 +949,11 @@ static gboolean receive_file_main(TilemCalcEmulator *emu, gpointer data)
 }
 
 static void receive_file_finished(TilemCalcEmulator *emu, gpointer data,
-                                  G_GNUC_UNUSED gboolean cancelled)
+                                  gboolean cancelled)
 {
 	struct receivefileinfo *rf = data;
 
-	if (rf->error_message)
+	if (rf->error_message && !cancelled)
 		show_error(emu, "Unable to save file", rf->error_message);
 
 	g_free(rf->destination);
@@ -965,8 +976,6 @@ void tilem_link_receive_file(TilemCalcEmulator *emu,
 	g_return_if_fail(varentry != NULL);
 	g_return_if_fail(destination != NULL);
 	g_return_if_fail(emu->calc->hw.model_id == varentry->model);
-
-	printf("RECEIVE [%p]: model=%c, ve=%p, slot=%d, nm=%s, ty=%s, sl=%s, fe=%s\n", varentry, varentry->model, varentry->ve, varentry->slot, varentry->name_str, varentry->type_str, varentry->slot_str, varentry->file_ext);
 
 	if (varentry->ve && varentry->ve->data) {
 		/* avoid copying variable data */
