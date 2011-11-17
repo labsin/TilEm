@@ -33,10 +33,10 @@
 #include "emucore.h"
 #include "msgbox.h"
 
-#define MILLISEC_PER_FRAME 40
+#define MILLISEC_PER_FRAME 30
 #define MICROSEC_PER_FRAME (MILLISEC_PER_FRAME * 1000)
 
-#define GRAY_WINDOW_SIZE 2
+#define GRAY_WINDOW_SIZE 4
 #define GRAY_SAMPLE_INT 200
 
 
