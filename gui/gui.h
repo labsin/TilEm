@@ -101,23 +101,11 @@ gboolean SAVE_STATE;
 /* Detect and handle a "destroy" event */
 void on_destroy(); /* close the pWindow */
 
-/* like on_destroy but save state */
-void quit_with_save(TilemEmulatorWindow *ewin);
-
-/* Save state of current rom */
-void save_state(TilemEmulatorWindow *ewin);
-
-/* The window about in the right_click_menu */
-void on_about(GtkWidget *pBtn);
-
 /* Dialog mesg */
 void show_about();
 
 /* Launch the debugger */
 void launch_debugger(TilemEmulatorWindow *ewin);
-
-/* Reset the calc */
-void on_reset(TilemEmulatorWindow *ewin);
 
 /* Button-press event */
 gboolean mouse_press_event(GtkWidget* w, GdkEventButton *event, gpointer data);
@@ -134,39 +122,14 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 /* Key-release event */
 gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 
-/* Switch borderless. */
-void switch_borderless(TilemEmulatorWindow *ewin);
-
 /* Load a file from PC to TI */
 void load_file(TilemEmulatorWindow *ewin);
-
-/* Load the file designed by filename */
-void load_file_from_file(TilemCalcEmulator *emu, char* filename) ;
-
-/* Load a file at startup using old method (no thread) */
-void tilem_load_file_from_file_at_startup(TilemCalcEmulator *emu, char* filename);
-
-/* Toggle limit speed */
-void tilem_change_speed(TilemEmulatorWindow *ewin);
 
 /* Handle drag and drop */
 gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, TilemEmulatorWindow * ewin);
 
 /* Save the dimension before exit for next times we use tilem */
 void save_root_window_dimension(TilemEmulatorWindow *ewin);
-
-/* Callback function for teh receive menu entry */
-void on_receive(TilemEmulatorWindow * ewin);
-
-
-/* ###### skin.c ##### */
-	
-/* Create the SKIN file selector */
-void tilem_user_change_skin(TilemEmulatorWindow *ewin);
-
-/* Choose automatically wich skin tilem must load */
-void tilem_choose_skin_filename_by_default(TilemEmulatorWindow *ewin);
-
 
 
 /* ###### emuwin.c ##### */
@@ -218,25 +181,6 @@ GtkWidget* new_frame(const gchar* label, GtkWidget* contents);
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
 char choose_rom_popup(GtkWidget *parent_window, const char *filename, char default_model);
 
-/* File chooser */
-char * select_file(TilemCalcEmulator *emu, const char* basedir);
-
-/* Folder chooser with a different base directory */
-char* select_dir(TilemCalcEmulator *emu, const char* basedir);
-
-/* File chooser with a different folder */
-void select_file_with_basedir(TilemCalcEmulator *emu, char* basedir);
-
-/* Get the skin file selected */
-void get_selected_file(TilemCalcEmulator *emu);
-
-/* Choose a filename to save */
-char* select_file_for_save(TilemCalcEmulator *emu, char* basedir);
-
-/* Copy paste a file */
-void copy_paste(const char* src, const char* dest);
-
-
 
 /* ##### config.c ##### */
 
@@ -265,7 +209,6 @@ void tilem_config_get(const char *group, const char *option, ...)
    option.  The list is terminated by NULL. */
 void tilem_config_set(const char *group, const char *option, ...)
 	G_GNUC_NULL_TERMINATED;
-
 
 
 /* ##### link.c ##### */
@@ -308,31 +251,10 @@ void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch);
 int get_calc_model(TilemCalc *calc);
 void show_error(TilemCalcEmulator *emu, const char *title, const char *message);
 
-
-/* Receive a var (for the moment it's just for test)*/
-int receive_var(CalcHandle * h);
-
-/* Get the dirlist for ti82 and ti85 */
-gpointer tilem_get_dirlist_ns(gpointer data);
-
-/* Get the list of varname. I plan to use it into a list (in a menu) */
-gboolean tilem_get_dirlist_main(TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data);
-
-void tilem_get_dirlist_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled);
-/* Print dirlist (debug) */
-void dirlist_print_debug(char **list);
-
-/* Receive a var  (no thread) */
-int tilem_receive_var(TilemCalcEmulator* emu, VarEntry* varentry, char* destination, CalcHandle *ch, CableHandle *cbl);
-
 /* Receive a variable and write it to a file. */
 void tilem_link_receive_file(TilemCalcEmulator *emu,
                              const TilemVarEntry* varentry,
                              const char* destination);
-
-/* Fill the TilemVarApp structure used by receive dialog */
-void load_entries(TilemCalcEmulator *emu);
-
 
 
 /* ##### pbar.c ##### */
@@ -342,39 +264,6 @@ void progress_bar_init(TilemCalcEmulator* emu);
 
 /* Update the progress bar */
 void progress_bar_update_activity(TilemCalcEmulator* emu);
-
-
-
-/* ##### macro.c ##### */
-
-/* Create the macro_file */
-void create_or_replace_macro_file(TilemCalcEmulator* emu) ;
-
-/* Recording macro */
-void add_event_in_macro_file(TilemCalcEmulator* emu, char* string) ;
-
-/* Add a load file */
-void add_load_file_in_macro_file(TilemCalcEmulator* emu, int length, char* filename) ;
-
-/* Not used ...? */
-void save_macro_file(TilemCalcEmulator* emu) ;
-
-/* Play it ! And play it again ! */
-void play_macro(TilemEmulatorWindow *ewin) ;
-
-/* Play it ! And play it again ! */
-void play_macro_from_file(TilemEmulatorWindow *ewin) ;
-
-/* Play it ! And play it again ! */
-int play_macro_default(TilemCalcEmulator* emu, char* macro_name) ;
-
-/* Turn on the recording */
-void start_record_macro(TilemEmulatorWindow *ewin) ;
-
-/* Turn off the recording */
-void stop_record_macro(TilemEmulatorWindow *ewin) ;
-
-
 
 
 /* ##### args.c ##### */
@@ -392,37 +281,16 @@ int tilem_cmdline_get_args(int argc, char* argv[], TilemCmdlineArgs* cmdline) ;
 void create_savname(TilemCmdlineArgs* cmdline) ;
 
 
-
 /* ##### animatedgif.c ##### */
-
-/* Save a static screenshot in gif format */
-void static_screenshot_save(TilemCalcEmulator* emu, char* filename);
-
-/* Save a static screenshot with parameters */
-void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename, int width, int height);
-
-/* Create a animated screenshot */
-void tilem_animation_start(TilemCalcEmulator* emu) ;
-
-/* Add a frame to animation */
-void tilem_animation_add_frame(TilemCalcEmulator* emu) ;
-
-/* Record the screenshot  (called in screen.c by a timer)*/
-gboolean tilem_animation_record(gpointer data);
-
-/* Stop recording screenshot */
-void tilem_animation_stop(TilemCalcEmulator* emu);
 
 /* Save a TilemAnimation to a GIF file. */
 void tilem_animation_write_gif(TilemAnimation *anim, byte* palette, int palette_size, FILE *fp);
-
 
 
 /* ##### gifencod.c ##### */
 
 /* Encode gif data */
 void GifEncode(FILE *fout, unsigned char *pixels, int depth, int siz);
-
 
 
 /* ##### screenshot.c ##### */
@@ -432,8 +300,6 @@ void popup_screenshot_window(TilemEmulatorWindow* ewin);
 
 /* Take a single screenshot */
 void quick_screenshot(TilemEmulatorWindow *ewin);
-
-
 
 
 /* ##### keybindings.c ##### */
@@ -446,7 +312,6 @@ void tilem_keybindings_init(TilemCalcEmulator* emu, const char* model);
 
 /* Build the menu (do not print it) */
 void build_menu(TilemEmulatorWindow* ewin);
-
 
 
 /* ##### rcvmenu.c ##### */

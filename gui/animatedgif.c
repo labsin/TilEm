@@ -37,34 +37,6 @@ static void write_comment(FILE* fp);
 static void write_image_block(TilemCalcEmulator *emu, FILE *fp, int width, int height);
 static void write_application_extension(FILE * fp) ;
 
-void static_screenshot_save_with_parameters(TilemCalcEmulator* emu, char* filename, int width, int height) {
-	
-	
-	printf("GIF ENCODER\n");
-	FILE *fp = fopen(filename, "w");
-	
-	byte* palette = tilem_color_palette_new_packed(255, 255, 255, 0, 0, 0, 2.2);
-
-	write_global_header(fp, width, height, palette, 256);
-	write_extension_block(fp, 10);	
-	write_image_block_start(fp, width, height);	
-	write_image_block(emu, fp, width, height);
-	write_image_block_end(fp);
-	write_global_footer(fp);
-	fclose(fp);
-}
-
-static void write_image_block(TilemCalcEmulator * emu, FILE *fp, int width, int height) {
-
-	TilemLCDBuffer * lcdbuf = tilem_lcd_buffer_new();
-	byte* buffer = g_new(byte, width * height);
-	tilem_lcd_get_frame(emu->calc, lcdbuf);
-	tilem_draw_lcd_image_indexed(lcdbuf, buffer, width, height, width, TILEM_SCALE_SMOOTH);
-
-	GifEncode(fp, buffer , 8, (width*height));
-}
-
-	
 static void write_global_header(FILE* fp, int width, int height, byte* palette, int palette_size) {
 	
 	/* Magic number for Gif file format */

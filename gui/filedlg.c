@@ -840,11 +840,4 @@ char * file_entry_get_filename(GtkWidget *fe)
 	return gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fe));
 }
 
-void file_entry_connect_changed(GtkWidget *fe,
-                                void (*cb)(GtkWidget *w, gpointer userdata),
-                                gpointer data)
-{
-	g_signal_connect(fe, "selection-changed", G_CALLBACK(cb), data);
-}
-
 #endif /* ! GDK_WINDOWING_WIN32 */

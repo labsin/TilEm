@@ -397,15 +397,6 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	return FALSE;
 }
 
-/* This function hide the border window, even if you load another skin, or switch view (debugger is NOT borderless because... this is useless?!) */
-void switch_borderless(TilemEmulatorWindow *ewin)
-{
-	if(gtk_window_get_decorated(GTK_WINDOW(ewin->window)))
-		gtk_window_set_decorated(GTK_WINDOW(ewin->window) , FALSE);
-	 else 
-		gtk_window_set_decorated(GTK_WINDOW(ewin->window) , TRUE);
-}
-
 #define PAT_TI81       "*.prg"
 #define PAT_TI73       "*.73?"
 #define PAT_TI73_NUM   "*.73n;*.73l;*.73m;*.73i"
@@ -536,12 +527,6 @@ void load_file(TilemEmulatorWindow *ewin)
 	}
 
 	g_strfreev(filenames);
-}
-
-/* Toggle limit speed */
-void tilem_change_speed(TilemEmulatorWindow *ewin)
-{
-	tilem_calc_emulator_set_limit_speed(ewin->emu, !ewin->emu->limit_speed);
 }
 
 /* Callback function for the drag and drop event */

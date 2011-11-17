@@ -38,12 +38,6 @@ typedef struct _TilemMacro {
 	int n;
 } TilemMacro;
 
-typedef struct _TilemVarApp {
-	char** vlist_utf8;
-	VarEntry** vlist;	/* NULL terminated */
-	int n;
-} TilemVarApp;
-
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
 
@@ -94,7 +88,6 @@ typedef struct _TilemCalcEmulator {
 	int nkeybindings;
 	
 	struct _TilemMacro *macro;
-	struct _TilemVarApp *varapp;
 
 	/* Link transfer state */
 	gboolean ilp_active;

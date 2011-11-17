@@ -63,7 +63,6 @@ objects = tilem2.o \
 	pbar.o \
 	preferences.o \
 	screenshot.o \
-	skin.o \
 	skinops.o \
 	ti81prg.o \
 	menu.o \
@@ -142,10 +141,6 @@ preferences.o: preferences.c $(common_headers)
 # Open skin (skn format file) originally created by Julien Blache and Romain Lievins
 skinops.o: skinops.c skinops.h 
 	$(compile) -c $(srcdir)/skinops.c
-
-# Manage skins
-skin.o: skin.c files.h $(common_headers)
-	$(compile) -c $(srcdir)/skin.c 
 
 # Popups and other stuff
 tool.o: tool.c $(common_headers)

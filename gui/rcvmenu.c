@@ -311,53 +311,6 @@ void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
 	gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);
 }
 
-/* #### ENTRY POINT #### */
-
-#if 0
-/* Ask the user to to some action to have the calc in the send state */
-void ask_prepare_receive (TilemCalcEmulator* emu)
-{
-	GtkWidget *dialog, *label, *content_area;
-
-	/* Start to wait the transmit state */
-	/*
-	if (!emu->link_thread)
-		emu->link_thread = g_thread_create(&tilem_get_dirlist_ns, emu, TRUE, NULL);
-	*/
-
-	/* Create the widgets */
-	dialog = gtk_dialog_new_with_buttons ("Message", GTK_WINDOW(emu->ewin->window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_OK, GTK_RESPONSE_NONE, NULL);
-	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-
-	/* Add the image */
-	char* shared = NULL;
-	if (emu->calc->hw.model_id == TILEM_CALC_TI82) {
-		label = gtk_label_new ("In order to transmit vars to your computer,\n ti82 needs some preparing tasks : \n\t - Firstly go to home\n\t - Then press 2nd, link\n\t - Then press enter\n\t - Then press right arrow\n\t - Press enter then very quickly click OK...");
-		shared = get_shared_file_path("pixs", "prepare_ti82.gif", NULL); /* Get the gif image */
-	} else if (emu->calc->hw.model_id == TILEM_CALC_TI85) {
-		label = gtk_label_new ("In order to transmit vars to your computer,\n ti85 needs some preparing tasks : \n\t - Firstly go to home\n\t - Then press 2nd, link\n\t - Then press F1\n\t - Then press F5\n\t - Then press F3\n\t - Then press F1\n\t - Then very quickly click OK...");
-		shared = get_shared_file_path("pixs", "prepare_ti82.gif", NULL); /* Get the gif image */
-	}
-	
-	if(!shared) 
-		return;
-	
-	GtkWidget* image = gtk_image_new_from_file(shared); 
-
-	GtkWidget* vbox = gtk_vbox_new(FALSE, 10);
-	gtk_box_pack_start_defaults(GTK_BOX(vbox), image);
-	gtk_box_pack_end_defaults(GTK_BOX(vbox), image);
-	gtk_container_add(GTK_CONTAINER(content_area), vbox);
-	gtk_widget_show(vbox);
-
-	gtk_signal_connect (GTK_OBJECT (dialog), "response", GTK_SIGNAL_FUNC (on_ask_prepare_receive_response), emu);
-
-	gtk_container_add (GTK_CONTAINER (content_area), label);
-	gtk_widget_show_all (dialog);
-	
-}
-#endif
-
 /* Popup the receive window */
 /* This is the entry point */
 void popup_receive_menu(TilemEmulatorWindow *ewin)
