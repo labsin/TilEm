@@ -233,7 +233,11 @@ static GtkTreeModel* fill_varlist(TilemReceiveDialog *rcvdialog)
 	for (l = rcvdialog->vars; l; l = l->next) {
 		tve = l->data;
 		gtk_list_store_append(store, &iter);
+#ifdef G_OS_WIN32
+		size_str = g_strdup_printf("%d", tve->size);
+#else
 		size_str = g_strdup_printf("%'d", tve->size);
+#endif
 		gtk_list_store_set(store, &iter,
 		                   COL_ENTRY, tve,
 		                   COL_SLOT_STR, tve->slot_str,
