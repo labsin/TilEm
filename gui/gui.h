@@ -21,7 +21,6 @@
 #include "animation.h"
 #include "emulator.h"
 #include "skinops.h"
-#include "debuginfo.h"
 #include "emuwin.h"
 #include "debugger.h"
 
@@ -29,11 +28,11 @@
 
 /* This struct is used to handle cmd line args */
 typedef struct _TilemCmdlineArg {
-	char *SkinFileName;
-	char *RomName;  
-	char *SavName; 
-	char *FileToLoad;  
-	char *MacroToPlay;  
+	char *SkinFileName;		/* The filename of the skin (or NULL)*/
+	char *RomName;  		/* The rom filename (or NULL)*/
+	char *SavName; 			/* The filename of the savestate (or NULL)*/
+	char *FileToLoad;  		/* The filename of the file to load (or NULL)*/
+	char *MacroToPlay;  		/* The filename of the macro to play (or NULL) */
 	/* Flags */
 	gboolean isStartingSkinless; 
 } TilemCmdlineArgs;
@@ -42,42 +41,42 @@ typedef struct _TilemCmdlineArg {
 typedef struct _TilemScreenshotDialog {
 	TilemCalcEmulator *emu;
 	
-	GtkWidget* window;
+	GtkWidget* window;		/* The window itself */
 
 	/* Buttons */
-	GtkWidget* screenshot;
-	GtkWidget* record;
-	GtkWidget* stop;
+	GtkWidget* screenshot;		/* Grab button */
+	GtkWidget* record;		/* Record button */
+	GtkWidget* stop;		/* Stop button */
 
 	/* Screenshot menu */
 	GtkWidget* screenshot_preview_image; /* Review pixbuf */
-	GtkWidget* ss_ext_combo; /* Combo box for file format */
-	GtkWidget* ss_size_combo; /* Combo box for size */
-	GtkWidget* width_spin;
-	GtkWidget* height_spin;
-	GtkWidget* grayscale_tb;
-	GtkWidget* animation_speed;
-	GtkWidget* background_color;
-	GtkWidget* foreground_color;
+	GtkWidget* ss_ext_combo; 	/* Combo box for file format */
+	GtkWidget* ss_size_combo; 	/* Combo box for size */
+	GtkWidget* width_spin;		/* The width of the gif */
+	GtkWidget* height_spin;		/* The height of the gif */
+	GtkWidget* grayscale_tb;	/* Toggle Button for enabling/disabling grayscale */	
+	GtkWidget* animation_speed;	/* A scale for the speed of the animation */
+	GtkWidget* background_color;	/* Color chooser : Color used for pixel-off */
+	GtkWidget* foreground_color;	/* Color chooser : Color used for pixel-on */
 
 	TilemAnimation *current_anim;
 	gboolean current_anim_grayscale;
 } TilemScreenshotDialog;
 
-
+/* This struture is used by receive menu */
 typedef struct _TilemReceiveDialog {
 	TilemCalcEmulator *emu;
 
-	GSList *vars;
+	GSList *vars;			/* The list of vars */
 
-	GtkWidget* window;
+	GtkWidget* window;		/* The window itself */
 
-	GtkWidget* button_refresh;
-	GtkWidget* button_save;
-	GtkWidget* button_close;
+	GtkWidget* button_refresh;	/* Force a get_dirlist */
+	GtkWidget* button_save;		/* Save a var on disk */
+	GtkWidget* button_close;	/* Hide the window (do not destroy it) */
 
-	GtkWidget* treeview;
-	GtkTreeModel* model;
+	GtkWidget* treeview;		/* The treeview to print the list of vars */
+	GtkTreeModel* model;		/* The model used by the treeview */
 } TilemReceiveDialog;
 
 /* Handle the ilp progress stuff */
@@ -213,27 +212,48 @@ void tilem_config_set(const char *group, const char *option, ...)
 
 /* ##### link.c ##### */
 
+/* This struture is a wrapper for VarEntry with additionnal informations used by tilem */
 typedef struct {
 	int model;
 
-	VarEntry *ve;   /* Original variable info retrieved
-	                   from calculator */
-	int slot;       /* Slot number */
+	VarEntry *ve;   	/* Original variable info retrieved
+	                	   from calculator */
+	int slot;       	/* Slot number */
 
 	/* Strings for display (UTF-8) */
-	char *name_str; /* Variable name */
-	char *type_str; /* Variable type */
-	char *slot_str; /* Program slot */
-	char *file_ext; /* Default file extension */
-	char *filetype_desc; /* File format description */
+	char *name_str; 	/* Variable name */
+	char *type_str; 	/* Variable type */
+	char *slot_str; 	/* Program slot */
+	char *file_ext; 	/* Default file extension */
+	char *filetype_desc; 	/* File format description */
 
-	int size;            /* Variable size */
-	gboolean archived;   /* Is archived */
-	gboolean can_group;  /* Can be stored in group file */
+	int size;            	/* Variable size */
+	gboolean archived;   	/* Is archived */
+	gboolean can_group;  	/* Can be stored in group file */
 
 } TilemVarEntry;
 
+/* This structure is used to send a file (usually slot=-1, first=TRUE, last=TRUE)*/
+struct TilemSendFileInfo {
+	char *filename;
+	char *display_name;
+	int slot;
+	int first;
+	int last;
+	char *error_message;
+};
+
+/* This structure is used to receive a file */
+struct TilemReceiveFileInfo {
+	TilemVarEntry* tve;
+	char* destination;
+	char *error_message;
+};
+
+/* Copy a TilemVarEntry structure */
 TilemVarEntry *tilem_var_entry_copy(const TilemVarEntry *tve);
+
+/* Free a previous allocated TilemVarEntry */
 void tilem_var_entry_free(TilemVarEntry *tve);
 
 /* Send a file to the calculator through the GUI.  SLOT is the
@@ -243,12 +263,22 @@ void tilem_var_entry_free(TilemVarEntry *tve);
 void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
                           int slot, gboolean first, gboolean last);
 
+/* The effective send file function. If there's no good reason, use tilem_link_send_file instead. */
+gboolean send_file_main(TilemCalcEmulator *emu, gpointer data);
+
 /* Request directory listing. */
 void tilem_link_get_dirlist(TilemCalcEmulator *emu);
 
+/* Begin link : create cablehandle, create calchandle, init progress bar */
 void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch);
+
+/* End link : delete cablehandle, delete calchandle, exit progress bar */
 void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch);
+
+/* Get the calc model as needed by ticalcs functions */
 int get_calc_model(TilemCalc *calc);
+
+/* Show error */
 void show_error(TilemCalcEmulator *emu, const char *title, const char *message);
 
 /* Receive a variable and write it to a file. */

@@ -415,17 +415,8 @@ void show_error(TilemCalcEmulator *emu,
 
 /**************** Sending files ****************/
 
-struct sendfileinfo {
-	char *filename;
-	char *display_name;
-	int slot;
-	int first;
-	int last;
-	char *error_message;
-};
-
 /* Send a file to TI-81 */
-static gboolean send_file_ti81(TilemCalcEmulator *emu, struct sendfileinfo *sf)
+static gboolean send_file_ti81(TilemCalcEmulator *emu, struct TilemSendFileInfo *sf)
 {
 	TI81Program *prgm = NULL;
 	FILE *f;
@@ -462,7 +453,7 @@ static gboolean send_file_ti81(TilemCalcEmulator *emu, struct sendfileinfo *sf)
 }
 
 /* Send a file using ticalcs2 */
-static gboolean send_file_linkport(TilemCalcEmulator *emu, struct sendfileinfo *sf)
+static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileInfo *sf)
 {
 	CalcModel model;
 	FileClass cls;
@@ -553,9 +544,9 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct sendfileinfo *
 	return (e == 0);
 }
 
-static gboolean send_file_main(TilemCalcEmulator *emu, gpointer data)
+gboolean send_file_main(TilemCalcEmulator *emu, gpointer data)
 {
-	struct sendfileinfo *sf = data;
+	struct TilemSendFileInfo *sf = data;
 	/*emu->ilp.finished_cond = g_cond_new(); */
 
 	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
@@ -567,7 +558,7 @@ static gboolean send_file_main(TilemCalcEmulator *emu, gpointer data)
 static void send_file_finished(TilemCalcEmulator *emu, gpointer data,
                                gboolean cancelled)
 {
-	struct sendfileinfo *sf = data;
+	struct TilemSendFileInfo *sf = data;
 
 	if (sf->error_message && !cancelled)
 		show_error(emu, "Unable to send file", sf->error_message);
@@ -575,7 +566,7 @@ static void send_file_finished(TilemCalcEmulator *emu, gpointer data,
 	g_free(sf->filename);
 	g_free(sf->display_name);
 	g_free(sf->error_message);
-	g_slice_free(struct sendfileinfo, sf);
+	g_slice_free(struct TilemSendFileInfo, sf);
 	
 	/*g_cond_broadcast(emu->ilp.finished_cond);*/
 	
@@ -585,9 +576,9 @@ static void send_file_finished(TilemCalcEmulator *emu, gpointer data,
 void tilem_link_send_file(TilemCalcEmulator *emu, const char *filename,
                           int slot, gboolean first, gboolean last)
 {
-	struct sendfileinfo *sf;
+	struct TilemSendFileInfo *sf;
 
-	sf = g_slice_new0(struct sendfileinfo);
+	sf = g_slice_new0(struct TilemSendFileInfo);
 	sf->filename = g_strdup(filename);
 	sf->display_name = g_filename_display_basename(filename);
 	sf->slot = slot;
@@ -712,7 +703,7 @@ static gboolean get_dirlist_silent(TilemCalcEmulator *emu,
 	CalcHandle *ch;
 	GNode *vars = NULL, *apps = NULL;
 	GSList *list = NULL;
-	int e;
+	int e = 0;
 
 	begin_link(emu, &cbl, &ch);
 	prepare_for_link_receive(emu);
@@ -867,14 +858,10 @@ void tilem_link_get_dirlist(TilemCalcEmulator *emu)
 
 /**************** Receiving files ****************/
 
-struct receivefileinfo {
-	TilemVarEntry* tve;
-	char* destination;
-	char *error_message;
-};
+
 
 static gboolean receive_file_silent(TilemCalcEmulator* emu,
-                                    struct receivefileinfo *rf)
+                                    struct TilemReceiveFileInfo *rf)
 {
 	CableHandle *cbl;
 	CalcHandle *ch;
@@ -911,7 +898,7 @@ static gboolean receive_file_silent(TilemCalcEmulator* emu,
 }
 
 static gboolean receive_file_ti81(TilemCalcEmulator* emu,
-                                  struct receivefileinfo *rf)
+                                  struct TilemReceiveFileInfo *rf)
 {
 	TI81Program *prgm = NULL;
 	int e;
@@ -954,7 +941,7 @@ static gboolean receive_file_ti81(TilemCalcEmulator* emu,
 
 static gboolean receive_file_main(TilemCalcEmulator *emu, gpointer data)
 {
-	struct receivefileinfo *rf = data;
+	struct TilemReceiveFileInfo *rf = data;
 
 	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
 		return receive_file_ti81(emu, rf);
@@ -965,7 +952,7 @@ static gboolean receive_file_main(TilemCalcEmulator *emu, gpointer data)
 static void receive_file_finished(TilemCalcEmulator *emu, gpointer data,
                                   gboolean cancelled)
 {
-	struct receivefileinfo *rf = data;
+	struct TilemReceiveFileInfo *rf = data;
 
 	if (rf->error_message && !cancelled)
 		show_error(emu, "Unable to save file", rf->error_message);
@@ -973,14 +960,14 @@ static void receive_file_finished(TilemCalcEmulator *emu, gpointer data,
 	g_free(rf->destination);
 	g_free(rf->error_message);
 	tilem_var_entry_free(rf->tve);
-	g_slice_free(struct receivefileinfo, rf);
+	g_slice_free(struct TilemReceiveFileInfo, rf);
 }
 
 void tilem_link_receive_file(TilemCalcEmulator *emu,
                              const TilemVarEntry *varentry,
                              const char* destination)
 {
-	struct receivefileinfo *rf;
+	struct TilemReceiveFileInfo *rf;
 	FileContent *fc;
 	int e;
 	char *message;
@@ -1011,7 +998,7 @@ void tilem_link_receive_file(TilemCalcEmulator *emu,
 		}
 	}
 	else {
-		rf = g_slice_new0(struct receivefileinfo);
+		rf = g_slice_new0(struct TilemReceiveFileInfo);
 		rf->tve = tilem_var_entry_copy(varentry);
 		rf->destination = g_strdup(destination);
 		tilem_calc_emulator_begin(emu, &receive_file_main,

@@ -38,6 +38,8 @@ typedef struct _TilemMacro {
 	int n;
 } TilemMacro;
 
+
+
 typedef struct _TilemCalcEmulator {
 	GThread *z80_thread;
 
@@ -103,7 +105,6 @@ typedef struct _TilemCalcEmulator {
 
 	FILE * macro_file;	/* The macro file */
 	gboolean isMacroRecording; /* A flag to know everywhere that macro is recording */
-	gboolean isMacroPlaying; /* A flag to know if a macro is currently palying */
 
 } TilemCalcEmulator;
 

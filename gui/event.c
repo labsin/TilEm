@@ -154,10 +154,7 @@ static void get_device_pointer(GdkWindow *win, GdkDevice *dev,
 /* Just close the window (freeing allocated memory maybe in the futur?)*/
 void on_destroy()
 {
-	DGLOBAL_L2_A0("**************** SAVE_STATE ****************************\n");
 	SAVE_STATE=0;
-	DGLOBAL_L2_A1("*  NO (%d)                                              *\n",SAVE_STATE);
-	DGLOBAL_L2_A0("********************************************************\n\n");
 
 	printf("\nThank you for using tilem...\n");
 	

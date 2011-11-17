@@ -210,7 +210,7 @@
 * ---12/05/11---
 * - I finally found what's wrong in my gif creation. So I can do multicolor gif now.
 * ---14/05/11---
-* - We have finally completely reoganized the code to drop GLOBAL_SKIN_INFOS, and rename a lot of stuff including files (emuwin instead screen by example).
+* - We have finally completely reorganized the code to drop GLOBAL_SKIN_INFOS, and rename a lot of stuff including files (emuwin instead screen by example).
 * - Benjamin have imported his nice filedlg functions (filedlg.c) from flashbook ui (see it on SF.net). Now use it for the entire code.
 * ---14/05/11---
 * - Refactor the gif creation to separate clearly which value can be modified, which one are magic number etc... Create separate functions for each task.
@@ -263,6 +263,7 @@
 * ---12/11/11---
 * - Working on ns silent get var.
 * ---14/11/11--- 
+* - New files : emucore.c and emucore.h .
 * - Benjamin adds a totally new core task manager in the gui. Begin to convert the send files function to use it.
 * - Use this task manager for macro. There's a little priority problem when a macro load a file. Load a file then run a macro at startup works fine.
 * ---15/11/11--- 
@@ -270,5 +271,9 @@
 * - Remove unused getvar.c file.
 * ---16/11/11---
 * - Allow multiple selection and multiple receive file. Need to fix a segfault (tomorow... xD).
+* ---17/11/11---
+* - Repare the file loading inside a macro (it was broken by new task manager).
+* - Delete a lot of unused functions/printf.
+* - Remove debuginfo.h file.
 */
 

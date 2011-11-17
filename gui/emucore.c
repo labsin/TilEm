@@ -270,7 +270,7 @@ gpointer tilem_em_main(gpointer data)
 void tilem_em_delay(TilemCalcEmulator *emu, int timeout, gboolean ff)
 {
 	int t;
-	dword events;
+	G_GNUC_UNUSED dword events;
 
 	while (!emu->task_abort && timeout > 0) {
 		t = MIN(MICROSEC_PER_TICK, timeout);

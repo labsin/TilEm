@@ -79,7 +79,7 @@ link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
 
 common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
 	gui.h emulator.h debugger.h emuwin.h skinops.h animation.h \
-	debuginfo.h gtk-compat.h msgbox.h
+	gtk-compat.h msgbox.h
 
 all: tilem2@EXEEXT@
 

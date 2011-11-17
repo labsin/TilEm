@@ -34,7 +34,6 @@ static void write_extension_block(FILE* fout, word delay);
 static void write_image_block_start(FILE *fp, int width, int height);
 static void write_image_block_end(FILE *fp);
 static void write_comment(FILE* fp);
-static void write_image_block(TilemCalcEmulator *emu, FILE *fp, int width, int height);
 static void write_application_extension(FILE * fp) ;
 
 static void write_global_header(FILE* fp, int width, int height, byte* palette, int palette_size) {

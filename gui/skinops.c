@@ -35,7 +35,6 @@ contra-sh :
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <debuginfo.h>
 #include "skinops.h"
 
 #include <gtk/gtk.h>
@@ -191,7 +190,6 @@ int skin_read_header(SKIN_INFOS *si, const char *filename)
 */
 int skin_read_image(SKIN_INFOS *si, const char *filename)
 {
-	DSKIN_L2_A0("* -> fct : skin_read_image                             *\n");
 	FILE *fp = NULL;
 
 	GdkPixbufLoader *loader;
@@ -262,7 +260,6 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 int skin_load(SKIN_INFOS *si, const char *filename)
 {
 	int ret = 0;
-	DSKIN_L0_A0("**************** fct : skin_load ***********************\n");
 	ret = skin_read_header(si, filename);
 	if(ret)
 		return ret;
@@ -272,9 +269,8 @@ int skin_load(SKIN_INFOS *si, const char *filename)
 		return ret;
 
 	if(!ret)
-		printf("*  loading skin:  (%d x %d)                          *\n", si->width, si->height);
+		printf("loading skin:  (%d x %d)\n", si->width, si->height);
 
-	DGLOBAL_L0_A0("********************************************************\n");
 
 	return ret;
 }

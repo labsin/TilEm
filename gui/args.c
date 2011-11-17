@@ -80,32 +80,27 @@ int tilem_cmdline_get_args(int argc, char* argv[], TilemCmdlineArgs* cmdline) {
                 switch(options) //options -X de la ligne
                 {		//de commande
 			case 's':
-                        printf("arg : s, optarg = %s\n", optarg);
+                        /*printf("arg : s, optarg = %s\n", optarg);*/
 			cmdline->SavName = optarg;
-                        printf("cmdline->SavName = %s\n", cmdline->SavName);
 			break;
                         case 'r':
-                        printf("arg : r, optarg = %s\n", optarg);
+                        /*printf("arg : r, optarg = %s\n", optarg);*/
 			cmdline->RomName = optarg;
-                        printf("cmdline->RomName = %s\n", cmdline->RomName);
                         break;
                         case 'f':
-                        printf("arg : f, optarg = %s\n", optarg);
+                        /*printf("arg : f, optarg = %s\n", optarg);*/
 			cmdline->FileToLoad = optarg;
-                        printf("cmdline->FileToLoad = %s\n", cmdline->FileToLoad);
                         break;
                         case 'k':
-                        printf("arg : k, optarg = %s\n", optarg);
+                        /*printf("arg : k, optarg = %s\n", optarg);*/
 			cmdline->SkinFileName = optarg;
-                        printf("cmdline->SkinFileName = %s\n", cmdline->SkinFileName);
                         break;
                         case 'm':
-                        printf("arg : m, optarg = %s\n", optarg);
+                        /*printf("arg : m, optarg = %s\n", optarg);*/
 			cmdline->MacroToPlay = optarg;
-                        printf("cmdline->MacroName = %s\n", cmdline->MacroToPlay);
                         break;
 			case 'l':
-                        printf("arg : l\n");
+                        /*printf("arg : l\n");*/
 			cmdline->isStartingSkinless = TRUE;
                         break;
 			
@@ -135,9 +130,7 @@ void create_savname(TilemCmdlineArgs* cmdline) {
 			if ((p = strrchr(cmdline->SavName, '.'))) 
 			{
 				strcpy(p, ".sav");
-				DGLOBAL_L0_A0("**************** fct : main ****************************\n");
-				DGLOBAL_L0_A2("*  cmdline->RomName=%s cmdline->SavName=%s           *\n",cmdline->RomName, cmdline->SavName);	
-				DGLOBAL_L0_A0("********************************************************\n");
+				printf("RomName=%s SavName=%s\n",cmdline->RomName, cmdline->SavName);	
 			} else {
 				strcat(cmdline->SavName, ".sav");
 		}
