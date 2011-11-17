@@ -282,6 +282,7 @@ typedef struct {
 	char *type_str; /* Variable type */
 	char *slot_str; /* Program slot */
 	char *file_ext; /* Default file extension */
+	char *filetype_desc; /* File format description */
 
 	int size;            /* Variable size */
 	gboolean archived;   /* Is archived */

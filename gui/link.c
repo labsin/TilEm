@@ -620,6 +620,8 @@ TilemVarEntry *tilem_var_entry_copy(const TilemVarEntry *tve)
 		nve->slot_str = g_strdup(tve->slot_str);
 	if (tve->file_ext)
 		nve->file_ext = g_strdup(tve->file_ext);
+	if (tve->filetype_desc)
+		nve->filetype_desc = g_strdup(tve->filetype_desc);
 
 	return nve;
 }
@@ -636,6 +638,7 @@ void tilem_var_entry_free(TilemVarEntry *tve)
 	g_free(tve->type_str);
 	g_free(tve->slot_str);
 	g_free(tve->file_ext);
+	g_free(tve->filetype_desc);
 	g_slice_free(TilemVarEntry, tve);
 }
 
@@ -650,6 +653,8 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 {
 	TilemVarEntry *tve = g_slice_new0(TilemVarEntry);
 	CalcModel tfmodel = get_calc_model(emu->calc);
+	const char *model_str;
+	const char *type_str;
 
 	tve->model = emu->calc->hw.model_id;
 
@@ -665,6 +670,14 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 	tve->name_str = ticonv_varname_to_utf8(tfmodel, ve->name, ve->type);
 	tve->type_str = g_strdup(tifiles_vartype2string(tfmodel, ve->type));
 	tve->file_ext = g_strdup(tifiles_vartype2fext(tfmodel, ve->type));
+
+	/* FIXME: the filetype_desc string is used as a description in
+	   the file chooser.  It should be written in the same style
+	   as other such strings (e.g., "TI-83 Plus programs" rather
+	   than "TI83+ Program".)  But this is better than nothing. */
+	model_str = tifiles_model_to_string(tfmodel);
+	type_str = tifiles_vartype2type(tfmodel, ve->type);
+	tve->filetype_desc = g_strdup_printf("%s %s", model_str, type_str);
 
 	tve->can_group = !is_flash;
 
@@ -792,6 +805,7 @@ static gboolean get_dirlist_ti81(TilemCalcEmulator *emu,
 		tve->name_str = ti81_program_name_to_string(info.name);
 		tve->slot_str = ti81_program_slot_to_string(info.slot);
 		tve->file_ext = g_strdup("prg");
+		tve->filetype_desc = g_strdup("TI-81 programs");
 		tve->size = info.size;
 		tve->archived = FALSE;
 		tve->can_group = FALSE;
