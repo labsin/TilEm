@@ -174,6 +174,12 @@ gboolean tilem_prompt_address(TilemDebugger *dbg, GtkWindow *parent,
 
 /* ##### tool.c ##### */
 
+/* Get model name (abbreviation) for a TilEm model ID. */
+const char * model_to_name(int model);
+
+/* Convert model name to a model ID. */
+int name_to_model(const char *name);
+
 /* Create a frame around the given widget */
 GtkWidget* new_frame(const gchar* label, GtkWidget* contents);
 

@@ -84,6 +84,7 @@ typedef struct _TilemCalcEmulator {
 	gboolean anim_grayscale; /* use grayscale in animation */
 
 	char *rom_file_name;
+	char *state_file_name;
 
 	/* List of key bindings */
 	TilemKeyBinding *keybindings;
@@ -108,6 +109,14 @@ typedef struct _TilemCalcEmulator {
 
 } TilemCalcEmulator;
 
+/* Errors */
+#define TILEM_EMULATOR_ERROR g_quark_from_static_string("tilem-emulator-error")
+enum {
+	TILEM_EMULATOR_ERROR_NO_ROM,
+	TILEM_EMULATOR_ERROR_INVALID_ROM,
+	TILEM_EMULATOR_ERROR_INVALID_STATE
+};
+
 /* Create a new TilemCalcEmulator. */
 TilemCalcEmulator *tilem_calc_emulator_new(void);
 
@@ -127,10 +136,13 @@ void tilem_calc_emulator_cond_wait(TilemCalcEmulator *emu, GCond *cond);
 /* Load the calculator state from the given ROM file (and accompanying
    sav file, if any.) */
 gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
-                                        const char *filename);
+                                        const char *romfname,
+                                        const char *statefname,
+                                        int model, GError **err);
 
 /* Save the calculator state. */
-gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu);
+gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu,
+                                        GError **err);
 
 /* Reset the calculator. */
 void tilem_calc_emulator_reset(TilemCalcEmulator *emu);
@@ -180,6 +192,9 @@ void tilem_calc_emulator_begin_animation(TilemCalcEmulator *emu,
 /* Finish recording an animated screenshot.  Returned object has a
    reference count of 1 (free it with g_object_unref().) */
 TilemAnimation * tilem_calc_emulator_end_animation(TilemCalcEmulator *emu);
+
+/* Prompt for a ROM file to open */
+int tilem_calc_emulator_prompt_open_rom(TilemCalcEmulator *emu);
 
 
 /* Run slowly to play macro */

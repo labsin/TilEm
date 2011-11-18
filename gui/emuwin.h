@@ -70,3 +70,6 @@ void tilem_emulator_window_calc_changed(TilemEmulatorWindow *ewin);
 
 /* Redraw LCD contents. */
 void tilem_emulator_window_refresh_lcd(TilemEmulatorWindow *ewin);
+
+/* Prompt for a ROM file to open */
+gboolean tilem_emulator_window_prompt_open_rom(TilemEmulatorWindow *ewin);

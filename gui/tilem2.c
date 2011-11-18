@@ -23,6 +23,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <ticalcs.h>
 #include <tilem.h>
@@ -30,11 +31,57 @@
 #include "gui.h"
 #include "files.h"
 #include "icons.h"
-#include "filedlg.h"
-
-
+#include "msgbox.h"
 
 /* #########  MAIN  ######### */
+
+static void load_initial_rom(TilemCalcEmulator *emu,
+                             const char *cmdline_rom_name,
+                             const char *cmdline_state_name)
+{
+	GError *err = NULL;
+	char *modelname;
+	int model;
+
+	/* If a ROM file is specified on the command line, use that
+	   (and no other) */
+
+	if (cmdline_rom_name) {
+		if (tilem_calc_emulator_load_state(emu, cmdline_rom_name,
+		                                   cmdline_state_name, 0, &err))
+			return;
+		else if (!err)
+			exit(0);
+		else {
+			g_printerr("%s\n", err->message);
+			exit(1);
+		}
+	}
+
+	/* Try to load the most recently used model */
+
+	tilem_config_get("recent", "last_model/s", &modelname, NULL);
+	if (modelname && (model = name_to_model(modelname))) {
+		if (tilem_calc_emulator_load_state(emu, NULL, NULL,
+		                                   model, &err))
+			return;
+		else if (!err)
+			exit(0);
+		else {
+			messagebox01(NULL, GTK_MESSAGE_ERROR,
+			             "Unable to load calculator state",
+			             "%s", err->message);
+			g_clear_error(&err);
+		}
+	}
+
+	/* Prompt user for a ROM file */
+
+	while (!emu->calc) {
+		if (!tilem_calc_emulator_prompt_open_rom(emu))
+			exit(0);
+	}
+}
 
 int main(int argc, char **argv)
 {
@@ -61,38 +108,8 @@ int main(int argc, char **argv)
 
 	cl = tilem_cmdline_new();
 	tilem_cmdline_get_args(argc, argv, cl);
-	
 
-	/* Check if user gives a romfile as cmd line parameter */
-	/* In this cas, try to load a saved rom */
-	if(!cl->RomName)
-		tilem_config_get("recent", "rom/f", &cl->RomName, NULL);
-
-	/* If no saved romfile */
-	/* In this case, prompt the user wich file he want to load */
-	if(!cl->RomName) {
-		char * basename;
-		tilem_config_get("recent", "basedir/f", &basename, NULL);
-		cl->RomName = prompt_open_file("Open rom", NULL, basename, "ROM files", "*.rom", "All files", "*", NULL);
-		g_free(basename);
-	}
-	
-	/* Check if user cancelled the prompt */
-	/* In this case, jut close tilem2 (can't choose for him) */
-	if(!cl->RomName) {	
-		return 0;
-	} else {
-		/* Save the directory */
-		gchar* folder = g_path_get_dirname(cl->RomName);
-		printf("basename : %s\n", folder);
-		tilem_config_set("recent", "rom/f", cl->RomName, "basedir/f", folder, NULL);		
-		g_free(folder);
-	}
-	
-	if (!tilem_calc_emulator_load_state(emu, cl->RomName)) {
-		tilem_calc_emulator_free(emu);
-		return 1;
-	}
+	load_initial_rom(emu, cl->RomName, cl->SavName);
 
 	emu->ewin = tilem_emulator_window_new(emu);
 
@@ -121,7 +138,7 @@ int main(int argc, char **argv)
 	
 	/* Save the state */
 	if(SAVE_STATE==1)
-		tilem_calc_emulator_save_state(emu);
+		tilem_calc_emulator_save_state(emu, NULL);
 
 	tilem_emulator_window_free(emu->ewin);
 	tilem_calc_emulator_free(emu);

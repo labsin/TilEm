@@ -28,7 +28,7 @@
 #include <tilem.h>
 
 #include "gui.h"
-#include "filedlg.h"
+#include "msgbox.h"
 
 static void action_send_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
@@ -50,29 +50,23 @@ static void action_start_debugger(G_GNUC_UNUSED GtkAction *act, gpointer data)
 	launch_debugger(ewin);
 }
 
-static void action_open_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
+static void action_open_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	char * basename;
-	tilem_config_get("recent", "basedir/f", &basename, NULL);
-	char * RomName = prompt_open_file("Open rom", NULL, basename, "ROM files", "*.rom", "All files", "*", NULL);
-	tilem_calc_emulator_pause(ewin->emu);
-	tilem_calc_emulator_load_state(ewin->emu, RomName);
-	tilem_calc_emulator_run(ewin->emu);
-	gchar* folder = g_path_get_dirname(RomName);
-	printf("basename : %s\n", folder);
-	tilem_config_set("recent", "rom/f", RomName, "basedir/f", folder, NULL);		
-	g_free(basename);
-	g_free(folder);
-	g_free(RomName);
-
+	tilem_calc_emulator_prompt_open_rom(ewin->emu);
 }
 
 static void action_save_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	tilem_calc_emulator_save_state(ewin->emu);
-	
+	GError *err = NULL;
+
+	if (!tilem_calc_emulator_save_state(ewin->emu, &err)) {
+		messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
+		             "Unable to save calculator state",
+		             "%s", err->message);
+		g_error_free(err);
+	}       
 }
 
 static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)

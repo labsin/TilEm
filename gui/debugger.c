@@ -1269,6 +1269,9 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg)
 	g_object_unref(model);
 
 	tilem_debugger_refresh(dbg, TRUE);
+
+	if (dbg->keypad_dialog)
+		tilem_keypad_dialog_calc_changed(dbg->keypad_dialog);
 }
 
 /* Update display. */

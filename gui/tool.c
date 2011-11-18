@@ -55,6 +55,34 @@ GtkWidget* new_frame(const gchar* label, GtkWidget* contents)
 	return frame;
 }
 
+/* Get model name (abbreviation) for a TilEm model ID. */
+const char * model_to_name(int model)
+{
+	const TilemHardware **models;
+	int nmodels, i;
+
+	tilem_get_supported_hardware(&models, &nmodels);
+	for (i = 0; i < nmodels; i++)
+		if (models[i]->model_id == model)
+			return models[i]->name;
+
+	return NULL;
+}
+
+/* Convert model name to a model ID. */
+int name_to_model(const char *name)
+{
+	const TilemHardware **models;
+	int nmodels, i;
+
+	tilem_get_supported_hardware(&models, &nmodels);
+	for (i = 0; i < nmodels; i++)
+		if (!g_ascii_strcasecmp(name, models[i]->name))
+			return models[i]->model_id;
+
+	return 0;
+}
+
 /* A popup which is used to let the user choose the model at startup */
 char choose_rom_popup(GtkWidget *parent_window, const char *filename,
                       char default_model)

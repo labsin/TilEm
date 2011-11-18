@@ -296,6 +296,22 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 	return rcvdialog;
 }
 
+/* Destroy a TilemReceiveDialog */
+void tilem_receive_dialog_free(TilemReceiveDialog *rcvdialog)
+{
+	GSList *l;
+
+	g_return_if_fail(rcvdialog != NULL);
+
+	gtk_widget_destroy(rcvdialog->window);
+
+	for (l = rcvdialog->vars; l; l = l->next)
+		tilem_var_entry_free(l->data);
+	g_slist_free(rcvdialog->vars);
+
+	g_slice_free(TilemReceiveDialog, rcvdialog);
+}
+
 void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
 {
 	GSList *l;
