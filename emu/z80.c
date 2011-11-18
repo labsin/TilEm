@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -328,6 +328,11 @@ void tilem_z80_stop(TilemCalc* calc, dword reason)
 		calc->z80.stop_reason |= reason;
 		calc->z80.stopping = 1;
 	}
+}
+
+void tilem_z80_exception(TilemCalc* calc, unsigned type)
+{
+	calc->z80.exception |= type;
 }
 
 void tilem_z80_set_speed(TilemCalc* calc, int speed)
@@ -862,6 +867,7 @@ static void z80_execute(TilemCalc* calc)
 	}
 
 	while (!z80->stopping) {
+		z80->exception = 0;
 		op = (*calc->hw.z80_rdmem_m1)(calc, PC);
 		PC++;
 		Rl++;
@@ -947,6 +953,13 @@ static void z80_execute(TilemCalc* calc)
 			z80->clock += t1 & ~3;
 			Rl += t1 / 4;
 			check_timers(calc);
+		}
+
+		if (TILEM_UNLIKELY(z80->exception)) {
+			if (z80->emuflags & TILEM_Z80_BREAK_EXCEPTIONS)
+				tilem_z80_stop(calc, TILEM_STOP_EXCEPTION);
+			if (!(z80->emuflags & TILEM_Z80_IGNORE_EXCEPTIONS))
+				tilem_calc_reset(calc);
 		}
 	}
 }

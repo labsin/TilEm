@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -80,7 +80,7 @@
 	}								\
 	if (calc->z80.emuflags & TILEM_Z80_RESET_UNDOCUMENTED) {	\
 		tilem_warning(calc, "Invalid opcode %x", op);		\
-		tilem_z80_reset(calc);					\
+		tilem_z80_exception(calc, TILEM_EXC_INSTRUCTION);	\
 		break;							\
 	}
 

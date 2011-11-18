@@ -841,6 +841,7 @@ void xn_z80_instr(TilemCalc* calc, dword opcode)
 
 	default:
 		tilem_warning(calc, "Invalid opcode %x", opcode);
+		tilem_z80_exception(calc, TILEM_EXC_INSTRUCTION);
 		break;
 	}
 }

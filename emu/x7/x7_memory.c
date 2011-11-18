@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -93,21 +93,19 @@ byte x7_z80_rdmem_m1(TilemCalc* calc, dword A)
 
 	if (TILEM_UNLIKELY(calc->hwregs[NOEXEC] & (1 << (page % 4)))) {
 		tilem_warning(calc, "Executing in restricted Flash area");
-		x7_reset(calc);
-		return (0x00);
+		tilem_z80_exception(calc, TILEM_EXC_FLASH_EXEC);
 	}
 
 	if (TILEM_UNLIKELY(page == 0x1E && !calc->flash.unlock)) {
 		tilem_warning(calc, "Reading from read-protected sector");
-		return (0xff);
+		tilem_z80_exception(calc, TILEM_EXC_RAM_EXEC);
 	}
 
 	value = readbyte(calc, pa);
 
 	if (TILEM_UNLIKELY(value == 0xff && A == 0x0038)) {
 		tilem_warning(calc, "No OS installed");
-		x7_reset(calc);
-		return (0x00);
+		tilem_z80_exception(calc, TILEM_EXC_FLASH_EXEC);
 	}
 
 	return (value);

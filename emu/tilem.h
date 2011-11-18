@@ -159,8 +159,10 @@ enum {
 	TILEM_Z80_SKIP_UNDOCUMENTED  = 4, /* Ignore undocumented
 					     instructions entirely
 					     (act as two NOPs) */
-	TILEM_Z80_RESET_UNDOCUMENTED = 8  /* Reset CPU following
-					     undocumented instructions */
+	TILEM_Z80_RESET_UNDOCUMENTED = 8, /* Reset CPU following
+	                                     undocumented instructions */
+	TILEM_Z80_BREAK_EXCEPTIONS = 16,  /* Break on hardware exceptions */
+	TILEM_Z80_IGNORE_EXCEPTIONS = 32  /* Ignore hardware exceptions */
 };
 
 /* Reasons for stopping emulation */
@@ -169,10 +171,11 @@ enum {
 	TILEM_STOP_BREAKPOINT = 1,         /* stopped due to breakpoint */
 	TILEM_STOP_INVALID_INST = 2,       /* invalid instruction */
 	TILEM_STOP_UNDOCUMENTED_INST = 4,  /* undocumented instruction */
-	TILEM_STOP_LINK_STATE = 8,         /* blacklink state change */
-	TILEM_STOP_LINK_READ_BYTE = 16,    /* graylink finished reading byte */
-	TILEM_STOP_LINK_WRITE_BYTE = 32,   /* graylink finished writing byte */
-	TILEM_STOP_LINK_ERROR = 64         /* graylink encountered error */
+	TILEM_STOP_EXCEPTION = 8,	   /* hardware exception */
+	TILEM_STOP_LINK_STATE = 16,        /* blacklink state change */
+	TILEM_STOP_LINK_READ_BYTE = 32,    /* graylink finished reading byte */
+	TILEM_STOP_LINK_WRITE_BYTE = 64,   /* graylink finished writing byte */
+	TILEM_STOP_LINK_ERROR = 128        /* graylink encountered error */
 };
 
 /* Types of interrupt */
@@ -187,6 +190,14 @@ enum {
 	TILEM_INTERRUPT_LINK_READ = 1024,  /* Link assist read a byte */
 	TILEM_INTERRUPT_LINK_IDLE = 2048,  /* Link assist is idle */
 	TILEM_INTERRUPT_LINK_ERROR = 4096  /* Link assist failed */
+};
+
+/* Types of hardware exception */
+enum {
+	TILEM_EXC_RAM_EXEC = 1,    /* Executing at invalid RAM address */
+	TILEM_EXC_FLASH_EXEC = 2,  /* Executing at invalid Flash address */
+	TILEM_EXC_FLASH_WRITE = 4, /* Writing to invalid Flash address */
+	TILEM_EXC_INSTRUCTION = 8  /* Invalid instruction */
 };
 
 /* Constant hardware timer IDs */
@@ -221,6 +232,7 @@ typedef struct _TilemZ80 {
 	unsigned int interrupts; /* Currently active interrupts */
 	int clockspeed;		/* Current CPU speed (kHz) */
 	int halted;
+	unsigned int exception;
 	dword clock;
 	dword lastwrite;
 	dword lastlcdwrite;
@@ -261,6 +273,9 @@ void tilem_z80_stop(TilemCalc* calc, dword reason);
 
 /* Set CPU speed (kHz) */
 void tilem_z80_set_speed(TilemCalc* calc, int speed);
+
+/* Raise a hardware exception */
+void tilem_z80_exception(TilemCalc* calc, unsigned type);
 
 /* Add a timer with the given callback function and data.  The
    callback function will be called after 'count' time units, and

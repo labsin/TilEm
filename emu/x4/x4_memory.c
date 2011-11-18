@@ -137,8 +137,7 @@ byte x4_z80_rdmem_m1(TilemCalc* calc, dword A)
 		if (TILEM_UNLIKELY(page >= calc->hwregs[PORT22]
 		                   && page <= calc->hwregs[PORT23])) {
 			tilem_warning(calc, "Executing in restricted Flash area");
-			x4_reset(calc);
-			return (0x00);
+			tilem_z80_exception(calc, TILEM_EXC_FLASH_EXEC);
 		}
 	}
 	else {
@@ -148,8 +147,7 @@ byte x4_z80_rdmem_m1(TilemCalc* calc, dword A)
 		if (TILEM_UNLIKELY(m < calc->hwregs[NO_EXEC_RAM_LOWER]
 		                   || m > calc->hwregs[NO_EXEC_RAM_UPPER])) {
 			tilem_warning(calc, "Executing in restricted RAM area");
-			x4_reset(calc);
-			return (0x00);
+			tilem_z80_exception(calc, TILEM_EXC_RAM_EXEC);
 		}
 	}
 
@@ -157,8 +155,7 @@ byte x4_z80_rdmem_m1(TilemCalc* calc, dword A)
 
 	if (TILEM_UNLIKELY(value == 0xff && A == 0x0038)) {
 		tilem_warning(calc, "No OS installed");
-		x4_reset(calc);
-		return (0x00);
+		tilem_z80_exception(calc, TILEM_EXC_FLASH_EXEC);
 	}
 
 	return (value);
