@@ -83,3 +83,6 @@ void file_entry_set_filename(GtkWidget *fe,
    selected; otherwise, a string in filename encoding, which must be
    freed with g_free(). */
 char * file_entry_get_filename(GtkWidget *fe);
+
+/* Run a directory chooser dialog, allowing user to select a directory. */
+char * prompt_select_dir(const char *title, GtkWindow *parent, const char *suggest_dir);

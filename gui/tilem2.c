@@ -59,7 +59,6 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 	}
 
 	/* Try to load the most recently used model */
-
 	tilem_config_get("recent", "last_model/s", &modelname, NULL);
 	if (modelname && (model = name_to_model(modelname))) {
 		if (tilem_calc_emulator_load_state(emu, NULL, NULL,
@@ -74,6 +73,30 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 			g_clear_error(&err);
 		}
 	}
+
+	#if 0
+	/* Try to load the most recently used rom */
+	char* rom_name = NULL;
+	tilem_config_get("recent", "rom/f", &rom_name, NULL);
+	if(rom_name) {
+		if (tilem_calc_emulator_load_state(emu, rom_name, NULL, 0, &err)) {
+			g_free(rom_name);
+			return;
+		} else if (!err) {
+			g_free(rom_name);
+			exit(0);
+		} else {
+			g_free(rom_name);
+			messagebox01(NULL, GTK_MESSAGE_ERROR,
+			             "Unable to load calculator rom",
+			             "%s", err->message);
+			g_clear_error(&err);
+		}
+	}
+	#endif
+	
+
+	
 
 	/* Prompt user for a ROM file */
 

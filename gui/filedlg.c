@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011 Thibault Duponchelle // FIXME : My work is based on yours benjamin. Should I put "portions"?! Or something else ?
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -588,6 +589,51 @@ static char ** run_file_chooser(const char *title,
 	return NULL;
 }
 
+static char* run_dir_chooser(const char *title,
+                                GtkWindow *parent,
+                                gboolean save,
+                                const char *suggest_dir)
+{
+	GtkWidget *filesel;
+	char *fname;
+
+	filesel = gtk_file_chooser_dialog_new(title, parent,
+					      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+	                                      GTK_STOCK_CANCEL,
+	                                      GTK_RESPONSE_CANCEL,
+	                                      (save
+	                                       ? GTK_STOCK_SAVE
+	                                       : GTK_STOCK_OPEN),
+	                                      GTK_RESPONSE_ACCEPT,
+	                                      NULL);
+
+	gtk_dialog_set_alternative_button_order(GTK_DIALOG(filesel),
+	                                        GTK_RESPONSE_ACCEPT,
+	                                        GTK_RESPONSE_CANCEL,
+	                                        -1);
+
+	gtk_dialog_set_default_response(GTK_DIALOG(filesel),
+	                                GTK_RESPONSE_ACCEPT);
+
+	if (suggest_dir)
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filesel),
+		                                    suggest_dir);
+
+	while (gtk_dialog_run(GTK_DIALOG(filesel)) == GTK_RESPONSE_ACCEPT) {
+		fname = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filesel));
+		if (!fname) {
+			g_free(fname);
+			continue;
+		}
+
+		gtk_widget_destroy(filesel);
+		return fname;
+	}
+
+	gtk_widget_destroy(filesel);
+	return NULL;
+}
+
 #endif  /* ! GDK_WINDOWING_WIN32 */
 
 char * prompt_open_file(const char *title,
@@ -662,6 +708,21 @@ char * prompt_save_file(const char *title,
 		return fname;
 	}
 }
+
+char * prompt_select_dir(const char *title, GtkWindow *parent, const char *suggest_dir)
+{
+	char *dirname;
+
+	dirname = run_dir_chooser(title, parent, TRUE, suggest_dir);
+
+	if (!dirname) {
+		return NULL;
+	} else {
+		return dirname;
+	}
+}
+
+
 
 /**************** File entry ****************/
 

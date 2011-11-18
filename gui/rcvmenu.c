@@ -81,13 +81,15 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	GtkTreePath *path;
 	char *pattern;
 
-	/* FIXME : allow multiple var/app selection */
-	/* FIXME : handle error : no row selected */
-
 	/* Get the selected entry */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
 	
 	rows = gtk_tree_selection_get_selected_rows(selection, &model);
+
+	if(FALSE) {	
+		dir = prompt_select_dir("Save File", GTK_WINDOW(rcvdialog->window), dir);
+		printf("Selected directory : %s\n", dir);
+	}
 
 	for (l = rows; l; l = l->next) {
 	 	path = (GtkTreePath*) l->data;
@@ -103,11 +105,17 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		default_filename = g_strconcat(tve->name_str, ".", tve->file_ext, NULL);
 		pattern = g_strconcat("*.", tve->file_ext, NULL);
 
-		filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
+		if(TRUE) {
+			filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
 		                            default_filename, dir,
 		                            tve->filetype_desc, pattern,
 		                            "All files", "*",
 		                            NULL);
+		} else {
+			filename = g_strconcat(dir, default_filename, NULL);
+			printf("Default filename (generated) : %s\n", filename);
+		}	
+			
 
 		g_free(default_filename);	
 		g_free(pattern);
