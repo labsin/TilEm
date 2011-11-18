@@ -79,6 +79,7 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	GtkTreeIter iter;
 	GList *rows, *l;
 	GtkTreePath *path;
+	char* dir_selected = NULL;
 	char *pattern;
 
 	/* Get the selected entry */
@@ -86,9 +87,12 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	
 	rows = gtk_tree_selection_get_selected_rows(selection, &model);
 
-	if(FALSE) {	
-		dir = prompt_select_dir("Save File", GTK_WINDOW(rcvdialog->window), dir);
-		printf("Selected directory : %s\n", dir);
+
+	if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rcvdialog->always_ask_filename_tb))) {	
+		/*  Get the recent directory */	
+		tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
+		if(!dir) dir = g_get_current_dir();
+		dir_selected = prompt_select_dir("Save File", GTK_WINDOW(rcvdialog->window), dir);
 	}
 
 	for (l = rows; l; l = l->next) {
@@ -105,14 +109,16 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		default_filename = g_strconcat(tve->name_str, ".", tve->file_ext, NULL);
 		pattern = g_strconcat("*.", tve->file_ext, NULL);
 
-		if(TRUE) {
+		/* If the toggle button is active, tilem prompt the user each times */
+		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rcvdialog->always_ask_filename_tb))) {	
 			filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
 		                            default_filename, dir,
 		                            tve->filetype_desc, pattern,
 		                            "All files", "*",
 		                            NULL);
 		} else {
-			filename = g_strconcat(dir, default_filename, NULL);
+			/* If inactive, only use the previous selected folder with the default filename */
+			filename = g_strconcat(dir_selected, "/" , default_filename, NULL);
 			printf("Default filename (generated) : %s\n", filename);
 		}	
 			
@@ -292,7 +298,11 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 
 	/* Allow scrolling the list because we can't know how many vars the calc contains */
 	GtkWidget * scroll = new_scrolled_window(rcvdialog->treeview);
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window))), scroll);
+	rcvdialog->vbox = gtk_vbox_new(FALSE, 3);
+	rcvdialog->always_ask_filename_tb = gtk_check_button_new_with_mnemonic("Always _ask filename");
+	gtk_box_pack_start(GTK_BOX(rcvdialog->vbox), GTK_WIDGET(scroll), TRUE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(rcvdialog->vbox), GTK_WIDGET(rcvdialog->always_ask_filename_tb), FALSE, FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window))), rcvdialog->vbox);
 
 	/* Signals callback */	
 	g_signal_connect(rcvdialog->button_refresh, "clicked", G_CALLBACK (tilem_rcvmenu_on_refresh), rcvdialog);

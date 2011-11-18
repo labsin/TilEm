@@ -77,6 +77,11 @@ typedef struct _TilemReceiveDialog {
 
 	GtkWidget* treeview;		/* The treeview to print the list of vars */
 	GtkTreeModel* model;		/* The model used by the treeview */
+
+	GtkWidget* vbox;		/* A vbox in the content area */
+
+	GtkWidget* always_ask_filename_tb;	/* Toggle Button. If enabled, always prompt filename */	
+	
 } TilemReceiveDialog;
 
 /* Handle the ilp progress stuff */
