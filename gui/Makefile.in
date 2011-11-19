@@ -62,6 +62,7 @@ objects = tilem2.o \
 	memory.o \
 	pbar.o \
 	preferences.o \
+	sendfile.o \
 	screenshot.o \
 	skinops.o \
 	ti81prg.o \
@@ -199,9 +200,13 @@ keybindings.o: keybindings.c files.h $(common_headers)
 menu.o: menu.c $(common_headers)
 	$(compile) -c $(srcdir)/menu.c
 
-# Menu
+# Link receive dialog
 rcvmenu.o: rcvmenu.c $(common_headers)
 	$(compile) -c $(srcdir)/rcvmenu.c
+
+# Link send dialog
+sendfile.o: sendfile.c emucore.h $(common_headers)
+	$(compile) -c $(srcdir)/sendfile.c
 
 # File open/save dialogs
 filedlg.o: filedlg.c filedlg.h
