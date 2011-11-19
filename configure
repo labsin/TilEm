@@ -3641,7 +3641,7 @@ fi
 if test "x$gtk_target" = "xwin32" && test "x$GCC" = "xyes" ; then
   CFLAGS="$CFLAGS -mms-bitfields"
   GUI_LDFLAGS="-mwindows"
-  LIBS="-lcomdlg32 $LIBS"
+  LIBS="-lcomdlg32 -lshell32 -lole32 $LIBS"
 else
   GUI_LDFLAGS=""
 fi

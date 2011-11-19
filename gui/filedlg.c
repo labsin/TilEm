@@ -34,6 +34,7 @@
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include <commdlg.h>
+# include <shlobj.h>
 # include <gdk/gdkwin32.h>
 # include <wchar.h>
 
@@ -357,6 +358,132 @@ static char ** run_file_chooser(const char *title,
 	                           suggest_name, suggest_dir, filters);
 	g_free(filters);
 	return result;
+}
+
+struct dcinfo {
+	const char *title;
+	HWND parent_window;
+	wchar_t *suggest_dir_w;
+	char *suggest_dir_l;
+};
+
+static int CALLBACK dir_chooser_callback(HWND hwnd, UINT uMsg,
+                                         G_GNUC_UNUSED LPARAM lParam,
+                                         LPARAM lpData)
+{
+	const struct dcinfo *dci = (struct dcinfo*) lpData;
+
+	if (uMsg != BFFM_INITIALIZED)
+		return 0;
+
+	if (G_WIN32_HAVE_WIDECHAR_API())
+		SendMessageW(hwnd, BFFM_SETSELECTIONW,
+		             TRUE, (LPARAM) dci->suggest_dir_w);
+	else
+		SendMessageA(hwnd, BFFM_SETSELECTIONA,
+		             TRUE, (LPARAM) dci->suggest_dir_l);
+	return 0;
+}
+
+static char * dir_chooser_main(const struct dcinfo *dci)
+{
+	LPITEMIDLIST idl;
+	char *result = NULL;
+
+	CoInitialize(NULL);
+
+	if (G_WIN32_HAVE_WIDECHAR_API()) {
+		BROWSEINFOW bifw;
+		wchar_t dirnamew[MAX_PATH + 1];
+
+		memset(&bifw, 0, sizeof(bifw));
+		bifw.hwndOwner = dci->parent_window;
+		bifw.lpszTitle = g_utf8_to_utf16(dci->title, -1, 0, 0, 0);
+		bifw.ulFlags = (BIF_RETURNONLYFSDIRS | BIF_USENEWUI);
+		bifw.lpfn = &dir_chooser_callback;
+		bifw.lParam = (LPARAM) dci;
+
+		idl = SHBrowseForFolderW(&bifw);
+		if (idl && SHGetPathFromIDListW(idl, dirnamew))
+			result = g_utf16_to_utf8(dirnamew, -1, 0, 0, 0);
+	}
+	else {
+		BROWSEINFOA bifa;
+		char dirnamel[MAX_PATH + 1];
+
+		memset(&bifa, 0, sizeof(bifa));
+		bifa.hwndOwner = dci->parent_window;
+		bifa.lpszTitle = g_locale_from_utf8(dci->title, -1, 0, 0, 0);
+		bifa.ulFlags = (BIF_RETURNONLYFSDIRS | BIF_USENEWUI);
+		bifa.lpfn = &dir_chooser_callback;
+		bifa.lParam = (LPARAM) dci;
+
+		idl = SHBrowseForFolderA(&bifa);
+		if (idl && SHGetPathFromIDListA(idl, dirnamel))
+			result = g_locale_from_utf8(dirnamel, -1, 0, 0, 0);
+	}
+
+	if (idl)
+		CoTaskMemFree(idl);
+
+	CoUninitialize();
+
+	return result;
+}
+
+static gpointer dir_chooser_thread(gpointer data)
+{
+	struct dcinfo *dci = data;
+	gpointer res = dir_chooser_main(dci);
+	g_idle_add(wakeup, NULL);
+	return res;
+}
+
+static char* run_dir_chooser(G_GNUC_UNUSED const char *title,
+                             GtkWindow *parent,
+                             G_GNUC_UNUSED gboolean save,
+                             const char *suggest_dir)
+{
+	struct dcinfo dci;
+	GdkWindow *pwin;
+	GThread *thread;
+	GtkWidget *dummy;
+	char *dname;
+
+	if (!g_thread_supported())
+		g_thread_init(NULL);
+
+	dci.title = "Select a folder to save received files.";
+
+	if (parent && (pwin = gtk_widget_get_window(GTK_WIDGET(parent))))
+		dci.parent_window = GDK_WINDOW_HWND(pwin);
+	else
+		dci.parent_window = NULL;
+
+	if (suggest_dir) {
+		dci.suggest_dir_w = g_utf8_to_utf16(suggest_dir, -1, 0, 0, 0);
+		dci.suggest_dir_l = g_locale_from_utf8(suggest_dir, -1, 0, 0, 0);
+	}
+	else {
+		dci.suggest_dir_w = NULL;
+		dci.suggest_dir_l = NULL;
+	}
+
+	if ((thread = g_thread_create(dir_chooser_thread, &dci, TRUE, NULL))) {
+		dummy = gtk_invisible_new();
+		gtk_grab_add(dummy);
+		gtk_main();
+		dname = g_thread_join(thread);
+		gtk_widget_destroy(dummy);
+	}
+	else {
+		dname = dir_chooser_main(&dci);
+	}
+
+	g_free(dci.suggest_dir_w);
+	g_free(dci.suggest_dir_l);
+
+	return dname;
 }
 
 #else  /* ! GDK_WINDOWING_WIN32 */
