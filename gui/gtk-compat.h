@@ -7,4 +7,5 @@
 # define gtk_widget_get_allocation(w, a) (*(a) = (w)->allocation)
 # define gtk_widget_get_visible(w) GTK_WIDGET_VISIBLE(w)
 # define gtk_widget_set_can_default(w, v) g_object_set((w), "can-default", v, NULL)
+# define gtk_widget_set_can_focus(w, v) g_object_set((w), "can-focus", v, NULL)
 #endif

@@ -372,6 +372,36 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	return FALSE;
 }
 
+static void place_menu(GtkMenu *menu, gint *x, gint *y,
+                       gboolean *push_in, gpointer data)
+{
+	GtkWidget *w = data;
+	GdkWindow *win;
+	GdkScreen *screen;
+	int n;
+
+	win = gtk_widget_get_window(w);
+	gdk_window_get_origin(win, x, y);
+
+	screen = gdk_drawable_get_screen(win);
+	n = gdk_screen_get_monitor_at_point(screen, *x, *y);
+	gtk_menu_set_monitor(menu, n);
+
+	*push_in = FALSE;
+}
+
+/* Pop up menu on main window */
+gboolean popup_menu_event(GtkWidget* w, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+
+	gtk_menu_popup(GTK_MENU(ewin->popup_menu),
+	               NULL, NULL, &place_menu, w,
+	               0, gtk_get_current_event_time());
+
+	return TRUE;
+}
+
 /* Callback function for the drag and drop event */
 gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *selection_data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, TilemEmulatorWindow * ewin) {
 	

@@ -313,6 +313,8 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	curwidth = defwidth * ewin->base_zoom * ewin->zoom_factor + 0.5;
 	curheight = defheight * ewin->base_zoom * ewin->zoom_factor + 0.5;
 
+	gtk_widget_set_can_focus(emuwin, TRUE);
+
 	gtk_widget_add_events(emuwin, (GDK_BUTTON_PRESS_MASK
 	                               | GDK_BUTTON_RELEASE_MASK
 	                               | GDK_BUTTON1_MOTION_MASK
@@ -331,6 +333,8 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	                 G_CALLBACK(pointer_motion_event), ewin);
 	g_signal_connect(emuwin, "button-release-event",
 	                 G_CALLBACK(mouse_release_event), ewin);
+	g_signal_connect(emuwin, "popup-menu",
+	                 G_CALLBACK(popup_menu_event), ewin);
 
 	gtk_drag_dest_set(emuwin, GTK_DEST_DEFAULT_ALL,
 	                  NULL, 0, GDK_ACTION_COPY);

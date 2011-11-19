@@ -120,14 +120,11 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 /* Key-release event */
 gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 
-/* Load a file from PC to TI */
-void load_file(TilemEmulatorWindow *ewin);
+/* Pop up menu on main window */
+gboolean popup_menu_event(GtkWidget* w, gpointer data);
 
 /* Handle drag and drop */
 gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, TilemEmulatorWindow * ewin);
-
-/* Save the dimension before exit for next times we use tilem */
-void save_root_window_dimension(TilemEmulatorWindow *ewin);
 
 
 /* ###### emuwin.c ##### */
@@ -347,6 +344,12 @@ void tilem_keybindings_init(TilemCalcEmulator* emu, const char* model);
 
 /* Build the menu (do not print it) */
 void build_menu(TilemEmulatorWindow* ewin);
+
+
+/* ##### sendfile.c ##### */
+
+/* Prompt user to load a file from PC to TI */
+void load_file(TilemEmulatorWindow *ewin);
 
 
 /* ##### rcvmenu.c ##### */
