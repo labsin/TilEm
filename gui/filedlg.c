@@ -420,7 +420,7 @@ static char * dir_chooser_main(const struct dcinfo *dci)
 
 		idl = SHBrowseForFolderA(&bifa);
 		if (idl && SHGetPathFromIDListA(idl, dirnamel))
-			result = g_locale_from_utf8(dirnamel, -1, 0, 0, 0);
+			result = g_locale_to_utf8(dirnamel, -1, 0, 0, 0);
 	}
 
 	if (idl)
