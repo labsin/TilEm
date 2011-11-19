@@ -151,16 +151,6 @@ static void get_device_pointer(GdkWindow *win, GdkDevice *dev,
 	g_free(axes);
 }
 
-/* Just close the window (freeing allocated memory maybe in the futur?)*/
-void on_destroy()
-{
-	SAVE_STATE=0;
-
-	printf("\nThank you for using tilem...\n");
-	
-	gtk_main_quit();
-}
-
 /* Save the dimension before exit for next times we use tilem */
 void save_root_window_dimension(TilemEmulatorWindow *ewin)
 {

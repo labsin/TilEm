@@ -94,16 +94,10 @@ typedef struct _TilemLinkProgress {
 	GtkWidget* ilp_progress_win;
 } TilemLinkProgress;
 
-/* A global boolean to say "save the state" */
-gboolean SAVE_STATE;
-
 #define LABEL_X_ALIGN 0.0
 
 
 /* ###### event.c ##### */
-
-/* Detect and handle a "destroy" event */
-void on_destroy(); /* close the pWindow */
 
 /* Dialog mesg */
 void show_about();

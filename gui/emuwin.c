@@ -335,6 +335,13 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	gtk_widget_show_all(emuwin);
 }
 
+static void window_destroy(G_GNUC_UNUSED GtkWidget *w, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	save_root_window_dimension(ewin);
+	ewin->window = ewin->layout = ewin->lcd = ewin->background = NULL;
+}
+
 TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 {
 	TilemEmulatorWindow *ewin;
@@ -352,7 +359,8 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 	/* Create the window */
 	ewin->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	
-	g_signal_connect_swapped(ewin->window, "destroy", G_CALLBACK(on_destroy), ewin);
+	g_signal_connect(ewin->window, "destroy",
+	                 G_CALLBACK(window_destroy), ewin);
 
 	g_signal_connect_after(ewin->window, "check-resize",
 	                       G_CALLBACK(set_size_hints), ewin);
@@ -464,7 +472,8 @@ void tilem_emulator_window_calc_changed(TilemEmulatorWindow *ewin)
 void tilem_emulator_window_refresh_lcd(TilemEmulatorWindow *ewin)
 {
 	g_return_if_fail(ewin != NULL);
-	gtk_widget_queue_draw(ewin->lcd);
+	if (ewin->lcd)
+		gtk_widget_queue_draw(ewin->lcd);
 }
 
 

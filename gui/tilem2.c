@@ -155,14 +155,13 @@ int main(int argc, char **argv)
 		tilem_macro_load(emu, cl->MacroToPlay); 		
 	}
 
+	g_signal_connect(emu->ewin->window, "destroy",
+	                 G_CALLBACK(gtk_main_quit), NULL);
+
 	gtk_main();
 
 	tilem_calc_emulator_pause(emu);
 	
-	/* Save the state */
-	if(SAVE_STATE==1)
-		tilem_calc_emulator_save_state(emu, NULL);
-
 	tilem_emulator_window_free(emu->ewin);
 	tilem_calc_emulator_free(emu);
 

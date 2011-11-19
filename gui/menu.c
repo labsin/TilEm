@@ -155,8 +155,7 @@ static void action_quit(G_GNUC_UNUSED GtkAction *act,
 {
 	
 	TilemEmulatorWindow *ewin = data;
-	save_root_window_dimension(ewin);	
-	gtk_main_quit();
+	gtk_widget_destroy(ewin->window);
 }
 
 static const GtkActionEntry main_action_ents[] =
