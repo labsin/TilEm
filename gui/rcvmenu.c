@@ -122,6 +122,28 @@ static char * utf8_to_restricted_utf8(const char *utf8str)
 		return g_strdup(utf8str);
 }
 
+/* Generate default filename (UTF-8) for a variable */
+static char * get_default_filename(const TilemVarEntry *tve)
+{
+	GString *str = g_string_new("");
+
+	if (tve->slot_str) {
+		g_string_append(str, tve->slot_str);
+		if (tve->name_str && tve->name_str[0]) {
+			g_string_append_c(str, '-');
+			g_string_append(str, tve->name_str);
+		}
+	}
+	else if (tve->name_str && tve->name_str[0]) {
+		g_string_append(str, tve->name_str);
+	}
+	else {
+		g_string_append(str, "untitled");
+	}
+	g_string_append_c(str, '.');
+	g_string_append(str, tve->file_ext);
+	return g_string_free(str, FALSE);
+}
 
 /* #### SIGNALS CALLBACK #### */
 
@@ -132,102 +154,111 @@ static void tilem_rcvmenu_on_close(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpo
 	gtk_widget_hide(rcvdialog->window);
 }
 
+/* Prompt to save a single file. */
+static void prompt_save_single(TilemReceiveDialog *rcvdialog, TilemVarEntry *tve)
+{
+	char *dir, *default_filename, *default_filename_r, *filename, *pattern;
+
+	default_filename = get_default_filename(tve);
+	default_filename_r = utf8_to_restricted_utf8(default_filename);
+	g_free(default_filename);
+
+	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
+	if (!dir) dir = g_get_current_dir();
+
+	pattern = g_strconcat("*.", tve->file_ext, NULL);
+
+	filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
+	                            default_filename_r, dir,
+	                            tve->filetype_desc, pattern,
+	                            "All files", "*",
+	                            NULL);
+	g_free(default_filename_r);
+	g_free(pattern);
+	g_free(dir);
+
+	if (!filename)
+		return;
+
+	dir = g_path_get_dirname(filename);
+	tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
+	g_free(dir);
+
+	tilem_link_receive_file(rcvdialog->emu, tve, filename);
+	g_free(filename);
+}
+
+/* Prompt to save a list of files.  Input is a list of GtkTreePaths */
+static void prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
+{
+	char *dir, *dir_selected, *default_filename,
+		*default_filename_f, *filename;
+	GList *l;
+	GtkTreePath *path;
+	GtkTreeIter iter;
+	TilemVarEntry *tve;
+
+	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
+	if (!dir) dir = g_get_current_dir();
+
+	dir_selected = prompt_select_dir("Save Files to Directory",
+	                                 GTK_WINDOW(rcvdialog->window),
+	                                 dir);
+	g_free(dir);
+
+	if (!dir_selected)
+		return;
+
+	tilem_config_set("download", "receivefile_recentdir/f", dir_selected, NULL);
+
+	/* FIXME: prompt to confirm overwriting if necessary */
+	for (l = rows; l; l = l->next) {
+		path = (GtkTreePath*) l->data;
+		gtk_tree_model_get_iter(rcvdialog->model, &iter, path);
+		gtk_tree_model_get(rcvdialog->model, &iter, COL_ENTRY, &tve, -1);
+
+		default_filename = get_default_filename(tve);
+		default_filename_f = utf8_to_filename(default_filename);
+		filename = g_build_filename(dir_selected,
+		                            default_filename_f, NULL);
+
+		tilem_link_receive_file(rcvdialog->emu, tve, filename);
+
+		g_free(filename);
+		g_free(default_filename);
+		g_free(default_filename_f);
+	}
+
+	g_free(dir_selected);
+}
+
 /* Event called on Send button click. Get the selected var/app and save it. */
 static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
 	
 	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
-
-	char* dir = NULL; 		/* The directory */
-	gchar* default_filename = NULL; /* Default filename (without directory) with extension */
-	gchar* filename = NULL; 	/* Filename */
 	TilemVarEntry *tve;		/* Variable entry */
 	GtkTreeSelection* selection = NULL; /* GtkTreeSelection */
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 	GList *rows, *l;
 	GtkTreePath *path;
-	char* dir_selected = NULL;
-	char *pattern;
-	GString *str;
-	gchar *p;
 
 	/* Get the selected entry */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
-	
 	rows = gtk_tree_selection_get_selected_rows(selection, &model);
 
+	if (!rows)
+		return;
 
-	if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rcvdialog->always_ask_filename_tb))) {	
-		/*  Get the recent directory */	
-		tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
-		if(!dir) dir = g_get_current_dir();
-		dir_selected = prompt_select_dir("Save File", GTK_WINDOW(rcvdialog->window), dir);
-	}
-
-	for (l = rows; l; l = l->next) {
-	 	path = (GtkTreePath*) l->data;
+	if (!rows->next) {
+		path = (GtkTreePath*) rows->data;
 		gtk_tree_model_get_iter(model, &iter, path);
-
 		gtk_tree_model_get(model, &iter, COL_ENTRY, &tve, -1);
-
-		/*  Get the recent directory */	
-		tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
-		if(!dir) dir = g_get_current_dir();
-
-		/* Get a default filename with a correct extension (to be used as default in the prompt file dialog) */
-
-		str = g_string_new("");
-		if (tve->slot_str) {
-			g_string_append(str, tve->slot_str);
-			if (tve->name_str && tve->name_str[0]) {
-				g_string_append_c(str, '-');
-				g_string_append(str, tve->name_str);
-			}
-		}
-		else if (tve->name_str && tve->name_str[0]) {
-			g_string_append(str, tve->name_str);
-		}
-		else {
-			g_string_append(str, "untitled");
-		}
-		g_string_append_c(str, '.');
-		g_string_append(str, tve->file_ext);
-		default_filename = g_string_free(str, FALSE);
-
-		pattern = g_strconcat("*.", tve->file_ext, NULL);
-
-		/* If the toggle button is active, tilem prompt the user each times */
-		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rcvdialog->always_ask_filename_tb))) {
-			p = utf8_to_restricted_utf8(default_filename);
-			filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
-			                            p, dir,
-			                            tve->filetype_desc, pattern,
-			                            "All files", "*",
-			                            NULL);
-			g_free(p);
-		} else {
-			/* If inactive, only use the previous selected folder with the default filename */
-			p = utf8_to_filename(default_filename);
-			filename = g_build_filename(dir_selected, p, NULL);
-			printf("Default filename (generated) : %s\n", filename);
-			g_free(p);
-		}	
-			
-
-		g_free(default_filename);	
-		g_free(pattern);
-
-		if(filename == NULL) 
-			break;
-
-		/* Save config */
-		dir = g_path_get_dirname(filename);
-		tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
-		g_free(dir);
-
-		tilem_link_receive_file(rcvdialog->emu, tve, filename);
-		g_free(filename);
-	} 
+		prompt_save_single(rcvdialog, tve);
+	}
+	else {
+		prompt_save_multiple(rcvdialog, rows);
+	}
 
 	for (l = rows; l; l = l->next)
 		gtk_tree_path_free(l->data);
