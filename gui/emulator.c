@@ -238,20 +238,24 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	tilem_calc_emulator_cancel_tasks(emu);
 
+	if (romfname)
+		rname = g_strdup(romfname);
+	if (!sname && statefname)
+		sname = g_strdup(statefname);
+
 	/* Choose ROM file */
 
-	if (!romfname && model) {
+	if (!rname && model) {
 		modelname = model_to_name(model);
 		g_return_val_if_fail(modelname != NULL, FALSE);
+		if (sname) g_free(sname);
 		tilem_config_get(modelname,
 		                 "rom_file/f", &rname,
 		                 "state_file/f", &sname,
 		                 NULL);
-		romfname = rname;
-		statefname = sname;
 	}
 
-	if (!romfname) {
+	if (!rname) {
 		g_set_error(err, TILEM_EMULATOR_ERROR,
 		            TILEM_EMULATOR_ERROR_NO_ROM,
 		            "No ROM file specified");
@@ -262,10 +266,10 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	/* Open ROM file */
 
-	romfile = g_fopen(romfname, "rb");
+	romfile = g_fopen(rname, "rb");
 	if (!romfile) {
 		errnum = errno;
-		dname = g_filename_display_basename(romfname);
+		dname = g_filename_display_basename(rname);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
 		            "Unable to open %s for reading: %s",
@@ -278,14 +282,14 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	/* Open state file */
 
-	if (!statefname)
-		statefname = sname = get_sav_name(romfname);
+	if (!sname)
+		sname = get_sav_name(rname);
 
-	savfile = g_fopen(statefname, "rb");
+	savfile = g_fopen(sname, "rb");
 
 	if (!savfile && errno != ENOENT) {
 		errnum = errno;
-		dname = g_filename_display_basename(statefname);
+		dname = g_filename_display_basename(sname);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
 		            "Unable to open %s for reading: %s",
@@ -308,10 +312,10 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		model = tilem_guess_rom_type(romfile);
 		if (model) {
 			model = choose_rom_popup(get_toplevel(emu),
-						 romfname, model);
+						 rname, model);
 		}
 		else {
-			dname = g_filename_display_basename(romfname);
+			dname = g_filename_display_basename(rname);
 			g_set_error(err, TILEM_EMULATOR_ERROR,
 			            TILEM_EMULATOR_ERROR_INVALID_ROM,
 			            "The file %s is not a recognized"
@@ -345,7 +349,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	if (!savfile) {
 		/* save model as default for the future */
-		savfile = g_fopen(statefname, "wb");
+		savfile = g_fopen(sname, "wb");
 		if (savfile)
 			fprintf(savfile, "MODEL = %s\n", calc->hw.name);
 	}
@@ -385,11 +389,11 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	if (emu->rom_file_name)
 		g_free(emu->rom_file_name);
-	emu->rom_file_name = g_strdup(romfname);
+	emu->rom_file_name = rname;
 
 	if (emu->state_file_name)
 		g_free(emu->state_file_name);
-	emu->state_file_name = g_strdup(statefname);
+	emu->state_file_name = sname;
 
 	if (emu->ewin)
 		tilem_emulator_window_calc_changed(emu->ewin);
@@ -399,9 +403,6 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	if (emu->rcvdlg)
 		tilem_receive_dialog_free(emu->rcvdlg);
 	emu->rcvdlg = NULL;
-
-	g_free(rname);
-	g_free(sname);
 
 	return TRUE;
 }

@@ -66,14 +66,23 @@ static void action_save_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointe
 		             "Unable to save calculator state",
 		             "%s", err->message);
 		g_error_free(err);
-	}       
+	}
 }
 
 static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpointer data)
 {
-	/* FIXME */
-	/* I don't know what should be done here ? */
-	/* Which state should be loaded? We need to prompt the user to choose a save state? */
+	TilemEmulatorWindow *ewin = data;
+	GError *err = NULL;
+
+	if (!tilem_calc_emulator_load_state(ewin->emu, ewin->emu->rom_file_name,
+	                                    ewin->emu->state_file_name,
+	                                    ewin->emu->calc->hw.model_id,
+	                                    &err)) {
+		messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
+		             "Unable to load calculator state",
+		             "%s", err->message);
+		g_error_free(err);
+	}
 }
 
 static void action_reset_calc(G_GNUC_UNUSED GtkAction *act, gpointer data)
