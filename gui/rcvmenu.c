@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
@@ -55,6 +56,72 @@ enum
 };
 
 
+/* Convert UTF-8 to filename encoding.  Use ASCII digits in place of
+   subscripts if necessary.  If conversion fails utterly, fall back to
+   the UTF-8 name, which is broken but better than nothing. */
+static char * utf8_to_filename(const char *utf8str)
+{
+	gchar *result, *ibuf, *obuf, *p;
+	gsize icount, ocount;
+	const gchar **charsets;
+	GIConv ic;
+	gunichar c;
+
+	if (g_get_filename_charsets(&charsets))
+		return g_strdup(utf8str);
+
+	ic = g_iconv_open(charsets[0], "UTF-8");
+	if (!ic) {
+		g_warning("utf8_to_filename: unsupported charset %s",
+		          charsets[0]);
+		return g_strdup(utf8str);
+	}
+
+	ibuf = (gchar*) utf8str;
+	icount = strlen(utf8str);
+	ocount = icount * 2; /* be generous */
+	result = obuf = g_new(gchar, ocount + 1);
+
+	while (g_iconv(ic, &ibuf, &icount, &obuf, &ocount) == (gsize) -1) {
+		if (errno != EILSEQ) {
+			g_warning("utf8_to_filename: error in conversion");
+			g_free(result);
+			g_iconv_close(ic);
+			return g_strdup(utf8str);
+		}
+
+		c = g_utf8_get_char(ibuf);
+		if (c >= 0x2080 && c <= 0x2089)
+			*obuf = c - 0x2080 + '0';
+		else
+			*obuf = '_';
+		obuf++;
+		ocount--;
+
+		p = g_utf8_next_char(ibuf);
+		icount -= p - ibuf;
+		ibuf = p;
+	}
+
+	*obuf = 0;
+	g_iconv_close(ic);
+	return result;
+}
+
+/* Convert UTF-8 to a subset of UTF-8 that is compatible with the
+   locale */
+static char * utf8_to_restricted_utf8(const char *utf8str)
+{
+	char *p, *q;
+	p = utf8_to_filename(utf8str);
+	q = g_filename_to_utf8(p, -1, NULL, NULL, NULL);
+	g_free(p);
+	if (q)
+		return q;
+	else
+		return g_strdup(utf8str);
+}
+
 
 /* #### SIGNALS CALLBACK #### */
 
@@ -81,6 +148,8 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 	GtkTreePath *path;
 	char* dir_selected = NULL;
 	char *pattern;
+	GString *str;
+	gchar *p;
 
 	/* Get the selected entry */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
@@ -106,20 +175,42 @@ static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED g
 		if(!dir) dir = g_get_current_dir();
 
 		/* Get a default filename with a correct extension (to be used as default in the prompt file dialog) */
-		default_filename = g_strconcat(tve->name_str, ".", tve->file_ext, NULL);
+
+		str = g_string_new("");
+		if (tve->slot_str) {
+			g_string_append(str, tve->slot_str);
+			if (tve->name_str && tve->name_str[0]) {
+				g_string_append_c(str, '-');
+				g_string_append(str, tve->name_str);
+			}
+		}
+		else if (tve->name_str && tve->name_str[0]) {
+			g_string_append(str, tve->name_str);
+		}
+		else {
+			g_string_append(str, "untitled");
+		}
+		g_string_append_c(str, '.');
+		g_string_append(str, tve->file_ext);
+		default_filename = g_string_free(str, FALSE);
+
 		pattern = g_strconcat("*.", tve->file_ext, NULL);
 
 		/* If the toggle button is active, tilem prompt the user each times */
-		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rcvdialog->always_ask_filename_tb))) {	
+		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rcvdialog->always_ask_filename_tb))) {
+			p = utf8_to_restricted_utf8(default_filename);
 			filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
-		                            default_filename, dir,
-		                            tve->filetype_desc, pattern,
-		                            "All files", "*",
-		                            NULL);
+			                            p, dir,
+			                            tve->filetype_desc, pattern,
+			                            "All files", "*",
+			                            NULL);
+			g_free(p);
 		} else {
 			/* If inactive, only use the previous selected folder with the default filename */
-			filename = g_strconcat(dir_selected, "/" , default_filename, NULL);
+			p = utf8_to_filename(default_filename);
+			filename = g_build_filename(dir_selected, p, NULL);
 			printf("Default filename (generated) : %s\n", filename);
+			g_free(p);
 		}	
 			
 
