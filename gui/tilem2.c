@@ -147,6 +147,10 @@ int main(int argc, char **argv)
 	tilem_calc_emulator_run(emu);
 	
 	tilem_keybindings_init(emu, emu->calc->hw.name);
+
+	ticables_library_init();
+	tifiles_library_init();
+	ticalcs_library_init();
 		
 	if (cl->FileToLoad) /* Given as parameter ? */
 		tilem_link_send_file(emu, cl->FileToLoad, -1, TRUE, TRUE);
@@ -168,6 +172,10 @@ int main(int argc, char **argv)
 	menurc_path = get_config_file_path("menurc", NULL);
 	gtk_accel_map_save(menurc_path);
 	g_free(menurc_path);
+
+	ticables_library_exit();
+	tifiles_library_exit();
+	ticalcs_library_exit();
 
 	return 0;
 }
