@@ -601,8 +601,11 @@ TilemVarEntry *tilem_var_entry_copy(const TilemVarEntry *tve)
 	nve = g_slice_new(TilemVarEntry);
 	*nve = *tve;
 
-	if (tve->ve)
+	if (tve->ve) {
+		nve->ve = g_slice_new(VarEntry);
+		*nve->ve = *tve->ve;
 		nve->ve->data = g_memdup(tve->ve->data, tve->ve->size);
+	}
 	if (tve->name_str)
 		nve->name_str = g_strdup(tve->name_str);
 	if (tve->type_str)
