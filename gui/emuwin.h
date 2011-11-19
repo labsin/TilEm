@@ -42,6 +42,8 @@ typedef struct _TilemEmulatorWindow {
 	char *skin_file_name;
 	SKIN_INFOS *skin;
 	gboolean skin_disabled; /* A flag to know if skinless or not */
+	gdouble base_zoom;
+	gdouble zoom_factor;
 
 	int mouse_key;		/* Key currently pressed by mouse button */
 

@@ -148,41 +148,44 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
                                gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	int rawwidth, rawheight;
+	int rawwidth, rawheight, scaledwidth, scaledheight;
 	int lcdleft, lcdright, lcdtop, lcdbottom;
-	double rx, ry;
+	double rx, ry, r;
 
 	g_return_if_fail(ewin->skin != NULL);
-
-	if (ewin->skin->width == alloc->width
-	    && ewin->skin->height == alloc->height)
-		return;
-
-	ewin->skin->width = alloc->width;
-	ewin->skin->height = alloc->height;
 
 	rawwidth = gdk_pixbuf_get_width(ewin->skin->raw);
 	rawheight = gdk_pixbuf_get_height(ewin->skin->raw);
 
 	rx = (double) alloc->width / rawwidth;
 	ry = (double) alloc->height / rawheight;
-	ewin->skin->sx = (double) rawwidth / alloc->width;
-	ewin->skin->sy = (double) rawheight / alloc->height;
+	r = MIN(rx, ry);
+
+	scaledwidth = rawwidth * r;
+	scaledheight = rawheight * r;
+
+	if (ewin->skin->width == scaledwidth
+	    && ewin->skin->height == scaledheight)
+		return;
+
+	ewin->skin->width = scaledwidth;
+	ewin->skin->height = scaledheight;
+	ewin->skin->sx = ewin->skin->sy = 1.0 / r;
 
 	if (ewin->skin->image)
 		g_object_unref(ewin->skin->image);
 	ewin->skin->image = gdk_pixbuf_scale_simple(ewin->skin->raw,
-	                                            alloc->width,
-	                                            alloc->height,
+	                                            scaledwidth,
+	                                            scaledheight,
 	                                            GDK_INTERP_BILINEAR);
 
 	gtk_image_set_from_pixbuf(GTK_IMAGE(ewin->background),
 	                          ewin->skin->image);
 
-	lcdleft = ewin->skin->lcd_pos.left * rx + 0.5;
-	lcdright = ewin->skin->lcd_pos.right * rx + 0.5;
-	lcdtop = ewin->skin->lcd_pos.top * ry + 0.5;
-	lcdbottom = ewin->skin->lcd_pos.bottom * ry + 0.5;
+	lcdleft = ewin->skin->lcd_pos.left * r + 0.5;
+	lcdright = ewin->skin->lcd_pos.right * r + 0.5;
+	lcdtop = ewin->skin->lcd_pos.top * r + 0.5;
+	lcdbottom = ewin->skin->lcd_pos.bottom * r + 0.5;
 
 	gtk_widget_set_size_request(ewin->lcd,
 	                            MAX(lcdright - lcdleft, 1),
@@ -190,6 +193,31 @@ static void skin_size_allocate(GtkWidget *widget, GtkAllocation *alloc,
 
 	gtk_layout_move(GTK_LAYOUT(widget), ewin->lcd,
 	                lcdleft, lcdtop);
+
+	ewin->zoom_factor = r / ewin->base_zoom;
+
+	if (ewin->zoom_factor <= 1.0)
+		ewin->zoom_factor = 1.0;
+}
+
+static void noskin_size_allocate(G_GNUC_UNUSED GtkWidget *widget,
+                                 GtkAllocation *alloc, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	int lcdwidth, lcdheight;
+
+	g_return_if_fail(ewin->emu->calc != NULL);
+
+	lcdwidth = ewin->emu->calc->hw.lcdwidth;
+	lcdheight = ewin->emu->calc->hw.lcdheight;
+
+	if (alloc->width > alloc->height)
+		ewin->zoom_factor = (gdouble) alloc->width / lcdwidth;
+	else
+		ewin->zoom_factor = (gdouble) alloc->height / lcdheight;
+
+	if (ewin->zoom_factor <= 1.0)
+		ewin->zoom_factor = 1.0;
 }
 
 /* Used when you load another skin */
@@ -199,7 +227,8 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	GtkWidget *emuwin;
 	int lcdwidth, lcdheight;
 	int screenwidth, screenheight;
-	int minwidth, minheight, defwidth, defheight;
+	int minwidth, minheight, defwidth, defheight,
+		curwidth, curheight;
 	double sx, sy, s, a1, a2;
 
 	if (ewin->skin) {
@@ -237,7 +266,7 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	if (!ewin->skin_disabled) {
 		ewin->layout = gtk_layout_new(NULL, NULL);
 
-		pImage = gtk_image_new_from_pixbuf(ewin->skin->image);
+		pImage = gtk_image_new();
 		gtk_layout_put(GTK_LAYOUT(ewin->layout), pImage, 0, 0);
 		ewin->background = pImage;
 
@@ -257,21 +286,15 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 
 		emuwin = ewin->layout;
 
-		tilem_config_get("settings",
-		                 "width/i", &defwidth,
-		                 "height/i", &defheight,
-		                 NULL);
-
-		if(defwidth == 0)
-			defwidth = ewin->skin->width;
-		if(defheight == 0)
-			defheight = ewin->skin->height;
+		defwidth = ewin->skin->width;
+		defheight = ewin->skin->height;
 
 		sx = (double) lcdwidth / screenwidth;
 		sy = (double) lcdheight / screenheight;
 		s = MAX(sx, sy);
 		minwidth = defwidth * s + 0.5;
 		minheight = defheight * s + 0.5;
+		ewin->base_zoom = s;
 	}
 	else {
 		ewin->layout = NULL;
@@ -279,11 +302,16 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 
 		emuwin = ewin->lcd;
 
-		minwidth = lcdwidth;
-		minheight = lcdheight;
-		defwidth = lcdwidth * 2;
-		defheight = lcdheight * 2;
+		g_signal_connect(ewin->lcd, "size-allocate",
+		                 G_CALLBACK(noskin_size_allocate), ewin);
+
+		defwidth = minwidth = lcdwidth;
+		defheight = minheight = lcdheight;
+		ewin->base_zoom = 1.0;
 	}
+
+	curwidth = defwidth * ewin->base_zoom * ewin->zoom_factor + 0.5;
+	curheight = defheight * ewin->base_zoom * ewin->zoom_factor + 0.5;
 
 	gtk_widget_add_events(emuwin, (GDK_BUTTON_PRESS_MASK
 	                               | GDK_BUTTON_RELEASE_MASK
@@ -330,7 +358,7 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 
 	gtk_widget_set_size_request(emuwin, minwidth, minheight);
 	gtk_container_add(GTK_CONTAINER(ewin->window), emuwin);
-	gtk_window_resize(GTK_WINDOW(ewin->window), defwidth, defheight);
+	gtk_window_resize(GTK_WINDOW(ewin->window), curwidth, curheight);
 
 	gtk_widget_show_all(emuwin);
 }
@@ -338,7 +366,11 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 static void window_destroy(G_GNUC_UNUSED GtkWidget *w, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	save_root_window_dimension(ewin);
+
+	tilem_config_set("settings",
+	                 "zoom/r", ewin->zoom_factor,
+	                 NULL);
+
 	ewin->window = ewin->layout = ewin->lcd = ewin->background = NULL;
 }
 
@@ -354,7 +386,11 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 	tilem_config_get("settings",
 	                 "skin_disabled/b", &ewin->skin_disabled,
 	                 "smooth_scaling/b=1", &ewin->lcd_smooth_scale,
+	                 "zoom/r=2.0", &ewin->zoom_factor,
 	                 NULL);
+
+	if (ewin->zoom_factor <= 1.0)
+		ewin->zoom_factor = 1.0;
 
 	/* Create the window */
 	ewin->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -407,6 +443,8 @@ void tilem_emulator_window_free(TilemEmulatorWindow *ewin)
 
 	if (ewin->lcd_cmap)
 		gdk_rgb_cmap_free(ewin->lcd_cmap);
+
+	g_slice_free(TilemEmulatorWindow, ewin);
 }
 
 void tilem_emulator_window_set_skin(TilemEmulatorWindow *ewin,

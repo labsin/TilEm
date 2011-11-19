@@ -151,18 +151,6 @@ static void get_device_pointer(GdkWindow *win, GdkDevice *dev,
 	g_free(axes);
 }
 
-/* Save the dimension before exit for next times we use tilem */
-void save_root_window_dimension(TilemEmulatorWindow *ewin)
-{
-	gint width, height;
-	gtk_window_get_size(GTK_WINDOW(ewin->window), &width, &height);
-	tilem_config_set("settings",
-	                 "width/i", width,
-	                 "height/i", height,
-	                 NULL);
-}
-	
-
 /* Show a nice GtkAboutDialog */
 void show_about()
 {
