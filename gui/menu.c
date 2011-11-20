@@ -33,7 +33,7 @@
 static void action_send_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
-	load_file(ewin);
+	load_file_dialog(ewin);
 }
 
 static void action_receive_file(G_GNUC_UNUSED GtkAction *act, gpointer data)

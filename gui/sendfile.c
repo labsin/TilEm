@@ -405,13 +405,31 @@ static char ** prompt_link_files(const char *title,
 	}
 }
 
-/* Prompt user to load a file */
-void load_file(TilemEmulatorWindow *ewin)
+/* Load a list of files through the GUI.  The list of filenames must
+   end with NULL. */
+void load_files(TilemEmulatorWindow *ewin, char **filenames)
 {
-	char **filenames, *dir;
 	struct slotdialog *slotdlg;
 
 	g_return_if_fail(ewin->emu->calc != NULL);
+
+	if (ewin->emu->calc->hw.model_id == TILEM_CALC_TI81) {
+		slotdlg = g_slice_new0(struct slotdialog);
+		slotdlg->filenames = g_strdupv(filenames);
+		slotdlg->nfiles = g_strv_length(filenames);
+		slotdlg->slots = g_new0(int, slotdlg->nfiles);
+		tilem_calc_emulator_begin(ewin->emu, &check_prog_slots_main,
+		                          &check_prog_slots_finished, slotdlg);
+	}
+	else {
+		send_files(ewin->emu, filenames, NULL);
+	}
+}
+
+/* Prompt user to load a file */
+void load_file_dialog(TilemEmulatorWindow *ewin)
+{
+	char **filenames, *dir;
 
 	tilem_config_get("upload",
 	                 "sendfile_recentdir/f", &dir,
@@ -433,16 +451,6 @@ void load_file(TilemEmulatorWindow *ewin)
 	                 NULL);
 	g_free(dir);
 
-	if (ewin->emu->calc->hw.model_id == TILEM_CALC_TI81) {
-		slotdlg = g_slice_new0(struct slotdialog);
-		slotdlg->filenames = filenames;
-		slotdlg->nfiles = g_strv_length(filenames);
-		slotdlg->slots = g_new0(int, slotdlg->nfiles);
-		tilem_calc_emulator_begin(ewin->emu, &check_prog_slots_main,
-		                          &check_prog_slots_finished, slotdlg);
-	}
-	else {
-		send_files(ewin->emu, filenames, NULL);
-		g_strfreev(filenames);
-	}
+	load_files(ewin, filenames);
+	g_strfreev(filenames);
 }

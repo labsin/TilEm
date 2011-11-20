@@ -403,26 +403,31 @@ gboolean popup_menu_event(GtkWidget* w, gpointer data)
 }
 
 /* Callback function for the drag and drop event */
-gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *selection_data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, TilemEmulatorWindow * ewin) {
-	
-	/* printf("drag and drop !!\n"); */
-	gchar **list;
-	gint i = 0;
-	list = g_uri_list_extract_uris((const gchar *)	gtk_selection_data_get_data(selection_data));
+void drag_data_received(G_GNUC_UNUSED GtkWidget *win,
+                        G_GNUC_UNUSED GdkDragContext *dc,
+                        G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y,
+                        GtkSelectionData *seldata,
+                        G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t,
+                        gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	gchar **uris, **filenames;
+	gint i, j, n;
 
-	/* You can drag and drop multiple files */
-	if (list) {
-		while (list[i] != NULL) {
-			
-		        char *filename = g_filename_from_uri(list[i], NULL, NULL);
-			/*printf("File to load : %s\n", filename);*/
-			if(filename)
-				tilem_link_send_file(ewin->emu, filename, -1, TRUE, TRUE); /* FIXME */
-		       i++;
-		}
-		g_strfreev(list);	
+	uris = gtk_selection_data_get_uris(seldata);
+	if (!uris)
+		return;
+
+	n = g_strv_length(uris);
+	filenames = g_new0(gchar *, n + 1);
+
+	for (i = j = 0; i < n; i++) {
+		filenames[j] = g_filename_from_uri(uris[i], NULL, NULL);
+		if (filenames[j])
+			j++;
 	}
-	return FALSE;
+	filenames[j] = NULL;
 
+	load_files(ewin, filenames);
+	g_strfreev(filenames);
 }
-

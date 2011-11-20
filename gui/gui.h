@@ -124,7 +124,9 @@ gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 gboolean popup_menu_event(GtkWidget* w, gpointer data);
 
 /* Handle drag and drop */
-gboolean on_drag_and_drop(G_GNUC_UNUSED GtkWidget *win, G_GNUC_UNUSED GdkDragContext *dc, G_GNUC_UNUSED gint x, G_GNUC_UNUSED gint y, G_GNUC_UNUSED GtkSelectionData *data, G_GNUC_UNUSED guint info, G_GNUC_UNUSED guint t, TilemEmulatorWindow * ewin);
+void drag_data_received(GtkWidget *win, GdkDragContext *dc, gint x, gint y,
+                        GtkSelectionData *seldata, guint info, guint t,
+                        gpointer data);
 
 
 /* ###### emuwin.c ##### */
@@ -348,8 +350,12 @@ void build_menu(TilemEmulatorWindow* ewin);
 
 /* ##### sendfile.c ##### */
 
+/* Load a list of files through the GUI.  The list of filenames must
+   end with NULL. */
+void load_files(TilemEmulatorWindow *ewin, char **filenames);
+
 /* Prompt user to load a file from PC to TI */
-void load_file(TilemEmulatorWindow *ewin);
+void load_file_dialog(TilemEmulatorWindow *ewin);
 
 
 /* ##### rcvmenu.c ##### */

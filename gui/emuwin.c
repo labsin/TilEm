@@ -336,11 +336,16 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	g_signal_connect(emuwin, "popup-menu",
 	                 G_CALLBACK(popup_menu_event), ewin);
 
+	/* FIXME: this is rather broken; GTK_DEST_DEFAULT_ALL sends a
+	   successful "finished" message to any drop that matches the
+	   list of targets.  Files/URIs we can't accept should be
+	   rejected, and we shouldn't send the "finished" message
+	   until it's actually finished. */
 	gtk_drag_dest_set(emuwin, GTK_DEST_DEFAULT_ALL,
 	                  NULL, 0, GDK_ACTION_COPY);
-	gtk_drag_dest_add_text_targets(emuwin);
+	gtk_drag_dest_add_uri_targets(emuwin);
 	g_signal_connect(emuwin, "drag-data-received",
-	                 G_CALLBACK(on_drag_and_drop), ewin);
+	                 G_CALLBACK(drag_data_received), ewin);
 
 
 	/* Hint calculation assumes the emulator is the only thing in
