@@ -284,6 +284,16 @@ static void dialog_response(GtkDialog *dlg, gint response, gpointer data)
 	}
 }
 
+/* Row activated in tree view */
+static void row_activated(G_GNUC_UNUSED GtkTreeView *treeview,
+                          G_GNUC_UNUSED GtkTreePath *path,
+                          G_GNUC_UNUSED GtkTreeViewColumn *col,
+                          gpointer data)
+{
+	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
+	gtk_dialog_response(GTK_DIALOG(rcvdialog->window), GTK_RESPONSE_ACCEPT);
+}
+
 /* #### WIDGET CREATION #### */
 
 /* Create a new scrolled window with sensible default settings. */
@@ -359,6 +369,9 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 	gtk_tree_view_column_set_sizing(c4, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_sort_column_id(c4, COL_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c4);
+
+	g_signal_connect(treeview, "row-activated",
+	                 G_CALLBACK(row_activated), rcvdialog);
 
 	return treeview;
 }
