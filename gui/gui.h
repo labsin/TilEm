@@ -246,9 +246,10 @@ struct TilemSendFileInfo {
 
 /* This structure is used to receive a file */
 struct TilemReceiveFileInfo {
-	TilemVarEntry* tve;
+	GSList *entries;
 	char* destination;
 	char *error_message;
+	gboolean output_tig;
 };
 
 /* Copy a TilemVarEntry structure */
@@ -286,6 +287,12 @@ void show_error(TilemCalcEmulator *emu, const char *title, const char *message);
 void tilem_link_receive_file(TilemCalcEmulator *emu,
                              const TilemVarEntry* varentry,
                              const char* destination);
+
+/* Receive a list of variables (GSList of TilemVarEntries) and save
+   them to a group file. */
+void tilem_link_receive_group(TilemCalcEmulator *emu,
+                              GSList *entries,
+                              const char *destination);
 
 
 /* ##### pbar.c ##### */

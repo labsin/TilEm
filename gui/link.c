@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
@@ -864,54 +865,135 @@ void tilem_link_get_dirlist(TilemCalcEmulator *emu)
 
 /**************** Receiving files ****************/
 
+static gboolean write_output(FileContent **vars, FlashContent **apps,
+                             const char *filename, gboolean output_tig,
+                             char **error_message)
+{
+	FileContent *group = NULL;
+	TigContent *tig = NULL;
+	int e, nvars, napps;
 
+	for (nvars = 0; vars && vars[nvars]; nvars++)
+		;
+	for (napps = 0; apps && apps[napps]; napps++)
+		;
 
-static gboolean receive_file_silent(TilemCalcEmulator* emu,
-                                    struct TilemReceiveFileInfo *rf)
+	g_return_val_if_fail(nvars > 0 || napps > 0, FALSE);
+
+	if (output_tig) {
+		e = tifiles_tigroup_contents(vars, apps, &tig);
+		if (!e)
+			e = tifiles_file_write_tigroup(filename, tig);
+	}
+	else if (nvars > 1 && napps == 0) {
+		e = tifiles_group_contents(vars, &group);
+		if (!e)
+			e = tifiles_file_write_regular(filename, group, NULL);
+	}
+	else if (nvars == 0 && napps == 1) {
+		e = tifiles_file_write_flash(filename, apps[0]);
+		e = tifiles_file_write_flash("test1.8xk", apps[0]);
+		e = tifiles_file_write_flash("test2.8xk", apps[0]);
+		e = tifiles_file_write_flash("test3.8xk", apps[0]);
+	}
+	else if (nvars == 1 && napps == 0) {
+		e = tifiles_file_write_regular(filename, vars[0], NULL);
+	}
+	else {
+		*error_message = g_strdup
+			("Applications cannot be saved in an XXg group"
+			 " file.  Try using TIG format or saving apps"
+			 " individually.");
+		return FALSE;
+	}
+
+	if (e)
+		*error_message = get_tilibs_error(e);
+
+	if (tig)
+		tifiles_content_delete_tigroup(tig);
+	if (group)
+		tifiles_content_delete_regular(group);
+
+	return (e == 0);
+}
+
+static gboolean receive_files_silent(TilemCalcEmulator* emu,
+                                     struct TilemReceiveFileInfo *rf)
 {
 	CableHandle *cbl;
 	CalcHandle *ch;
-	FileContent* filec;
-	FlashContent* flashc;
-	int e;
+	FileContent **vars, *filec;
+	FlashContent **apps, *flashc;
+	GSList *l;
+	TilemVarEntry *tve;
+	int e, i, nvars, napps;
 
-	g_return_val_if_fail(rf->tve->ve != NULL, FALSE);
+	g_return_val_if_fail(rf->entries != NULL, FALSE);
+
+	i = g_slist_length(rf->entries);
+
+	vars = g_new0(FileContent *, i + 1);
+	apps = g_new0(FlashContent *, i + 1);
+	nvars = napps = 0;
 
 	begin_link(emu, &cbl, &ch);
 
-	if (rf->tve->ve->type == tifiles_flash_type(ch->model)) {
-		flashc = tifiles_content_create_flash(ch->model);
-		e = ticalcs_calc_recv_app(ch, flashc, rf->tve->ve);
-		if (!e)
-			e = tifiles_file_write_flash(rf->destination, flashc);
-		tifiles_content_delete_flash(flashc);
-	}
-	else {
-		filec = tifiles_content_create_regular(ch->model);
-		e = ticalcs_calc_recv_var(ch, MODE_NORMAL, filec, rf->tve->ve);
-		if (!e)
-			e = tifiles_file_write_regular(rf->destination,
-			                               filec, NULL);
-		tifiles_content_delete_regular(filec);
-	}
+	for (l = rf->entries; l; l = l->next) {
+		tve = l->data;
 
-	end_link(emu, cbl, ch);
+		if (tve->ve->type == tifiles_flash_type(ch->model)) {
+			flashc = tifiles_content_create_flash(ch->model);
+			e = ticalcs_calc_recv_app(ch, flashc, tve->ve);
+			apps[napps++] = flashc;
+		}
+		else {
+			filec = tifiles_content_create_regular(ch->model);
+			e = ticalcs_calc_recv_var(ch, MODE_NORMAL,
+			                          filec, tve->ve);
+			vars[nvars++] = filec;
+		}
+		if (e)
+			break;
+	}
 
 	if (e && !emu->task_abort)
 		rf->error_message = get_tilibs_error(e);
 
-	return TRUE;
+	end_link(emu, cbl, ch);
+
+	if (!e)
+		e = !write_output(vars, apps, rf->destination,
+		                  rf->output_tig, &rf->error_message);
+
+	for (i = 0; i < nvars; i++)
+		tifiles_content_delete_regular(vars[i]);
+	for (i = 0; i < napps; i++)
+		tifiles_content_delete_flash(apps[i]);
+
+	return (e == 0);
 }
 
-static gboolean receive_file_ti81(TilemCalcEmulator* emu,
-                                  struct TilemReceiveFileInfo *rf)
+static gboolean receive_files_ti81(TilemCalcEmulator* emu,
+                                   struct TilemReceiveFileInfo *rf)
 {
+	TilemVarEntry *tve;
 	TI81Program *prgm = NULL;
 	int e;
 	FILE *f;
 	char *dname;
 
-	e = ti81_get_program(emu->calc, rf->tve->slot, &prgm);
+	g_return_val_if_fail(rf->entries != NULL, FALSE);
+
+	if (rf->entries->next) {
+		rf->error_message = g_strdup
+			("TI-81 programs cannot be saved in a group file."
+			 " Try saving programs individually.");
+		return FALSE;
+	}
+
+	tve = rf->entries->data;
+	e = ti81_get_program(emu->calc, tve->slot, &prgm);
 	if (e) {
 		rf->error_message = get_ti81_error(e);
 		return FALSE;
@@ -945,70 +1027,127 @@ static gboolean receive_file_ti81(TilemCalcEmulator* emu,
 	return TRUE;
 }
 
-static gboolean receive_file_main(TilemCalcEmulator *emu, gpointer data)
+static gboolean receive_files_main(TilemCalcEmulator *emu, gpointer data)
 {
 	struct TilemReceiveFileInfo *rf = data;
 
 	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
-		return receive_file_ti81(emu, rf);
+		return receive_files_ti81(emu, rf);
 	else
-		return receive_file_silent(emu, rf);
+		return receive_files_silent(emu, rf);
 }
 
-static void receive_file_finished(TilemCalcEmulator *emu, gpointer data,
-                                  gboolean cancelled)
+static void receive_files_finished(TilemCalcEmulator *emu, gpointer data,
+                                   gboolean cancelled)
 {
 	struct TilemReceiveFileInfo *rf = data;
+	GSList *l;
 
 	if (rf->error_message && !cancelled)
 		show_error(emu, "Unable to save file", rf->error_message);
 
 	g_free(rf->destination);
 	g_free(rf->error_message);
-	tilem_var_entry_free(rf->tve);
+	for (l = rf->entries; l; l = l->next)
+		tilem_var_entry_free(l->data);
+	g_slist_free(rf->entries);
 	g_slice_free(struct TilemReceiveFileInfo, rf);
+}
+
+static void receive_files_nonsilent(TilemCalcEmulator *emu,
+                                    GSList *entries,
+                                    const char *destination,
+                                    gboolean output_tig)
+{
+	const TilemVarEntry *tve;
+	char *message = NULL;
+	FileContent **vars, *fc;
+	int i, nvars;
+	GSList *l;
+
+	nvars = g_slist_length(entries);
+
+	vars = g_new0(FileContent *, nvars);
+	i = 0;
+	for (l = entries; l; l = l->next) {
+		tve = l->data;
+		g_return_if_fail(tve->ve != NULL);
+		g_return_if_fail(tve->ve->data != NULL);
+
+		/* avoid copying variable data */
+		fc = tifiles_content_create_regular(get_calc_model(emu->calc));
+		fc->entries = g_new(VarEntry *, 1);
+		fc->num_entries = 1;
+		fc->entries[0] = tve->ve;
+		vars[i++] = fc;
+	}
+
+	if (!write_output(vars, NULL, destination, output_tig, &message)) {
+		show_error(emu, "Unable to save file", message);
+		g_free(message);
+	}
+
+	for (i = 0; i < nvars; i++) {
+		if (vars[i]) {
+			vars[i]->num_entries = 0;
+			g_free(vars[i]->entries);
+			vars[i]->entries = NULL;
+			tifiles_content_delete_regular(vars[i]);
+		}
+	}
+	g_free(vars);
+}
+
+void tilem_link_receive_group(TilemCalcEmulator *emu,
+                              GSList *entries,
+                              const char *destination)
+{
+	struct TilemReceiveFileInfo *rf;
+	GSList *l;
+	TilemVarEntry *tve;
+	const char *p;
+	gboolean output_tig = FALSE;
+
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(emu->calc != NULL);
+	g_return_if_fail(entries != NULL);
+	g_return_if_fail(destination != NULL);
+
+	for (l = entries; l; l = l->next) {
+		tve = l->data;
+		g_return_if_fail(emu->calc->hw.model_id == tve->model);
+	}
+
+	p = strrchr(destination, '.');
+	if (p && (!g_ascii_strcasecmp(p, ".tig")
+	          || !g_ascii_strcasecmp(p, ".zip")))
+		output_tig = TRUE;
+
+	tve = entries->data;
+	if (tve->ve && tve->ve->data) {
+		receive_files_nonsilent(emu, entries, destination, output_tig);
+	}
+	else {
+		rf = g_slice_new0(struct TilemReceiveFileInfo);
+		rf->destination = g_strdup(destination);
+		for (l = entries; l; l = l->next) {
+			tve = tilem_var_entry_copy(l->data);
+			rf->entries = g_slist_prepend(rf->entries, tve);
+		}
+		rf->entries = g_slist_reverse(rf->entries);
+		rf->output_tig = output_tig;
+
+		tilem_calc_emulator_begin(emu, &receive_files_main,
+		                          &receive_files_finished, rf);
+	}
 }
 
 void tilem_link_receive_file(TilemCalcEmulator *emu,
                              const TilemVarEntry *varentry,
                              const char* destination)
 {
-	struct TilemReceiveFileInfo *rf;
-	FileContent *fc;
-	int e;
-	char *message;
-
-	g_return_if_fail(emu != NULL);
-	g_return_if_fail(emu->calc != NULL);
-	g_return_if_fail(varentry != NULL);
-	g_return_if_fail(destination != NULL);
-	g_return_if_fail(emu->calc->hw.model_id == varentry->model);
-
-	if (varentry->ve && varentry->ve->data) {
-		/* avoid copying variable data */
-
-		fc = tifiles_content_create_regular(get_calc_model(emu->calc));
-		fc->entries = g_new(VarEntry *, 1);
-		fc->num_entries = 1;
-		fc->entries[0] = varentry->ve;
-
-		e = tifiles_file_write_regular(destination, fc, NULL);
-
-		fc->num_entries = 0;
-		tifiles_content_delete_regular(fc);
-
-		if (e) {
-			message = get_tilibs_error(e);
-			show_error(emu, "Unable to save file", message);
-			g_free(message);
-		}
-	}
-	else {
-		rf = g_slice_new0(struct TilemReceiveFileInfo);
-		rf->tve = tilem_var_entry_copy(varentry);
-		rf->destination = g_strdup(destination);
-		tilem_calc_emulator_begin(emu, &receive_file_main,
-		                          &receive_file_finished, rf);
-	}
+	GSList *l;
+	l = g_slist_prepend(NULL, (gpointer) varentry);
+	tilem_link_receive_group(emu, l, destination);
+	g_slist_free(l);
 }
-
