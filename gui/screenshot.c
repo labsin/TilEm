@@ -83,7 +83,7 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 	GError *err = NULL;
 	GdkColor fg, bg;
 
-	tilem_config_get("quick_screenshot",
+	tilem_config_get("screenshot",
 	                 "directory/f", &folder,
 	                 "format/s", &format,
 	                 "grayscale/b=1", &grayscale,
@@ -129,6 +129,8 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 		g_object_unref(anim);
 		return;
 	}
+
+	printf("screenshot saved : %s\n", filename);
 
 	if (!tilem_animation_save(anim, filename, format, NULL, NULL, &err)) {
 		messagebox01(ewin->window, GTK_MESSAGE_ERROR,
