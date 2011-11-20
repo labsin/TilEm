@@ -71,17 +71,14 @@ typedef struct _TilemReceiveDialog {
 
 	GtkWidget* window;		/* The window itself */
 
-	GtkWidget* button_refresh;	/* Force a get_dirlist */
-	GtkWidget* button_save;		/* Save a var on disk */
-	GtkWidget* button_close;	/* Hide the window (do not destroy it) */
-
 	GtkWidget* treeview;		/* The treeview to print the list of vars */
 	GtkTreeModel* model;		/* The model used by the treeview */
 
 	GtkWidget* vbox;		/* A vbox in the content area */
 
 	GtkWidget* always_ask_filename_tb;	/* Toggle Button. If enabled, always prompt filename */	
-	
+
+	gboolean refresh_pending;
 } TilemReceiveDialog;
 
 /* Handle the ilp progress stuff */

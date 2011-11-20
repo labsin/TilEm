@@ -56,6 +56,7 @@ enum
   	NUM_COLS
 };
 
+#define RESPONSE_REFRESH 1
 
 /* Convert UTF-8 to filename encoding.  Use ASCII digits in place of
    subscripts if necessary.  If conversion fails utterly, fall back to
@@ -148,15 +149,8 @@ static char * get_default_filename(const TilemVarEntry *tve)
 
 /* #### SIGNALS CALLBACK #### */
 
-/* Close the window */
-static void tilem_rcvmenu_on_close(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
-	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
-
-	gtk_widget_hide(rcvdialog->window);
-}
-
 /* Prompt to save a single file. */
-static void prompt_save_single(TilemReceiveDialog *rcvdialog, TilemVarEntry *tve)
+static gboolean prompt_save_single(TilemReceiveDialog *rcvdialog, TilemVarEntry *tve)
 {
 	char *dir, *default_filename, *default_filename_r, *filename, *pattern;
 
@@ -179,7 +173,7 @@ static void prompt_save_single(TilemReceiveDialog *rcvdialog, TilemVarEntry *tve
 	g_free(dir);
 
 	if (!filename)
-		return;
+		return FALSE;
 
 	dir = g_path_get_dirname(filename);
 	tilem_config_set("download", "receivefile_recentdir/f", dir, NULL);
@@ -187,10 +181,11 @@ static void prompt_save_single(TilemReceiveDialog *rcvdialog, TilemVarEntry *tve
 
 	tilem_link_receive_file(rcvdialog->emu, tve, filename);
 	g_free(filename);
+	return TRUE;
 }
 
 /* Prompt to save a list of files.  Input is a list of GtkTreePaths */
-static void prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
+static gboolean prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 {
 	char *dir, *dir_selected, *default_filename,
 		*default_filename_f, *filename;
@@ -208,7 +203,7 @@ static void prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 	g_free(dir);
 
 	if (!dir_selected)
-		return;
+		return FALSE;
 
 	tilem_config_set("download", "receivefile_recentdir/f", dir_selected, NULL);
 
@@ -231,49 +226,63 @@ static void prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 	}
 
 	g_free(dir_selected);
+	return TRUE;
 }
 
 /* Event called on Send button click. Get the selected var/app and save it. */
-static void tilem_rcvmenu_on_receive(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
-	
-	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
+static gboolean prompt_save(TilemReceiveDialog *rcvdialog)
+{
 	TilemVarEntry *tve;		/* Variable entry */
 	GtkTreeSelection* selection = NULL; /* GtkTreeSelection */
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 	GList *rows, *l;
 	GtkTreePath *path;
+	gboolean status;
 
 	/* Get the selected entry */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(rcvdialog->treeview));
 	rows = gtk_tree_selection_get_selected_rows(selection, &model);
 
 	if (!rows)
-		return;
+		return FALSE;
 
 	if (!rows->next) {
 		path = (GtkTreePath*) rows->data;
 		gtk_tree_model_get_iter(model, &iter, path);
 		gtk_tree_model_get(model, &iter, COL_ENTRY, &tve, -1);
-		prompt_save_single(rcvdialog, tve);
+		status = prompt_save_single(rcvdialog, tve);
 	}
 	else {
-		prompt_save_multiple(rcvdialog, rows);
+		status = prompt_save_multiple(rcvdialog, rows);
 	}
 
 	for (l = rows; l; l = l->next)
 		gtk_tree_path_free(l->data);
 	g_list_free(rows);
+	return status;
 }
 
-/* This function is executed when user click on refresh button */
-static void tilem_rcvmenu_on_refresh(G_GNUC_UNUSED GtkWidget* w, G_GNUC_UNUSED gpointer data) {
+/* Dialog response button clicked */
+static void dialog_response(GtkDialog *dlg, gint response, gpointer data)
+{
 	TilemReceiveDialog* rcvdialog = (TilemReceiveDialog*) data;
-	
-	/* Get the varlist and the applist */
-	tilem_link_get_dirlist(rcvdialog->emu);
-}
 
+	switch (response) {
+	case RESPONSE_REFRESH:
+		if (!rcvdialog->refresh_pending) {
+			rcvdialog->refresh_pending = TRUE;
+			tilem_link_get_dirlist(rcvdialog->emu);
+		}
+		break;
+
+	case GTK_RESPONSE_ACCEPT:
+		if (!prompt_save(rcvdialog))
+			break;
+	default:
+		gtk_widget_hide(GTK_WIDGET(dlg));
+	}
+}
 
 /* #### WIDGET CREATION #### */
 
@@ -283,7 +292,7 @@ static GtkWidget *new_scrolled_window(GtkWidget *contents)
         GtkWidget *sw; 
         sw = gtk_scrolled_window_new(NULL, NULL);
         gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
-                                       GTK_POLICY_AUTOMATIC,
+                                       GTK_POLICY_NEVER,
                                        GTK_POLICY_AUTOMATIC);
         gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw),
                                             GTK_SHADOW_IN);
@@ -397,27 +406,50 @@ static GtkTreeModel* fill_varlist(TilemReceiveDialog *rcvdialog)
 /* Previous allocated and filled varlist is needed */
 TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 {
-
 	TilemReceiveDialog* rcvdialog = g_slice_new0(TilemReceiveDialog);
+	GtkWidget *scroll, *btn;
+	int defheight = 300;
+
+	g_return_val_if_fail(emu != NULL, NULL);
+	g_return_val_if_fail(emu->ewin != NULL, NULL);
+	g_return_val_if_fail(emu->calc != NULL, NULL);
+
 	rcvdialog->emu = emu;
 	emu->rcvdlg = rcvdialog;
+
 	rcvdialog->window = gtk_dialog_new();
-	gtk_window_set_transient_for(GTK_WINDOW(rcvdialog->window), GTK_WINDOW(emu->ewin->window));	
-	gtk_window_set_title(GTK_WINDOW(rcvdialog->window), "TilEm receive Menu");
-	rcvdialog->button_refresh = gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window), "Refresh", 0);
-	rcvdialog->button_save = gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window), "Save file to disk", 1);
-	rcvdialog->button_close = gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window), "Close", 2);
+	gtk_window_set_transient_for(GTK_WINDOW(rcvdialog->window),
+	                             GTK_WINDOW(emu->ewin->window));
+
+	gtk_window_set_title(GTK_WINDOW(rcvdialog->window), "Receive File");
+
+	btn = gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window),
+	                            GTK_STOCK_REFRESH, RESPONSE_REFRESH);
+
+	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
+		gtk_widget_hide(btn);
+
+	gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window),
+	                      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+	gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window),
+	                      GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT);
+
+	gtk_dialog_set_default_response(GTK_DIALOG(rcvdialog->window),
+	                                GTK_RESPONSE_ACCEPT);
+	gtk_dialog_set_alternative_button_order(GTK_DIALOG(rcvdialog->window),
+	                                        RESPONSE_REFRESH,
+	                                        GTK_RESPONSE_ACCEPT,
+	                                        GTK_RESPONSE_CANCEL,
+	                                        -1);
 
 	/* Set the size of the dialog */
-	int defwidth = 200;
-	int defheight = 400;
-	gtk_window_set_default_size(GTK_WINDOW(rcvdialog->window), defwidth, defheight);
+	gtk_window_set_default_size(GTK_WINDOW(rcvdialog->window), -1, defheight);
 	
 	/* Create and fill tree view */
 	rcvdialog->treeview = create_varlist(rcvdialog);
 
 	/* Allow scrolling the list because we can't know how many vars the calc contains */
-	GtkWidget * scroll = new_scrolled_window(rcvdialog->treeview);
+	scroll = new_scrolled_window(rcvdialog->treeview);
 	rcvdialog->vbox = gtk_vbox_new(FALSE, 3);
 	rcvdialog->always_ask_filename_tb = gtk_check_button_new_with_mnemonic("Always _ask filename");
 	gtk_box_pack_start(GTK_BOX(rcvdialog->vbox), GTK_WIDGET(scroll), TRUE, TRUE, 0);
@@ -425,9 +457,10 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window))), rcvdialog->vbox);
 
 	/* Signals callback */	
-	g_signal_connect(rcvdialog->button_refresh, "clicked", G_CALLBACK (tilem_rcvmenu_on_refresh), rcvdialog);
-	g_signal_connect(rcvdialog->button_save, "clicked", G_CALLBACK (tilem_rcvmenu_on_receive), rcvdialog);
-	g_signal_connect(rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog);
+	g_signal_connect(rcvdialog->window, "response",
+	                 G_CALLBACK(dialog_response), rcvdialog);
+	g_signal_connect(rcvdialog->window, "delete-event",
+	                 G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	
 	gtk_widget_show_all(rcvdialog->vbox);
 
@@ -456,6 +489,8 @@ void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
 
 	g_return_if_fail(rcvdialog != NULL);
 
+	rcvdialog->refresh_pending = FALSE;
+
 	for (l = rcvdialog->vars; l; l = l->next)
 		tilem_var_entry_free(l->data);
 	g_slist_free(rcvdialog->vars);
@@ -471,6 +506,7 @@ void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
 	                     COL_SIZE_STR, "00,000,000",
 	                     -1);
 
+	gtk_widget_grab_focus(rcvdialog->treeview);
 	gtk_window_present(GTK_WINDOW(rcvdialog->window));
 }
 
@@ -480,10 +516,19 @@ void popup_receive_menu(TilemEmulatorWindow *ewin)
 {
 	g_return_if_fail(ewin != NULL);
 	g_return_if_fail(ewin->emu != NULL);
+	g_return_if_fail(ewin->emu->calc != NULL);
 
-	if (ewin->emu->rcvdlg)
-		gtk_window_present(GTK_WINDOW(ewin->emu->rcvdlg->window));
-	else
+	if (ewin->emu->rcvdlg && ewin->emu->rcvdlg->refresh_pending)
+		return;
+
+	/* TI-81 takes no time to refresh, so do it automatically */
+	if (!ewin->emu->rcvdlg
+	    || ewin->emu->calc->hw.model_id == TILEM_CALC_TI81) {
 		tilem_link_get_dirlist(ewin->emu);
+	}
+	else {
+		gtk_widget_grab_focus(ewin->emu->rcvdlg->treeview);
+		gtk_window_present(GTK_WINDOW(ewin->emu->rcvdlg->window));
+	}
 }
 

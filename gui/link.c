@@ -845,6 +845,9 @@ static void get_dirlist_finished(TilemCalcEmulator *emu, gpointer data,
 		dl->list = NULL;
 	}
 
+	if (emu->rcvdlg)
+		emu->rcvdlg->refresh_pending = FALSE;
+
 	for (l = dl->list; l; l = l->next)
 		tilem_var_entry_free(l->data);
 
