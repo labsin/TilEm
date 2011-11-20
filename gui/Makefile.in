@@ -52,6 +52,7 @@ objects = tilem2.o \
 	event.o \
 	filedlg.o \
 	files.o \
+	fixedtreeview.o \
 	gifencod.o \
 	icons.o \
 	keybindings.o \
@@ -80,7 +81,7 @@ link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
 
 common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
 	gui.h emulator.h debugger.h emuwin.h skinops.h animation.h \
-	gtk-compat.h msgbox.h
+	gtk-compat.h msgbox.h fixedtreeview.h
 
 all: tilem2@EXEEXT@
 
@@ -211,6 +212,10 @@ sendfile.o: sendfile.c emucore.h $(common_headers)
 # File open/save dialogs
 filedlg.o: filedlg.c filedlg.h
 	$(compile) -c $(srcdir)/filedlg.c
+
+# Fixed-width tree view
+fixedtreeview.o: fixedtreeview.c fixedtreeview.h
+	$(compile) -c $(srcdir)/fixedtreeview.c
 
 # TI-81 program file functions
 ti81prg.o: ti81prg.c ti81prg.h ../emu/tilem.h

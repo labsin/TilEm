@@ -39,6 +39,7 @@
 #include "files.h"
 #include "filedlg.h"
 #include "msgbox.h"
+#include "fixedtreeview.h"
 
 static GtkTreeModel* fill_varlist(TilemReceiveDialog *rcvdialog);
 TilemReceiveDialog* create_receive_menu(TilemCalcEmulator *emu);
@@ -321,7 +322,6 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 
 		gtk_tree_view_column_set_sizing(c1, GTK_TREE_VIEW_COLUMN_FIXED);
 		gtk_tree_view_column_set_sort_column_id(c1, COL_SLOT_STR);
-		gtk_tree_view_column_set_expand(c1, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c1);
 	}
 
@@ -339,7 +339,6 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 		
 		gtk_tree_view_column_set_sizing(c3, GTK_TREE_VIEW_COLUMN_FIXED);
 		gtk_tree_view_column_set_sort_column_id(c3, COL_TYPE_STR);
-		gtk_tree_view_column_set_expand(c3, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c3);
 	}
 
@@ -347,12 +346,11 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 	g_object_set(renderer, "xalign", 1.0, NULL);
 	c4 = gtk_tree_view_column_new_with_attributes
 		("Size", renderer, "text", COL_SIZE_STR, NULL);
-		
+
 	gtk_tree_view_column_set_sizing(c4, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_sort_column_id(c4, COL_SIZE);
-	gtk_tree_view_column_set_expand(c4, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c4);
-	
+
 	return treeview;
 }
 
@@ -431,7 +429,7 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 	g_signal_connect(rcvdialog->button_save, "clicked", G_CALLBACK (tilem_rcvmenu_on_receive), rcvdialog);
 	g_signal_connect(rcvdialog->button_close, "clicked", G_CALLBACK (tilem_rcvmenu_on_close), rcvdialog);
 	
-	gtk_widget_show_all(GTK_WIDGET(rcvdialog->window));
+	gtk_widget_show_all(rcvdialog->vbox);
 
 	return rcvdialog;
 }
@@ -465,6 +463,15 @@ void tilem_receive_dialog_update(TilemReceiveDialog *rcvdialog, GSList *varlist)
 	rcvdialog->vars = varlist;
 	rcvdialog->model = fill_varlist(rcvdialog);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(rcvdialog->treeview), rcvdialog->model);
+
+	fixed_tree_view_init(rcvdialog->treeview, 0,
+	                     COL_SLOT_STR, "PrgmM ",
+	                     COL_NAME_STR, "MMMMMMMMM ",
+	                     COL_TYPE_STR, "MMMMMM ",
+	                     COL_SIZE_STR, "00,000,000",
+	                     -1);
+
+	gtk_window_present(GTK_WINDOW(rcvdialog->window));
 }
 
 /* Popup the receive window */

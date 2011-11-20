@@ -36,6 +36,7 @@
 #include "memmodel.h"
 #include "files.h"
 #include "msgbox.h"
+#include "fixedtreeview.h"
 
 /* Stack list */
 enum
@@ -769,7 +770,7 @@ static GtkWidget *create_stack_view()
 	GtkCellRenderer   *renderer;
 	GtkWidget         *treeview;
 	GtkTreeViewColumn *column;
-	
+
 	/* Create the stack list tree view and set title invisible */
 	treeview = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
@@ -783,7 +784,6 @@ static GtkWidget *create_stack_view()
 		("ADDR", renderer, "text", COL_OFFSET_STK, NULL);
 
 	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	
 	renderer = gtk_cell_renderer_text_new ();
@@ -791,7 +791,6 @@ static GtkWidget *create_stack_view()
 		("VAL", renderer, "text", COL_VALUE_STK, NULL);
 
 	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
 	return treeview;
@@ -804,6 +803,7 @@ static GtkWidget *create_memory_view(TilemDebugger *dbg)
 	GtkTreeViewColumn   *column;
 	GtkWidget           *treeview;
 	int i;
+	int width = dbg->mem_rowsize;
 
 	/* Create the memory list tree view and set title invisible */
 	treeview = gtk_tree_view_new();
@@ -817,14 +817,11 @@ static GtkWidget *create_memory_view(TilemDebugger *dbg)
 		("ADDR", renderer, "text", MM_COL_ADDRESS(0), NULL);
 
 	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(column, 70);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-	/* FIXME: column sizes should be determined by font */
-
-	for (i = 0; i < 8; i++) {
-		renderer = gtk_cell_renderer_text_new ();
+	for (i = 0; i < width; i++) {
+		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes
 			(NULL, renderer,
 			 "text", MM_COL_HEX(i),
@@ -837,22 +834,20 @@ static GtkWidget *create_memory_view(TilemDebugger *dbg)
 		                 G_CALLBACK(hex_cell_edited), dbg);
 
 		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-		gtk_tree_view_column_set_fixed_width(column, 20);
-		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_column_set_expand(column, (i == width - 1));
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	}
 
-	for (i = 0; i < 8; i++) {
-		renderer = gtk_cell_renderer_text_new ();
+	for (i = 0; i < width; i++) {
+		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes
 			(NULL, renderer, "text", MM_COL_CHAR(i), NULL);
 
 		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-		gtk_tree_view_column_set_fixed_width(column, 16);
-		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_column_set_expand(column, (i == width - 1));
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	}
-	
+
 	return treeview;
 }
 
@@ -1155,6 +1150,11 @@ static void refresh_stack(TilemDebugger *dbg)
 	GtkTreeModel *model = fill_stk_list(dbg);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(dbg->stack_view), model);
 	g_object_unref(model);
+
+	fixed_tree_view_init(dbg->stack_view, 0,
+	                     COL_OFFSET_STK, "DDDD: ",
+	                     COL_VALUE_STK, "DDDD ",
+	                     -1);
 }
 
 static void unselect_all(GtkTreeView *tv)
@@ -1267,6 +1267,13 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg)
 	                            dbg->mem_start, dbg->mem_logical);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(dbg->mem_view), model);
 	g_object_unref(model);
+
+	fixed_tree_view_init(dbg->mem_view, MM_COLUMNS_PER_BYTE,
+	                     MM_COL_ADDRESS_0, "DD:DDDD ",
+	                     MM_COL_HEX_0, "DD ",
+	                     MM_COL_CHAR_0, "M ",
+	                     MM_COL_EDITABLE_0, TRUE,
+	                     -1);
 
 	tilem_debugger_refresh(dbg, TRUE);
 

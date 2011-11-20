@@ -32,6 +32,7 @@
 
 #include "gui.h"
 #include "disasmview.h"
+#include "fixedtreeview.h"
 
 /**************** Add/edit breakpoint dialog ****************/
 
@@ -919,6 +920,13 @@ void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
 	bpldlg.treeview = treeview;
 
+	fixed_tree_view_init(treeview, 0,
+	                     COL_TYPE_STR, "MRWX ",
+	                     COL_START_STR, "DD:DDDD ",
+	                     COL_END_STR, "DD:DDDD ",
+	                     COL_ENABLED, TRUE,
+	                     -1);
+
 	g_signal_connect(treeview, "row-activated",
 	                 G_CALLBACK(row_activated), &bpldlg);
 
@@ -928,7 +936,6 @@ void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 	gtk_tree_view_column_set_title(col, "Type");
 	gtk_tree_view_column_set_sort_column_id(col, COL_TYPE_STR);
 	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(col, 60); /* FIXME */
 
 	cell = gtk_cell_renderer_toggle_new();
 	gtk_tree_view_column_pack_start(col, cell, FALSE);
@@ -953,8 +960,6 @@ void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 		("Start", cell, "text", COL_START_STR, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, COL_START);
 	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(col, 60);
-	gtk_tree_view_column_set_expand(col, TRUE);
 
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
 
@@ -965,8 +970,6 @@ void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 		("End", cell, "text", COL_END_STR, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, COL_END);
 	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(col, 60);
-	gtk_tree_view_column_set_expand(col, TRUE);
 
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
 
