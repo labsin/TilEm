@@ -74,9 +74,10 @@ typedef struct _TilemReceiveDialog {
 	GtkWidget* treeview;		/* The treeview to print the list of vars */
 	GtkTreeModel* model;		/* The model used by the treeview */
 
-	GtkWidget* vbox;		/* A vbox in the content area */
-
-	GtkWidget* always_ask_filename_tb;	/* Toggle Button. If enabled, always prompt filename */	
+	/* Radio buttons */
+	GtkWidget* mode_box;
+	GtkWidget* multiple_rb;		/* Write multiple files */
+	GtkWidget* group_rb;		/* Write a single group file */
 
 	gboolean refresh_pending;
 } TilemReceiveDialog;

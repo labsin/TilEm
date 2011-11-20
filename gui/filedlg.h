@@ -33,6 +33,9 @@
    lowercase; they will be checked case-insensitively.  The list is
    terminated by NULL.
 
+   A pattern may be the empty string (""); if so, that file type is
+   disabled.
+
    Result is NULL if dialog was cancelled; otherwise, a string in
    filename encoding, which must be freed with g_free().
  */

@@ -184,6 +184,75 @@ static gboolean prompt_save_single(TilemReceiveDialog *rcvdialog, TilemVarEntry 
 	return TRUE;
 }
 
+/* Prompt to save a list of variables as a group file. */
+static gboolean prompt_save_group(TilemReceiveDialog *rcvdialog, GList *rows)
+{
+	char *dir, *default_filename, *pattern_desc, *pattern, *filename;
+	int tfmodel;
+	gboolean can_group = TRUE;
+	const char *fext, *model_str;
+	GList *l;
+	GtkTreePath *path;
+	GtkTreeIter iter;
+	TilemVarEntry *tve;
+	GSList *velist;
+
+	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
+	if (!dir) dir = g_get_current_dir();
+
+	for (l = rows; l; l = l->next) {
+		path = (GtkTreePath*) l->data;
+		gtk_tree_model_get_iter(rcvdialog->model, &iter, path);
+		gtk_tree_model_get(rcvdialog->model, &iter, COL_ENTRY, &tve, -1);
+		velist = g_slist_prepend(velist, tve);
+		if (!tve->can_group)
+			can_group = FALSE;
+	}
+
+	velist = g_slist_reverse(velist);
+
+	tfmodel = get_calc_model(rcvdialog->emu->calc);
+
+	fext = tifiles_fext_of_group(tfmodel);
+	pattern = g_strconcat("*.", fext, NULL);
+
+	model_str = tifiles_model_to_string(tfmodel);
+	pattern_desc = g_strdup_printf("%s group files", model_str);
+
+	default_filename = g_strdup_printf("untitled.%s",
+	                                   (can_group ? fext : "tig"));
+
+	filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
+	                            default_filename, dir,
+	                            pattern_desc, (can_group ? pattern : ""),
+	                            "TIGroup files", "*.tig",
+	                            "All files", "*",
+	                            NULL);
+
+	g_free(default_filename);
+	g_free(dir);
+	g_free(pattern_desc);
+	g_free(pattern);
+
+	if (!filename) {
+		g_slist_free(velist);
+		return FALSE;
+	}
+
+	dir = g_path_get_dirname(filename);
+	tilem_config_set("download",
+	                 "receivefile_recentdir/f", dir,
+	                 "save_as_group/b", TRUE,
+	                 NULL);
+	g_free(dir);
+
+	tilem_link_receive_group(rcvdialog->emu, velist, filename);
+
+	g_free(filename);
+	g_slist_free(velist);
+	return TRUE;
+}
+
 /* Prompt to save a list of files.  Input is a list of GtkTreePaths */
 static gboolean prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 {
@@ -193,6 +262,14 @@ static gboolean prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 	GtkTreePath *path;
 	GtkTreeIter iter;
 	TilemVarEntry *tve;
+	gboolean is_81, use_group;
+
+	is_81 = (rcvdialog->emu->calc->hw.model_id == TILEM_CALC_TI81);
+	use_group = gtk_toggle_button_get_active
+		(GTK_TOGGLE_BUTTON(rcvdialog->group_rb));
+
+	if (use_group && !is_81)
+		return prompt_save_group(rcvdialog, rows);
 
 	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
 	if (!dir) dir = g_get_current_dir();
@@ -205,7 +282,10 @@ static gboolean prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 	if (!dir_selected)
 		return FALSE;
 
-	tilem_config_set("download", "receivefile_recentdir/f", dir_selected, NULL);
+	tilem_config_set("download",
+	                 "receivefile_recentdir/f", dir_selected,
+	                 "save_as_group/b", use_group,
+	                 NULL);
 
 	/* FIXME: prompt to confirm overwriting if necessary */
 	for (l = rows; l; l = l->next) {
@@ -284,6 +364,17 @@ static void dialog_response(GtkDialog *dlg, gint response, gpointer data)
 	}
 }
 
+/* Selection changed */
+static void selection_changed(GtkTreeSelection *sel, gpointer data)
+{
+	TilemReceiveDialog* rcvdialog = data;
+	int n = gtk_tree_selection_count_selected_rows(sel);
+
+	gtk_dialog_set_response_sensitive(GTK_DIALOG(rcvdialog->window),
+	                                  GTK_RESPONSE_ACCEPT, (n > 0));
+	gtk_widget_set_sensitive(rcvdialog->mode_box, (n > 1));
+}
+
 /* Row activated in tree view */
 static void row_activated(G_GNUC_UNUSED GtkTreeView *treeview,
                           G_GNUC_UNUSED GtkTreePath *path,
@@ -315,6 +406,7 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 {
 	GtkCellRenderer   *renderer;
 	GtkWidget         *treeview;
+	GtkTreeSelection  *sel;
 	GtkTreeViewColumn *c1, *c2, *c3, *c4;
 	gboolean           is_81;
 
@@ -330,7 +422,8 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
 	
 	/* Allow multiple selection */
-	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview)), GTK_SELECTION_MULTIPLE);
+	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+	gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new();
@@ -369,6 +462,9 @@ static GtkWidget *create_varlist(TilemReceiveDialog *rcvdialog)
 	gtk_tree_view_column_set_sizing(c4, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_sort_column_id(c4, COL_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), c4);
+
+	g_signal_connect(sel, "changed",
+	                 G_CALLBACK(selection_changed), rcvdialog);
 
 	g_signal_connect(treeview, "row-activated",
 	                 G_CALLBACK(row_activated), rcvdialog);
@@ -420,8 +516,10 @@ static GtkTreeModel* fill_varlist(TilemReceiveDialog *rcvdialog)
 TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 {
 	TilemReceiveDialog* rcvdialog = g_slice_new0(TilemReceiveDialog);
-	GtkWidget *scroll, *btn;
+	GtkWidget *scroll, *btn, *vbox, *lbl, *rb, *vbox2;
 	int defheight = 300;
+	gboolean is_81;
+	gboolean use_group;
 
 	g_return_val_if_fail(emu != NULL, NULL);
 	g_return_val_if_fail(emu->ewin != NULL, NULL);
@@ -429,6 +527,8 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 
 	rcvdialog->emu = emu;
 	emu->rcvdlg = rcvdialog;
+
+	is_81 = (emu->calc->hw.model_id == TILEM_CALC_TI81);
 
 	rcvdialog->window = gtk_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(rcvdialog->window),
@@ -439,7 +539,7 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 	btn = gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window),
 	                            GTK_STOCK_REFRESH, RESPONSE_REFRESH);
 
-	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
+	if (is_81)
 		gtk_widget_hide(btn);
 
 	gtk_dialog_add_button(GTK_DIALOG(rcvdialog->window),
@@ -463,19 +563,42 @@ TilemReceiveDialog* tilem_receive_dialog_new(TilemCalcEmulator *emu)
 
 	/* Allow scrolling the list because we can't know how many vars the calc contains */
 	scroll = new_scrolled_window(rcvdialog->treeview);
-	rcvdialog->vbox = gtk_vbox_new(FALSE, 3);
-	rcvdialog->always_ask_filename_tb = gtk_check_button_new_with_mnemonic("Always _ask filename");
-	gtk_box_pack_start(GTK_BOX(rcvdialog->vbox), GTK_WIDGET(scroll), TRUE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(rcvdialog->vbox), GTK_WIDGET(rcvdialog->always_ask_filename_tb), FALSE, FALSE, 0);
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window))), rcvdialog->vbox);
 
-	/* Signals callback */	
+	vbox = gtk_vbox_new(FALSE, 6);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 6);
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(scroll), TRUE, TRUE, 0);
+
+	rcvdialog->mode_box = gtk_hbox_new(FALSE, 6);
+	lbl = gtk_label_new("Save as:");
+	gtk_box_pack_start(GTK_BOX(rcvdialog->mode_box), lbl, FALSE, FALSE, 0);
+
+	rb = gtk_radio_button_new_with_mnemonic(NULL, "S_eparate files");
+	gtk_box_pack_start(GTK_BOX(rcvdialog->mode_box), rb, FALSE, FALSE, 0);
+	rcvdialog->multiple_rb = rb;
+
+	rb = gtk_radio_button_new_with_mnemonic_from_widget
+		(GTK_RADIO_BUTTON(rb), "_Group file");
+	gtk_box_pack_start(GTK_BOX(rcvdialog->mode_box), rb, FALSE, FALSE, 0);
+	rcvdialog->group_rb = rb;
+
+	tilem_config_get("download", "save_as_group/b=1", &use_group, NULL);
+	if (use_group)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb), TRUE);
+
+	if (is_81)
+		gtk_widget_set_no_show_all(rcvdialog->mode_box, TRUE);
+
+	gtk_box_pack_start(GTK_BOX(vbox), rcvdialog->mode_box, FALSE, FALSE, 0);
+	vbox2 = gtk_dialog_get_content_area(GTK_DIALOG(rcvdialog->window));
+	gtk_box_pack_start(GTK_BOX(vbox2), vbox, TRUE, TRUE, 0);
+
+	/* Signals callback */
 	g_signal_connect(rcvdialog->window, "response",
 	                 G_CALLBACK(dialog_response), rcvdialog);
 	g_signal_connect(rcvdialog->window, "delete-event",
 	                 G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	
-	gtk_widget_show_all(rcvdialog->vbox);
+	gtk_widget_show_all(vbox);
 
 	return rcvdialog;
 }

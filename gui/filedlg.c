@@ -228,10 +228,12 @@ static char * build_filter_string(const char *desc1,
 	GString *str = g_string_new(NULL);
 
 	while (desc1 && pattern1) {
-		g_string_append(str, desc1);
-		g_string_append_c(str, '\n');
-		g_string_append(str, pattern1);
-		g_string_append_c(str, '\n');
+		if (pattern1[0]) {
+			g_string_append(str, desc1);
+			g_string_append_c(str, '\n');
+			g_string_append(str, pattern1);
+			g_string_append_c(str, '\n');
+		}
 
 		desc1 = va_arg(ap, char *);
 		if (!desc1) break;
@@ -542,23 +544,25 @@ static void setup_file_filters(GtkFileChooser *chooser,
 	int i;
 
 	while (desc1 && pattern1) {
-		ffilt = gtk_file_filter_new();
-		gtk_file_filter_set_name(ffilt, desc1);
+		if (pattern1[0]) {
+			ffilt = gtk_file_filter_new();
+			gtk_file_filter_set_name(ffilt, desc1);
 
-		pats = g_strsplit(pattern1, ";", -1);
-		pspeclist = NULL;
-		for (i = 0; pats && pats[i]; i++) {
-			pspec = g_pattern_spec_new(pats[i]);
-			pspeclist = g_slist_prepend(pspeclist, pspec);
+			pats = g_strsplit(pattern1, ";", -1);
+			pspeclist = NULL;
+			for (i = 0; pats && pats[i]; i++) {
+				pspec = g_pattern_spec_new(pats[i]);
+				pspeclist = g_slist_prepend(pspeclist, pspec);
+			}
+			g_strfreev(pats);
+
+			gtk_file_filter_add_custom(ffilt, GTK_FILE_FILTER_FILENAME,
+			                           &filter_lowercase,
+			                           pspeclist,
+			                           &free_filter_info);
+
+			gtk_file_chooser_add_filter(chooser, ffilt);
 		}
-		g_strfreev(pats);
-
-		gtk_file_filter_add_custom(ffilt, GTK_FILE_FILTER_FILENAME,
-		                           &filter_lowercase,
-		                           pspeclist,
-		                           &free_filter_info);
-
-		gtk_file_chooser_add_filter(chooser, ffilt);
 
 		desc1 = va_arg(ap, char *);
 		if (!desc1) break;
