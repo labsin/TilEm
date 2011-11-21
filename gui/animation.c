@@ -556,7 +556,6 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 		status = gdk_pixbuf_savev(pb, fname, type,
 		                          option_keys, option_values,
 		                          err);
-		g_object_unref(pb);
 		return status;
 	}
 
