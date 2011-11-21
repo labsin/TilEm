@@ -187,10 +187,10 @@ static gboolean prompt_save_single(TilemReceiveDialog *rcvdialog, TilemVarEntry 
 /* Prompt to save a list of variables as a group file. */
 static gboolean prompt_save_group(TilemReceiveDialog *rcvdialog, GList *rows)
 {
-	char *dir, *default_filename, *pattern_desc, *pattern, *filename;
+	char *dir, *default_filename, *pattern_desc, *pattern, *filename, *fext;
 	int tfmodel;
 	gboolean can_group = TRUE;
-	const char *fext, *model_str;
+	const char *model_str;
 	GList *l;
 	GtkTreePath *path;
 	GtkTreeIter iter;
@@ -213,14 +213,14 @@ static gboolean prompt_save_group(TilemReceiveDialog *rcvdialog, GList *rows)
 
 	tfmodel = get_calc_model(rcvdialog->emu->calc);
 
-	fext = tifiles_fext_of_group(tfmodel);
+	fext = g_ascii_strdown(tifiles_fext_of_group(tfmodel), -1);
 	pattern = g_strconcat("*.", fext, NULL);
+	default_filename = g_strdup_printf("untitled.%s",
+	                                   (can_group ? fext : "tig"));
+	g_free(fext);
 
 	model_str = tifiles_model_to_string(tfmodel);
 	pattern_desc = g_strdup_printf("%s group files", model_str);
-
-	default_filename = g_strdup_printf("untitled.%s",
-	                                   (can_group ? fext : "tig"));
 
 	filename = prompt_save_file("Save File", GTK_WINDOW(rcvdialog->window),
 	                            default_filename, dir,

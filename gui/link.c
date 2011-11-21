@@ -669,6 +669,7 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 	CalcModel tfmodel = get_calc_model(emu->calc);
 	const char *model_str;
 	const char *type_str;
+	const char *fext;
 
 	tve->model = emu->calc->hw.model_id;
 
@@ -683,7 +684,8 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 
 	tve->name_str = ticonv_varname_to_utf8(tfmodel, ve->name, ve->type);
 	tve->type_str = g_strdup(tifiles_vartype2string(tfmodel, ve->type));
-	tve->file_ext = g_strdup(tifiles_vartype2fext(tfmodel, ve->type));
+	fext = tifiles_vartype2fext(tfmodel, ve->type);
+	tve->file_ext = g_ascii_strdown(fext, -1);
 
 	/* FIXME: the filetype_desc string is used as a description in
 	   the file chooser.  It should be written in the same style
