@@ -659,6 +659,7 @@ void tilem_var_entry_free(TilemVarEntry *tve)
 struct dirlistinfo {
 	GSList *list;
 	char *error_message;
+	gboolean aborted;
 };
 
 /* Convert tifiles VarEntry into a TilemVarEntry */
@@ -747,6 +748,8 @@ static gboolean get_dirlist_silent(TilemCalcEmulator *emu,
 
 	dl->list = g_slist_reverse(list);
 
+	dl->aborted = emu->task_abort;
+
 	if (e && !emu->task_abort)
 		dl->error_message = get_tilibs_error(e);
 	return (e == 0);
@@ -782,6 +785,8 @@ static gboolean get_dirlist_nonsilent(TilemCalcEmulator *emu,
 	end_link(emu, cbl, ch);
 
 	dl->list = g_slist_reverse(list);
+
+	dl->aborted = emu->task_abort;
 
 	if (e && !emu->task_abort)
 		dl->error_message = get_tilibs_error(e);
@@ -860,7 +865,7 @@ static void get_dirlist_finished(TilemCalcEmulator *emu, gpointer data,
 	if (dl->error_message && !cancelled)
 		show_error(emu, "Unable to receive variable list",
 		           dl->error_message);
-	else if (!cancelled && emu->ewin) {
+	else if (!cancelled && !dl->aborted && emu->ewin) {
 		if (!emu->rcvdlg)
 			emu->rcvdlg = tilem_receive_dialog_new(emu);
 		tilem_receive_dialog_update(emu->rcvdlg, dl->list);
