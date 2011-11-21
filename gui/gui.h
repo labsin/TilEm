@@ -86,10 +86,10 @@ typedef struct _TilemReceiveDialog {
 typedef struct _TilemLinkProgress {
 	TilemCalcEmulator *emu;
 
-	GtkProgressBar* ilp_progress_bar1; /* progress bar (current item) */
-	GtkProgressBar* ilp_progress_bar2; /* progress bar (total) */
-	GtkLabel* ilp_progress_label; /* status message */
-	GtkWidget* ilp_progress_win;
+	GtkProgressBar* progress_bar; /* progress bar (total) */
+	GtkLabel* title_lbl;
+	GtkLabel* status_lbl;
+	GtkWidget* window;
 } TilemLinkProgress;
 
 #define LABEL_X_ALIGN 0.0
@@ -272,12 +272,6 @@ gboolean send_file_main(TilemCalcEmulator *emu, gpointer data);
 /* Request directory listing. */
 void tilem_link_get_dirlist(TilemCalcEmulator *emu);
 
-/* Begin link : create cablehandle, create calchandle, init progress bar */
-void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch);
-
-/* End link : delete cablehandle, delete calchandle, exit progress bar */
-void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch);
-
 /* Get the calc model as needed by ticalcs functions */
 int get_calc_model(TilemCalc *calc);
 
@@ -298,11 +292,8 @@ void tilem_link_receive_group(TilemCalcEmulator *emu,
 
 /* ##### pbar.c ##### */
 
-/* Create a progress bar */
-void progress_bar_init(TilemCalcEmulator* emu);
-
-/* Update the progress bar */
-void progress_bar_update_activity(TilemCalcEmulator* emu);
+/* Create or update the progress bar */
+void progress_bar_update(TilemCalcEmulator* emu);
 
 
 /* ##### args.c ##### */

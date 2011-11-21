@@ -153,6 +153,8 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 
 	emu->timer = g_timer_new();
 
+	emu->pbar_mutex = g_mutex_new();
+
 	update = g_new0(CalcUpdate, 1);
 	update->start = &link_update_nop;
 	update->stop = &link_update_nop;
@@ -191,6 +193,7 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 
 	g_timer_destroy(emu->timer);
 
+	g_mutex_free(emu->pbar_mutex);
 	g_free(emu->link_update);
 
 	if (emu->lcd_buffer)

@@ -126,9 +126,6 @@ int main(int argc, char **argv)
 
 	emu = tilem_calc_emulator_new();
 
-	emu->linkpb = g_slice_new0(TilemLinkProgress);
-	emu->linkpb->emu = emu;
-
 	cl = tilem_cmdline_new();
 	tilem_cmdline_get_args(argc, argv, cl);
 

@@ -95,6 +95,11 @@ typedef struct _TilemCalcEmulator {
 	/* Link transfer state */
 	gboolean ilp_active;
 	CalcUpdate *link_update; /* CalcUpdate (status and callbacks for ticalcs) */
+	GMutex *pbar_mutex;
+	char *pbar_title;
+	char *pbar_status;
+	gdouble pbar_progress;
+	gboolean pbar_update_pending;
 
 	/* GUI widgets */
 	struct _TilemDebugger *dbg;

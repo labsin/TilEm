@@ -242,41 +242,11 @@ static void prepare_for_link_receive(TilemCalcEmulator *emu)
 
 /**************** Calc handle ****************/
 
-/* idle callback to start progress bar */
-static gboolean pbar_start(gpointer data)
-{
-	TilemCalcEmulator *emu = data;
-
-	if (!emu->linkpb->ilp_progress_win)
-		progress_bar_init(emu);
-
-	return FALSE;
-}
-
-/* idle callback to close progress bar */
-static gboolean pbar_stop(gpointer data)
-{
-	TilemCalcEmulator *emu = data;
-
-	if (emu->linkpb->ilp_progress_win) {
-		gtk_widget_destroy(emu->linkpb->ilp_progress_win);
-		emu->linkpb->ilp_progress_win = NULL;
-		emu->linkpb->ilp_progress_bar1 = NULL;
-		emu->linkpb->ilp_progress_bar2 = NULL;
-		emu->linkpb->ilp_progress_label = NULL;
-	}
-
-	return FALSE;
-}
-
 /* idle callback to update progress bar */
 static gboolean pbar_update(gpointer data)
 {
 	TilemCalcEmulator *emu = data;
-
-	if (emu->linkpb->ilp_progress_win)
-		progress_bar_update_activity(emu);
-
+	progress_bar_update(emu);
 	return FALSE;
 }
 
@@ -286,7 +256,32 @@ static GStaticPrivate current_emu_key = G_STATIC_PRIVATE_INIT;
 static void pbar_do_update()
 {
 	TilemCalcEmulator *emu = g_static_private_get(&current_emu_key);
-	g_idle_add(&pbar_update, emu);
+	CalcUpdate *upd = emu->link_update;
+	gdouble frac;
+
+	g_mutex_lock(emu->pbar_mutex);
+
+	if (!emu->pbar_status || strcmp(upd->text, emu->pbar_status)) {
+		g_free(emu->pbar_status);
+		emu->pbar_status = g_strdup(upd->text);
+	}
+
+	if (upd->max1 > 0 && upd->max2 > 0)
+		frac = ((gdouble) upd->cnt1 / upd->max1 + upd->cnt2) / upd->max2;
+	else if (upd->max1 > 0)
+		frac = ((gdouble) upd->cnt1 / upd->max1);
+	else if (upd->max2 > 0)
+		frac = ((gdouble) upd->cnt2 / upd->max2);
+	else
+		frac = -1.0;
+
+	emu->pbar_progress = frac;
+
+	if (!emu->pbar_update_pending)
+		g_idle_add(&pbar_update, emu);
+	emu->pbar_update_pending = TRUE;
+
+	g_mutex_unlock(emu->pbar_mutex);
 }
 
 /* Get the calc model (compatible for ticalcs) */
@@ -325,7 +320,8 @@ int get_calc_model(TilemCalc *calc)
 }
 
 /* Create a calc handle */
-void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch)
+void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch,
+                const char *title)
 {
 	tilem_em_unlock(emu);
 
@@ -340,7 +336,15 @@ void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch)
 
 	g_static_private_set(&current_emu_key, emu, NULL);
 
-	g_idle_add(&pbar_start, emu);
+	g_mutex_lock(emu->pbar_mutex);
+	g_free(emu->pbar_title);
+	g_free(emu->pbar_status);
+	emu->pbar_title = g_strdup(title);
+	emu->pbar_status = NULL;
+	emu->pbar_progress = 0.0;
+	g_mutex_unlock(emu->pbar_mutex);
+
+	g_idle_add(&pbar_update, emu);
 
 	*ch = ticalcs_handle_new(get_calc_model(emu->calc));
 	if (!*ch) {
@@ -355,7 +359,16 @@ void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch)
 /* Destroy calc handle */
 void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch)
 {
-	g_idle_add(&pbar_stop, emu);
+	g_mutex_lock(emu->pbar_mutex);
+	g_free(emu->pbar_title);
+	g_free(emu->pbar_status);
+	emu->pbar_title = NULL;
+	emu->pbar_status = NULL;
+	emu->pbar_progress = 0.0;
+	g_mutex_unlock(emu->pbar_mutex);
+
+	g_idle_add(&pbar_update, emu);
+
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);
 	ticables_handle_del(cbl);
@@ -467,9 +480,12 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 	TigContent *tigc;
 	CalcMode mode;
 	int e;
+	char *desc;
 
 	model = get_calc_model(emu->calc);
 	cls = tifiles_file_get_class(sf->filename);
+
+	desc = g_strdup_printf("Sending %s", sf->display_name);
 
 	/* Read input file */
 
@@ -480,7 +496,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 		filec = tifiles_content_create_regular(model);
 		e = tifiles_file_read_regular(sf->filename, filec);
 		if (!e) {
-			begin_link(emu, &cbl, &ch);
+			begin_link(emu, &cbl, &ch, desc);
 			if (sf->first)
 				prepare_for_link_send(emu);
 			mode = (sf->last ? MODE_SEND_LAST_VAR : MODE_NORMAL);
@@ -494,7 +510,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 		backupc = tifiles_content_create_backup(model);
 		e = tifiles_file_read_backup(sf->filename, backupc);
 		if (!e) {
-			begin_link(emu, &cbl, &ch);
+			begin_link(emu, &cbl, &ch, desc);
 			prepare_for_link_send(emu);
 			e = ticalcs_calc_send_backup(ch, backupc);
 			end_link(emu, cbl, ch);
@@ -508,7 +524,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 		flashc = tifiles_content_create_flash(model);
 		e = tifiles_file_read_flash(sf->filename, flashc);
 		if (!e) {
-			begin_link(emu, &cbl, &ch);
+			begin_link(emu, &cbl, &ch, desc);
 			prepare_for_link_send(emu);
 			if (tifiles_file_is_os(sf->filename))
 				e = ticalcs_calc_send_os(ch, flashc);
@@ -525,7 +541,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 		tigc = tifiles_content_create_tigroup(model, 0);
 		e = tifiles_file_read_tigroup(sf->filename, tigc);
 		if (!e) {
-			begin_link(emu, &cbl, &ch);
+			begin_link(emu, &cbl, &ch, desc);
 			prepare_for_link_send(emu);
 			e = ticalcs_calc_send_tigroup(ch, tigc, TIG_ALL);
 			end_link(emu, cbl, ch);
@@ -534,6 +550,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 		break;
 
 	default:
+		g_free(desc);
 		sf->error_message = g_strdup_printf
 			("The file %s is not a valid program or"
 			 " variable file.",
@@ -541,6 +558,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 		return FALSE;
 	}
 
+	g_free(desc);
 	if (e && !emu->task_abort)
 		sf->error_message = get_tilibs_error(e);
 	return (e == 0);
@@ -710,7 +728,7 @@ static gboolean get_dirlist_silent(TilemCalcEmulator *emu,
 	GSList *list = NULL;
 	int e = 0;
 
-	begin_link(emu, &cbl, &ch);
+	begin_link(emu, &cbl, &ch, "Reading variable list");
 	prepare_for_link_receive(emu);
 
 	if (ticalcs_calc_features(ch) & OPS_DIRLIST) {
@@ -744,7 +762,7 @@ static gboolean get_dirlist_nonsilent(TilemCalcEmulator *emu,
 	GSList *list = NULL;
 	int e, i;
 
-	begin_link(emu, &cbl, &ch);
+	begin_link(emu, &cbl, &ch, "Receiving variables");
 	prepare_for_link_receive(emu);
 
 	fc = tifiles_content_create_regular(ch->model);
@@ -938,7 +956,7 @@ static gboolean receive_files_silent(TilemCalcEmulator* emu,
 	apps = g_new0(FlashContent *, i + 1);
 	nvars = napps = 0;
 
-	begin_link(emu, &cbl, &ch);
+	begin_link(emu, &cbl, &ch, "Receiving variables");
 
 	for (l = rf->entries; l; l = l->next) {
 		tve = l->data;
