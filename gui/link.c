@@ -74,6 +74,7 @@ static int ilp_close(CableHandle* cbl)
 	}
 
 	emu->ilp_active = FALSE;
+	emu->calc->linkport.linkemu = TILEM_LINK_EMULATOR_NONE;
 	tilem_linkport_graylink_reset(emu->calc);
 	tilem_em_unlock(emu);
 	return 0;
