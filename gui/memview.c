@@ -37,18 +37,11 @@
 
 static int get_column_index(GtkWidget *view, GtkTreeViewColumn *col)
 {
-	GList *cols, *l;
+	GList *cols;
 	int i;
 
 	cols = gtk_tree_view_get_columns(GTK_TREE_VIEW(view));
-	i = 0;
-	for (l = cols; l; l = l->next) {
-		if (col == l->data) {
-			g_list_free(cols);
-			return i;
-		}
-		i++;
-	}
+	i = g_list_index(cols, col);
 	g_list_free(cols);
 	return -1;
 }
@@ -146,7 +139,8 @@ static void hex_cell_edited(GtkCellRendererText *renderer,
                             gchar *pathstr, gchar *text,
                             gpointer data)
 {
-	TilemDebugger *dbg = data;
+	GtkTreeView *mem_view = data;
+	TilemDebugger *dbg;
 	GtkTreeModel *model;
 	GtkTreePath *path;
 	GtkTreeIter iter;
@@ -159,10 +153,13 @@ static void hex_cell_edited(GtkCellRendererText *renderer,
 	if (end == text || *end != 0)
 		return;
 
+	dbg = g_object_get_data(G_OBJECT(mem_view), "tilem-debugger");
+	g_return_if_fail(dbg != NULL);
+
 	col = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),
 	                                        "tilem-mem-column"));
 
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(dbg->mem_view));
+	model = gtk_tree_view_get_model(mem_view);
 	path = gtk_tree_path_new_from_string(pathstr);
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_path_free(path);
@@ -180,14 +177,14 @@ GtkWidget *tilem_debugger_mem_view_new(TilemDebugger *dbg)
 	GtkCellRenderer     *renderer;
 	GtkTreeViewColumn   *column;
 	GtkWidget           *treeview;
-	int i;
-	int width = dbg->mem_rowsize;
 
 	/* Create the memory list tree view and set title invisible */
 	treeview = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
 	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeview), TRUE);
+
+	g_object_set_data(G_OBJECT(treeview), "tilem-debugger", dbg);
 
 	/* Create the columns */
 	renderer = gtk_cell_renderer_text_new ();
@@ -197,6 +194,15 @@ GtkWidget *tilem_debugger_mem_view_new(TilemDebugger *dbg)
 	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+
+	return treeview;
+}
+
+static void create_columns(GtkWidget *mem_view, int width)
+{
+	GtkCellRenderer     *renderer;
+	GtkTreeViewColumn   *column;
+	int i;
 
 	for (i = 0; i < width; i++) {
 		renderer = gtk_cell_renderer_text_new();
@@ -209,11 +215,11 @@ GtkWidget *tilem_debugger_mem_view_new(TilemDebugger *dbg)
 		g_object_set_data(G_OBJECT(renderer), "tilem-mem-column",
 		                  GINT_TO_POINTER(i));
 		g_signal_connect(renderer, "edited",
-		                 G_CALLBACK(hex_cell_edited), dbg);
+		                 G_CALLBACK(hex_cell_edited), mem_view);
 
 		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
 		gtk_tree_view_column_set_expand(column, (i == width - 1));
-		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(mem_view), column);
 	}
 
 	for (i = 0; i < width; i++) {
@@ -223,10 +229,8 @@ GtkWidget *tilem_debugger_mem_view_new(TilemDebugger *dbg)
 
 		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
 		gtk_tree_view_column_set_expand(column, (i == width - 1));
-		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(mem_view), column);
 	}
-
-	return treeview;
 }
 
 static dword translate_addr(TilemCalcEmulator *emu, dword a, gboolean ptol)
@@ -247,6 +251,8 @@ void tilem_debugger_mem_view_configure(GtkWidget *mem_view,
 	GtkTreeModel *model;
 	dword row_addr, col_addr;
 	gboolean cur_hex;
+	GList *cols, *l;
+	int old_rowsize;
 
 	get_mem_view_position(mem_view, &row_addr, &col_addr, &cur_hex);
 
@@ -259,9 +265,20 @@ void tilem_debugger_mem_view_configure(GtkWidget *mem_view,
 		tilem_calc_emulator_unlock(emu);
 	}
 
+	cols = gtk_tree_view_get_columns(GTK_TREE_VIEW(mem_view));
+	old_rowsize = (g_list_length(cols) - 1) / 2;
+	if (old_rowsize != rowsize)
+		for (l = g_list_next(cols); l; l = l->next)
+			gtk_tree_view_remove_column(GTK_TREE_VIEW(mem_view),
+			                            l->data);
+	g_list_free(cols);
+
 	model = tilem_mem_model_new(emu, rowsize, start, logical);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(mem_view), model);
 	g_object_unref(model);
+
+	if (old_rowsize != rowsize)
+		create_columns(mem_view, rowsize);
 
 	fixed_tree_view_init(mem_view, MM_COLUMNS_PER_BYTE,
 	                     MM_COL_ADDRESS_0, "DD:DDDD ",
