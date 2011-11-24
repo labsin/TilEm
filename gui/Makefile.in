@@ -60,6 +60,7 @@ objects = tilem2.o \
 	link.o \
 	macro.o \
 	memmodel.o \
+	memview.o \
 	memory.o \
 	pbar.o \
 	preferences.o \
@@ -93,12 +94,16 @@ tilem2.o: tilem2.c icons.h files.h $(common_headers)
 	$(compile) -c $(srcdir)/tilem2.c
 
 # Debugger
-debugger.o: debugger.c disasmview.h memmodel.h $(common_headers)
+debugger.o: debugger.c disasmview.h $(common_headers)
 	$(compile) -c $(srcdir)/debugger.c
 
 # Disassembly view
 disasmview.o: disasmview.c disasmview.h $(common_headers)
 	$(compile) -c $(srcdir)/disasmview.c
+
+# Memory view
+memview.o: memview.c memmodel.h $(common_headers)
+	$(compile) -c $(srcdir)/memview.c
 
 # Tree model interface for calc memory
 memmodel.o: memmodel.c memmodel.h $(common_headers)

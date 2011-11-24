@@ -125,6 +125,18 @@ void tilem_debugger_change_breakpoint(TilemDebugger *dbg,
 void tilem_debugger_edit_breakpoints(TilemDebugger *dbg);
 
 
+/* Memory view */
+
+/* Create the memory view */
+GtkWidget *tilem_debugger_mem_view_new(TilemDebugger *dbg);
+
+/* Set memory view settings */
+void tilem_debugger_mem_view_configure(GtkWidget *mem_view,
+                                       TilemCalcEmulator *emu,
+                                       int rowsize, int start,
+                                       gboolean logical);
+
+
 /* Keypad dialog */
 
 typedef struct _TilemKeypadDialog {

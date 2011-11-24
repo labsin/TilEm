@@ -33,7 +33,6 @@
 
 #include "gui.h"
 #include "disasmview.h"
-#include "memmodel.h"
 #include "files.h"
 #include "msgbox.h"
 #include "fixedtreeview.h"
@@ -390,6 +389,27 @@ static void action_view_keypad(GtkToggleAction *action, gpointer data)
 		gtk_widget_hide(dbg->keypad_dialog->window);
 }
 
+/* Set memory addressing mode */
+static void action_mem_mode(GtkRadioAction *action,
+                            G_GNUC_UNUSED GtkRadioAction *current,
+                            gpointer data)
+{
+	TilemDebugger *dbg = data;
+
+	dbg->mem_logical = gtk_radio_action_get_current_value(action);
+
+	tilem_disasm_view_set_logical(TILEM_DISASM_VIEW(dbg->disasm_view),
+	                              dbg->mem_logical);
+
+	tilem_debugger_mem_view_configure(dbg->mem_view,
+	                                  dbg->emu, dbg->mem_rowsize,
+	                                  dbg->mem_start, dbg->mem_logical);
+
+	tilem_config_set("debugger",
+	                 "mem_logical/b", dbg->mem_logical,
+	                 NULL);
+}
+
 /* Prompt for an address to view */
 static void action_go_to_address(G_GNUC_UNUSED GtkAction *action, gpointer data)
 {
@@ -468,6 +488,7 @@ static void action_next_stack_entry(G_GNUC_UNUSED GtkAction *action,
 	go_to_stack_pos(dbg, dbg->stack_index + 1);
 }
 
+
 static const GtkActionEntry run_action_ents[] =
 	{{ "pause", GTK_STOCK_MEDIA_PAUSE, "_Pause", "Escape",
 	   "Pause emulation", G_CALLBACK(action_pause) }};
@@ -497,6 +518,12 @@ static const GtkActionEntry paused_action_ents[] =
 	 { "next-stack-entry", GTK_STOCK_GO_DOWN, "_Next Stack Entry", "<alt>Page_Down",
 	   "Jump to the next address in the stack",
 	   G_CALLBACK(action_next_stack_entry) }};
+
+static const GtkRadioActionEntry mem_mode_ents[] =
+	{{ "view-logical", 0, "_Logical Addresses", 0,
+	   "Show contents of the current Z80 address space", 1 },
+	 { "view-absolute", 0, "_Absolute Addresses", 0,
+	   "Show all memory contents", 0 }};
 
 static const GtkActionEntry misc_action_ents[] =
 	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
@@ -659,39 +686,6 @@ static gboolean delete_win(G_GNUC_UNUSED GtkWidget *w,
 	return TRUE;
 }
 
-/* Cell edited in memory view */
-static void hex_cell_edited(GtkCellRendererText *renderer,
-                            gchar *pathstr, gchar *text,
-                            gpointer data)
-{
-	TilemDebugger *dbg = data;
-	GtkTreeModel *model;
-	GtkTreePath *path;
-	GtkTreeIter iter;
-	byte *bptr = NULL;
-	int col;
-	int value;
-	char *end;
-
-	value = strtol(text, &end, 16);
-	if (end == text || *end != 0)
-		return;
-
-	col = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),
-	                                        "tilem-mem-column"));
-
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(dbg->mem_view));
-	path = gtk_tree_path_new_from_string(pathstr);
-	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_path_free(path);
-
-	gtk_tree_model_get(model, &iter, MM_COL_BYTE_PTR(col), &bptr, -1);
-	g_return_if_fail(bptr != NULL);
-
-	*bptr = (byte) value;
-	tilem_debugger_refresh(dbg, TRUE);
-}
-
 /* Create table of widgets for editing registers */
 static GtkWidget *create_registers(TilemDebugger *dbg)
 {
@@ -796,61 +790,6 @@ static GtkWidget *create_stack_view()
 	return treeview;
 }
 
-/* Create the GtkTreeView to show the memory */
-static GtkWidget *create_memory_view(TilemDebugger *dbg)
-{
-	GtkCellRenderer     *renderer;
-	GtkTreeViewColumn   *column;
-	GtkWidget           *treeview;
-	int i;
-	int width = dbg->mem_rowsize;
-
-	/* Create the memory list tree view and set title invisible */
-	treeview = gtk_tree_view_new();
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
-	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(treeview), TRUE);
-	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeview), TRUE);
-
-	/* Create the columns */
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes
-		("ADDR", renderer, "text", MM_COL_ADDRESS(0), NULL);
-
-	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
-
-	for (i = 0; i < width; i++) {
-		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes
-			(NULL, renderer,
-			 "text", MM_COL_HEX(i),
-			 "editable", MM_COL_EDITABLE(i),
-			 NULL);
-
-		g_object_set_data(G_OBJECT(renderer), "tilem-mem-column",
-		                  GINT_TO_POINTER(i));
-		g_signal_connect(renderer, "edited",
-		                 G_CALLBACK(hex_cell_edited), dbg);
-
-		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-		gtk_tree_view_column_set_expand(column, (i == width - 1));
-		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
-	}
-
-	for (i = 0; i < width; i++) {
-		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes
-			(NULL, renderer, "text", MM_COL_CHAR(i), NULL);
-
-		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-		gtk_tree_view_column_set_expand(column, (i == width - 1));
-		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
-	}
-
-	return treeview;
-}
-
 /* Create a new scrolled window with sensible default settings. */
 static GtkWidget *new_scrolled_window(GtkWidget *contents)
 {
@@ -881,6 +820,9 @@ static const char uidesc[] =
 	" </menu>"
 	" <menu action='view-menu'>"
 	"  <menuitem action='view-keypad'/>"
+	"  <separator/>"
+	"  <menuitem action='view-logical'/>"
+	"  <menuitem action='view-absolute'/>"
 	" </menu>"
 	" <menu action='go-menu'>"
 	"  <menuitem action='go-to-address'/>"
@@ -915,10 +857,6 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	dbg->emu = emu;
 	dbg->dasm = tilem_disasm_new();
 
-	dbg->mem_rowsize = 8;
-	dbg->mem_start = 0;
-	dbg->mem_logical = TRUE;
-
 	dbg->last_bp_type = TILEM_DB_BREAK_LOGICAL;
 	dbg->last_bp_mode = TILEM_DB_BREAK_EXEC;
 
@@ -929,7 +867,15 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	tilem_config_get("debugger",
 	                 "width/i", &defwidth,
 	                 "height/i", &defheight,
+	                 "mem_width/i", &dbg->mem_rowsize,
+	                 "mem_start/i", &dbg->mem_start,
+	                 "mem_logical/b=1", &dbg->mem_logical,
 	                 NULL);
+
+	if (dbg->mem_rowsize <= 0)
+		dbg->mem_rowsize = 8;
+	if (dbg->mem_start < 0 || dbg->mem_start >= dbg->mem_rowsize)
+		dbg->mem_start = 0;
 
 	if (defwidth <= 0 || defheight <= 0) {
 		defwidth = 600;
@@ -953,10 +899,16 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	gtk_action_group_add_actions(dbg->run_actions, run_action_ents,
 	                             G_N_ELEMENTS(run_action_ents), dbg);
 	gtk_ui_manager_insert_action_group(uimgr, dbg->run_actions, 0);
+
 	dbg->paused_actions = gtk_action_group_new("Debug");
 	gtk_action_group_add_actions(dbg->paused_actions, paused_action_ents,
 	                             G_N_ELEMENTS(paused_action_ents), dbg);
+	gtk_action_group_add_radio_actions(dbg->paused_actions, mem_mode_ents,
+	                                   G_N_ELEMENTS(mem_mode_ents),
+	                                   dbg->mem_logical,
+	                                   G_CALLBACK(action_mem_mode), dbg);
 	gtk_ui_manager_insert_action_group(uimgr, dbg->paused_actions, 0);
+
 	dbg->misc_actions = gtk_action_group_new("Debug");
 	gtk_action_group_add_actions(dbg->misc_actions, misc_action_ents,
 	                             G_N_ELEMENTS(misc_action_ents), dbg);
@@ -988,12 +940,14 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	/* Disassembly view */
 
 	dbg->disasm_view = tilem_disasm_view_new(dbg);
+	tilem_disasm_view_set_logical(TILEM_DISASM_VIEW(dbg->disasm_view),
+	                              dbg->mem_logical);
 	sw = new_scrolled_window(dbg->disasm_view);
 	gtk_paned_pack1(GTK_PANED(vpaned), sw, TRUE, TRUE);
 
 	/* Memory view */
 
-	dbg->mem_view = create_memory_view(dbg);
+	dbg->mem_view = tilem_debugger_mem_view_new(dbg);
 	sw = new_scrolled_window(dbg->mem_view);
 	gtk_paned_pack2(GTK_PANED(vpaned), sw, TRUE, TRUE);
 
@@ -1248,7 +1202,6 @@ void tilem_debugger_hide(TilemDebugger *dbg)
 void tilem_debugger_calc_changed(TilemDebugger *dbg)
 {
 	TilemCalc *calc;
-	GtkTreeModel *model;
 
 	g_return_if_fail(dbg != NULL);
 
@@ -1263,17 +1216,9 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg)
 
 	load_default_symbols(dbg);
 
-	model = tilem_mem_model_new(dbg->emu, dbg->mem_rowsize,
-	                            dbg->mem_start, dbg->mem_logical);
-	gtk_tree_view_set_model(GTK_TREE_VIEW(dbg->mem_view), model);
-	g_object_unref(model);
-
-	fixed_tree_view_init(dbg->mem_view, MM_COLUMNS_PER_BYTE,
-	                     MM_COL_ADDRESS_0, "DD:DDDD ",
-	                     MM_COL_HEX_0, "DD ",
-	                     MM_COL_CHAR_0, "M ",
-	                     MM_COL_EDITABLE_0, TRUE,
-	                     -1);
+	tilem_debugger_mem_view_configure(dbg->mem_view,
+	                                  dbg->emu, dbg->mem_rowsize,
+	                                  dbg->mem_start, dbg->mem_logical);
 
 	tilem_debugger_refresh(dbg, TRUE);
 
