@@ -275,5 +275,10 @@
 * - Repare the file loading inside a macro (it was broken by new task manager).
 * - Delete a lot of unused functions/printf.
 * - Remove debuginfo.h file.
+* ---22/11/11---
+* - Benjamin finished the last things left to do on receive dialog. Nice!
+* ---25/11/11---
+* - New command line parser. Now tilem2 uses g_option from the glib instead of getopt. Easy handling of long options. Do not need to take care about correct parsing. A lot of new options are provided but not implemented !
+* - Delete args.c (old _but working well _ cmd line parser using getopt) and TilemCmdlineArgs structure from gui.h.
 */
 

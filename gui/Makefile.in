@@ -40,7 +40,6 @@ objects = tilem2.o \
 	address.o \
 	animatedgif.o \
 	animation.o \
-	args.o \
 	breakpoints.o \
 	config.o \
 	charmap.o \
@@ -164,10 +163,6 @@ link.o: link.c emucore.h ti81prg.h $(common_headers)
 # Handle macro
 macro.o: macro.c $(common_headers)
 	$(compile) -c $(srcdir)/macro.c
-
-# Handle args
-args.o: args.c $(common_headers)
-	$(compile) -c $(srcdir)/args.c
 
 # Create and modify animated gif
 gifencod.o: gifencod.c gifencod.h

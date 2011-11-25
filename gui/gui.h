@@ -26,17 +26,6 @@
 
 #include "gtk-compat.h"
 
-/* This struct is used to handle cmd line args */
-typedef struct _TilemCmdlineArg {
-	char *SkinFileName;		/* The filename of the skin (or NULL)*/
-	char *RomName;  		/* The rom filename (or NULL)*/
-	char *SavName; 			/* The filename of the savestate (or NULL)*/
-	char *FileToLoad;  		/* The filename of the file to load (or NULL)*/
-	char *MacroToPlay;  		/* The filename of the macro to play (or NULL) */
-	/* Flags */
-	gboolean isStartingSkinless; 
-} TilemCmdlineArgs;
-
 /* Screenshot view (widgets and flags) */
 typedef struct _TilemScreenshotDialog {
 	TilemCalcEmulator *emu;
@@ -295,20 +284,6 @@ void tilem_link_receive_group(TilemCalcEmulator *emu,
 /* Create or update the progress bar */
 void progress_bar_update(TilemCalcEmulator* emu);
 
-
-/* ##### args.c ##### */
-
-/* Help (usage: how to use in command line) */
-void tilem_cmdline_help(char *name, int ret) ;
-
-/* Create a structure to handle cmdline args and set all fields to null */
-TilemCmdlineArgs* tilem_cmdline_new();
-
-/* Command line argument handling */
-int tilem_cmdline_get_args(int argc, char* argv[], TilemCmdlineArgs* cmdline) ;
-
-/* Create the SavName */
-void create_savname(TilemCmdlineArgs* cmdline) ;
 
 
 /* ##### animatedgif.c ##### */
