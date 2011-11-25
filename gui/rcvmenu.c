@@ -61,7 +61,7 @@ enum
 /* Convert UTF-8 to filename encoding.  Use ASCII digits in place of
    subscripts if necessary.  If conversion fails utterly, fall back to
    the UTF-8 name, which is broken but better than nothing. */
-static char * utf8_to_filename(const char *utf8str)
+char * utf8_to_filename(const char *utf8str)
 {
 	gchar *result, *ibuf, *obuf, *p;
 	gsize icount, ocount;
@@ -125,7 +125,7 @@ static char * utf8_to_restricted_utf8(const char *utf8str)
 }
 
 /* Generate default filename (UTF-8) for a variable */
-static char * get_default_filename(const TilemVarEntry *tve)
+char * get_default_filename(const TilemVarEntry *tve)
 {
 	GString *str = g_string_new("");
 
@@ -666,5 +666,38 @@ void popup_receive_menu(TilemEmulatorWindow *ewin)
 		gtk_widget_grab_focus(ewin->emu->rcvdlg->treeview);
 		gtk_window_present(GTK_WINDOW(ewin->emu->rcvdlg->window));
 	}
+}
+
+
+void tilem_link_get_var_at_startup_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data,
+                               G_GNUC_UNUSED gboolean cancelled){
+	gchar* cl_getvar = (gchar*) data;	
+	if(!emu->rcvdlg) {
+		printf("error, rcvdlg is null\n");
+		return ;
+	}
+	GList* l;
+
+	for (l = (GList*) emu->rcvdlg->vars; l; l = l->next) {
+		TilemVarEntry * tve = l->data;
+		printf("var name : %s\n", tve->name_str);
+		if(g_strcmp0(tve->name_str, cl_getvar) == 0) {
+			gchar* dir = NULL;
+			tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);
+			if (!dir) dir = g_get_current_dir();
+			gchar* default_filename = get_default_filename(tve);
+			gchar* default_filename_f = utf8_to_filename(default_filename);
+			gchar* filename = g_build_filename(dir, default_filename_f, NULL);
+			tilem_link_receive_file(emu, tve, filename);
+			printf("Var name : %s  is saved as %s\n", tve->name_str, filename);
+		}
+	}
+	gtk_widget_hide(emu->rcvdlg->window);
+
+}
+
+gboolean tilem_link_get_var_at_startup(TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data) {
+	
+	return TRUE;
 }
 

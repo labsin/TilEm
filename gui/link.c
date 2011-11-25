@@ -1177,3 +1177,4 @@ void tilem_link_receive_file(TilemCalcEmulator *emu,
 	tilem_link_receive_group(emu, l, destination);
 	g_slist_free(l);
 }
+

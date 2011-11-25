@@ -279,6 +279,7 @@ void tilem_link_receive_group(TilemCalcEmulator *emu,
                               const char *destination);
 
 
+
 /* ##### pbar.c ##### */
 
 /* Create or update the progress bar */
@@ -345,3 +346,8 @@ void tilem_receive_dialog_free(TilemReceiveDialog *rcvdlg);
    list.  Display the dialog if it's currently hidden. */
 void tilem_receive_dialog_update(TilemReceiveDialog *rcvdlg,
                                  GSList *varlist);
+
+void tilem_link_get_var_at_startup_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled);
+
+gboolean tilem_link_get_var_at_startup(TilemCalcEmulator *emu, gpointer data);
+	

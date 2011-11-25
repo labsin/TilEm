@@ -280,5 +280,6 @@
 * ---25/11/11---
 * - New command line parser. Now tilem2 uses g_option from the glib instead of getopt. Easy handling of long options. Do not need to take care about correct parsing. A lot of new options are provided but not implemented !
 * - Delete args.c (old _but working well _ cmd line parser using getopt) and TilemCmdlineArgs structure from gui.h.
+* - Add the possibility to getvar a file at startup. I had to use a weird solution to do this with task manager. But it's working :)
 */
 

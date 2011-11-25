@@ -70,8 +70,8 @@ static GOptionEntry entries[] =
 	{ "debug", 'd', 0, G_OPTION_ARG_NONE, &cl_debug_flag, "Launch debugger", NULL },
 	{ "listing-file", 'L', 0, G_OPTION_ARG_STRING, &cl_listingfile, "Load listing file in the debugger", NULL },
 	{ "symbol-file", 'S', 0, G_OPTION_ARG_STRING, &cl_symbolfile, "Load symbol file in the debugger", NULL },
-	{ "link", 0, 0, G_OPTION_ARG_STRING, &cl_link, "Link cable", NULL },
 	{ "set-full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, "Limit the speed", NULL },
+	{ "link", 0, 0, G_OPTION_ARG_STRING, &cl_link, "Link cable", NULL },
 	{ "batch", 0, 0, G_OPTION_ARG_FILENAME, &cl_batch, "Launch this batch file", NULL },
 	{ "no-gui", 0, 0, G_OPTION_ARG_NONE, &cl_nogui_flag, "Don't display the gui", NULL },
 	{ "save", 0, 0, G_OPTION_ARG_NONE, &cl_save_flag, "Save state (if running in batch mode and the program finishes normally) ", NULL },
@@ -211,7 +211,8 @@ int main(int argc, char **argv)
 	ticables_library_init();
 	tifiles_library_init();
 	ticalcs_library_init();
-		
+	
+	/* >>>> Command line */
 	if (cl_file_to_load) /* Priority : High */
 		tilem_link_send_file(emu, cl_file_to_load, -1, TRUE, TRUE);
 	if (cl_macro_to_run) { /* Priority : Medium */
@@ -220,6 +221,14 @@ int main(int argc, char **argv)
 	}
 	if(cl_debug_flag) /* Priority : low */
 		launch_debugger(emu->ewin);
+	if(cl_getvar) {
+		tilem_link_get_dirlist(emu);	
+		tilem_calc_emulator_begin(emu, &tilem_link_get_var_at_startup, &tilem_link_get_var_at_startup_finished, cl_getvar); 
+		
+	
+	}
+	/* <<<< */
+		
 
 	g_signal_connect(emu->ewin->window, "destroy",
 	                 G_CALLBACK(gtk_main_quit), NULL);
