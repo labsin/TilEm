@@ -49,7 +49,6 @@ static gboolean cl_debug_flag = FALSE;
 static gchar* cl_listingfile = NULL;
 static gchar* cl_symbolfile = NULL;
 static gchar* cl_link = NULL;
-static gboolean cl_limitspeed_flag = FALSE;
 static gboolean cl_fullspeed_flag = FALSE;
 static gchar* cl_batch = NULL;
 static gboolean cl_nogui_flag = FALSE;
@@ -72,8 +71,7 @@ static GOptionEntry entries[] =
 	{ "listing-file", 'L', 0, G_OPTION_ARG_STRING, &cl_listingfile, "Load listing file in the debugger", NULL },
 	{ "symbol-file", 'S', 0, G_OPTION_ARG_STRING, &cl_symbolfile, "Load symbol file in the debugger", NULL },
 	{ "link", 0, 0, G_OPTION_ARG_STRING, &cl_link, "Link cable", NULL },
-	{ "limit-speed", 0, 0, G_OPTION_ARG_NONE, &cl_limitspeed_flag, "Limit the speed", NULL },
-	{ "full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, "Run as fast as possible", NULL },
+	{ "set-full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, "Limit the speed", NULL },
 	{ "batch", 0, 0, G_OPTION_ARG_FILENAME, &cl_batch, "Launch this batch file", NULL },
 	{ "no-gui", 0, 0, G_OPTION_ARG_NONE, &cl_nogui_flag, "Don't display the gui", NULL },
 	{ "save", 0, 0, G_OPTION_ARG_NONE, &cl_save_flag, "Save state (if running in batch mode and the program finishes normally) ", NULL },
@@ -191,15 +189,22 @@ int main(int argc, char **argv)
 
 	emu->ewin = tilem_emulator_window_new(emu);
 
+	/* >>>> Command line */
 	if (cl_skinfile)
 		tilem_emulator_window_set_skin(emu->ewin, cl_skinfile);
 
-	if (cl_skinless_flag)
-		tilem_emulator_window_set_skin_disabled(emu->ewin, TRUE);
+	tilem_emulator_window_set_skin_disabled(emu->ewin, cl_skinless_flag);
+	/* <<<< */
 
 	gtk_widget_show(emu->ewin->window);
 
 	tilem_calc_emulator_run(emu);
+
+	/* >>>> Command line */
+	if(cl_reset_flag) 
+		tilem_calc_emulator_reset(emu);
+	tilem_calc_emulator_set_limit_speed(emu, !cl_fullspeed_flag);
+	/* <<<< */
 	
 	tilem_keybindings_init(emu, emu->calc->hw.name);
 
@@ -207,12 +212,14 @@ int main(int argc, char **argv)
 	tifiles_library_init();
 	ticalcs_library_init();
 		
-	if (cl_file_to_load) /* Given as parameter ? */
+	if (cl_file_to_load) /* Priority : High */
 		tilem_link_send_file(emu, cl_file_to_load, -1, TRUE, TRUE);
-	if (cl_macro_to_run) { /* Given as parameter ? */
+	if (cl_macro_to_run) { /* Priority : Medium */
 		printf("macro to load : %s\n", cl_macro_to_run);
 		tilem_macro_load(emu, cl_macro_to_run); 		
 	}
+	if(cl_debug_flag) /* Priority : low */
+		launch_debugger(emu->ewin);
 
 	g_signal_connect(emu->ewin->window, "destroy",
 	                 G_CALLBACK(gtk_main_quit), NULL);
