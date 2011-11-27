@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -84,9 +84,11 @@ enum {
 #define TIMER_INT2A (TILEM_NUM_SYS_TIMERS + 2)
 #define TIMER_INT2B (TILEM_NUM_SYS_TIMERS + 3)
 #define TIMER_LCD_WAIT (TILEM_NUM_SYS_TIMERS + 4)
-#define NUM_HW_TIMERS 4
+#define TIMER_FREEZE_LINK_PORT (TILEM_NUM_SYS_TIMERS + 5)
+#define NUM_HW_TIMERS 5
 
-#define HW_TIMER_NAMES { "int1", "int2a", "int2b", "lcd_wait" }
+#define HW_TIMER_NAMES { "int1", "int2a", "int2b", "lcd_wait", \
+			 "freeze_link_port" }
 
 void xn_reset(TilemCalc* calc);
 void xn_stateloaded(TilemCalc* calc, int savtype);

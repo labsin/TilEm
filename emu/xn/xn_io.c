@@ -63,6 +63,9 @@ byte xn_z80_in(TilemCalc* calc, dword port)
 
 	switch(port&0xff) {
 	case 0x00:
+		if (tilem_z80_timer_running(calc, TIMER_FREEZE_LINK_PORT))
+			return(3);
+
 		v = tilem_linkport_get_lines(calc);
 		v |= (calc->linkport.lines << 4);
 		return(v);
@@ -374,6 +377,17 @@ void xn_z80_out(TilemCalc* calc, dword port, byte value)
 
 	switch(port&0xff) {
 	case 0x00:
+		if (value == 0
+		    && calc->linkport.lines != 0
+		    && calc->linkport.extlines == 0) {
+			/* Kludge to work around TI's broken
+			   RecAByteIO implementation on 2.46+, which
+			   will fail if the sending device is too
+			   fast. */
+			tilem_z80_set_timer(calc, TIMER_FREEZE_LINK_PORT,
+			                    100, 0, 0);
+		}
+
 		tilem_linkport_set_lines(calc, value);
 		break;
 
