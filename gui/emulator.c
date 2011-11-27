@@ -360,9 +360,6 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	fclose(romfile);
 	if (savfile) fclose(savfile);
 
-	calc->lcd.emuflags |= TILEM_LCD_REQUIRE_DELAY;
-	calc->flash.emuflags |= TILEM_FLASH_REQUIRE_DELAY;
-
 	/* Switch to new calc */
 
 	tilem_calc_emulator_lock(emu);
