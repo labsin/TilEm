@@ -23,6 +23,7 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <ticalcs.h>
@@ -72,14 +73,28 @@ const char * model_to_name(int model)
 /* Convert model name to a model ID. */
 int name_to_model(const char *name)
 {
+	char *s;
 	const TilemHardware **models;
-	int nmodels, i;
+	int nmodels, i, j;
+
+	s = g_new(char, strlen(name) + 1);
+	for (i = j = 0; name[i]; i++) {
+		if (name[i] == '+')
+			s[j++] = 'p';
+		else if (name[i] != '-')
+			s[j++] = g_ascii_tolower(name[i]);
+	}
+	s[j] = 0;
 
 	tilem_get_supported_hardware(&models, &nmodels);
-	for (i = 0; i < nmodels; i++)
-		if (!g_ascii_strcasecmp(name, models[i]->name))
+	for (i = 0; i < nmodels; i++) {
+		if (!strcmp(s, models[i]->name)) {
+			g_free(s);
 			return models[i]->model_id;
+		}
+	}
 
+	g_free(s);
 	return 0;
 }
 
