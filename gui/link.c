@@ -918,9 +918,6 @@ static gboolean write_output(FileContent **vars, FlashContent **apps,
 	}
 	else if (nvars == 0 && napps == 1) {
 		e = tifiles_file_write_flash(filename, apps[0]);
-		e = tifiles_file_write_flash("test1.8xk", apps[0]);
-		e = tifiles_file_write_flash("test2.8xk", apps[0]);
-		e = tifiles_file_write_flash("test3.8xk", apps[0]);
 	}
 	else if (nvars == 1 && napps == 0) {
 		e = tifiles_file_write_regular(filename, vars[0], NULL);
