@@ -37,7 +37,7 @@
 /* CMD LINE OPTIONS */
 static gchar* cl_romfile = NULL;
 static gchar* cl_skinfile = NULL;
-static gint cl_model = 2;
+static gchar* cl_model = NULL;
 static gchar* cl_statefile = NULL;
 static gchar** cl_files_to_load = NULL;
 static gboolean cl_skinless_flag = FALSE;
@@ -52,7 +52,7 @@ static GOptionEntry entries[] =
 {
 	{ "rom", 'r', 0, G_OPTION_ARG_FILENAME, &cl_romfile, "The rom file to run", "FILE" },
 	{ "skin", 'k', 0, G_OPTION_ARG_FILENAME, &cl_skinfile, "The skin file to use", "FILE" },
-	{ "model", 'm', 0, G_OPTION_ARG_INT, &cl_model, "The model to use", "NAME" },
+	{ "model", 'm', 0, G_OPTION_ARG_STRING, &cl_model, "The model to use", "NAME" },
 	{ "state-file", 's', 0, G_OPTION_ARG_FILENAME, &cl_statefile, "The state-file to use", "FILE" },
 	{ "without-skin", 'l', 0, G_OPTION_ARG_NONE, &cl_skinless_flag, "Start in skinless mode", NULL },
 	{ "reset", 0, 0, G_OPTION_ARG_NONE, &cl_reset_flag, "Reset the calc at startup", NULL },
@@ -69,18 +69,19 @@ static GOptionEntry entries[] =
 
 static void load_initial_rom(TilemCalcEmulator *emu,
                              const char *cmdline_rom_name,
-                             const char *cmdline_state_name)
+                             const char *cmdline_state_name,
+                             int model)
 {
 	GError *err = NULL;
 	char *modelname;
-	int model;
 
 	/* If a ROM file is specified on the command line, use that
 	   (and no other) */
 
 	if (cmdline_rom_name) {
 		if (tilem_calc_emulator_load_state(emu, cmdline_rom_name,
-		                                   cmdline_state_name, 0, &err))
+		                                   cmdline_state_name,
+		                                   model, &err))
 			return;
 		else if (!err)
 			exit(0);
@@ -91,8 +92,14 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 	}
 
 	/* Try to load the most recently used model */
-	tilem_config_get("recent", "last_model/s", &modelname, NULL);
-	if (modelname && (model = name_to_model(modelname))) {
+
+	if (!model) {
+		tilem_config_get("recent", "last_model/s", &modelname, NULL);
+		if (modelname)
+			model = name_to_model(modelname);
+	}
+
+	if (model) {
 		if (tilem_calc_emulator_load_state(emu, NULL, NULL,
 		                                   model, &err))
 			return;
@@ -106,30 +113,6 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 		}
 	}
 
-	#if 0
-	/* Try to load the most recently used rom */
-	char* rom_name = NULL;
-	tilem_config_get("recent", "rom/f", &rom_name, NULL);
-	if(rom_name) {
-		if (tilem_calc_emulator_load_state(emu, rom_name, NULL, 0, &err)) {
-			g_free(rom_name);
-			return;
-		} else if (!err) {
-			g_free(rom_name);
-			exit(0);
-		} else {
-			g_free(rom_name);
-			messagebox01(NULL, GTK_MESSAGE_ERROR,
-			             "Unable to load calculator rom",
-			             "%s", err->message);
-			g_clear_error(&err);
-		}
-	}
-	#endif
-	
-
-	
-
 	/* Prompt user for a ROM file */
 
 	while (!emu->calc) {
@@ -142,6 +125,9 @@ int main(int argc, char **argv)
 {
 	TilemCalcEmulator* emu;
 	char *menurc_path;
+	GOptionContext *context;
+	GError *error = NULL;
+	int model = 0;
 
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
@@ -158,20 +144,26 @@ int main(int argc, char **argv)
 	emu = tilem_calc_emulator_new();
 	
 	/* >>>> CMD LINE PARSING */
-	GError *error = NULL;
-	GOptionContext *context;
-
 	context = g_option_context_new ("-= TIlEm Is a Linux EMulator =-");
 	g_option_context_add_main_entries (context, entries, NULL);
 	g_option_context_add_group (context, gtk_get_option_group (TRUE));
 	if (!g_option_context_parse (context, &argc, &argv, &error))
 	{
-		g_print ("option parsing failed: %s\n", error->message);
+		g_print ("%s: %s\n", g_get_prgname(), error->message);
 		exit (1);
 	}
 	/* <<<< */
 
-	load_initial_rom(emu, cl_romfile, cl_statefile);
+	if (cl_model) {
+		model = name_to_model(cl_model);
+		if (!model) {
+			g_printerr("%s: unknown model %s\n",
+			           g_get_prgname(), cl_model);
+			return 1;
+		}
+	}
+
+	load_initial_rom(emu, cl_romfile, cl_statefile, model);
 
 	emu->ewin = tilem_emulator_window_new(emu);
 
