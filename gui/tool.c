@@ -98,6 +98,149 @@ int name_to_model(const char *name)
 	return 0;
 }
 
+/* Convert TilEm model ID to tifiles2 model ID. */
+CalcModel model_to_calcmodel(int model)
+{
+	switch (model) {
+	case TILEM_CALC_TI73:
+		return CALC_TI73;
+
+	case TILEM_CALC_TI82:
+		return CALC_TI82;
+
+	case TILEM_CALC_TI83:
+	case TILEM_CALC_TI76:
+		return CALC_TI83;
+
+	case TILEM_CALC_TI83P:
+	case TILEM_CALC_TI83P_SE:
+		return CALC_TI83P;
+
+	case TILEM_CALC_TI84P:
+	case TILEM_CALC_TI84P_SE:
+	case TILEM_CALC_TI84P_NSPIRE:
+		return CALC_TI84P;
+
+	case TILEM_CALC_TI85:
+		return CALC_TI85;
+
+	case TILEM_CALC_TI86:
+		return CALC_TI86;
+
+	default:
+		return CALC_NONE;
+	}
+}
+
+/* Convert tifiles2 model ID to TilEm model ID. */
+int calcmodel_to_model(CalcModel model)
+{
+	switch (model) {
+	case CALC_TI73:
+		return TILEM_CALC_TI73;
+	case CALC_TI82:
+		return TILEM_CALC_TI82;
+	case CALC_TI83:
+		return TILEM_CALC_TI83;
+	case CALC_TI83P:
+		return TILEM_CALC_TI83P;
+	case CALC_TI84P:
+		return TILEM_CALC_TI84P;
+	case CALC_TI85:
+		return TILEM_CALC_TI85;
+	case CALC_TI86:
+		return TILEM_CALC_TI86;
+	default:
+		return 0;
+	}
+}
+
+/* Get model ID for a given file. */
+int file_to_model(const char *name)
+{
+	const char *p;
+	TigContent *tig;
+	int model;
+
+	p = strrchr(name, '.');
+	if (!p || strlen(p) < 4 || strchr(p, '/') || strchr(p, '\\'))
+		return 0;
+	p++;
+
+	if (!g_ascii_strcasecmp(p, "prg"))
+		return TILEM_CALC_TI81;
+
+	if (!g_ascii_strncasecmp(p, "73", 2))
+		return TILEM_CALC_TI73;
+	if (!g_ascii_strncasecmp(p, "82", 2))
+		return TILEM_CALC_TI82;
+	if (!g_ascii_strncasecmp(p, "83", 2))
+		return TILEM_CALC_TI83;
+	if (!g_ascii_strncasecmp(p, "8x", 2))
+		return TILEM_CALC_TI83P;
+	if (!g_ascii_strncasecmp(p, "85", 2))
+		return TILEM_CALC_TI85;
+	if (!g_ascii_strncasecmp(p, "86", 2))
+		return TILEM_CALC_TI86;
+
+	if (!g_ascii_strcasecmp(p, "tig")
+	    || !g_ascii_strcasecmp(p, "zip")) {
+		/* read file and see what tifiles thinks the type is */
+		tig = tifiles_content_create_tigroup(CALC_NONE, 0);
+		tifiles_file_read_tigroup(name, tig);
+		model = calcmodel_to_model(tig->model);
+		tifiles_content_delete_tigroup(tig);
+		return model;
+	}
+
+	return 0;
+}
+
+/* Get "base" model for file type support. */
+int model_to_base_model(int calc_model)
+{
+	switch (calc_model) {
+	case TILEM_CALC_TI83:
+	case TILEM_CALC_TI76:
+		return TILEM_CALC_TI83;
+
+	case TILEM_CALC_TI83P:
+	case TILEM_CALC_TI83P_SE:
+	case TILEM_CALC_TI84P:
+	case TILEM_CALC_TI84P_SE:
+	case TILEM_CALC_TI84P_NSPIRE:
+		return TILEM_CALC_TI83P;
+
+	default:
+		return calc_model;
+	}
+}
+
+/* Check if calc is compatible with given file type. */
+gboolean model_supports_file(int calc_model, int file_model)
+{
+	calc_model = model_to_base_model(calc_model);
+	file_model = model_to_base_model(file_model);
+
+	if (file_model == calc_model)
+		return TRUE;
+
+	if (file_model == TILEM_CALC_TI82
+	    && (calc_model == TILEM_CALC_TI83
+	        || calc_model == TILEM_CALC_TI83P))
+		return TRUE;
+
+	if (file_model == TILEM_CALC_TI83
+	    && (calc_model == TILEM_CALC_TI83P))
+		return TRUE;
+
+	if (file_model == TILEM_CALC_TI85
+	    && (calc_model == TILEM_CALC_TI86))
+		return TRUE;
+
+	return FALSE;
+}
+
 /* A popup which is used to let the user choose the model at startup */
 char choose_rom_popup(GtkWidget *parent_window, const char *filename,
                       char default_model)

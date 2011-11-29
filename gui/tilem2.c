@@ -67,13 +67,56 @@ static GOptionEntry entries[] =
 
 /* #########  MAIN  ######### */
 
+/* Order of preference for automatic model selection. */
+static const char model_search_order[] =
+	{ TILEM_CALC_TI81,
+	  TILEM_CALC_TI73,
+	  TILEM_CALC_TI82,
+	  TILEM_CALC_TI83,
+	  TILEM_CALC_TI76,
+	  TILEM_CALC_TI84P_SE,
+	  TILEM_CALC_TI84P,
+	  TILEM_CALC_TI83P_SE,
+	  TILEM_CALC_TI83P,
+	  TILEM_CALC_TI84P_NSPIRE,
+	  TILEM_CALC_TI85,
+	  TILEM_CALC_TI86, 0 };
+
+/* Check if given calc model should be used for these file types. */
+static gboolean check_file_types(int calc_model,
+                                 const int *file_models,
+                                 int nfiles)
+{
+	/* Only choose a calc model if it supports all of the given
+	   file types, and at least one of the files is of the calc's
+	   "preferred" type.  This means if we have a mixture of 82Ps
+	   and 83Ps, we can use either a TI-83 or TI-76.fr ROM image,
+	   but not a TI-83 Plus. */
+
+	gboolean preferred = FALSE;
+	int i;
+
+	calc_model = model_to_base_model(calc_model);
+
+	for (i = 0; i < nfiles; i++) {
+		if (file_models[i] == calc_model)
+			preferred = TRUE;
+		else if (!model_supports_file(calc_model, file_models[i]))
+			return FALSE;
+	}
+
+	return preferred;
+}
+
 static void load_initial_rom(TilemCalcEmulator *emu,
                              const char *cmdline_rom_name,
                              const char *cmdline_state_name,
+                             char **cmdline_files,
                              int model)
 {
 	GError *err = NULL;
 	char *modelname;
+	int nfiles, *file_models, i;
 
 	/* If a ROM file is specified on the command line, use that
 	   (and no other) */
@@ -91,13 +134,56 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 		}
 	}
 
-	/* Try to load the most recently used model */
+	/* Choose model by file names */
 
-	if (!model) {
+	if (!model && cmdline_files) {
+		nfiles = g_strv_length(cmdline_files);
+		file_models = g_new(int, nfiles);
+
+		/* determine model for each filename */
+		for (i = 0; i < nfiles; i++)
+			file_models[i] = file_to_model(cmdline_files[i]);
+
+		/* iterate over all known models... */
+		for (i = 0; model_search_order[i]; i++) {
+			model = model_search_order[i];
+
+			/* check if this model supports the named files */
+			if (!check_file_types(model, file_models, nfiles))
+				continue;
+
+			/* try to load model, but no error message if
+			   no ROM is present in config */
+			if (tilem_calc_emulator_load_state(emu, NULL, NULL,
+			                                   model, &err)) {
+				g_free(file_models);
+				return;
+			}
+			else if (!err)
+				exit(0);
+			else if (!g_error_matches(err, TILEM_EMULATOR_ERROR,
+			                          TILEM_EMULATOR_ERROR_NO_ROM)) {
+				messagebox01(NULL, GTK_MESSAGE_ERROR,
+				             "Unable to load calculator state",
+				             "%s", err->message);
+			}
+			g_clear_error(&err);
+		}
+
+		g_free(file_models);
+		model = 0;
+	}
+
+	/* If no model specified on command line (either explicitly or
+	   implicitly), then choose the most recently used model */
+
+	if (!model && !cmdline_files) {
 		tilem_config_get("recent", "last_model/s", &modelname, NULL);
 		if (modelname)
 			model = name_to_model(modelname);
 	}
+
+	/* Try to load the most recently used ROM for chosen model */
 
 	if (model) {
 		if (tilem_calc_emulator_load_state(emu, NULL, NULL,
@@ -163,7 +249,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	load_initial_rom(emu, cl_romfile, cl_statefile, model);
+	load_initial_rom(emu, cl_romfile, cl_statefile, cl_files_to_load, model);
 
 	emu->ewin = tilem_emulator_window_new(emu);
 

@@ -287,36 +287,7 @@ static void pbar_do_update()
 /* Get the calc model (compatible for ticalcs) */
 int get_calc_model(TilemCalc *calc)
 {
-	switch (calc->hw.model_id) {
-	case TILEM_CALC_TI73:
-		return CALC_TI73;
-
-	case TILEM_CALC_TI81:
-	case TILEM_CALC_TI82:
-		return CALC_TI82;
-
-	case TILEM_CALC_TI83:
-	case TILEM_CALC_TI76:
-		return CALC_TI83;
-
-	case TILEM_CALC_TI83P:
-	case TILEM_CALC_TI83P_SE:
-		return CALC_TI83P;
-
-	case TILEM_CALC_TI84P:
-	case TILEM_CALC_TI84P_SE:
-	case TILEM_CALC_TI84P_NSPIRE:
-		return CALC_TI84P;
-
-	case TILEM_CALC_TI85:
-		return CALC_TI85;
-
-	case TILEM_CALC_TI86:
-		return CALC_TI86;
-
-	default:
-		return CALC_NONE;
-	}
+	return model_to_calcmodel(calc->hw.model_id);
 }
 
 /* Create a calc handle */

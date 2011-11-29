@@ -165,6 +165,21 @@ const char * model_to_name(int model);
 /* Convert model name to a model ID. */
 int name_to_model(const char *name);
 
+/* Convert TilEm model ID to tifiles2 model ID. */
+CalcModel model_to_calcmodel(int model);
+
+/* Convert tifiles2 model ID to TilEm model ID. */
+int calcmodel_to_model(CalcModel model);
+
+/* Get model ID for a given file. */
+int file_to_model(const char *name);
+
+/* Get "base" model for file type support. */
+int model_to_base_model(int calc_model);
+
+/* Check if calc is compatible with given file type. */
+gboolean model_supports_file(int calc_model, int file_model);
+
 /* Create a frame around the given widget */
 GtkWidget* new_frame(const gchar* label, GtkWidget* contents);
 
