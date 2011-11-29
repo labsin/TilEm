@@ -177,7 +177,8 @@ static void prompt_program_slots(TilemCalcEmulator *emu,
 
 	for (i = 0; i < slotdlg->nfiles; i++) {
 		slot = guess_slot(slotdlg->filenames[i]);
-		slotdlg->slots[i] = slot;
+		if (slotdlg->slots[i] < 0)
+			slotdlg->slots[i] = slot;
 		if (slot >= 0)
 			used[slot] = 1;
 	}
@@ -410,6 +411,7 @@ static char ** prompt_link_files(const char *title,
 void load_files(TilemEmulatorWindow *ewin, char **filenames)
 {
 	struct slotdialog *slotdlg;
+	int i;
 
 	g_return_if_fail(ewin->emu->calc != NULL);
 
@@ -417,12 +419,80 @@ void load_files(TilemEmulatorWindow *ewin, char **filenames)
 		slotdlg = g_slice_new0(struct slotdialog);
 		slotdlg->filenames = g_strdupv(filenames);
 		slotdlg->nfiles = g_strv_length(filenames);
-		slotdlg->slots = g_new0(int, slotdlg->nfiles);
+		slotdlg->slots = g_new(int, slotdlg->nfiles);
+		for (i = 0; i < slotdlg->nfiles; i++)
+			slotdlg->slots[i] = TI81_SLOT_AUTO;
 		tilem_calc_emulator_begin(ewin->emu, &check_prog_slots_main,
 		                          &check_prog_slots_finished, slotdlg);
 	}
 	else {
 		send_files(ewin->emu, filenames, NULL);
+	}
+}
+
+static int get_cmdline_slot(const char *str, const char **name)
+{
+	char *e;
+	int n;
+
+	n = strtol(str, &e, 10);
+	if (*e == '=') {
+		*name = e + 1;
+		return n;
+	}
+
+	if (g_ascii_isalpha(str[0]) && str[1] == '=') {
+		*name = str + 2;
+		return TI81_SLOT_A + g_ascii_toupper(str[0]) - 'A';
+	}
+
+	if (str[0] == '=' && str[1] == '=') {
+		*name = str + 2;
+		return TI81_SLOT_THETA;
+	}
+
+	if (!g_ascii_strncasecmp(str, "theta=", 6)) {
+		*name = str + 6;
+		return TI81_SLOT_THETA;
+	}
+
+	*name = str;
+	return TI81_SLOT_AUTO;
+}
+
+/* Load a list of files from the command line.  Filenames may begin
+   with an optional slot designation. */
+void load_files_cmdline(TilemEmulatorWindow *ewin, char **filenames)
+{
+	struct slotdialog *slotdlg;
+	int i;
+	gboolean need_prompt = FALSE;
+	const char *name;
+
+	g_return_if_fail(ewin->emu->calc != NULL);
+
+	slotdlg = g_slice_new0(struct slotdialog);
+	slotdlg->nfiles = g_strv_length(filenames);
+	slotdlg->slots = g_new(int, slotdlg->nfiles);
+	slotdlg->filenames = g_new0(char *, slotdlg->nfiles + 1);
+
+	for (i = 0; i < slotdlg->nfiles; i++) {
+		slotdlg->slots[i] = get_cmdline_slot(filenames[i], &name);
+		slotdlg->filenames[i] = g_strdup(name);
+
+		if (slotdlg->slots[i] < 0)
+			need_prompt = TRUE;
+	}
+
+	if (need_prompt && ewin->emu->calc->hw.model_id == TILEM_CALC_TI81) {
+		tilem_calc_emulator_begin(ewin->emu, &check_prog_slots_main,
+		                          &check_prog_slots_finished, slotdlg);
+	}
+	else {
+		send_files(ewin->emu, slotdlg->filenames, slotdlg->slots);
+		g_free(slotdlg->slots);
+		g_strfreev(slotdlg->filenames);
+		g_slice_free(struct slotdialog, slotdlg);
 	}
 }
 

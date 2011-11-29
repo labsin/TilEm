@@ -341,6 +341,10 @@ void build_menu(TilemEmulatorWindow* ewin);
    end with NULL. */
 void load_files(TilemEmulatorWindow *ewin, char **filenames);
 
+/* Load a list of files from the command line.  Filenames may begin
+   with an optional slot designation. */
+void load_files_cmdline(TilemEmulatorWindow *ewin, char **filenames);
+
 /* Prompt user to load a file from PC to TI */
 void load_file_dialog(TilemEmulatorWindow *ewin);
 

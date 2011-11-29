@@ -278,7 +278,7 @@ int main(int argc, char **argv)
 	
 	/* >>>> Command line */
 	if (cl_files_to_load)
-		load_files(emu->ewin, cl_files_to_load);
+		load_files_cmdline(emu->ewin, cl_files_to_load);
 
 	if (cl_macro_to_run) { /* Priority : Medium */
 		printf("macro to load : %s\n", cl_macro_to_run);
