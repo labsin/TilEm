@@ -39,43 +39,29 @@ static gchar* cl_romfile = NULL;
 static gchar* cl_skinfile = NULL;
 static gint cl_model = 2;
 static gchar* cl_statefile = NULL;
-static gchar* cl_file_to_load = NULL;
+static gchar** cl_files_to_load = NULL;
 static gboolean cl_skinless_flag = FALSE;
 static gboolean cl_reset_flag = FALSE;
-static gchar* cl_file_to_exec = NULL;
 static gchar* cl_getvar = NULL;
 static gchar* cl_macro_to_run = NULL;
 static gboolean cl_debug_flag = FALSE;
-static gchar* cl_listingfile = NULL;
-static gchar* cl_symbolfile = NULL;
-static gchar* cl_link = NULL;
 static gboolean cl_fullspeed_flag = FALSE;
-static gchar* cl_batch = NULL;
-static gboolean cl_nogui_flag = FALSE;
-static gboolean cl_save_flag = FALSE;
 
 
 static GOptionEntry entries[] =
 {
-	{ "rom", 'r', 0, G_OPTION_ARG_FILENAME, &cl_romfile, "The rom file to run", "N" },
-	{ "skin", 'k', 0, G_OPTION_ARG_FILENAME, &cl_skinfile, "The skin file to use", "N" },
-	{ "model", 'm', 0, G_OPTION_ARG_INT, &cl_model, "The model to use", "N" },
-	{ "state-file", 's', 0, G_OPTION_ARG_FILENAME, &cl_statefile, "The state-file to use", "M" },
-	{ "load-file", 'f', 0, G_OPTION_ARG_FILENAME, &cl_file_to_load, "Load this file at startup (the file is not executed)", "M" },
-	{ "without-skin", 'l', 0, G_OPTION_ARG_NONE, &cl_skinless_flag, "Start in skinless mode", "M" },
+	{ "rom", 'r', 0, G_OPTION_ARG_FILENAME, &cl_romfile, "The rom file to run", "FILE" },
+	{ "skin", 'k', 0, G_OPTION_ARG_FILENAME, &cl_skinfile, "The skin file to use", "FILE" },
+	{ "model", 'm', 0, G_OPTION_ARG_INT, &cl_model, "The model to use", "NAME" },
+	{ "state-file", 's', 0, G_OPTION_ARG_FILENAME, &cl_statefile, "The state-file to use", "FILE" },
+	{ "without-skin", 'l', 0, G_OPTION_ARG_NONE, &cl_skinless_flag, "Start in skinless mode", NULL },
 	{ "reset", 0, 0, G_OPTION_ARG_NONE, &cl_reset_flag, "Reset the calc at startup", NULL },
-	{ "execute", 'x', 0, G_OPTION_ARG_FILENAME, &cl_file_to_exec, "The file to exec at startup", NULL },
-	{ "get-var", 0, 0, G_OPTION_ARG_STRING, &cl_getvar, "Get a var at startup", NULL },
-	{ "play-macro", 'p', 0, G_OPTION_ARG_FILENAME, &cl_macro_to_run, "Run this macro at startup", NULL },
+	{ "get-var", 0, 0, G_OPTION_ARG_STRING, &cl_getvar, "Get a var at startup", "FILE" },
+	{ "play-macro", 'p', 0, G_OPTION_ARG_FILENAME, &cl_macro_to_run, "Run this macro at startup", "FILE" },
 	{ "debug", 'd', 0, G_OPTION_ARG_NONE, &cl_debug_flag, "Launch debugger", NULL },
-	{ "listing-file", 'L', 0, G_OPTION_ARG_STRING, &cl_listingfile, "Load listing file in the debugger", NULL },
-	{ "symbol-file", 'S', 0, G_OPTION_ARG_STRING, &cl_symbolfile, "Load symbol file in the debugger", NULL },
 	{ "set-full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, "Limit the speed", NULL },
-	{ "link", 0, 0, G_OPTION_ARG_STRING, &cl_link, "Link cable", NULL },
-	{ "batch", 0, 0, G_OPTION_ARG_FILENAME, &cl_batch, "Launch this batch file", NULL },
-	{ "no-gui", 0, 0, G_OPTION_ARG_NONE, &cl_nogui_flag, "Don't display the gui", NULL },
-	{ "save", 0, 0, G_OPTION_ARG_NONE, &cl_save_flag, "Save state (if running in batch mode and the program finishes normally) ", NULL },
-	{ NULL }
+	{ G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &cl_files_to_load, NULL, "FILE" },
+	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 
 
@@ -213,8 +199,9 @@ int main(int argc, char **argv)
 	ticalcs_library_init();
 	
 	/* >>>> Command line */
-	if (cl_file_to_load) /* Priority : High */
-		tilem_link_send_file(emu, cl_file_to_load, -1, TRUE, TRUE);
+	if (cl_files_to_load)
+		load_files(emu->ewin, cl_files_to_load);
+
 	if (cl_macro_to_run) { /* Priority : Medium */
 		printf("macro to load : %s\n", cl_macro_to_run);
 		tilem_macro_load(emu, cl_macro_to_run); 		
