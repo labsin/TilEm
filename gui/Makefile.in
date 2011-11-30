@@ -17,6 +17,8 @@ CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 DEFS = @DEFS@
 GUI_LDFLAGS = @GUI_LDFLAGS@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 SHELL = @SHELL@
@@ -225,14 +227,16 @@ ti81prg.o: ti81prg.c ti81prg.h ../emu/tilem.h
 charmap.o: charmap.c charmap.h ../emu/tilem.h
 	$(compile) -c $(srcdir)/charmap.c
 
+install: tilem2@EXEEXT@
+	$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) -m 755 tilem2@EXEEXT@ $(DESTDIR)$(bindir)
 
-install: testemu2
-	chmod +x install.sh
-	./install.sh
+uninstall:
+	rm -f $(DESTDIR)$(bindir)/tilem2@EXEEXT@
+
 clean:
 	rm -f *.o
 	rm -f tilem2@EXEEXT@
-
 
 Makefile: Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status
@@ -241,4 +245,4 @@ $(top_builddir)/config.status: $(top_srcdir)/configure
 	cd $(top_builddir) && $(SHELL) ./config.status --recheck
 
 .PRECIOUS: Makefile $(top_builddir)/config.status
-.PHONY: all clean
+.PHONY: all clean install uninstall

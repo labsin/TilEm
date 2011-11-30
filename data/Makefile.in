@@ -1,0 +1,54 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+bindir = @bindir@
+datadir = @datadir@
+pkgdatadir = @datadir@/@PACKAGE_TARNAME@
+mandir = @mandir@
+
+top_builddir = @top_builddir@
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+@SET_MAKE@
+
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+SHELL = @SHELL@
+
+icondirs = hicolor/16x16/actions \
+	   hicolor/16x16/status \
+	   hicolor/24x24/actions
+
+all:
+	@echo 'Nothing to do'
+
+install:
+	$(INSTALL) -d -m 755 $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) $(srcdir)/keybindings.ini $(DESTDIR)$(pkgdatadir)
+	$(INSTALL) -d -m 755 $(DESTDIR)$(pkgdatadir)/symbols
+	set -e ; for i in $(srcdir)/symbols/*.sym ; do \
+	 $(INSTALL_DATA) $$i $(DESTDIR)$(pkgdatadir)/symbols ; \
+	done
+	$(INSTALL) -d -m 755 $(DESTDIR)$(pkgdatadir)/skins
+	set -e ; for i in $(srcdir)/skins/*.skn ; do \
+	 $(INSTALL_DATA) $$i $(DESTDIR)$(pkgdatadir)/skins ; \
+	done
+	set -e ; for i in $(icondirs) ; do \
+	 $(INSTALL) -d -m 755 $(DESTDIR)$(pkgdatadir)/icons/$$i ; \
+	 for j in $(srcdir)/icons/$$i/*.png ; do \
+	  $(INSTALL_DATA) $$j $(DESTDIR)$(pkgdatadir)/icons/$$i ; \
+	 done ; \
+	done
+
+uninstall:
+	rm -rf $(DESTDIR)$(pkgdatadir)
+
+Makefile: Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status
+
+$(top_builddir)/config.status: $(top_srcdir)/configure
+	cd $(top_builddir) && $(SHELL) ./config.status --recheck
+
+.PRECIOUS: Makefile $(top_builddir)/config.status
+.PHONY: all install uninstall

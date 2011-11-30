@@ -4485,7 +4485,7 @@ fi
 
 ac_config_headers="$ac_config_headers config.h"
 
-ac_config_files="$ac_config_files Makefile emu/Makefile db/Makefile gui/Makefile"
+ac_config_files="$ac_config_files Makefile emu/Makefile db/Makefile data/Makefile gui/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5195,6 +5195,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "emu/Makefile") CONFIG_FILES="$CONFIG_FILES emu/Makefile" ;;
     "db/Makefile") CONFIG_FILES="$CONFIG_FILES db/Makefile" ;;
+    "data/Makefile") CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
     "gui/Makefile") CONFIG_FILES="$CONFIG_FILES gui/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;

@@ -23,6 +23,14 @@ clean:
 	cd db && $(MAKE) clean
 	cd gui && $(MAKE) clean
 
+install: all
+	cd gui && $(MAKE) install
+	cd data && $(MAKE) install
+
+uninstall:
+	cd gui && $(MAKE) uninstall
+	cd data && $(MAKE) uninstall
+
 distclean: clean
 	rm -f config.status config.log config.h configure.lineno
 	rm -f aclocal.m4
@@ -36,4 +44,4 @@ config.status: configure
 	$(SHELL) ./config.status --recheck
 
 .PRECIOUS: Makefile config.status
-.PHONY: all clean distclean
+.PHONY: all clean distclean install uninstall
