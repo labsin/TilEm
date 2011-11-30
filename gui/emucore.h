@@ -33,6 +33,12 @@
    set to the constant ALWAYS_FF, speed limiting is completely
    disabled.
 
+   If KEEP_AWAKE is FALSE and the calculator CPU is turned off, this
+   function may block until another thread wakes it up; in that case,
+   no timer events will be triggered, and the elapsed time cannot be
+   measured in any meaningful way.  If KEEP_AWAKE is TRUE, the
+   emulator continues running even when the CPU is turned off.
+
    TIMEOUT is the length of time (microseconds) to run the emulator.
    If ELAPSED is non-null, *ELAPSED will be set to the actual number
    of microseconds elapsed.
@@ -40,7 +46,7 @@
    The return value is a mask indicating which of the requested events
    occurred. */
 dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
-                   dword events, dword ff_events,
+                   dword events, dword ff_events, gboolean keep_awake,
                    int timeout, int *elapsed);
 
 /* Main loop */

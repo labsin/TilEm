@@ -145,7 +145,7 @@ static gboolean show_debugger(gpointer data)
 
 /* Run one iteration of the emulator. */
 dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
-                   dword events, dword ff_events,
+                   dword events, dword ff_events, gboolean keep_awake,
                    int timeout, int *elapsed)
 {
 	dword all_events, ev_auto, ev_user;
@@ -162,7 +162,7 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		if (elapsed) *elapsed = 0;
 		return 0;
 	}
-	else if (calc_asleep(emu)) {
+	else if (!keep_awake && calc_asleep(emu)) {
 		update_screen_mono(emu);
 		g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
 		if (elapsed) *elapsed = timeout;
@@ -258,7 +258,8 @@ gpointer tilem_em_main(gpointer data)
 			g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
 		}
 		else {
-			tilem_em_run(emu, 0, 0, 0, MICROSEC_PER_TICK, NULL);
+			tilem_em_run(emu, 0, 0, 0, FALSE,
+			             MICROSEC_PER_TICK, NULL);
 		}
 	}
 
@@ -275,7 +276,8 @@ void tilem_em_delay(TilemCalcEmulator *emu, int timeout, gboolean ff)
 	while (!emu->task_abort && timeout > 0) {
 		t = MIN(MICROSEC_PER_TICK, timeout);
 		events = tilem_em_run(emu, 0, 0,
-		                      (ff ? TILEM_EM_ALWAYS_FF : 0), t, &t);
+		                      (ff ? TILEM_EM_ALWAYS_FF : 0), TRUE,
+		                      t, &t);
 		timeout -= t;
 	}
 }
@@ -296,7 +298,7 @@ static int run_until_ready(TilemCalcEmulator *emu, int timeout, gboolean ff)
 
 		t = MIN(MICROSEC_PER_TICK, timeout);
 		events = tilem_em_run(emu, TILEM_LINK_EMULATOR_GRAY,
-		                      LINK_EVENTS, (ff ? LINK_EVENTS : 0),
+		                      LINK_EVENTS, (ff ? LINK_EVENTS : 0), TRUE,
 		                      t, &t);
 
 		timeout -= t;
@@ -332,7 +334,7 @@ int tilem_em_get_byte(TilemCalcEmulator *emu, int timeout, gboolean ff)
 
 		t = MIN(MICROSEC_PER_TICK, timeout);
 		events = tilem_em_run(emu, TILEM_LINK_EMULATOR_GRAY,
-		                      LINK_EVENTS, (ff ? LINK_EVENTS : 0),
+		                      LINK_EVENTS, (ff ? LINK_EVENTS : 0), FALSE,
 		                      t, &t);
 		timeout -= t;
 		if (events & TILEM_STOP_LINK_ERROR)
@@ -344,6 +346,8 @@ int tilem_em_get_byte(TilemCalcEmulator *emu, int timeout, gboolean ff)
 /* Wake up calculator if currently turned off. */
 void tilem_em_wake_up(TilemCalcEmulator *emu, gboolean ff)
 {
+	tilem_em_delay(emu, 1000000, ff);
+
 	if (!calc_asleep(emu))
 		return;
 
