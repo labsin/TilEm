@@ -150,7 +150,7 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 {
 	dword all_events, ev_auto, ev_user;
 	int rem;
-	gulong tcur;
+	gulong tcur, delaytime;
 
 	if (emu->exiting || emu->task_abort) {
 		if (elapsed) *elapsed = 0;
@@ -159,12 +159,14 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	else if (emu->paused) {
 		update_screen_mono(emu);
 		g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
+		g_timer_elapsed(emu->timer, &emu->timevalue);
 		if (elapsed) *elapsed = 0;
 		return 0;
 	}
 	else if (!keep_awake && calc_asleep(emu)) {
 		update_screen_mono(emu);
 		g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
+		g_timer_elapsed(emu->timer, &emu->timevalue);
 		if (elapsed) *elapsed = timeout;
 		return 0;
 	}
@@ -191,14 +193,31 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	    && ff_events != TILEM_EM_ALWAYS_FF) {
 		emu->timevalue += timeout - rem;
 		g_timer_elapsed(emu->timer, &tcur);
-		if (emu->timevalue - tcur < (gulong) timeout) {
+
+		/* emu->timevalue is the "ideal" time when the
+		   operation should be completed.  If emu->timevalue
+		   is greater than tcur, we're running faster than
+		   real time.  Try to sleep for (emu->timevalue -
+		   tcur) microseconds.
+
+		   If emu->timevalue is less than tcur, we're running
+		   slower than real time.  If the difference is small,
+		   just keep going and hope we'll catch up later.
+
+		   If the difference is substantial (more than 1/10
+		   second in either direction), re-synchronize. */
+
+		delaytime = emu->timevalue - tcur;
+
+		if (delaytime <= (gulong) 100000 + timeout) {
 			tilem_em_unlock(emu);
-			g_usleep(emu->timevalue - tcur);
+			g_usleep(delaytime);
 			tilem_em_lock(emu);
 		}
 		else {
 			tilem_em_check_yield(emu);
-			emu->timevalue = tcur;
+			if (delaytime < (gulong) -100000)
+				emu->timevalue = tcur;
 		}
 	}
 	else {
