@@ -107,6 +107,9 @@ static int scan_click(const SKIN_INFOS* skin, double x, double y)
 	guint ix, iy, nearest = 0, i;
 	int dx, dy, d, best_d = G_MAXINT;
 
+	if (!skin)
+		return 0;
+
 	ix = (x * skin->sx + 0.5);
 	iy = (y * skin->sy + 0.5);
 

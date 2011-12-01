@@ -71,7 +71,7 @@ static void save_skin_name(TilemEmulatorWindow *ewin)
 	char *base, *shared, *canon;
 
 	/* don't save pref unless skin was actually loaded */
-	if (!ewin->skin_file_name || ewin->skin_disabled)
+	if (!ewin->skin_file_name || !ewin->skin)
 		return;
 
 	/* if file is stored in shared skins directory, save
@@ -131,7 +131,7 @@ static void skin_enable_changed(GtkToggleButton *btn, gpointer data)
 	TilemEmulatorWindow *ewin = data;
 	gboolean enable = gtk_toggle_button_get_active(btn);
 
-	if (ewin->skin_disabled == !enable || !ewin->skin_file_name)
+	if (ewin->skin_disabled == !enable)
 		return;
 
 	tilem_emulator_window_set_skin_disabled(ewin, !enable);

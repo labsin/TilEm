@@ -106,7 +106,7 @@ static void screen_restyle(GtkWidget* w, GtkStyle* oldstyle G_GNUC_UNUSED,
 	int r_light, g_light, b_light;
 	double gamma = 2.2;
 
-	if (ewin->skin_disabled || !ewin->skin) {
+	if (!ewin->skin) {
 		/* no skin -> use standard GTK colors */
 
 		style = gtk_widget_get_style(w);
@@ -236,12 +236,15 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 		g_free(ewin->skin);
 	}
 
-	ewin->skin = g_new0(SKIN_INFOS, 1);
-
-	if (!ewin->skin_disabled) {
-		if (!ewin->skin_file_name
-		    || skin_load(ewin->skin, ewin->skin_file_name))
-			ewin->skin_disabled = 1;
+	if (ewin->skin_disabled || !ewin->skin_file_name) {
+		ewin->skin = NULL;
+	}
+	else {
+		ewin->skin = g_new0(SKIN_INFOS, 1);
+		if (skin_load(ewin->skin, ewin->skin_file_name)) {
+			skin_unload(ewin->skin);
+			ewin->skin = NULL;
+		}
 	}
 
 	if (ewin->emu->calc) {
@@ -263,7 +266,7 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	ewin->lcd = gtk_drawing_area_new();
 
 	/* create background image and layout */
-	if (!ewin->skin_disabled) {
+	if (ewin->skin) {
 		ewin->layout = gtk_layout_new(NULL, NULL);
 
 		pImage = gtk_image_new();
