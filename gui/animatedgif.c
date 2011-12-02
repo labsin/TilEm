@@ -2,6 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2011 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -39,7 +40,7 @@ static void write_application_extension(FILE * fp) ;
 static void write_global_header(FILE* fp, int width, int height, byte* palette, int palette_size) {
 	
 	/* Magic number for Gif file format */
-    	char global_header_magic_number[] = {'G', 'I', 'F', '8', '7', 'a'};
+    	char global_header_magic_number[] = {'G', 'I', 'F', '8', '9', 'a'};
     	/* Size of canvas width on 2 bytes, heigth on 2 bytes */
 	char global_header_canvas[] = {96, 0, 64, 0 };
 
@@ -122,7 +123,7 @@ static void write_image_block_start(FILE *fp, int width, int height) {
 	image_block_canvas[6] = height; 
 	image_block_canvas[7] = (height >> 8); 
 	/* Flag */
-	char image_block_flag[] = { 0x09};
+	char image_block_flag[] = { 0x00 };
 
         fwrite(image_block_header, 1, 1, fp);
     	fwrite(image_block_canvas, 8, 1, fp);
