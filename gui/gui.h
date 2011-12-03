@@ -26,6 +26,27 @@
 
 #include "gtk-compat.h"
 
+/* This struture is a wrapper for VarEntry with additionnal informations used by tilem */
+typedef struct {
+	int model;
+
+	VarEntry *ve;   	/* Original variable info retrieved
+	                	   from calculator */
+	int slot;       	/* Slot number */
+
+	/* Strings for display (UTF-8) */
+	char *name_str; 	/* Variable name */
+	char *type_str; 	/* Variable type */
+	char *slot_str; 	/* Program slot */
+	char *file_ext; 	/* Default file extension */
+	char *filetype_desc; 	/* File format description */
+
+	int size;            	/* Variable size */
+	gboolean archived;   	/* Is archived */
+	gboolean can_group;  	/* Can be stored in group file */
+
+} TilemVarEntry;
+
 /* Screenshot view (widgets and flags) */
 typedef struct _TilemScreenshotDialog {
 	TilemCalcEmulator *emu;
@@ -186,6 +207,18 @@ GtkWidget* new_frame(const gchar* label, GtkWidget* contents);
 /* The popup to choose what kind of rom you are trying to load  (at startup)*/
 char choose_rom_popup(GtkWidget *parent_window, const char *filename, char default_model);
 
+/* Convert UTF-8 to filename encoding.  Use ASCII digits in place of
+   subscripts if necessary.  If conversion fails utterly, fall back to
+   the UTF-8 name, which is broken but better than nothing. */
+char * utf8_to_filename(const char *utf8str);
+
+/* Convert UTF-8 to a subset of UTF-8 that is compatible with the
+   locale */
+char * utf8_to_restricted_utf8(const char *utf8str);
+
+/* Generate default filename (UTF-8) for a variable */
+char * get_default_filename(const TilemVarEntry *tve);
+
 
 /* ##### config.c ##### */
 
@@ -217,27 +250,6 @@ void tilem_config_set(const char *group, const char *option, ...)
 
 
 /* ##### link.c ##### */
-
-/* This struture is a wrapper for VarEntry with additionnal informations used by tilem */
-typedef struct {
-	int model;
-
-	VarEntry *ve;   	/* Original variable info retrieved
-	                	   from calculator */
-	int slot;       	/* Slot number */
-
-	/* Strings for display (UTF-8) */
-	char *name_str; 	/* Variable name */
-	char *type_str; 	/* Variable type */
-	char *slot_str; 	/* Program slot */
-	char *file_ext; 	/* Default file extension */
-	char *filetype_desc; 	/* File format description */
-
-	int size;            	/* Variable size */
-	gboolean archived;   	/* Is archived */
-	gboolean can_group;  	/* Can be stored in group file */
-
-} TilemVarEntry;
 
 /* This structure is used to send a file (usually slot=-1, first=TRUE, last=TRUE)*/
 struct TilemSendFileInfo {
@@ -293,6 +305,12 @@ void tilem_link_receive_group(TilemCalcEmulator *emu,
                               GSList *entries,
                               const char *destination);
 
+/* Receive variables with names matching a pattern.  PATTERN is a
+   glob-like pattern in UTF-8.  Files will be written out to
+   DESTDIR. */
+void tilem_link_receive_matching(TilemCalcEmulator *emu,
+                                 const char *pattern,
+                                 const char *destdir);
 
 
 /* ##### pbar.c ##### */
@@ -366,7 +384,3 @@ void tilem_receive_dialog_free(TilemReceiveDialog *rcvdlg);
 void tilem_receive_dialog_update(TilemReceiveDialog *rcvdlg,
                                  GSList *varlist);
 
-void tilem_link_get_var_at_startup_finished(G_GNUC_UNUSED TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data, G_GNUC_UNUSED gboolean cancelled);
-
-gboolean tilem_link_get_var_at_startup(TilemCalcEmulator *emu, gpointer data);
-	

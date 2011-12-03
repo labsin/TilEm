@@ -286,12 +286,8 @@ int main(int argc, char **argv)
 	}
 	if(cl_debug_flag) /* Priority : low */
 		launch_debugger(emu->ewin);
-	if(cl_getvar) {
-		tilem_link_get_dirlist(emu);	
-		tilem_calc_emulator_begin(emu, &tilem_link_get_var_at_startup, &tilem_link_get_var_at_startup_finished, cl_getvar); 
-		
-	
-	}
+	if (cl_getvar)
+		tilem_link_receive_matching(emu, cl_getvar, ".");
 	/* <<<< */
 		
 

@@ -631,6 +631,7 @@ struct dirlistinfo {
 	GSList *list;
 	char *error_message;
 	gboolean aborted;
+	gboolean no_gui;
 };
 
 /* Convert tifiles VarEntry into a TilemVarEntry */
@@ -836,14 +837,14 @@ static void get_dirlist_finished(TilemCalcEmulator *emu, gpointer data,
 	if (dl->error_message && !cancelled)
 		show_error(emu, "Unable to receive variable list",
 		           dl->error_message);
-	else if (!cancelled && !dl->aborted && emu->ewin) {
+	else if (!cancelled && !dl->aborted && emu->ewin && !dl->no_gui) {
 		if (!emu->rcvdlg)
 			emu->rcvdlg = tilem_receive_dialog_new(emu);
 		tilem_receive_dialog_update(emu->rcvdlg, dl->list);
 		dl->list = NULL;
 	}
 
-	if (emu->rcvdlg)
+	if (!dl->no_gui && emu->rcvdlg)
 		emu->rcvdlg->refresh_pending = FALSE;
 
 	for (l = dl->list; l; l = l->next)
@@ -1021,12 +1022,61 @@ static gboolean receive_files_ti81(TilemCalcEmulator* emu,
 	return TRUE;
 }
 
+static gboolean receive_files_nonsilent(TilemCalcEmulator *emu,
+                                        struct TilemReceiveFileInfo *rf)
+{
+	const TilemVarEntry *tve;
+	FileContent **vars, *fc;
+	int i, nvars;
+	GSList *l;
+	gboolean status;
+
+	nvars = g_slist_length(rf->entries);
+
+	vars = g_new0(FileContent *, nvars);
+	i = 0;
+	for (l = rf->entries; l; l = l->next) {
+		tve = l->data;
+		g_return_val_if_fail(tve->ve != NULL, FALSE);
+		g_return_val_if_fail(tve->ve->data != NULL, FALSE);
+
+		/* avoid copying variable data */
+		fc = tifiles_content_create_regular(get_calc_model(emu->calc));
+		fc->entries = g_new(VarEntry *, 1);
+		fc->num_entries = 1;
+		fc->entries[0] = tve->ve;
+		vars[i++] = fc;
+	}
+
+	status = write_output(vars, NULL, rf->destination, rf->output_tig,
+	                      &rf->error_message);
+
+	for (i = 0; i < nvars; i++) {
+		if (vars[i]) {
+			vars[i]->num_entries = 0;
+			g_free(vars[i]->entries);
+			vars[i]->entries = NULL;
+			tifiles_content_delete_regular(vars[i]);
+		}
+	}
+	g_free(vars);
+
+	return status;
+}
+
 static gboolean receive_files_main(TilemCalcEmulator *emu, gpointer data)
 {
 	struct TilemReceiveFileInfo *rf = data;
+	TilemVarEntry *tve;
+
+	g_return_val_if_fail(rf->entries != NULL, FALSE);
+
+	tve = rf->entries->data;
 
 	if (emu->calc->hw.model_id == TILEM_CALC_TI81)
 		return receive_files_ti81(emu, rf);
+	else if (tve->ve && tve->ve->data)
+		return receive_files_nonsilent(emu, rf);
 	else
 		return receive_files_silent(emu, rf);
 }
@@ -1046,50 +1096,6 @@ static void receive_files_finished(TilemCalcEmulator *emu, gpointer data,
 		tilem_var_entry_free(l->data);
 	g_slist_free(rf->entries);
 	g_slice_free(struct TilemReceiveFileInfo, rf);
-}
-
-static void receive_files_nonsilent(TilemCalcEmulator *emu,
-                                    GSList *entries,
-                                    const char *destination,
-                                    gboolean output_tig)
-{
-	const TilemVarEntry *tve;
-	char *message = NULL;
-	FileContent **vars, *fc;
-	int i, nvars;
-	GSList *l;
-
-	nvars = g_slist_length(entries);
-
-	vars = g_new0(FileContent *, nvars);
-	i = 0;
-	for (l = entries; l; l = l->next) {
-		tve = l->data;
-		g_return_if_fail(tve->ve != NULL);
-		g_return_if_fail(tve->ve->data != NULL);
-
-		/* avoid copying variable data */
-		fc = tifiles_content_create_regular(get_calc_model(emu->calc));
-		fc->entries = g_new(VarEntry *, 1);
-		fc->num_entries = 1;
-		fc->entries[0] = tve->ve;
-		vars[i++] = fc;
-	}
-
-	if (!write_output(vars, NULL, destination, output_tig, &message)) {
-		show_error(emu, "Unable to save file", message);
-		g_free(message);
-	}
-
-	for (i = 0; i < nvars; i++) {
-		if (vars[i]) {
-			vars[i]->num_entries = 0;
-			g_free(vars[i]->entries);
-			vars[i]->entries = NULL;
-			tifiles_content_delete_regular(vars[i]);
-		}
-	}
-	g_free(vars);
 }
 
 void tilem_link_receive_group(TilemCalcEmulator *emu,
@@ -1117,19 +1123,26 @@ void tilem_link_receive_group(TilemCalcEmulator *emu,
 	          || !g_ascii_strcasecmp(p, ".zip")))
 		output_tig = TRUE;
 
+	rf = g_slice_new0(struct TilemReceiveFileInfo);
+	rf->destination = g_strdup(destination);
+	rf->output_tig = output_tig;
+
 	tve = entries->data;
 	if (tve->ve && tve->ve->data) {
-		receive_files_nonsilent(emu, entries, destination, output_tig);
+		/* non-silent: we already have the data; save the file
+		   right now */
+		rf->entries = entries;
+		receive_files_nonsilent(emu, rf);
+		rf->entries = NULL;
+		receive_files_finished(emu, rf, FALSE);
 	}
 	else {
-		rf = g_slice_new0(struct TilemReceiveFileInfo);
-		rf->destination = g_strdup(destination);
+		/* silent: retrieve and save data in background */
 		for (l = entries; l; l = l->next) {
 			tve = tilem_var_entry_copy(l->data);
 			rf->entries = g_slist_prepend(rf->entries, tve);
 		}
 		rf->entries = g_slist_reverse(rf->entries);
-		rf->output_tig = output_tig;
 
 		tilem_calc_emulator_begin(emu, &receive_files_main,
 		                          &receive_files_finished, rf);
@@ -1146,3 +1159,115 @@ void tilem_link_receive_file(TilemCalcEmulator *emu,
 	g_slist_free(l);
 }
 
+/**************** Receive matching files ****************/
+
+struct recmatchinfo {
+	char *pattern;
+	char *destdir;
+	struct dirlistinfo *dl;
+	struct TilemReceiveFileInfo *rf;
+};
+
+static gboolean receive_matching_main(TilemCalcEmulator *emu, gpointer data)
+{
+	struct recmatchinfo *rm = data;
+	GSList *l, *selected = NULL;
+	TilemVarEntry *tve;
+	char *defname, *defname_r, *defname_l;
+	GPatternSpec *pat;
+	gboolean status = TRUE;
+
+	if (!get_dirlist_main(emu, rm->dl))
+		return FALSE;
+
+	/* Find variables that match the pattern */
+
+	pat = g_pattern_spec_new(rm->pattern);
+
+	for (l = rm->dl->list; l; l = l->next) {
+		tve = l->data;
+
+		defname = get_default_filename(tve);
+		defname_r = g_utf8_normalize(defname, -1, G_NORMALIZE_NFKD);
+
+		if (g_pattern_match(pat, strlen(defname_r), defname_r, NULL))
+			selected = g_slist_prepend(selected, tve);
+
+		g_free(defname);
+		g_free(defname_r);
+	}
+	
+	g_pattern_spec_free(pat);
+
+	if (!selected) {
+		rm->rf->error_message = g_strdup_printf
+			("Variable %s not found", rm->pattern);
+		return FALSE;
+	}
+
+	/* Receive variables */
+
+	selected = g_slist_reverse(selected);
+
+	for (l = selected; l; l = l->next) {
+		tve = l->data;
+
+		g_free(rm->rf->destination);
+
+		defname = get_default_filename(tve);
+		defname_l = utf8_to_filename(defname);
+		rm->rf->destination = g_build_filename(rm->destdir,
+		                                       defname_l, NULL);
+		g_free(defname);
+		g_free(defname_l);
+
+		rm->rf->entries = g_slist_prepend(NULL, tve);
+		status = receive_files_main(emu, rm->rf);
+		g_slist_free(rm->rf->entries);
+		rm->rf->entries = NULL;
+
+		if (!status)
+			break;
+	}
+
+	g_slist_free(selected);
+
+	return status;
+}
+
+static void receive_matching_finished(TilemCalcEmulator *emu, gpointer data,
+                                      gboolean cancelled)
+{
+	struct recmatchinfo *rm = data;
+
+	get_dirlist_finished(emu, rm->dl, cancelled);
+	receive_files_finished(emu, rm->rf, cancelled);
+	g_free(rm->pattern);
+	g_free(rm->destdir);
+	g_slice_free(struct recmatchinfo, rm);
+}
+
+/* Receive variables with names matching a pattern.  PATTERN is a
+   glob-like pattern in UTF-8.  Files will be written out to
+   DESTDIR. */
+void tilem_link_receive_matching(TilemCalcEmulator *emu,
+                                 const char *pattern,
+                                 const char *destdir)
+{
+	struct recmatchinfo *rm;
+
+	g_return_if_fail(emu != NULL);
+	g_return_if_fail(pattern != NULL);
+	g_return_if_fail(destdir != NULL);
+
+	rm = g_slice_new0(struct recmatchinfo);
+	rm->pattern = g_utf8_normalize(pattern, -1, G_NORMALIZE_NFKD);
+	rm->destdir = g_strdup(destdir);
+
+	rm->dl = g_slice_new0(struct dirlistinfo);
+	rm->dl->no_gui = TRUE;
+	rm->rf = g_slice_new0(struct TilemReceiveFileInfo);
+
+	tilem_calc_emulator_begin(emu, &receive_matching_main,
+	                          &receive_matching_finished, rm);
+}

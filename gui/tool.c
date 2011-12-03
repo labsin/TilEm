@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <ticalcs.h>
@@ -340,4 +341,93 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 	g_free(ids);
 
 	return id;
+}
+
+/* Convert UTF-8 to filename encoding.  Use ASCII digits in place of
+   subscripts if necessary.  If conversion fails utterly, fall back to
+   the UTF-8 name, which is broken but better than nothing. */
+char * utf8_to_filename(const char *utf8str)
+{
+	gchar *result, *ibuf, *obuf, *p;
+	gsize icount, ocount;
+	const gchar **charsets;
+	GIConv ic;
+	gunichar c;
+
+	if (g_get_filename_charsets(&charsets))
+		return g_strdup(utf8str);
+
+	ic = g_iconv_open(charsets[0], "UTF-8");
+	if (!ic) {
+		g_warning("utf8_to_filename: unsupported charset %s",
+		          charsets[0]);
+		return g_strdup(utf8str);
+	}
+
+	ibuf = (gchar*) utf8str;
+	icount = strlen(utf8str);
+	ocount = icount * 2; /* be generous */
+	result = obuf = g_new(gchar, ocount + 1);
+
+	while (g_iconv(ic, &ibuf, &icount, &obuf, &ocount) == (gsize) -1) {
+		if (errno != EILSEQ) {
+			g_warning("utf8_to_filename: error in conversion");
+			g_free(result);
+			g_iconv_close(ic);
+			return g_strdup(utf8str);
+		}
+
+		c = g_utf8_get_char(ibuf);
+		if (c >= 0x2080 && c <= 0x2089)
+			*obuf = c - 0x2080 + '0';
+		else
+			*obuf = '_';
+		obuf++;
+		ocount--;
+
+		p = g_utf8_next_char(ibuf);
+		icount -= p - ibuf;
+		ibuf = p;
+	}
+
+	*obuf = 0;
+	g_iconv_close(ic);
+	return result;
+}
+
+/* Convert UTF-8 to a subset of UTF-8 that is compatible with the
+   locale */
+char * utf8_to_restricted_utf8(const char *utf8str)
+{
+	char *p, *q;
+	p = utf8_to_filename(utf8str);
+	q = g_filename_to_utf8(p, -1, NULL, NULL, NULL);
+	g_free(p);
+	if (q)
+		return q;
+	else
+		return g_strdup(utf8str);
+}
+
+/* Generate default filename (UTF-8) for a variable */
+char * get_default_filename(const TilemVarEntry *tve)
+{
+	GString *str = g_string_new("");
+
+	if (tve->slot_str) {
+		g_string_append(str, tve->slot_str);
+		if (tve->name_str && tve->name_str[0]) {
+			g_string_append_c(str, '-');
+			g_string_append(str, tve->name_str);
+		}
+	}
+	else if (tve->name_str && tve->name_str[0]) {
+		g_string_append(str, tve->name_str);
+	}
+	else {
+		g_string_append(str, "untitled");
+	}
+	g_string_append_c(str, '.');
+	g_string_append(str, tve->file_ext);
+	return g_string_free(str, FALSE);
 }
