@@ -246,6 +246,9 @@ static int parse_sym_line(TilemDisasmSymTable* stab, char* line)
 	char *w1end, *w2start, *w2end, *name;
 	dword value;
 
+	if (line[0] == '#' || line[0] == ';')
+		return 1;
+
 	w1end = skipwc(line);
 	w2start = skipws(w1end);
 	w2end = skipwc(w2start);
