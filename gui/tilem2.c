@@ -45,6 +45,7 @@ static gboolean cl_reset_flag = FALSE;
 static gchar* cl_getvar = NULL;
 static gchar* cl_macro_to_run = NULL;
 static gboolean cl_debug_flag = FALSE;
+static gboolean cl_normalspeed_flag = FALSE;
 static gboolean cl_fullspeed_flag = FALSE;
 
 
@@ -59,7 +60,8 @@ static GOptionEntry entries[] =
 	{ "get-var", 0, 0, G_OPTION_ARG_STRING, &cl_getvar, "Get a var at startup", "FILE" },
 	{ "play-macro", 'p', 0, G_OPTION_ARG_FILENAME, &cl_macro_to_run, "Run this macro at startup", "FILE" },
 	{ "debug", 'd', 0, G_OPTION_ARG_NONE, &cl_debug_flag, "Launch debugger", NULL },
-	{ "set-full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, "Limit the speed", NULL },
+	{ "normal-speed", 0, 0, G_OPTION_ARG_NONE, &cl_normalspeed_flag, "Run at normal speed", NULL },
+	{ "full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, "Run at maximum speed", NULL },
 	{ G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &cl_files_to_load, NULL, "FILE" },
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -228,17 +230,15 @@ int main(int argc, char **argv)
 	init_custom_icons();
 
 	emu = tilem_calc_emulator_new();
-	
-	/* >>>> CMD LINE PARSING */
-	context = g_option_context_new ("-= TIlEm Is a Linux EMulator =-");
-	g_option_context_add_main_entries (context, entries, NULL);
-	g_option_context_add_group (context, gtk_get_option_group (TRUE));
-	if (!g_option_context_parse (context, &argc, &argv, &error))
+
+	context = g_option_context_new(NULL);
+	g_option_context_add_main_entries(context, entries, NULL);
+	g_option_context_add_group(context, gtk_get_option_group(TRUE));
+	if (!g_option_context_parse(context, &argc, &argv, &error))
 	{
-		g_print ("%s: %s\n", g_get_prgname(), error->message);
+		g_printerr("%s: %s\n", g_get_prgname(), error->message);
 		exit (1);
 	}
-	/* <<<< */
 
 	if (cl_model) {
 		model = name_to_model(cl_model);
@@ -253,43 +253,38 @@ int main(int argc, char **argv)
 
 	emu->ewin = tilem_emulator_window_new(emu);
 
-	/* >>>> Command line */
 	if (cl_skinfile)
 		tilem_emulator_window_set_skin(emu->ewin, cl_skinfile);
 
 	tilem_emulator_window_set_skin_disabled(emu->ewin, cl_skinless_flag);
-	/* <<<< */
 
 	gtk_widget_show(emu->ewin->window);
-
-	tilem_calc_emulator_run(emu);
-
-	/* >>>> Command line */
-	if(cl_reset_flag) 
-		tilem_calc_emulator_reset(emu);
-	tilem_calc_emulator_set_limit_speed(emu, !cl_fullspeed_flag);
-	/* <<<< */
-	
-	tilem_keybindings_init(emu, emu->calc->hw.name);
 
 	ticables_library_init();
 	tifiles_library_init();
 	ticalcs_library_init();
-	
-	/* >>>> Command line */
+
+	if (cl_reset_flag)
+		tilem_calc_emulator_reset(emu);
+
+	if (cl_fullspeed_flag)
+		tilem_calc_emulator_set_limit_speed(emu, FALSE);
+	else if (cl_normalspeed_flag)
+		tilem_calc_emulator_set_limit_speed(emu, TRUE);
+
 	if (cl_files_to_load)
 		load_files_cmdline(emu->ewin, cl_files_to_load);
-
-	if (cl_macro_to_run) { /* Priority : Medium */
-		printf("macro to load : %s\n", cl_macro_to_run);
-		tilem_macro_load(emu, cl_macro_to_run); 		
-	}
-	if(cl_debug_flag) /* Priority : low */
-		launch_debugger(emu->ewin);
+	if (cl_macro_to_run)
+		tilem_macro_load(emu, cl_macro_to_run);
 	if (cl_getvar)
 		tilem_link_receive_matching(emu, cl_getvar, ".");
-	/* <<<< */
-		
+
+	if (cl_debug_flag)
+		launch_debugger(emu->ewin);
+	else
+		tilem_calc_emulator_run(emu);
+
+	tilem_keybindings_init(emu, emu->calc->hw.name);
 
 	g_signal_connect(emu->ewin->window, "destroy",
 	                 G_CALLBACK(gtk_main_quit), NULL);
@@ -297,7 +292,7 @@ int main(int argc, char **argv)
 	gtk_main();
 
 	tilem_calc_emulator_pause(emu);
-	
+
 	tilem_emulator_window_free(emu->ewin);
 	tilem_calc_emulator_free(emu);
 
