@@ -496,6 +496,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 		e = tifiles_file_read_flash(sf->filename, flashc);
 		if (!e) {
 			begin_link(emu, &cbl, &ch, desc);
+			ticables_options_set_timeout(cbl, 30 * 10);
 			prepare_for_link_send(emu);
 			if (tifiles_file_is_os(sf->filename))
 				e = ticalcs_calc_send_os(ch, flashc);
