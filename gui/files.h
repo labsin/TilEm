@@ -17,6 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* Set the name used to invoke this program.  Data files can be
+   located relative to this path if the package is not installed */
+void set_program_path(const char *path);
+
 /* Locate an existing configuration or data file.  Arguments will be
    concatenated, separated by / or \, as with g_build_filename().
    NULL is returned if the file isn't found.  Free result with

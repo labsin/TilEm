@@ -22,11 +22,21 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 
 #include "files.h"
+
+static char *program_dir;
+
+/* Set the name used to invoke this program */
+void set_program_path(const char *path)
+{
+	if (path && strchr(path, G_DIR_SEPARATOR))
+		program_dir = g_path_get_dirname(path);
+}
 
 /* Build a filename out of varargs */
 static char *build_filenamev(const char *start, va_list rest)
@@ -76,6 +86,7 @@ static char * get_default_config_dir()
 static char * find_filev(GFileTest test, const char *name, va_list rest)
 {
 	char *fullname, *dname, *path;
+	const char * const *sysdirs;
 
 	fullname = build_filenamev(name, rest);
 
@@ -100,12 +111,15 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 #endif
 
 #ifdef UNINSTALLED_SHARE_DIR
-	path = g_build_filename(UNINSTALLED_SHARE_DIR, fullname, NULL);
-	if (g_file_test(path, test)) {
-		g_free(fullname);
-		return path;
+	if (program_dir) {
+		path = g_build_filename(program_dir, UNINSTALLED_SHARE_DIR,
+		                        fullname, NULL);
+		if (g_file_test(path, test)) {
+			g_free(fullname);
+			return path;
+		}
+		g_free(path);
 	}
-	g_free(path);
 #endif
 
 #ifdef SHARE_DIR
@@ -115,6 +129,19 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 		return path;
 	}
 	g_free(path);
+#endif
+
+#ifdef PACKAGE_TARNAME
+	sysdirs = g_get_system_data_dirs();
+	while (sysdirs && sysdirs[0]) {
+		path = g_build_filename(sysdirs[0], PACKAGE_TARNAME,
+		                        fullname, NULL);
+		if (g_file_test(path, test)) {
+			g_free(fullname);
+			return path;
+		}
+		sysdirs++;
+	}
 #endif
 
 	g_free(fullname);

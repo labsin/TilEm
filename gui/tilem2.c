@@ -219,7 +219,7 @@ int main(int argc, char **argv)
 
 	g_thread_init(NULL);
 	gtk_init(&argc, &argv);
-
+	set_program_path(argv[0]);
 	g_set_application_name("TilEm");
 
 	menurc_path = get_shared_file_path("menurc", NULL);
