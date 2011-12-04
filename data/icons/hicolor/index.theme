@@ -1,0 +1,19 @@
+[Icon Theme]
+Name=hicolor
+Comment=Default Theme
+Directories=16x16/actions,16x16/status,24x24/actions
+
+[16x16/actions]
+Size=16
+Context=Actions
+Type=Threshold
+
+[16x16/status]
+Size=16
+Context=Status
+Type=Threshold
+
+[24x24/actions]
+Size=24
+Context=Actions
+Type=Threshold

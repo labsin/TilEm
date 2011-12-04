@@ -40,6 +40,7 @@ install:
 	  $(INSTALL_DATA) $$j $(DESTDIR)$(pkgdatadir)/icons/$$i ; \
 	 done ; \
 	done
+	$(INSTALL_DATA) $(srcdir)/icons/hicolor/index.theme $(DESTDIR)$(pkgdatadir)/icons/hicolor
 
 uninstall:
 	rm -rf $(DESTDIR)$(pkgdatadir)
