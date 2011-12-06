@@ -50,10 +50,10 @@ static const struct imgsize normal_sizes[] =
 	{ { 96, 64 }, { 192, 128 }, { 288, 192 } };
 
 static const struct imgsize wide_sizes[] =
-	/* actual aspect ratio is 94:55 or 1.709:1 */
-	{ { 128, 64 }, { 128, 75 },
-	  { 219, 128 }, { 256, 128 }, { 256, 150 },
-	  { 328, 192 }, { 384, 192 } };
+	/* actual aspect ratio is 92:55 or 1.673:1 */
+	{ { 128, 64 }, { 128, 77 },
+	  { 214, 128 }, { 256, 128 }, { 256, 153 },
+	  { 321, 192 }, { 384, 192 } };
 
 static void grab_screen(GtkButton *btn, TilemScreenshotDialog *ssdlg);
 static void begin_animation(GtkButton *btn, TilemScreenshotDialog *ssdlg);
