@@ -284,8 +284,6 @@ int main(int argc, char **argv)
 	else
 		tilem_calc_emulator_run(emu);
 
-	tilem_keybindings_init(emu, emu->calc->hw.name);
-
 	g_signal_connect(emu->ewin->window, "destroy",
 	                 G_CALLBACK(gtk_main_quit), NULL);
 

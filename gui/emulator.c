@@ -395,6 +395,8 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		g_free(emu->state_file_name);
 	emu->state_file_name = sname;
 
+	tilem_keybindings_init(emu, calc->hw.name);
+
 	if (emu->ewin)
 		tilem_emulator_window_calc_changed(emu->ewin);
 	if (emu->dbg)
