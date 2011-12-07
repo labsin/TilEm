@@ -62,16 +62,6 @@ void tilem_calc_emulator_unlock(TilemCalcEmulator *emu)
 	g_mutex_unlock(emu->calc_mutex);
 }
 
-/* Unlock emulator, wait for a condition, then lock again - a
-   combination of the above */
-void tilem_calc_emulator_cond_wait(TilemCalcEmulator *emu, GCond *cond)
-{
-	if (g_atomic_int_dec_and_test(&emu->calc_lock_waiting))
-		g_cond_signal(emu->calc_wakeup_cond);
-        g_cond_wait(cond, emu->calc_mutex);
-	g_atomic_int_inc(&emu->calc_lock_waiting);
-}
-
 static gboolean refresh_lcd(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -409,7 +399,6 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	return TRUE;
 }
 
-/* TODO : add a parameter to handle command line args (-s parameter) */
 gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu, GError **err)
 {
 	FILE *romfile, *savfile;

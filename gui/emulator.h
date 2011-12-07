@@ -135,9 +135,6 @@ void tilem_calc_emulator_lock(TilemCalcEmulator *emu);
 /* Unlock calculator and allow emulation to continue. */
 void tilem_calc_emulator_unlock(TilemCalcEmulator *emu);
 
-/* Unlock calculator while waiting on a condition variable */
-void tilem_calc_emulator_cond_wait(TilemCalcEmulator *emu, GCond *cond);
-
 /* Load the calculator state from the given ROM file (and accompanying
    sav file, if any.) */
 gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
