@@ -3,7 +3,7 @@ exec_prefix = @exec_prefix@
 datarootdir = @datarootdir@
 bindir = @bindir@
 datadir = @datadir@
-pkgdatadir = @datadir@/@PACKAGE_TARNAME@
+pkgdatadir = @datadir@/tilem2
 mandir = @mandir@
 
 top_builddir = @top_builddir@
