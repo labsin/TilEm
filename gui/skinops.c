@@ -48,7 +48,7 @@ int skin_get_type(SKIN_INFOS *si, const char *filename)
 	FILE *fp;
 	char str[17];
 
-	fp = fopen(filename, "rb");
+	fp = g_fopen(filename, "rb");
 	if (fp == NULL) {
 		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
 		return -1;
@@ -76,20 +76,13 @@ int skin_get_type(SKIN_INFOS *si, const char *filename)
 /*
   Read TilEm skin informations (header)
 */
-int skin_read_header(SKIN_INFOS *si, const char *filename)
+int skin_read_header(SKIN_INFOS *si, FILE *fp)
 {
-	FILE *fp;
 	int i;
 	uint32_t endian;
 	uint32_t jpeg_offset;
 	uint32_t length;
 	char str[17];
-
-	fp = fopen(filename, "rb");
-	if (fp == NULL) {
-		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
-		return -1;
-	}
 
 	/* signature & offsets */
 	fread(str, 16, 1, fp);
@@ -181,29 +174,20 @@ int skin_read_header(SKIN_INFOS *si, const char *filename)
 
 	si->jpeg_offset = ftell(fp);
 
-	fclose(fp);
 	return 0;
 }
 
 /*
   Read skin image (pure jpeg data)
 */
-int skin_read_image(SKIN_INFOS *si, const char *filename)
+int skin_read_image(SKIN_INFOS *si, const char *filename, FILE *fp)
 {
-	FILE *fp = NULL;
-
 	GdkPixbufLoader *loader;
 	GError *error = NULL;
 	gboolean result;
 	guchar *buf;
 	gsize count;
 	struct stat st;
-
-	fp = g_fopen(filename, "rb");
-	if (fp == NULL) {
-		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
-		return -1;
-	}
 
 	// Extract image from skin
 	fseek(fp, si->jpeg_offset, SEEK_SET);
@@ -212,7 +196,6 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 
 	buf = g_malloc(count * sizeof(guchar));
 	count = fread(buf, sizeof(guchar), count, fp);
-	fclose(fp);
 
 	// Feed the pixbuf loader with our jpeg data
 	loader = gdk_pixbuf_loader_new();
@@ -259,18 +242,20 @@ int skin_read_image(SKIN_INFOS *si, const char *filename)
 /* Load a skin (TilEm v2.00 only) */
 int skin_load(SKIN_INFOS *si, const char *filename)
 {
+	FILE *fp;
 	int ret = 0;
-	ret = skin_read_header(si, filename);
-	if(ret)
-		return ret;
 
-	ret = skin_read_image(si, filename);
-	if(ret)
-		return ret;
+	fp = g_fopen(filename, "rb");
+	if (fp == NULL) {
+		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
+		return -1;
+	}
 
-	if(!ret)
-		printf("loading skin:  (%d x %d)\n", si->width, si->height);
+	ret = skin_read_header(si, fp);
+	if (!ret)
+		ret = skin_read_image(si, filename, fp);
 
+	fclose(fp);
 
 	return ret;
 }

@@ -124,18 +124,10 @@ typedef struct
 
 } SKIN_INFOS;
 
-extern SKIN_INFOS skin_infos;
-
 /*************/
 /* Functions */
 /*************/
 
 int skin_load(SKIN_INFOS *infos, const char *filename);
 int skin_unload(SKIN_INFOS *infos);
-
-int skin_read_header(SKIN_INFOS *infos, const char* filename);
-int skin_read_image (SKIN_INFOS *infos, const char* filename);
-
-
-
 
