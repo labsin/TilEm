@@ -118,6 +118,36 @@ You must install one of these two libraries, including the
 -dev/-devel packages if appropriate.])
 fi
 
+# Tools used for building the Windows installer
+
+if test "x$gtk_target" = "xwin32" ; then
+  AC_CHECK_TOOL([STRIP], [strip], [:])
+  AC_CHECK_TOOL([OBJDUMP], [objdump], [objdump])
+  AC_CHECK_PROG([MAKENSIS], [makensis], [makensis])
+  AC_PROG_LN_S
+
+  AC_MSG_CHECKING([where to find GTK+ runtime libraries])
+  if test "x$GTK_BINDIR" = "x" ; then
+    prefix=`$PKG_CONFIG --variable=exec_prefix gtk+-2.0`
+    test "x$prefix" != "x" && GTK_BINDIR="$prefix/bin"
+  fi
+  AC_MSG_RESULT([$GTK_BINDIR])
+
+  AC_MSG_CHECKING([where to find ticalcs2 runtime libraries])
+  if test "x$TICALCS_BINDIR" = "x" ; then
+    prefix=`$PKG_CONFIG --variable=exec_prefix ticalcs2`
+    test "x$prefix" != "x" && TICALCS_BINDIR="$prefix/bin"
+  fi
+  AC_MSG_RESULT([$TICALCS_BINDIR])
+
+  if test "x$DLLPATH" = "x" ; then
+    DLLPATH='${GTK_BINDIR}'$PATH_SEPARATOR'${TICALCS_BINDIR}'
+  fi
+  AC_SUBST(GTK_BINDIR)
+  AC_SUBST(TICALCS_BINDIR)
+  AC_SUBST(DLLPATH)
+fi
+
 # Checks for header files
 
 AC_HEADER_STDC
@@ -136,5 +166,7 @@ AC_CONFIG_FILES([Makefile
                  emu/Makefile
                  db/Makefile
                  data/Makefile
-                 gui/Makefile])
+                 gui/Makefile
+                 installer/win32/Makefile
+                 installer/win32/installer.nsi])
 AC_OUTPUT

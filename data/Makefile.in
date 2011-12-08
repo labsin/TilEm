@@ -43,7 +43,29 @@ install:
 	$(INSTALL_DATA) $(srcdir)/icons/hicolor/index.theme $(DESTDIR)$(pkgdatadir)/icons/hicolor
 
 uninstall:
-	rm -rf $(DESTDIR)$(pkgdatadir)
+	rm -f $(DESTDIR)$(pkgdatadir)/keybindings.ini
+	set -e ; for i in $(srcdir)/symbols/*.sym ; do \
+	 rm -f $(DESTDIR)$(pkgdatadir)/symbols/`basename $$i` ; \
+	done
+	set -e ; for i in $(srcdir)/skins/*.skn ; do \
+	 rm -f $(DESTDIR)$(pkgdatadir)/skins/`basename $$i` ; \
+	done
+	set -e ; for i in $(icondirs) ; do \
+	 for j in $(srcdir)/icons/$$i/*.png ; do \
+	  rm -f $(DESTDIR)$(pkgdatadir)/icons/$$i/`basename $$j` ; \
+	 done ; \
+	done
+	-for i in $(icondirs) ; do \
+	 rmdir $(DESTDIR)$(pkgdatadir)/icons/$$i ; \
+	done
+	-rmdir $(DESTDIR)$(pkgdatadir)/icons/hicolor/16x16
+	-rmdir $(DESTDIR)$(pkgdatadir)/icons/hicolor/24x24
+	rm -f $(DESTDIR)$(pkgdatadir)/icons/hicolor/index.theme
+	-rmdir $(DESTDIR)$(pkgdatadir)/icons/hicolor
+	-rmdir $(DESTDIR)$(pkgdatadir)/icons
+	-rmdir $(DESTDIR)$(pkgdatadir)/symbols
+	-rmdir $(DESTDIR)$(pkgdatadir)/skins
+	-rmdir $(DESTDIR)$(pkgdatadir)
 
 Makefile: Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status
