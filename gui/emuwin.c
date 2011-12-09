@@ -30,6 +30,7 @@
 
 #include "gui.h"
 #include "files.h"
+#include "msgbox.h"
 
 /* Set size hints for the toplevel window */
 static void set_size_hints(GtkWidget *widget, gpointer data)
@@ -230,6 +231,7 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	int minwidth, minheight, defwidth, defheight,
 		curwidth, curheight;
 	double sx, sy, s, a1, a2;
+	GError *err = NULL;
 
 	if (ewin->skin) {
 		skin_unload(ewin->skin);
@@ -241,7 +243,7 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	}
 	else {
 		ewin->skin = g_new0(SKIN_INFOS, 1);
-		if (skin_load(ewin->skin, ewin->skin_file_name)) {
+		if (skin_load(ewin->skin, ewin->skin_file_name, &err)) {
 			skin_unload(ewin->skin);
 			ewin->skin = NULL;
 		}
@@ -373,6 +375,12 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 	gtk_window_resize(GTK_WINDOW(ewin->window), curwidth, curheight);
 
 	gtk_widget_show_all(emuwin);
+
+	if (err) {
+		messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
+		             "Unable to load skin", "%s", err->message);
+		g_error_free(err);
+	}
 }
 
 static void window_destroy(G_GNUC_UNUSED GtkWidget *w, gpointer data)

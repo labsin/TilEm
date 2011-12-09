@@ -128,6 +128,6 @@ typedef struct
 /* Functions */
 /*************/
 
-int skin_load(SKIN_INFOS *infos, const char *filename);
+int skin_load(SKIN_INFOS *infos, const char *filename, GError **err);
 int skin_unload(SKIN_INFOS *infos);
 

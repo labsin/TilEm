@@ -35,10 +35,16 @@ contra-sh :
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include "skinops.h"
 
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
+
+#define SKIN_ERROR g_quark_from_static_string("skin-error")
+enum {
+	SKIN_ERROR_INVALID
+};
 
 /*
 	Determine skin type
@@ -88,7 +94,6 @@ int skin_read_header(SKIN_INFOS *si, FILE *fp)
 	fread(str, 16, 1, fp);
 	if ((strncmp(str, "TilEm v2.00", 16))
 	    && (strncmp(str, "TiEmu v2.00", 16))) {
-		fprintf(stderr, "Bad TiEmu skin format\n");
 		return -1;
 	}
 	fread(&endian, 4, 1, fp);
@@ -180,10 +185,9 @@ int skin_read_header(SKIN_INFOS *si, FILE *fp)
 /*
   Read skin image (pure jpeg data)
 */
-int skin_read_image(SKIN_INFOS *si, const char *filename, FILE *fp)
+int skin_read_image(SKIN_INFOS *si, FILE *fp, GError **err)
 {
 	GdkPixbufLoader *loader;
-	GError *error = NULL;
 	gboolean result;
 	guchar *buf;
 	gsize count;
@@ -199,20 +203,16 @@ int skin_read_image(SKIN_INFOS *si, const char *filename, FILE *fp)
 
 	// Feed the pixbuf loader with our jpeg data
 	loader = gdk_pixbuf_loader_new();
-	result = gdk_pixbuf_loader_write(loader, buf, count, &error);
+	result = gdk_pixbuf_loader_write(loader, buf, count, err);
 	g_free(buf);
 
 	if(result == FALSE) {
-		fprintf(stderr, "Failed to load pixbuf file: %s\n", filename);
-		g_error_free(error);
 		g_object_unref(loader);
 		return -1;
 	}
 
-	result = gdk_pixbuf_loader_close(loader, &error);
+	result = gdk_pixbuf_loader_close(loader, err);
 	if(result == FALSE) {
-		fprintf(stderr, "Failed to close pixbuf file: %s\n", filename);
-		g_error_free(error);
 		g_object_unref(loader);
 		return -1;
 	}
@@ -220,8 +220,8 @@ int skin_read_image(SKIN_INFOS *si, const char *filename, FILE *fp)
 	// and get the pixbuf
 	si->raw = gdk_pixbuf_loader_get_pixbuf(loader);
 	if(si->raw == NULL) {
-		fprintf(stderr, "Failed to load pixbuf file: %s\n", filename);
-		g_error_free(error);
+		g_set_error(err, SKIN_ERROR, SKIN_ERROR_INVALID,
+		            "Unable to load background image");
 		g_object_unref(loader);
 		return -1;
 	}
@@ -240,20 +240,36 @@ int skin_read_image(SKIN_INFOS *si, const char *filename, FILE *fp)
 }
 
 /* Load a skin (TilEm v2.00 only) */
-int skin_load(SKIN_INFOS *si, const char *filename)
+int skin_load(SKIN_INFOS *si, const char *filename, GError **err)
 {
 	FILE *fp;
-	int ret = 0;
+	int ret = 0, errnum;
+	char *dname;
+
+	g_return_if_fail(err == NULL || *err == NULL, -1);
 
 	fp = g_fopen(filename, "rb");
 	if (fp == NULL) {
-		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
+		errnum = errno;
+		dname = g_filename_display_basename(filename);
+		g_set_error(err, G_FILE_ERROR, g_file_error_from_errno(errnum),
+		            "Unable to open %s for reading: %s",
+		            dname, g_strerror(errnum));
+		g_free(dname);
 		return -1;
 	}
 
 	ret = skin_read_header(si, fp);
-	if (!ret)
-		ret = skin_read_image(si, filename, fp);
+	if (ret) {
+		fclose(fp);
+		dname = g_filename_display_basename(filename);
+		g_set_error(err, SKIN_ERROR, SKIN_ERROR_INVALID,
+		            "The file %s is not a valid skin.", dname);
+		g_free(dname);
+		return -1;
+	}
+
+	ret = skin_read_image(si, fp, err);
 
 	fclose(fp);
 
