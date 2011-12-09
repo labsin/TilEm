@@ -100,6 +100,7 @@ typedef struct _TilemCalcEmulator {
 	char *pbar_status;
 	gdouble pbar_progress;
 	gboolean pbar_update_pending;
+	gboolean progress_changed;
 
 	/* GUI widgets */
 	struct _TilemDebugger *dbg;

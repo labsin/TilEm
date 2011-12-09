@@ -242,14 +242,6 @@ static void prepare_for_link_receive(TilemCalcEmulator *emu)
 
 /**************** Calc handle ****************/
 
-/* idle callback to update progress bar */
-static gboolean pbar_update(gpointer data)
-{
-	TilemCalcEmulator *emu = data;
-	progress_bar_update(emu);
-	return FALSE;
-}
-
 static GStaticPrivate current_emu_key = G_STATIC_PRIVATE_INIT;
 
 /* ticalcs progress bar callback */
@@ -258,13 +250,6 @@ static void pbar_do_update()
 	TilemCalcEmulator *emu = g_static_private_get(&current_emu_key);
 	CalcUpdate *upd = emu->link_update;
 	gdouble frac;
-
-	g_mutex_lock(emu->pbar_mutex);
-
-	if (!emu->pbar_status || strcmp(upd->text, emu->pbar_status)) {
-		g_free(emu->pbar_status);
-		emu->pbar_status = g_strdup(upd->text);
-	}
 
 	if (upd->max1 > 0 && upd->max2 > 0)
 		frac = ((gdouble) upd->cnt1 / upd->max1 + upd->cnt2) / upd->max2;
@@ -275,13 +260,7 @@ static void pbar_do_update()
 	else
 		frac = -1.0;
 
-	emu->pbar_progress = frac;
-
-	if (!emu->pbar_update_pending)
-		g_idle_add(&pbar_update, emu);
-	emu->pbar_update_pending = TRUE;
-
-	g_mutex_unlock(emu->pbar_mutex);
+	tilem_em_set_progress(emu, frac, upd->text);
 }
 
 /* Get the calc model (compatible for ticalcs) */
@@ -307,15 +286,7 @@ void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch,
 
 	g_static_private_set(&current_emu_key, emu, NULL);
 
-	g_mutex_lock(emu->pbar_mutex);
-	g_free(emu->pbar_title);
-	g_free(emu->pbar_status);
-	emu->pbar_title = g_strdup(title);
-	emu->pbar_status = NULL;
-	emu->pbar_progress = 0.0;
-	g_mutex_unlock(emu->pbar_mutex);
-
-	g_idle_add(&pbar_update, emu);
+	tilem_em_set_progress_title(emu, title);
 
 	*ch = ticalcs_handle_new(get_calc_model(emu->calc));
 	if (!*ch) {
@@ -330,15 +301,7 @@ void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch,
 /* Destroy calc handle */
 void end_link(TilemCalcEmulator *emu, CableHandle *cbl, CalcHandle *ch)
 {
-	g_mutex_lock(emu->pbar_mutex);
-	g_free(emu->pbar_title);
-	g_free(emu->pbar_status);
-	emu->pbar_title = NULL;
-	emu->pbar_status = NULL;
-	emu->pbar_progress = 0.0;
-	g_mutex_unlock(emu->pbar_mutex);
-
-	g_idle_add(&pbar_update, emu);
+	tilem_em_set_progress_title(emu, NULL);
 
 	ticalcs_cable_detach(ch);
 	ticalcs_handle_del(ch);

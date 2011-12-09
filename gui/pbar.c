@@ -44,7 +44,15 @@ static void progress_bar_update_activity(TilemLinkProgress *linkpb)
 	gtk_label_set_markup(linkpb->title_lbl, s);
 	g_free(s);
 
-	gtk_label_set_text(linkpb->status_lbl, linkpb->emu->pbar_status);
+	if (linkpb->emu->paused && linkpb->emu->pbar_status) {
+		s = g_strconcat(linkpb->emu->pbar_status, " (paused)", NULL);
+		gtk_label_set_text(linkpb->status_lbl, s);
+		g_free(s);
+	}
+	else if (linkpb->emu->paused)
+		gtk_label_set_text(linkpb->status_lbl, "(paused)");
+	else
+		gtk_label_set_text(linkpb->status_lbl, linkpb->emu->pbar_status);
 
 	if (linkpb->emu->pbar_progress < 0.0) {
 		gtk_progress_bar_pulse(linkpb->progress_bar);

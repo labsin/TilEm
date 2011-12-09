@@ -65,6 +65,16 @@ int tilem_em_get_byte(TilemCalcEmulator *emu, int timeout, gboolean ff);
 /* Wake up calculator if currently turned off. */
 void tilem_em_wake_up(TilemCalcEmulator *emu, gboolean ff);
 
+/* Set progress window title.  Set TITLE to NULL to disable progress
+   window. */
+void tilem_em_set_progress_title(TilemCalcEmulator *emu, const char *title);
+
+/* Set current progress information.  FRAC is the estimated fraction
+   of the task completed; STATUS is a text description of the current
+   operation. */
+void tilem_em_set_progress(TilemCalcEmulator *emu, gdouble frac,
+                           const char *status);
+
 /* Lock emulator. */
 #define tilem_em_lock(emu) \
 	g_mutex_lock(emu->calc_mutex)

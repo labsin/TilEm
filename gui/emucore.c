@@ -129,6 +129,21 @@ static void update_screen_mono(TilemCalcEmulator *emu)
 	g_mutex_unlock(emu->lcd_mutex);
 }
 
+/* idle callback to update progress bar */
+static gboolean pbar_update(gpointer data)
+{
+	TilemCalcEmulator *emu = data;
+	progress_bar_update(emu);
+	return FALSE;
+}
+
+static void update_progress(TilemCalcEmulator *emu, gboolean force)
+{
+	if (force || emu->progress_changed)
+		g_idle_add(&pbar_update, emu);
+	emu->progress_changed = FALSE;
+}
+
 static gboolean show_debugger(gpointer data)
 {
 	TilemCalcEmulator* emu = data;
@@ -158,18 +173,23 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	}
 	else if (emu->paused) {
 		update_screen_mono(emu);
+		update_progress(emu, TRUE);
 		g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
+		update_progress(emu, TRUE);
 		g_timer_elapsed(emu->timer, &emu->timevalue);
 		if (elapsed) *elapsed = 0;
 		return 0;
 	}
 	else if (!keep_awake && calc_asleep(emu)) {
+		update_progress(emu, FALSE);
 		update_screen_mono(emu);
 		g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
 		g_timer_elapsed(emu->timer, &emu->timevalue);
 		if (elapsed) *elapsed = timeout;
 		return 0;
 	}
+
+	update_progress(emu, FALSE);
 
 	all_events = events | BREAK_MASK;
 
@@ -374,4 +394,43 @@ void tilem_em_wake_up(TilemCalcEmulator *emu, gboolean ff)
 	tilem_em_delay(emu, 500000, ff);
 	tilem_keypad_release_key(emu->calc, TILEM_KEY_ON);
 	tilem_em_delay(emu, 500000, ff);
+}
+
+/* Set progress window title.  Set TITLE to NULL to disable progress
+   window. */
+void tilem_em_set_progress_title(TilemCalcEmulator *emu, const char *title)
+{
+	g_mutex_lock(emu->pbar_mutex);
+	g_free(emu->pbar_title);
+	g_free(emu->pbar_status);
+	emu->pbar_title = title ? g_strdup(title) : NULL;
+	emu->pbar_status = NULL;
+	emu->pbar_progress = 0.0;
+	if (!emu->pbar_update_pending)
+		emu->progress_changed = TRUE;
+	emu->pbar_update_pending = TRUE;
+	g_mutex_unlock(emu->pbar_mutex);
+}
+
+/* Set current progress information.  FRAC is the estimated fraction
+   of the task completed; STATUS is a text description of the current
+   operation. */
+void tilem_em_set_progress(TilemCalcEmulator *emu, gdouble frac,
+                           const char *status)
+{
+	g_mutex_lock(emu->pbar_mutex);
+
+	if (!emu->pbar_status || !status
+	    || strcmp(status, emu->pbar_status)) {
+		g_free(emu->pbar_status);
+		emu->pbar_status = status ? g_strdup(status) : NULL;
+	}
+
+	emu->pbar_progress = frac;
+
+	if (!emu->pbar_update_pending)
+		emu->progress_changed = TRUE;
+	emu->pbar_update_pending = TRUE;
+
+	g_mutex_unlock(emu->pbar_mutex);
 }
