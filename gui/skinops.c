@@ -246,7 +246,7 @@ int skin_load(SKIN_INFOS *si, const char *filename, GError **err)
 	int ret = 0, errnum;
 	char *dname;
 
-	g_return_if_fail(err == NULL || *err == NULL, -1);
+	g_return_val_if_fail(err == NULL || *err == NULL, -1);
 
 	fp = g_fopen(filename, "rb");
 	if (fp == NULL) {
