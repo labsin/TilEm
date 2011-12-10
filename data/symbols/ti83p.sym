@@ -1,6 +1,7 @@
 [macros]
 0EF     B_CALL~%c
 0CD5000 B_JUMP~%c
+0EDED   DB~$ED,$ED,%b,%b
 
 [labels]
 0008 rOP1TOOP2
