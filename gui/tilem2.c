@@ -253,10 +253,12 @@ int main(int argc, char **argv)
 
 	emu->ewin = tilem_emulator_window_new(emu);
 
-	if (cl_skinfile)
+	if (cl_skinless_flag)
+		tilem_emulator_window_set_skin_disabled(emu->ewin, TRUE);
+	else if (cl_skinfile) {
 		tilem_emulator_window_set_skin(emu->ewin, cl_skinfile);
-
-	tilem_emulator_window_set_skin_disabled(emu->ewin, cl_skinless_flag);
+		tilem_emulator_window_set_skin_disabled(emu->ewin, FALSE);
+	}
 
 	gtk_widget_show(emu->ewin->window);
 
