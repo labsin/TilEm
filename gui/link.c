@@ -401,6 +401,67 @@ static gboolean send_file_ti81(TilemCalcEmulator *emu, struct TilemSendFileInfo 
 	return (errnum == 0);
 }
 
+/* Get application name */
+static gboolean get_app_name(const FlashContent *flashc, char *name)
+{
+	int i;
+	const unsigned char *data;
+	unsigned int type, length;
+
+	if (flashc->num_pages < 1 || flashc->pages[0]->size < 6
+	    || flashc->pages[0]->data[0] != 0x80
+	    || flashc->pages[0]->data[1] != 0x0f)
+		return FALSE;
+
+	i = 6;
+	data = flashc->pages[0]->data;
+	while (i < flashc->pages[0]->size && i < 128) {
+		type = (data[i] << 8 | (data[i + 1] & 0xf0));
+		length = data[i + 1] & 0x0f;
+		i += 2;
+
+		if (length == 0x0d) {
+			length = data[i];
+			i++;
+		}
+		else if (length == 0x0e) {
+			length = (data[i] << 8 | data[i + 1]);
+			i += 2;
+		}
+		else if (length == 0x0f) {
+			return FALSE;
+		}
+
+		if (type == 0x8070)
+			return FALSE;
+
+		if (type == 0x8040) {
+			memcpy(name, data + i, length > 8 ? 8 : length);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+/* Try to delete an existing Flash app before we send a replacement */
+static void try_delete_app(CalcHandle *ch, const FlashContent *flashc)
+{
+	VarRequest vr;
+
+	/* TI-73 does not support remote deletion */
+	if (ch->model == CALC_TI73)
+		return;
+
+	memset(&vr, 0, sizeof(VarRequest));
+	if (!get_app_name(flashc, vr.name))
+		return;
+
+	/* Why does this use type 0x14 and not 0x24?  I don't know. */
+	vr.type = 0x14;
+	ticalcs_calc_del_var(ch, &vr);
+	/* if an error occurs, ignore it */
+}
+
 /* Send a file using ticalcs2 */
 static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileInfo *sf)
 {
@@ -463,8 +524,10 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 			prepare_for_link_send(emu);
 			if (tifiles_file_is_os(sf->filename))
 				e = ticalcs_calc_send_os(ch, flashc);
-			else if (tifiles_file_is_app(sf->filename))
+			else if (tifiles_file_is_app(sf->filename)) {
+				try_delete_app(ch, flashc);
 				e = ticalcs_calc_send_app(ch, flashc);
+			}
 			else
 				e = ticalcs_calc_send_cert(ch, flashc);
 			end_link(emu, cbl, ch);
