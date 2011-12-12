@@ -580,6 +580,9 @@ static gboolean prompt_overwrite(const char *fname,
 	if (!g_file_test(fname, G_FILE_TEST_EXISTS))
 		return TRUE;
 
+	if (g_file_test(fname, G_FILE_TEST_IS_REGULAR))
+		return FALSE;
+
 	p = g_filename_display_basename(fname);
 	dlg = gtk_message_dialog_new(parent,
 	                             GTK_DIALOG_MODAL,
@@ -704,7 +707,8 @@ static char ** run_file_chooser(const char *title,
 			fnames[n] = NULL;
 
 			for (i = 0; i < n; i++)
-				if (!g_file_test(fnames[i], G_FILE_TEST_EXISTS))
+				if (!g_file_test(fnames[i],
+				                 G_FILE_TEST_IS_REGULAR))
 					break;
 			if (i < n) {
 				g_strfreev(fnames);
