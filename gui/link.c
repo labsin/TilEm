@@ -620,6 +620,7 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 	tve->can_group = TRUE;
 
 	tve->name_str = ticonv_varname_to_utf8(tfmodel, ve->name, ve->type);
+	g_strchomp(tve->name_str);
 	tve->type_str = g_strdup(tifiles_vartype2string(tfmodel, ve->type));
 	fext = tifiles_vartype2fext(tfmodel, ve->type);
 	tve->file_ext = g_ascii_strdown(fext, -1);
