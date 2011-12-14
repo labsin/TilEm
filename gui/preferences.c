@@ -65,10 +65,30 @@ static char *canonicalize_filename(const char *name)
 	return result;
 }
 
+/* check if two file names are equivalent (of course, if this fails,
+   it doesn't necessarily mean the files are distinct) */
+static gboolean file_names_equal(const char *a, const char *b)
+{
+	char *ca, *cb;
+	gboolean status;
+	
+	if (a == NULL && b == NULL)
+		return TRUE;
+	else if (a == NULL || b == NULL)
+		return FALSE;
+
+	ca = canonicalize_filename(a);
+	cb = canonicalize_filename(b);
+	status = !strcmp(ca, cb);
+	g_free(ca);
+	g_free(cb);
+	return status;
+}
+
 static void save_skin_name(TilemEmulatorWindow *ewin)
 {
 	const char *model = ewin->emu->calc->hw.name;
-	char *base, *shared, *canon;
+	char *base, *shared;
 
 	/* don't save pref unless skin was actually loaded */
 	if (!ewin->skin_file_name || !ewin->skin)
@@ -79,9 +99,8 @@ static void save_skin_name(TilemEmulatorWindow *ewin)
 	   absolute path */
 	base = g_path_get_basename(ewin->skin_file_name);
 	shared = get_shared_file_path("skins", base, NULL);
-	canon = canonicalize_filename(shared);
 
-	if (canon && !strcmp(canon, ewin->skin_file_name))
+	if (file_names_equal(shared, ewin->skin_file_name))
 		tilem_config_set(model,
 		                 "skin/f", base,
 		                 NULL);
@@ -92,7 +111,6 @@ static void save_skin_name(TilemEmulatorWindow *ewin)
 
 	g_free(base);
 	g_free(shared);
-	g_free(canon);
 }
 
 static void speed_changed(GtkToggleButton *btn, gpointer data)
@@ -147,8 +165,7 @@ static void skin_file_changed(GtkWidget *fe, gpointer data)
 	TilemEmulatorWindow *ewin = data;
 	char *fname = file_entry_get_filename(fe);
 
-	if (fname && (!ewin->skin_file_name
-	              || strcmp(fname, ewin->skin_file_name))) {
+	if (fname && !file_names_equal(fname, ewin->skin_file_name)) {
 		tilem_emulator_window_set_skin(ewin, fname);
 		save_skin_name(ewin);
 		g_free(fname);
