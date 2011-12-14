@@ -58,6 +58,74 @@ enum
 
 #define RESPONSE_REFRESH 1
 
+/* Prompt to overwrite a list of files. */
+static gboolean prompt_overwrite(GtkWindow *win, const char *dirname,
+                                 char **filenames)
+{
+	int i;
+	char *dname;
+	GString *conflicts;
+	int nconflicts = 0;
+	GtkWidget *dlg, *btn;
+	int response;
+
+	for (i = 0; filenames[i]; i++) {
+		if (g_file_test(filenames[i], G_FILE_TEST_EXISTS)) {
+			if (conflicts)
+				g_string_append_c(conflicts, '\n');
+			else
+				conflicts = g_string_new(NULL);
+			dname = g_filename_display_basename(filenames[i]);
+			g_string_append(conflicts, dname);
+			g_free(dname);
+			nconflicts++;
+		}
+	}
+
+	if (!conflicts)
+		return TRUE;
+
+	dname = g_filename_display_basename(dirname);
+
+	dlg = gtk_message_dialog_new
+		(win, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
+		 (nconflicts == 1
+		  ? "Replace existing file?"
+		  : "Replace existing files?"));
+
+	gtk_message_dialog_format_secondary_text
+		(GTK_MESSAGE_DIALOG(dlg),
+		 (nconflicts == 1
+		  ? "The file \"%2$s\" already exists in \"%1$s\"."
+		  "  Replacing it will overwrite its contents."
+		  : "The following files already exist in \"%s\"."
+		  "  Replacing them will overwrite their contents:\n%s"),
+		 dname, conflicts->str);
+
+	g_free(dname);
+	g_string_free(conflicts, TRUE);
+
+	gtk_dialog_add_button(GTK_DIALOG(dlg),
+	                      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+
+	btn = gtk_button_new_with_mnemonic("_Replace");
+	gtk_button_set_image(GTK_BUTTON(btn),
+	                     gtk_image_new_from_stock(GTK_STOCK_SAVE,
+	                                              GTK_ICON_SIZE_BUTTON));
+	gtk_widget_show(btn);
+	gtk_dialog_add_action_widget(GTK_DIALOG(dlg), btn,
+	                             GTK_RESPONSE_ACCEPT);
+
+	gtk_dialog_set_alternative_button_order(GTK_DIALOG(dlg),
+	                                        GTK_RESPONSE_ACCEPT,
+	                                        GTK_RESPONSE_CANCEL,
+	                                        -1);
+
+	response = gtk_dialog_run(GTK_DIALOG(dlg));
+	gtk_widget_destroy(dlg);
+	return (response == GTK_RESPONSE_ACCEPT);
+}
+
 /* #### SIGNALS CALLBACK #### */
 
 /* Prompt to save a single file. */
@@ -167,13 +235,14 @@ static gboolean prompt_save_group(TilemReceiveDialog *rcvdialog, GList *rows)
 /* Prompt to save a list of files.  Input is a list of GtkTreePaths */
 static gboolean prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 {
-	char *dir, *dir_selected, *default_filename,
-		*default_filename_f, *filename;
+	char *dir, *dir_selected, *default_filename, *default_filename_f;
 	GList *l;
 	GtkTreePath *path;
 	GtkTreeIter iter;
-	TilemVarEntry *tve;
+	TilemVarEntry *tve, **vars;
+	char **names;
 	gboolean is_81, use_group;
+	int i;
 
 	is_81 = (rcvdialog->emu->calc->hw.model_id == TILEM_CALC_TI81);
 	use_group = gtk_toggle_button_get_active
@@ -198,24 +267,40 @@ static gboolean prompt_save_multiple(TilemReceiveDialog *rcvdialog, GList *rows)
 	                 "save_as_group/b", use_group,
 	                 NULL);
 
-	/* FIXME: prompt to confirm overwriting if necessary */
-	for (l = rows; l; l = l->next) {
+	vars = g_new(TilemVarEntry *, g_list_length(rows) + 1);
+	names = g_new(char *, g_list_length(rows) + 1);
+
+	for (l = rows, i = 0; l; l = l->next, i++) {
 		path = (GtkTreePath*) l->data;
 		gtk_tree_model_get_iter(rcvdialog->model, &iter, path);
 		gtk_tree_model_get(rcvdialog->model, &iter, COL_ENTRY, &tve, -1);
 
+		vars[i] = tve;
+
 		default_filename = get_default_filename(tve);
 		default_filename_f = utf8_to_filename(default_filename);
-		filename = g_build_filename(dir_selected,
+		names[i] = g_build_filename(dir_selected,
 		                            default_filename_f, NULL);
-
-		tilem_link_receive_file(rcvdialog->emu, tve, filename);
-
-		g_free(filename);
 		g_free(default_filename);
 		g_free(default_filename_f);
 	}
 
+	vars[i] = NULL;
+	names[i] = NULL;
+
+	if (!prompt_overwrite(GTK_WINDOW(rcvdialog->window),
+	                      dir_selected, names)) {
+		g_free(vars);
+		g_strfreev(names);
+		g_free(dir_selected);
+		return FALSE;
+	}
+
+	for (i = 0; vars[i]; i++)
+		tilem_link_receive_file(rcvdialog->emu, vars[i], names[i]);
+
+	g_free(vars);
+	g_strfreev(names);
 	g_free(dir_selected);
 	return TRUE;
 }
