@@ -938,7 +938,9 @@ char tilem_guess_rom_type(FILE* romfile);
 char tilem_get_sav_type(FILE* savfile);
 
 /* Check validity of calculator certificate; repair if necessary */
-void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert);
+void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert,
+                                int app_start, int app_end,
+                                unsigned exptab_offset);
 
 #ifdef __cplusplus
 }

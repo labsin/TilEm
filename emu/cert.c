@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009-2011 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -23,6 +23,7 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include "tilem.h"
 
 static int certificate_valid(byte* cert)
@@ -75,10 +76,12 @@ static int certificate_valid(byte* cert)
 	return 1;
 }
 
-void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert)
+void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert,
+                                int app_start, int app_end,
+                                unsigned exptab_offset)
 {
-	int i;
-	int base;
+	int i, base, max_apps, page;
+	unsigned insttab_offset = 0x1fe0;
 
 	/* If the ROM was dumped from an unpatched OS, the certificate
 	   needs to be patched for some calculator functions to
@@ -97,14 +100,37 @@ void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert)
 
 	tilem_message(calc, "Repairing certificate area...");
 
-	cert[0] = 0;
-	for (i = 1; i < 0x1FE0; i++)
-		cert[i] = 0xff;
-	/* FIXME: set app mask correctly, according to what apps are
-	   actually present */
-	for (; i < 0x1fed; i++)
-		cert[i] = 0;
-	for (; i < 0x4000; i++)
-		cert[i] = 0xff;
+	memset(cert, 0xff, 16384);
 
+	cert[0] = 0;
+
+	cert[insttab_offset] = 0xfe;
+
+	if (app_start < app_end)
+		max_apps = app_end - app_start + 1;
+	else
+		max_apps = app_start - app_end + 1;
+
+	for (i = 0; i < max_apps; i++) {
+		if (app_start < app_end)
+			page = app_start + i;
+		else
+			page = app_start - i;
+
+		/* Clear installed bit / set expiration count for
+		   existing apps.  (If this incorrectly detects pages
+		   that aren't really apps, don't worry about it;
+		   better to err on the side of caution.) */
+		if (calc->mem[page << 14] != 0x80
+		    || calc->mem[(page << 14) + 1] != 0x0f)
+			continue;
+
+		tilem_message(calc, "Found application at page %02x (index %d)",
+		              page, i);
+
+		cert[insttab_offset + ((i + 1) / 8)] &= ~(1 << ((i + 1) % 8));
+
+		cert[exptab_offset + 2 * i] = 0x80;
+		cert[exptab_offset + 2 * i + 1] = 0x00;
+	}
 }
