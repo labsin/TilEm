@@ -1,0 +1,15 @@
+[Desktop Entry]
+Comment=
+Exec='tilem2'
+GenericName=TI Linux Emulator
+Icon=
+InitialPreference=2
+MimeType=application/x-tilem2
+Name=TilEm
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

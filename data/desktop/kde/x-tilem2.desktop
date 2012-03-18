@@ -1,0 +1,8 @@
+[deskktop Entry]
+Encoding=UTF-8
+MimeType=application/x-tilem2
+Comment=TilEm Rom File
+Comment[fr]=Fichier Rom TilEm
+Icon=
+Type=MimeType
+Patterns=*.rom;
