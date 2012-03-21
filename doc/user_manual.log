@@ -1,0 +1,895 @@
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.6.21)  21 MAR 2012 00:46
+entering extended mode
+ %&-line parsing enabled.
+**user_manual.tex
+(./user_manual.tex
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, loaded.
+(/usr/share/texmf-texlive/tex/latex/base/report.cls
+Document Class: report 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texmf-texlive/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(/usr/share/texmf-texlive/tex/generic/babel/babel.sty
+Package: babel 2008/07/06 v3.8l The Babel package
+
+(/usr/share/texmf-texlive/tex/generic/babel/frenchb.ldf
+Language: frenchb 2009/03/16 v2.3d French support from the babel system
+
+(/usr/share/texmf-texlive/tex/generic/babel/babel.def
+File: babel.def 2008/07/06 v3.8l Babel common definitions
+\babel@savecnt=\count88
+\U@D=\dimen103
+)
+
+Package babel Warning: No hyphenation patterns were loaded for
+(babel)                the language `French'
+(babel)                I will use the patterns loaded for \language=0 instead.
+
+\l@french = a dialect from \language0
+Package babel Info: Making : an active character on input line 120.
+Package babel Info: Making ; an active character on input line 121.
+Package babel Info: Making ! an active character on input line 122.
+Package babel Info: Making ? an active character on input line 123.
+\FB@Mht=\dimen104
+\std@mcc=\count89
+\dec@mcc=\count90
+\parindentFFN=\dimen105
+*************************************
+* Local config file frenchb.cfg used
+*
+(/usr/share/texmf-texlive/tex/generic/babel/frenchb.cfg)))
+(/usr/share/texmf-texlive/tex/latex/carlisle/scalefnt.sty)
+(/usr/share/texmf-texlive/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/share/texmf-texlive/tex/latex/base/inputenc.sty
+Package: inputenc 2008/03/30 v1.1d Input encoding file
+\inpenc@prehook=\toks15
+\inpenc@posthook=\toks16
+
+(/usr/share/texmf-texlive/tex/latex/base/utf8.def
+File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
+Now handling font encoding OML ...
+... no UTF-8 mapping file for font encoding OML
+Now handling font encoding T1 ...
+... processing UTF-8 mapping file for font encoding T1
+
+(/usr/share/texmf-texlive/tex/latex/base/t1enc.dfu
+File: t1enc.dfu 2008/04/05 v1.1m UTF-8 support for inputenc
+   defining Unicode char U+00A1 (decimal 161)
+   defining Unicode char U+00A3 (decimal 163)
+   defining Unicode char U+00AB (decimal 171)
+   defining Unicode char U+00BB (decimal 187)
+   defining Unicode char U+00BF (decimal 191)
+   defining Unicode char U+00C0 (decimal 192)
+   defining Unicode char U+00C1 (decimal 193)
+   defining Unicode char U+00C2 (decimal 194)
+   defining Unicode char U+00C3 (decimal 195)
+   defining Unicode char U+00C4 (decimal 196)
+   defining Unicode char U+00C5 (decimal 197)
+   defining Unicode char U+00C6 (decimal 198)
+   defining Unicode char U+00C7 (decimal 199)
+   defining Unicode char U+00C8 (decimal 200)
+   defining Unicode char U+00C9 (decimal 201)
+   defining Unicode char U+00CA (decimal 202)
+   defining Unicode char U+00CB (decimal 203)
+   defining Unicode char U+00CC (decimal 204)
+   defining Unicode char U+00CD (decimal 205)
+   defining Unicode char U+00CE (decimal 206)
+   defining Unicode char U+00CF (decimal 207)
+   defining Unicode char U+00D0 (decimal 208)
+   defining Unicode char U+00D1 (decimal 209)
+   defining Unicode char U+00D2 (decimal 210)
+   defining Unicode char U+00D3 (decimal 211)
+   defining Unicode char U+00D4 (decimal 212)
+   defining Unicode char U+00D5 (decimal 213)
+   defining Unicode char U+00D6 (decimal 214)
+   defining Unicode char U+00D8 (decimal 216)
+   defining Unicode char U+00D9 (decimal 217)
+   defining Unicode char U+00DA (decimal 218)
+   defining Unicode char U+00DB (decimal 219)
+   defining Unicode char U+00DC (decimal 220)
+   defining Unicode char U+00DD (decimal 221)
+   defining Unicode char U+00DE (decimal 222)
+   defining Unicode char U+00DF (decimal 223)
+   defining Unicode char U+00E0 (decimal 224)
+   defining Unicode char U+00E1 (decimal 225)
+   defining Unicode char U+00E2 (decimal 226)
+   defining Unicode char U+00E3 (decimal 227)
+   defining Unicode char U+00E4 (decimal 228)
+   defining Unicode char U+00E5 (decimal 229)
+   defining Unicode char U+00E6 (decimal 230)
+   defining Unicode char U+00E7 (decimal 231)
+   defining Unicode char U+00E8 (decimal 232)
+   defining Unicode char U+00E9 (decimal 233)
+   defining Unicode char U+00EA (decimal 234)
+   defining Unicode char U+00EB (decimal 235)
+   defining Unicode char U+00EC (decimal 236)
+   defining Unicode char U+00ED (decimal 237)
+   defining Unicode char U+00EE (decimal 238)
+   defining Unicode char U+00EF (decimal 239)
+   defining Unicode char U+00F0 (decimal 240)
+   defining Unicode char U+00F1 (decimal 241)
+   defining Unicode char U+00F2 (decimal 242)
+   defining Unicode char U+00F3 (decimal 243)
+   defining Unicode char U+00F4 (decimal 244)
+   defining Unicode char U+00F5 (decimal 245)
+   defining Unicode char U+00F6 (decimal 246)
+   defining Unicode char U+00F8 (decimal 248)
+   defining Unicode char U+00F9 (decimal 249)
+   defining Unicode char U+00FA (decimal 250)
+   defining Unicode char U+00FB (decimal 251)
+   defining Unicode char U+00FC (decimal 252)
+   defining Unicode char U+00FD (decimal 253)
+   defining Unicode char U+00FE (decimal 254)
+   defining Unicode char U+00FF (decimal 255)
+   defining Unicode char U+0102 (decimal 258)
+   defining Unicode char U+0103 (decimal 259)
+   defining Unicode char U+0104 (decimal 260)
+   defining Unicode char U+0105 (decimal 261)
+   defining Unicode char U+0106 (decimal 262)
+   defining Unicode char U+0107 (decimal 263)
+   defining Unicode char U+010C (decimal 268)
+   defining Unicode char U+010D (decimal 269)
+   defining Unicode char U+010E (decimal 270)
+   defining Unicode char U+010F (decimal 271)
+   defining Unicode char U+0110 (decimal 272)
+   defining Unicode char U+0111 (decimal 273)
+   defining Unicode char U+0118 (decimal 280)
+   defining Unicode char U+0119 (decimal 281)
+   defining Unicode char U+011A (decimal 282)
+   defining Unicode char U+011B (decimal 283)
+   defining Unicode char U+011E (decimal 286)
+   defining Unicode char U+011F (decimal 287)
+   defining Unicode char U+0130 (decimal 304)
+   defining Unicode char U+0131 (decimal 305)
+   defining Unicode char U+0132 (decimal 306)
+   defining Unicode char U+0133 (decimal 307)
+   defining Unicode char U+0139 (decimal 313)
+   defining Unicode char U+013A (decimal 314)
+   defining Unicode char U+013D (decimal 317)
+   defining Unicode char U+013E (decimal 318)
+   defining Unicode char U+0141 (decimal 321)
+   defining Unicode char U+0142 (decimal 322)
+   defining Unicode char U+0143 (decimal 323)
+   defining Unicode char U+0144 (decimal 324)
+   defining Unicode char U+0147 (decimal 327)
+   defining Unicode char U+0148 (decimal 328)
+   defining Unicode char U+014A (decimal 330)
+   defining Unicode char U+014B (decimal 331)
+   defining Unicode char U+0150 (decimal 336)
+   defining Unicode char U+0151 (decimal 337)
+   defining Unicode char U+0152 (decimal 338)
+   defining Unicode char U+0153 (decimal 339)
+   defining Unicode char U+0154 (decimal 340)
+   defining Unicode char U+0155 (decimal 341)
+   defining Unicode char U+0158 (decimal 344)
+   defining Unicode char U+0159 (decimal 345)
+   defining Unicode char U+015A (decimal 346)
+   defining Unicode char U+015B (decimal 347)
+   defining Unicode char U+015E (decimal 350)
+   defining Unicode char U+015F (decimal 351)
+   defining Unicode char U+0160 (decimal 352)
+   defining Unicode char U+0161 (decimal 353)
+   defining Unicode char U+0162 (decimal 354)
+   defining Unicode char U+0163 (decimal 355)
+   defining Unicode char U+0164 (decimal 356)
+   defining Unicode char U+0165 (decimal 357)
+   defining Unicode char U+016E (decimal 366)
+   defining Unicode char U+016F (decimal 367)
+   defining Unicode char U+0170 (decimal 368)
+   defining Unicode char U+0171 (decimal 369)
+   defining Unicode char U+0178 (decimal 376)
+   defining Unicode char U+0179 (decimal 377)
+   defining Unicode char U+017A (decimal 378)
+   defining Unicode char U+017B (decimal 379)
+   defining Unicode char U+017C (decimal 380)
+   defining Unicode char U+017D (decimal 381)
+   defining Unicode char U+017E (decimal 382)
+   defining Unicode char U+200C (decimal 8204)
+   defining Unicode char U+2013 (decimal 8211)
+   defining Unicode char U+2014 (decimal 8212)
+   defining Unicode char U+2018 (decimal 8216)
+   defining Unicode char U+2019 (decimal 8217)
+   defining Unicode char U+201A (decimal 8218)
+   defining Unicode char U+201C (decimal 8220)
+   defining Unicode char U+201D (decimal 8221)
+   defining Unicode char U+201E (decimal 8222)
+   defining Unicode char U+2030 (decimal 8240)
+   defining Unicode char U+2031 (decimal 8241)
+   defining Unicode char U+2039 (decimal 8249)
+   defining Unicode char U+203A (decimal 8250)
+   defining Unicode char U+2423 (decimal 9251)
+)
+Now handling font encoding OT1 ...
+... processing UTF-8 mapping file for font encoding OT1
+
+(/usr/share/texmf-texlive/tex/latex/base/ot1enc.dfu
+File: ot1enc.dfu 2008/04/05 v1.1m UTF-8 support for inputenc
+   defining Unicode char U+00A1 (decimal 161)
+   defining Unicode char U+00A3 (decimal 163)
+   defining Unicode char U+00B8 (decimal 184)
+   defining Unicode char U+00BF (decimal 191)
+   defining Unicode char U+00C5 (decimal 197)
+   defining Unicode char U+00C6 (decimal 198)
+   defining Unicode char U+00D8 (decimal 216)
+   defining Unicode char U+00DF (decimal 223)
+   defining Unicode char U+00E6 (decimal 230)
+   defining Unicode char U+00EC (decimal 236)
+   defining Unicode char U+00ED (decimal 237)
+   defining Unicode char U+00EE (decimal 238)
+   defining Unicode char U+00EF (decimal 239)
+   defining Unicode char U+00F8 (decimal 248)
+   defining Unicode char U+0131 (decimal 305)
+   defining Unicode char U+0141 (decimal 321)
+   defining Unicode char U+0142 (decimal 322)
+   defining Unicode char U+0152 (decimal 338)
+   defining Unicode char U+0153 (decimal 339)
+   defining Unicode char U+2013 (decimal 8211)
+   defining Unicode char U+2014 (decimal 8212)
+   defining Unicode char U+2018 (decimal 8216)
+   defining Unicode char U+2019 (decimal 8217)
+   defining Unicode char U+201C (decimal 8220)
+   defining Unicode char U+201D (decimal 8221)
+)
+Now handling font encoding OMS ...
+... processing UTF-8 mapping file for font encoding OMS
+
+(/usr/share/texmf-texlive/tex/latex/base/omsenc.dfu
+File: omsenc.dfu 2008/04/05 v1.1m UTF-8 support for inputenc
+   defining Unicode char U+00A7 (decimal 167)
+   defining Unicode char U+00B6 (decimal 182)
+   defining Unicode char U+00B7 (decimal 183)
+   defining Unicode char U+2020 (decimal 8224)
+   defining Unicode char U+2021 (decimal 8225)
+   defining Unicode char U+2022 (decimal 8226)
+)
+Now handling font encoding OMX ...
+... no UTF-8 mapping file for font encoding OMX
+Now handling font encoding U ...
+... no UTF-8 mapping file for font encoding U
+   defining Unicode char U+00A9 (decimal 169)
+   defining Unicode char U+00AA (decimal 170)
+   defining Unicode char U+00AE (decimal 174)
+   defining Unicode char U+00BA (decimal 186)
+   defining Unicode char U+02C6 (decimal 710)
+   defining Unicode char U+02DC (decimal 732)
+   defining Unicode char U+200C (decimal 8204)
+   defining Unicode char U+2026 (decimal 8230)
+   defining Unicode char U+2122 (decimal 8482)
+   defining Unicode char U+2423 (decimal 9251)
+))
+(/usr/share/texmf-texlive/tex/latex/base/fontenc.sty
+Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
+
+(/usr/share/texmf-texlive/tex/latex/base/t1enc.def
+File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
+))
+(/usr/share/texmf-texlive/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/etc/texmf/tex/latex/config/graphics.cfg
+File: graphics.cfg 2009/08/28 v1.8 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+
+(/usr/share/texmf-texlive/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2010/03/12 v0.04p Graphics/color for pdfTeX
+\Gread@gobject=\count91
+))
+\Gin@req@height=\dimen106
+\Gin@req@width=\dimen107
+)
+(/usr/share/texmf-texlive/tex/latex/floatrow/floatrow.sty
+Package: floatrow 2008/08/02 v0.3b floatrow: float package extension
+
+(/usr/share/texmf-texlive/tex/latex/caption/caption3.sty
+Package: caption3 2009/10/09 v3.1k caption3 kernel (AR)
+\captionmargin=\dimen108
+\captionmargin@=\dimen109
+\captionwidth=\dimen110
+\caption@indent=\dimen111
+\caption@parindent=\dimen112
+\caption@hangindent=\dimen113
+)
+\c@float@type=\count92
+\float@exts=\toks17
+\float@box=\box26
+\@floatcapt=\box27
+Package floatrow Info: Modified float package code loaded on input line 455.
+Package floatrow Info: Modified rotfloat package code loaded on input line 473.
+
+\FR@everyfloat=\toks18
+\flrow@foot=\insert233
+\FB@wd=\dimen114
+\FBo@wd=\dimen115
+\FBc@wd=\dimen116
+\FBo@ht=\skip43
+\FBc@ht=\skip44
+\FBf@ht=\skip45
+\FBo@max=\skip46
+\FBc@max=\skip47
+\FBf@max=\skip48
+\c@FBl@b=\count93
+\floatbox@depth=\count94
+\c@FRobj=\count95
+\c@FRsobj=\count96
+\Xhsize=\skip49
+\sXhsize=\skip50
+\Zhsize=\skip51
+\sZhsize=\skip52
+\flrow@rowbox=\box28
+\FR@Zunitlength=\dimen117
+\c@FBcnt=\count97
+\FPOScnt=\count98
+\LTleft=\skip53
+\LTright=\skip54
+\LTleft=\skip55
+\LTright=\skip56
+\flrow@types=\toks19
+) (./user_manual.aux)
+\openout1 = `user_manual.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Info: Redefining \degres on input line 18.
+LaTeX Info: Redefining \dots on input line 18.
+LaTeX Info: Redefining \up on input line 18.
+
+(/usr/share/texmf-texlive/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count99
+\scratchdimen=\dimen118
+\scratchbox=\box29
+\nofMPsegments=\count100
+\nofMParguments=\count101
+\everyMPshowfont=\toks20
+\MPscratchCnt=\count102
+\MPscratchDim=\dimen119
+\MPnumerator=\count103
+\everyMPtoPDFconversion=\toks21
+)
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
+ (/usr/share/texmf-texlive/tex/latex/graphics/color.sty
+Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
+
+(/etc/texmf/tex/latex/config/color.cfg
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package color Info: Driver file: pdftex.def on input line 130.
+)
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 19.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 19.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 19.
+ [1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./user_manual.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 3.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 3.
+)
+\tf@toc=\write3
+\openout3 = `user_manual.toc'.
+
+ [1
+
+]
+Chapitre 1.
+
+Underfull \hbox (badness 10000) in paragraph at lines 25--28
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 30--36
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 38--39
+
+ []
+
+[2
+
+] <pixs/diaporama_skin.png, id=18, 376.40625pt x 307.90031pt>
+File: pixs/diaporama_skin.png Graphic file (type png)
+
+<use pixs/diaporama_skin.png>
+Overfull \hbox (31.40532pt too wide) in paragraph at lines 56--57
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 50--58
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 50--58
+
+ []
+
+[3] [4 <./pixs/diaporama_skin.png>]
+Chapitre 2.
+
+Underfull \hbox (badness 10000) in paragraph at lines 62--64
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 66--67
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 73--75
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 73--75
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 76--78
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 76--78
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 84--86
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 87--89
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 87--89
+
+ []
+
+[5
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 90--92
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 90--92
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 94--97
+
+ []
+
+[6]
+Chapitre 3.
+<pixs/popup.png, id=35, 250.68657pt x 234.1247pt>
+File: pixs/popup.png Graphic file (type png)
+ <use pixs/popup.png>
+Underfull \hbox (badness 10000) in paragraph at lines 100--106
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 107--108
+
+ []
+
+[7
+
+ <./pixs/popup.png>] <pixs/send_file.png, id=40, 250.68657pt x 234.1247pt>
+File: pixs/send_file.png Graphic file (type png)
+
+<use pixs/send_file.png>
+<pixs/send_file_chooser.png, id=41, 380.17032pt x 367.3725pt>
+File: pixs/send_file_chooser.png Graphic file (type png)
+
+<use pixs/send_file_chooser.png>
+Overfull \hbox (35.16939pt too wide) in paragraph at lines 135--136
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 131--137
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 131--137
+
+ []
+
+[8 <./pixs/send_file.png>]
+<pixs/send_file_chooser_pattern.png, id=46, 116.68594pt x 136.25906pt>
+File: pixs/send_file_chooser_pattern.png Graphic file (type png)
+
+<use pixs/send_file_chooser_pattern.png>
+Underfull \hbox (badness 10000) in paragraph at lines 138--145
+
+ []
+
+[9 <./pixs/send_file_chooser.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 147--148
+
+ []
+
+<pixs/send_file_loading.png, id=51, 295.1025pt x 628.59843pt>
+File: pixs/send_file_loading.png Graphic file (type png)
+
+<use pixs/send_file_loading.png>
+<pixs/receive_file.png, id=52, 250.68657pt x 234.1247pt>
+File: pixs/receive_file.png Graphic file (type png)
+
+<use pixs/receive_file.png> [10 <./pixs/send_file_chooser_pattern.png> <./pixs/
+send_file_loading.png>]
+<pixs/receive_file_loading.png, id=58, 222.8325pt x 103.88812pt>
+File: pixs/receive_file_loading.png Graphic file (type png)
+
+<use pixs/receive_file_loading.png>
+Underfull \hbox (badness 10000) in paragraph at lines 161--166
+
+ []
+
+<pixs/receive_file_list.png, id=59, 231.86626pt x 225.84375pt>
+File: pixs/receive_file_list.png Graphic file (type png)
+
+<use pixs/receive_file_list.png>
+Underfull \hbox (badness 10000) in paragraph at lines 167--174
+
+ []
+
+[11 <./pixs/receive_file.png> <./pixs/receive_file_loading.png>]
+<pixs/receive_file_separate_or_grouped.png, id=65, 231.86626pt x 225.84375pt>
+File: pixs/receive_file_separate_or_grouped.png Graphic file (type png)
+
+<use pixs/receive_file_separate_or_grouped.png>
+Underfull \hbox (badness 10000) in paragraph at lines 175--182
+
+ []
+
+<pixs/receive_file_chooser.png, id=66, 453.19313pt x 350.81062pt>
+File: pixs/receive_file_chooser.png Graphic file (type png)
+
+<use pixs/receive_file_chooser.png>
+Overfull \hbox (17.555pt too wide) in paragraph at lines 188--189
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 183--190
+
+ []
+
+[12 <./pixs/receive_file_list.png> <./pixs/receive_file_separate_or_grouped.png
+>] <pixs/open_rom.png, id=73, 250.68657pt x 234.1247pt>
+File: pixs/open_rom.png Graphic file (type png)
+
+<use pixs/open_rom.png> [13 <./pixs/receive_file_chooser.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 199--202
+
+ []
+
+<pixs/open_rom_chooser.png, id=78, 362.85562pt x 325.96782pt>
+File: pixs/open_rom_chooser.png Graphic file (type png)
+
+<use pixs/open_rom_chooser.png> [14 <./pixs/open_rom.png>]
+<pixs/open_rom_chooser_pattern.png, id=83, 70.76437pt x 42.1575pt>
+File: pixs/open_rom_chooser_pattern.png Graphic file (type png)
+
+<use pixs/open_rom_chooser_pattern.png>
+Underfull \hbox (badness 10000) in paragraph at lines 208--213
+
+ []
+
+<pixs/save_calculator.png, id=84, 250.68657pt x 234.1247pt>
+File: pixs/save_calculator.png Graphic file (type png)
+
+<use pixs/save_calculator.png> [15 <./pixs/open_rom_chooser.png> <./pixs/open_r
+om_chooser_pattern.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 224--226
+
+ []
+
+<pixs/revert_calculator.png, id=90, 250.68657pt x 234.1247pt>
+File: pixs/revert_calculator.png Graphic file (type png)
+
+<use pixs/revert_calculator.png>
+Underfull \hbox (badness 10000) in paragraph at lines 234--235
+
+ []
+
+[16 <./pixs/save_calculator.png> <./pixs/revert_calculator.png>]
+File: pixs/revert_calculator.png Graphic file (type png)
+
+<use pixs/revert_calculator.png>
+<pixs/debugger.png, id=96, 250.68657pt x 234.1247pt>
+File: pixs/debugger.png Graphic file (type png)
+ <use pixs/debugger.png>
+[17]
+Underfull \hbox (badness 10000) in paragraph at lines 253--254
+
+ []
+
+<pixs/debugger_dialog.png, id=100, 563.85657pt x 398.99063pt>
+File: pixs/debugger_dialog.png Graphic file (type png)
+
+<use pixs/debugger_dialog.png>
+Overfull \hbox (106.08586pt too wide) in paragraph at lines 257--258
+ [][] 
+ []
+
+[18 <./pixs/debugger.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 260--267
+
+ []
+
+<pixs/debugger_disasm_popup.png, id=106, 552.56438pt x 341.02406pt>
+File: pixs/debugger_disasm_popup.png Graphic file (type png)
+
+<use pixs/debugger_disasm_popup.png>
+Overfull \hbox (97.0521pt too wide) in paragraph at lines 274--275
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 268--276
+
+ []
+
+[19 <./pixs/debugger_dialog.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 278--280
+
+ []
+
+<pixs/debugger_logical.png, id=111, 144.54pt x 57.96657pt>
+File: pixs/debugger_logical.png Graphic file (type png)
+
+<use pixs/debugger_logical.png>
+<pixs/debugger_memory_edit.png, id=112, 552.56438pt x 341.02406pt>
+File: pixs/debugger_memory_edit.png Graphic file (type png)
+
+<use pixs/debugger_memory_edit.png>
+Overfull \hbox (97.0521pt too wide) in paragraph at lines 292--293
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 286--294
+
+ []
+
+[20 <./pixs/debugger_disasm_popup.png> <./pixs/debugger_logical.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 295--300
+
+ []
+
+<pixs/debugger_debug.png, id=118, 563.85657pt x 398.99063pt>
+File: pixs/debugger_debug.png Graphic file (type png)
+
+<use pixs/debugger_debug.png>
+Overfull \hbox (106.08586pt too wide) in paragraph at lines 304--305
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 301--306
+
+ []
+
+[21 <./pixs/debugger_memory_edit.png>]
+Overfull \hbox (0.7489pt too wide) in paragraph at lines 307--310
+\T1/cmr/m/n/10 This op-tion opens the Break-point menu when you can "Add", "Re-
+move", "Edit",
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 307--310
+
+ []
+
+<pixs/debugger_breakpoint.png, id=123, 268.00125pt x 225.84375pt>
+File: pixs/debugger_breakpoint.png Graphic file (type png)
+
+<use pixs/debugger_breakpoint.png> [22 <./pixs/debugger_debug.png>]
+File: pixs/debugger_breakpoint.png Graphic file (type png)
+
+<use pixs/debugger_breakpoint.png>
+Underfull \hbox (badness 10000) in paragraph at lines 316--321
+
+ []
+
+<pixs/debugger_go.png, id=128, 225.84375pt x 73.77562pt>
+File: pixs/debugger_go.png Graphic file (type png)
+
+<use pixs/debugger_go.png>
+Underfull \hbox (badness 10000) in paragraph at lines 323--328
+
+ []
+
+[23 <./pixs/debugger_breakpoint.png>]
+<pixs/debugger_keypad.png, id=133, 530.73282pt x 250.68657pt>
+File: pixs/debugger_keypad.png Graphic file (type png)
+
+<use pixs/debugger_keypad.png>
+Overfull \hbox (79.58682pt too wide) in paragraph at lines 333--334
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 330--335
+
+ []
+
+<pixs/macro.png, id=134, 138.5175pt x 89.58469pt>
+File: pixs/macro.png Graphic file (type png)
+ <use pixs/macro.png>
+Underfull \hbox (badness 10000) in paragraph at lines 339--348
+
+ []
+
+[24 <./pixs/debugger_go.png> <./pixs/debugger_keypad.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 349--351
+
+ []
+
+File: pixs/macro.png Graphic file (type png)
+<use pixs/macro.png>
+Underfull \hbox (badness 10000) in paragraph at lines 358--359
+
+ []
+
+<pixs/screenshot_dialog.png, id=141, 313.9228pt x 390.70969pt>
+File: pixs/screenshot_dialog.png Graphic file (type png)
+
+<use pixs/screenshot_dialog.png> [25 <./pixs/macro.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 365--369
+
+ []
+
+<pixs/preferences.png, id=146, 250.68657pt x 234.1247pt>
+File: pixs/preferences.png Graphic file (type png)
+
+<use pixs/preferences.png>
+Underfull \hbox (badness 10000) in paragraph at lines 372--377
+
+ []
+
+[26 <./pixs/screenshot_dialog.png>]
+<pixs/preferences_dialog.png, id=151, 191.9672pt x 187.45032pt>
+File: pixs/preferences_dialog.png Graphic file (type png)
+
+<use pixs/preferences_dialog.png>
+Underfull \hbox (badness 10000) in paragraph at lines 379--386
+
+ []
+
+<pixs/skin_file_chooser.png, id=152, 465.23813pt x 468.24937pt>
+File: pixs/skin_file_chooser.png Graphic file (type png)
+
+<use pixs/skin_file_chooser.png>
+Overfull \hbox (27.191pt too wide) in paragraph at lines 392--393
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 387--394
+
+ []
+
+[27 <./pixs/preferences.png> <./pixs/preferences_dialog.png>]
+<pixs/about.png, id=158, 250.68657pt x 234.1247pt>
+File: pixs/about.png Graphic file (type png)
+ <use pixs/about.png>
+[28 <./pixs/skin_file_chooser.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 403--404
+
+ []
+
+<pixs/about_dialog.png, id=163, 316.18124pt x 191.9672pt>
+File: pixs/about_dialog.png Graphic file (type png)
+
+<use pixs/about_dialog.png> <pixs/quit.png, id=164, 250.68657pt x 234.1247pt>
+File: pixs/quit.png Graphic file (type png)
+
+<use pixs/quit.png> [29 <./pixs/about.png> <./pixs/about_dialog.png>] [30 <./pi
+xs/quit.png>]
+Chapitre 4.
+
+Underfull \hbox (badness 10000) in paragraph at lines 421--423
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 436--438
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 436--438
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 439--446
+
+ []
+
+[31
+
+]
+Chapitre 5.
+[32
+
+] (./user_manual.aux) ) 
+Here is how much of TeX's memory you used:
+ 3299 strings out of 495061
+ 46540 string characters out of 1182621
+ 106537 words of memory out of 3000000
+ 6431 multiletter control sequences out of 15000+50000
+ 14759 words of font info for 34 fonts, out of 3000000 for 9000
+ 28 hyphenation exceptions out of 8191
+ 37i,8n,38p,217b,286s stack positions out of 5000i,500n,10000p,200000b,50000s
+ </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/eccc1
+000.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk> </
+home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx2074.600pk> </home/tib/.tex
+mf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk> </home/tib/.texmf-var/fonts/
+pk/ljfour/jknappen/ec/ecbx1000.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jkn
+appen/ec/ecbx2488.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm
+1200.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk>
+Output written on user_manual.pdf (33 pages, 1455129 bytes).
+PDF statistics:
+ 445 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 166 words of extra memory for PDF output out of 10000 (max. 10000000)
+
