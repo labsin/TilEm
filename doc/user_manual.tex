@@ -1,16 +1,43 @@
 \documentclass[10pt]{report}
-\usepackage[francais]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{floatrow}
 \usepackage{float}
+\usepackage{listings}
+\usepackage{color}
 \def\euro{\mbox{\raisebox{.25ex}{{\it =}}\hspace{-.5em}{\sf C}}} 
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{5}
 
 
-\title {TilEm USER MANUAL}
+\lstset{
+	language=bash,
+	basicstyle=\scriptsize\ttfamily,
+	commentstyle=\ttfamily\color{white},
+	numbers=left,
+	numberstyle=\ttfamily\color{white}\footnotesize,
+	stepnumber=1,
+	numbersep=5pt,
+	backgroundcolor=\color{white},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	frame=single,
+	tabsize=2,
+	captionpos=b,
+	breaklines=true,
+	breakatwhitespace=false,
+	title=\lstname,
+	escapeinside={},
+	keywordstyle={\color{white}},
+	morekeywords={\color{white}},
+	stringstyle={\color{white}}
+}
+
+
+
+\title {TilEm2 USER MANUAL}
 \author {DUPONCHELLE Thibault - MOODY Benjamin}
 
 
@@ -25,6 +52,8 @@
 TilEm2 is a TI calculator emulator. It emulates all the Z80 calculators (73, 76.fr, 81, 82, 82stats, 82stats.fr, 83, 83+, 83+ SE, 84+, 84+ SE, 85, and 86) and all known ROM/OS versions.\newline
 TilEm2 is completely free, and designed for Linux (but available for Windows).\newline
 We put a lot of work in this software to offer to the community the best possible product.\newline
+TilEm2 also provides a full featured debugger with disassembler, breakpoints, memory view and more.\newline
+
 
 \section{Some history}
 Some of you probably already know TilEm because a first version was released around 2000/2001 by Julien Solignac (the maintained by Benjamin Moody since 2004).\newline
@@ -49,7 +78,13 @@ TilEm2 has basically all the TilEm old features plus a lot of new things :\newli
 \section{Skins}
 You can use TilEm2 without skin (just uncheck the "Use skin" checkbox into the Preferences menu) but skins are more user friendly :)\newline
 We have made some officials and free to use skins (thank you to our contributors).\newline
-You can do your skins using skinedit. If you want, you can send us the skin file, maybe it could become "official".\newline\newline
+You can do your own skins using skinedit. If you want, you can send us the skin file, maybe it could become "official".\newline\newline
+What do you need to do your own skin?\newline
+Just take a picture of your calc using your smartphone by example.\newline
+Scale it keeping proportion to have around 900 pixels high.\newline
+Then start skinedit, create a new skin, open the picture and set the key positions.\newline
+It takes less than 20/30 minutes I think.\newline
+Then you can test it with TilEm2.That's all!\newline
 Here are the current skins available by default :\newline
 \begin{figure}[H]
 \centering
@@ -61,6 +96,8 @@ Here are the current skins available by default :\newline
 \section{Generalities}
 Before installing TilEm2, you should know that no ROM is included in this software.\newline
 In order to use TilEm2, you must use your own rom (use TILP to get it).\newline
+TilEm2 provides an installer msi for windows and script autoconf for Linux.\newline
+There's not a lot of dependancies so you should really have no problem to install it.\newline
 
 \section{Dependancies}
 TilEm2 uses the following libraries :\newline
@@ -68,32 +105,75 @@ TilEm2 uses the following libraries :\newline
 \item	GTK+ 2.6 or higher (but 3.x not supported yet).
 \item	libticalcs2.
 \end{itemize}
+You can find libticalcs2 on ticalc (from Romain Lievins).\newline
 
 \section{Install from sources}
+Download the sources of TilEm2 on sourceforge.net.\newline
+Or eventually :\newline
 Dowload the source from the trunk like this :\newline
+\begin{lstlisting}
 svn co https://tilem.svn.sourceforge.net/svnroot/tilem\newline\newline
+\end{lstlisting}
 
 Then install gtk+ (e.g. for debian : sudo apt-get install libgtk2.0-dev).\newline
 Then install libticalc2.\newline\newline
 
 After that, simply use the configure script and the well know Linux install :\newline
+\begin{lstlisting}
 ./configure
+\end{lstlisting}
+If you have no errors, so dependancies are checked and it's ok.\newline
+The Makefile have been generated so type:\newline
+\begin{lstlisting}
 make
+\end{lstlisting}
+Then to copy the icons, configuration files and tilem2 binary type:\newline
+\begin{lstlisting}
 sudo make install
+\end{lstlisting}
 
 Usually, icons will be copied into /usr/share/tilem2/\newline
 Keybindings and configuration file will be installed into \$HOME/.config/tilem2\newline
 
 Then you can launch TilEm2 with the command :\newline
-tilem2 -r /path/to/rom\newline\newline
+\begin{lstlisting}
+tilem2 -r /path/to/rom
+\end{lstlisting}
 
 Or simply :\newline
-tilem2\newline\newline
+\begin{lstlisting}
+tilem2
+\end{lstlisting}
 
 \section{First use}
-If no rom is loaded, simply click right on the window and choose "Open Calculator...".\newline
+If you do not specify explicitely a rom on the command line, the first launch will ask you which rom you want to use.\newline
+TilEm2 will open a file chooser dialog.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/first_use_rom_chooser.png}}
+\caption{Starting TilEm2 for the first time}
+\end{figure}
+
+As soon you press "Ok", TilEm2 will try to guess the model of this rom (and check if it's a correct rom).\newline
+When TilEm2 has a doubt, he will ask you for the model but will display only the possible candidates (not all the z80 calc).\newline
+Anyway, if you launch a rom, you usually know what's model it is because as I've already said : you should have the calculator of the rom you're trying to emulate...\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/first_use_model_chooser.png}}
+\caption{Choose the model}
+\end{figure}
+
+After that, TilEm2 start (but calc is off you need to press on).\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/first_use_works_fine.png}}
+\caption{It works !}
+\end{figure}
 The last used rom is automatically used for the next launch of TilEm2.\newline
 You can save the current state of the calculator by using "Save Calculator".\newline
+If you cancel the rom chooser dialog, TilEm2 automatically shutdown.\newline
 
 \chapter{Utilisation}
 \section{Menu}
@@ -418,20 +498,34 @@ No more than an about dialog :)\newline
 Bye Bye ;)
 
 \chapter{Command line usage}
+
+\section{Basics}
 TilEm2 is basically made for Linux and command line is our first love :)\newline
 Here the options at launch.\newline
-\begin{itemize}
-\item  -r, --rom=FILE            The rom file to run
-\item  -k, --skin=FILE           The skin file to use
-\item  -m, --model=NAME          The model to use
-\item  -f, --file=FILE           The file to load
-\item  -s, --state-file=FILE     The state-file to use
-\item  -l, --without-skin        Start in skinless mode
-\item  --reset                   Reset the calc at startup
-\item  --get-var=FILE            Get a var at startup
-\item  -p, --play-macro=FILE     Run this macro at startup
-\item  -d, --debug               Launch debugger
-\end{itemize}
+\begin{lstlisting}
+Usage:
+  tilem2 [OPTION...] FILE
+
+Help Options:
+  -h, --help                Show help options
+  --help-all                Show all help options
+  --help-gtk                Show GTK+ Options
+
+Application Options:
+  -r, --rom=FILE            The rom file to run
+  -k, --skin=FILE           The skin file to use
+  -m, --model=NAME          The model to use
+  -f, --file=FILE           The file to load
+  -s, --state-file=FILE     The state-file to use
+  -l, --without-skin        Start in skinless mode
+  --reset                   Reset the calc at startup
+  --get-var=FILE            Get a var at startup
+  -p, --play-macro=FILE     Run this macro at startup
+  -d, --debug               Launch debugger
+  --normal-speed            Run at normal speed
+  --full-speed              Run at maximum speed
+  --display=DISPLAY         X display to use
+\end{lstlisting}
 
 You should usually use something like : \newline
 tilem2 -r /path/to/my/rom\newline\newline
@@ -442,12 +536,75 @@ You can specify a different save state (by default it uses the one which is call
 You can start skinless.\newline
 You can load a file and even launch a macro at startup (in this case loading a file is done before macro playing).\newline
 You can reset too, get a var (if possible) and launch debugger.\newline
+Some options could be set at startup as normal speed or full speed (as fast as possible).\newline
+Other options are not TilEm2 options (--display by example).\newline
 Something is missing?\newline
 
+\section{Examples}
+
+First starting using configuration file (need to have already started one time before). 
+\begin{lstlisting}
+tilem2
+\end{lstlisting}
+You can specify the rom to use:\newline
+\begin{lstlisting}
+tilem2 -r /path/to/my/rom.rom
+\end{lstlisting}
+You can choose a skin at startup
+\begin{lstlisting}
+tilem2 -r /path/to/my/rom.rom -k /path/to/my/skin
+\end{lstlisting}
+Choose a save save state: \newline
+\begin{lstlisting}
+tilem2 -r /path/to/my/rom.rom -k /path/to/my/skin.skn -s /path/to/my/savestate.sav
+\end{lstlisting}
+Or just starting a model without giving a rom file:\newline
+\begin{lstlisting}
+tilem2 -m ti83
+\end{lstlisting}
+Starting skinless :\newline
+\begin{lstlisting}
+tilem2 -m ti83 -l
+\end{lstlisting}
+Reset the calc at startup :\newline
+\begin{lstlisting}
+tilem2 -m ti82 --reset
+\end{lstlisting}
+Trying to get a var at startup:\newline
+\begin{lstlisting}
+tilem2 -m ti82 --get-var=ION
+\end{lstlisting}
+Starting in full speed mode:\newline
+\begin{lstlisting}
+tilem2 -r $rom --full-speed
+\end{lstlisting}
+Or in normal speed:
+\begin{lstlisting}
+tilem2 -r $rom --normal-speed
+\end{lstlisting}
+Play a macro at startup:\newline
+\begin{lstlisting}
+tilem2 -r $rom -f /path/to/my/best/program -p /path/to/my/macro
+\end{lstlisting}
+Warning, in this situation, load + macro play, the load is done before the macro playing.\newline\newline
+You can also launch debugger (and pause the calc by extension) :\newline
+\begin{lstlisting}
+tilem2 -r $rom -d
+\end{lstlisting}
 
 \chapter{Configuration files}
 \section{General configuration}
+You should not edit this file because you don't need it.\newline
+If something wrong, by your fault or a bug in TilEm2, just get a new configuration file from the TilEm2 website and replace the wrong config.ini file.\newline
+It's usually copied into ~/.config/tilem2/config.ini\newline
 \section{Keybindings}
+The keybindings are defined in a keybindings.ini file (usually copied into ~/.config/tilem2/keybindings.ini).\newline
+There's currently no tool to interactively edit this file, but you can edit it by hand if you do this carefully.\newline
+This file uses inheritance, it means that a part of the keybindings are common to all models, but you can rewrite them for each model.\newline
+So firstly, TilEm2 parses common, then if he find another keybindings for the same keypress, he rewrite it.\newline
+There's one subsection per model.\newline
+
+
 
 
 \end{document}

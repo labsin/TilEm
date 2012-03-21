@@ -1,4 +1,3 @@
-\select@language {french}
 \contentsline {chapter}{\numberline {1}Introduction}{2}
 \contentsline {section}{\numberline {1.1}What's TilEm2?}{2}
 \contentsline {section}{\numberline {1.2}Some history}{2}
@@ -9,21 +8,23 @@
 \contentsline {section}{\numberline {2.2}Dependancies}{5}
 \contentsline {section}{\numberline {2.3}Install from sources}{5}
 \contentsline {section}{\numberline {2.4}First use}{6}
-\contentsline {chapter}{\numberline {3}Utilisation}{7}
-\contentsline {section}{\numberline {3.1}Menu}{7}
-\contentsline {section}{\numberline {3.2}Send File...}{8}
-\contentsline {section}{\numberline {3.3}Receive File...}{11}
-\contentsline {section}{\numberline {3.4}Open Calculator...}{14}
-\contentsline {section}{\numberline {3.5}Save Calculator...}{16}
-\contentsline {section}{\numberline {3.6}Revert Calculator State}{16}
-\contentsline {section}{\numberline {3.7}Reset Calculator}{17}
-\contentsline {section}{\numberline {3.8}Debugger}{18}
-\contentsline {section}{\numberline {3.9}Macro}{24}
-\contentsline {section}{\numberline {3.10}Screenshot...}{25}
-\contentsline {section}{\numberline {3.11}Preferences}{26}
-\contentsline {section}{\numberline {3.12}About}{29}
-\contentsline {section}{\numberline {3.13}Quit}{30}
-\contentsline {chapter}{\numberline {4}Command line usage}{31}
-\contentsline {chapter}{\numberline {5}Configuration files}{32}
-\contentsline {section}{\numberline {5.1}General configuration}{32}
-\contentsline {section}{\numberline {5.2}Keybindings}{32}
+\contentsline {chapter}{\numberline {3}Utilisation}{10}
+\contentsline {section}{\numberline {3.1}Menu}{10}
+\contentsline {section}{\numberline {3.2}Send File...}{12}
+\contentsline {section}{\numberline {3.3}Receive File...}{15}
+\contentsline {section}{\numberline {3.4}Open Calculator...}{18}
+\contentsline {section}{\numberline {3.5}Save Calculator...}{20}
+\contentsline {section}{\numberline {3.6}Revert Calculator State}{20}
+\contentsline {section}{\numberline {3.7}Reset Calculator}{21}
+\contentsline {section}{\numberline {3.8}Debugger}{22}
+\contentsline {section}{\numberline {3.9}Macro}{28}
+\contentsline {section}{\numberline {3.10}Screenshot...}{29}
+\contentsline {section}{\numberline {3.11}Preferences}{30}
+\contentsline {section}{\numberline {3.12}About}{33}
+\contentsline {section}{\numberline {3.13}Quit}{34}
+\contentsline {chapter}{\numberline {4}Command line usage}{35}
+\contentsline {section}{\numberline {4.1}Basics}{35}
+\contentsline {section}{\numberline {4.2}Examples}{36}
+\contentsline {chapter}{\numberline {5}Configuration files}{38}
+\contentsline {section}{\numberline {5.1}General configuration}{38}
+\contentsline {section}{\numberline {5.2}Keybindings}{38}
