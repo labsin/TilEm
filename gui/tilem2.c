@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -228,6 +228,7 @@ int main(int argc, char **argv)
 	g_free(menurc_path);
 
 	init_custom_icons();
+	gtk_window_set_default_icon_name("tilem");
 
 	emu = tilem_calc_emulator_new();
 
