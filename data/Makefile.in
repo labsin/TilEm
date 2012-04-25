@@ -5,6 +5,7 @@ bindir = @bindir@
 datadir = @datadir@
 pkgdatadir = @datadir@/tilem2
 mandir = @mandir@
+icondir = @datadir@/icons
 
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
@@ -16,9 +17,20 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 SHELL = @SHELL@
 
-icondirs = hicolor/16x16/actions \
-	   hicolor/16x16/status \
-	   hicolor/24x24/actions
+# Custom action and status icons go in these directories.  These icons
+# are only used by TilEm, so they are installed in DATADIR/tilem2/icons.
+pkg_icondirs = hicolor/16x16/actions \
+	       hicolor/16x16/status \
+	       hicolor/24x24/actions
+
+# Application icons go in these directories; these icons will be
+# installed in DATADIR/icons so they are visible to other programs
+# (e.g. desktop application menus.)
+shared_icondirs = hicolor/16x16/apps \
+		  hicolor/22x22/apps \
+		  hicolor/24x24/apps \
+		  hicolor/32x32/apps \
+		  hicolor/48x48/apps
 
 all:
 	@echo 'Nothing to do'
@@ -34,10 +46,16 @@ install:
 	set -e ; for i in $(srcdir)/skins/*.skn ; do \
 	 $(INSTALL_DATA) $$i $(DESTDIR)$(pkgdatadir)/skins ; \
 	done
-	set -e ; for i in $(icondirs) ; do \
+	set -e ; for i in $(pkg_icondirs) ; do \
 	 $(INSTALL) -d -m 755 $(DESTDIR)$(pkgdatadir)/icons/$$i ; \
 	 for j in $(srcdir)/icons/$$i/*.png ; do \
 	  $(INSTALL_DATA) $$j $(DESTDIR)$(pkgdatadir)/icons/$$i ; \
+	 done ; \
+	done
+	set -e ; for i in $(shared_icondirs) ; do \
+	 $(INSTALL) -d -m 755 $(DESTDIR)$(icondir)/$$i ; \
+	 for j in $(srcdir)/icons/$$i/*.png ; do \
+	  $(INSTALL_DATA) $$j $(DESTDIR)$(icondir)/$$i ; \
 	 done ; \
 	done
 	$(INSTALL_DATA) $(srcdir)/icons/hicolor/index.theme $(DESTDIR)$(pkgdatadir)/icons/hicolor
@@ -50,9 +68,14 @@ uninstall:
 	set -e ; for i in $(srcdir)/skins/*.skn ; do \
 	 rm -f $(DESTDIR)$(pkgdatadir)/skins/`basename $$i` ; \
 	done
-	set -e ; for i in $(icondirs) ; do \
+	set -e ; for i in $(pkg_icondirs) ; do \
 	 for j in $(srcdir)/icons/$$i/*.png ; do \
 	  rm -f $(DESTDIR)$(pkgdatadir)/icons/$$i/`basename $$j` ; \
+	 done ; \
+	done
+	set -e ; for i in $(shared_icondirs) ; do \
+	 for j in $(srcdir)/icons/$$i/*.png ; do \
+	  rm -f $(DESTDIR)$(icondir)/$$i/`basename $$j` ; \
 	 done ; \
 	done
 	-for i in $(icondirs) ; do \
