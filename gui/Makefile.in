@@ -79,7 +79,7 @@ compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS) \
 	$(TILEMCORE_CFLAGS) $(TILEMDB_CFLAGS) \
 	$(GTK_CFLAGS) $(TICALCS_CFLAGS)
 
-link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
+link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS) 
 
 common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
 	gui.h emulator.h debugger.h emuwin.h skinops.h animation.h \

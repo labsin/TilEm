@@ -281,5 +281,18 @@
 * - New command line parser. Now tilem2 uses g_option from the glib instead of getopt. Easy handling of long options. Do not need to take care about correct parsing. A lot of new options are provided but not implemented !
 * - Delete args.c (old _but working well _ cmd line parser using getopt) and TilemCmdlineArgs structure from gui.h.
 * - Add the possibility to getvar a file at startup. I had to use a weird solution to do this with task manager. But it's working :)
+* ---12/12/11---
+* - Benjamin do a lot of improvements on file chooser (filters, ...).
+* ---22/12/11---
+* - Benjamin fix certificate patching.
+* ---19/03/12---
+* - Icons are finally commited into the trunk. These pictures are originaly designed by Scott Zeid and modified by me. No .desktop and icons installer for the moment.
+* - Scott, thank you a lot for these wonderful pictures!
+* ---21/03/12---
+* - Adding documentation (LaTeX). The documentation is not finished yet. Lot of pictures added.
+* ---24/04/12---
+* - Benjamin added some correction to install properly the icons.
+* ---27/04/12---
+* - Some modifications on the configure script because something was failing on my debian wheezy. It works fine yet (using squeeze and gtk/glib downgraded packages and some minor modifications on configure scripts).
 */
 
