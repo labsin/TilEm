@@ -13,17 +13,12 @@ AC_HEADER_STDBOOL
 AC_C_BIGENDIAN
 AC_C_RESTRICT
 AC_C_INLINE
-AC_TYPE_SIZE_T
 AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
 AC_TYPE_UINTPTR_T
 
 # Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([memmove memset pow strchr strerror strrchr strtol])
+AC_CHECK_FUNCS([memmove memset pow strchr strrchr strtol])
 
 # Checks for programs
 
@@ -97,9 +92,8 @@ fi
 
 AC_SUBST(GUI_LDFLAGS)
 
-AC_CHECK_LIB(gtk-x11-2.0, gtk_init)
 with_flags(GTK,
-  [ AC_CHECK_LIB(gtk-x11-2.0, gtk_init, [ have_gtk=yes ], [ have_gtk=no ]) ])
+  [ AC_CHECK_FUNC(gtk_init, [ have_gtk=yes ], [ have_gtk=no ]) ])
 if test "x$have_gtk" != "xyes" ; then
   AC_MSG_ERROR([GTK+ 2.x libraries not found or not usable.
 You must install a recent version of GTK+ 2.x, including the
@@ -133,9 +127,8 @@ if test "x$TICALCS_LIBS" = "x" &&
     [ : ])
 fi
 
-AC_CHECK_LIB(ticalcs2, $init_function)
 with_flags(TICALCS,
-  [ AC_CHECK_LIB(ticalcs2, $init_function, [ have_ticalcs=yes ], [ have_ticalcs=no ]) ])
+  [ AC_CHECK_FUNC($init_function, [ have_ticalcs=yes ], [ have_ticalcs=no ]) ])
 if test "x$have_ticalcs" != "xyes" ; then
   AC_MSG_ERROR([libticalcs2/libcalcprotocols not found or not usable.
 You must install one of these two libraries, including the
