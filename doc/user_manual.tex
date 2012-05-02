@@ -56,7 +56,7 @@ TilEm2 also provides a full featured debugger with disassembler, breakpoints, me
 
 
 \section{Some history}
-Some of you probably already know TilEm because a first version was released around 2000/2001 by Julien Solignac (the maintained by Benjamin Moody since 2004).\newline
+Some of you probably already know TilEm because a first version was released around 2000/2001 by Julien Solignac (then maintained by Benjamin Moody since 2004).\newline
 This first version was working fine but there were some issues, skins were too small and bad resolution and a lot of feature were missing.\newline
 Anyway, this software was pretty good (especially because the core emulation was very good).\newline
 We decided to rewrite this emulator from scratch, keeping the philosophy of TilEm but improving all the rest.\newline
@@ -66,6 +66,8 @@ We are proud to release our work for beta testing !
 \section{Features}
 TilEm2 has basically all the TilEm old features plus a lot of new things :\newline
 \begin{itemize}
+\item   Emulates all TI z80 calc.
+\item	Emulates all known rom/OS versions.
 \item	Linking : Send and receive var (use libticalcs2). 
 \item	Screenshot.
 \item	Animated screenshot. 
@@ -74,6 +76,16 @@ TilEm2 has basically all the TilEm old features plus a lot of new things :\newli
 \item	Use TiEmu skin file format (easy to do your own skin).
 \item	And more...
 \end{itemize}
+
+\section{What TilEm2 do NOT do}
+TilEm2 do a lot of stuff that TilEm1 was not able to do, but there's always some feature not implemented (yet).\newline
+\begin{itemize}
+\item Sound handling
+\item Calc to calc linking
+\end{itemize}
+But do not forget that developpement goes on and we are planning to do it !\newline
+
+
 
 \section{Skins}
 You can use TilEm2 without skin (just uncheck the "Use skin" checkbox into the Preferences menu) but skins are more user friendly :)\newline
@@ -117,6 +129,7 @@ svn co https://tilem.svn.sourceforge.net/svnroot/tilem\newline\newline
 
 Then install gtk+ (e.g. for debian : sudo apt-get install libgtk2.0-dev).\newline
 Then install libticalc2.\newline\newline
+(http://www.ticalc.org/archives/files/fileinfo/374/37479.html)\newline\newline
 
 After that, simply use the configure script and the well know Linux install :\newline
 \begin{lstlisting}
@@ -174,6 +187,60 @@ After that, TilEm2 start (but calc is off you need to press on).\newline
 The last used rom is automatically used for the next launch of TilEm2.\newline
 You can save the current state of the calculator by using "Save Calculator".\newline
 If you cancel the rom chooser dialog, TilEm2 automatically shutdown.\newline
+
+\chapter{Get a rom}
+
+As we said before, you must provide a rom to TilEm to get it working correctly.\newline
+A rom is the brain of the calculator, TilEm only emulate the body (hardware).\newline
+We can't provide a rom for you because this is not allowed by the law.\newline
+There's many way to get a rom, here are some of them : \newline
+\begin{itemize}
+\item Get it from your calculator using tilp.
+\item Download it from the web (you must have the real calc in your possession!!)
+\end{itemize}
+
+\section{Get a rom using tilp}
+Launch your best friend tilp2 as always.\newline\newline
+Here's what you have usually:\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/tilp2_window.png}}
+\caption{The tilp main window}
+\end{figure}
+
+At this point, you should be able to dirlist your calc (if not, the calc is not connected).\newline
+In this case, change the cable or the model and retry.\newline
+Try to launch tilp in sudo or root mode, sometimes it helps.\newline\newline
+Then click on the "Opérating System" label:\newline 
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/tilp2_getrom_warning.png}}
+\caption{The warning about the law}
+\end{figure}
+
+In fact, tilp2 sends a romdumper to the calc, the execute it remotely and get the rom.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/tilp2_getrom_dumper.png}}
+\caption{The warning before launching rom dumper}
+\end{figure}
+Click forward !!\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/tilp2_getrom_transfert.png}}
+\caption{The transfert}
+\end{figure}
+
+
+\section{Get a rom from the web}
+
+This is the fastest method to get a rom but you must have the calc in your possession.\newline
+So please be careful about the law.\newline
+I can't give you links, but there's a lot of website which allow you to get a rom without using tilp.\newline
+
+
 
 \chapter{Utilisation}
 \section{Menu}
@@ -432,7 +499,7 @@ You can also open a macro and save the current macro (which one you just have re
 \section{Screenshot...}
 \begin{figure}[H]
 \centering
-\scalebox{0.8}{\includegraphics{pixs/macro.png}}
+\scalebox{0.8}{\includegraphics{pixs/screenshot.png}}
 \caption{The "Screenshot..." submenu}
 \end{figure}
 By clicking on this option, you launch a screenshot dialog.\newline
@@ -603,6 +670,76 @@ There's currently no tool to interactively edit this file, but you can edit it b
 This file uses inheritance, it means that a part of the keybindings are common to all models, but you can rewrite them for each model.\newline
 So firstly, TilEm2 parses common, then if he find another keybindings for the same keypress, he rewrite it.\newline
 There's one subsection per model.\newline
+
+Here's a piece of the keybindings file :\newline
+\begin{lstlisting}
+Up                = Up
+KP_Up             = Up
+Down              = Down
+KP_Down           = Down
+Left              = Left
+KP_Left           = Left
+Right             = Right
+KP_Right          = Right
+Shift+Up          = 2nd, Up
+Shift+Down        = 2nd, Down
+Tab               = 2nd 
+KP_Tab            = 2nd 
+ISO_Left_Tab      = 2nd 
+Delete            = Del 
+KP_Delete         = Del 
+BackSpace         = Left, Del 
+0                 = 0
+KP_0              = 0
+1                 = 1
+KP_1              = 1
+2                 = 2
+KP_2              = 2
+3                 = 3
+KP_3              = 3
+4                 = 4
+KP_4              = 4
+5                 = 5
+KP_5              = 5
+6                 = 6
+KP_6              = 6
+7                 = 7
+KP_7              = 7
+8                 = 8
+KP_8              = 8
+9                 = 9
+KP_9              = 9
+\end{lstlisting}
+
+Left values are the computer keyboard key names.\newline
+Right values are calc keys.\newline
++ means pressing the two or more keys simultaneously.\newline
+, means the same thing for the calc.\newline
+We know that it's not easy for you to modify this file, but if you make a mistake, tilem will say "error while parsing keybindings" but it works even.\newline
+In the future, we will probably add a user interface integrated to TilEm to change keybindings, but for the moment it doesn't exist !\newline
+
+\chapter{Tips and tricks for developpers}
+
+Here are some tips to help you to develop your projects.\newline
+
+\section{Scripting you application}
+Each time you compile your program, if you must do 5 or 6 click to launch you program on the emulator that's pretty annoying.\newline\newline
+Record a macro to do that and execute it at startup.\newline
+If you load files, they are stored into the memory before the macro is launched.\newline
+So record a macro and put it with your project (here into macro/play.txt).\newline
+Here's a sample of what you can do:\newline
+\begin{lstlisting}
+#!/bin/bash
+make	# Compile
+tilem2 PROG.8xp -p macro/play.txt
+\end{lstlisting}
+
+I put this code into exec.sh then for testing my program I simply do :\newline
+\begin{lstlisting}
+./exec.sh
+\end{lstlisting}
+
+And my file is loaded and launched.
 
 
 

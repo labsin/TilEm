@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.6.21)  21 MAR 2012 09:58
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.6.21)  2 MAY 2012 15:02
 entering extended mode
  %&-line parsing enabled.
 **user_manual.tex
@@ -399,14 +399,19 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 46.
  [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./user_manual.toc)
-\tf@toc=\write3
-\openout3 = `user_manual.toc'.
-
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./user_manual.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 2.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 2.
 
 [1
 
-]
+])
+\tf@toc=\write3
+\openout3 = `user_manual.toc'.
+
+ [2]
 Chapter 1.
 
 Underfull \hbox (badness 10000) in paragraph at lines 52--56
@@ -423,7 +428,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 67--68
 
  []
 
-[2
+[3
 
 ]
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 69.
@@ -433,84 +438,83 @@ File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 69.
 
-<pixs/diaporama_skin.png, id=17, 376.40625pt x 307.90031pt>
+Underfull \hbox (badness 10000) in paragraph at lines 81--82
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 86--87
+
+ []
+
+<pixs/diaporama_skin.png, id=21, 376.40625pt x 307.90031pt>
 File: pixs/diaporama_skin.png Graphic file (type png)
 
 <use pixs/diaporama_skin.png>
-Overfull \hbox (31.40532pt too wide) in paragraph at lines 91--92
+Overfull \hbox (31.40532pt too wide) in paragraph at lines 103--104
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 79--93
+Underfull \hbox (badness 10000) in paragraph at lines 91--105
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 79--93
+Underfull \hbox (badness 10000) in paragraph at lines 91--105
 
  []
 
-[3] [4 <./pixs/diaporama_skin.png>]
+[4] [5 <./pixs/diaporama_skin.png>]
 Chapter 2.
 
-Underfull \hbox (badness 10000) in paragraph at lines 97--101
+Underfull \hbox (badness 10000) in paragraph at lines 109--113
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 103--104
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 108--109
+Underfull \hbox (badness 10000) in paragraph at lines 120--121
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 111--114
+Underfull \hbox (badness 10000) in paragraph at lines 123--126
 
  []
 
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 114.
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 126.
 
 (/usr/share/texmf-texlive/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-Underfull \hbox (badness 10000) in paragraph at lines 118--120
+Underfull \hbox (badness 10000) in paragraph at lines 130--133
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 118--120
+Underfull \hbox (badness 10000) in paragraph at lines 130--133
 
  []
 
-[5
+
+Underfull \hbox (badness 10000) in paragraph at lines 130--133
+
+ []
+
+[6
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 121--122
+Underfull \hbox (badness 10000) in paragraph at lines 134--135
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--127
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 130--131
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 135--137
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 138--139
+Underfull \hbox (badness 10000) in paragraph at lines 138--140
 
  []
 
@@ -520,485 +524,604 @@ Underfull \hbox (badness 10000) in paragraph at lines 143--144
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 149--151
+Underfull \hbox (badness 10000) in paragraph at lines 148--150
 
  []
 
-<pixs/first_use_rom_chooser.png, id=32, 449.42906pt x 414.04688pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 156--157
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 162--164
+
+ []
+
+<pixs/first_use_rom_chooser.png, id=37, 449.42906pt x 414.04688pt>
 File: pixs/first_use_rom_chooser.png Graphic file (type png)
 
 <use pixs/first_use_rom_chooser.png>
-Overfull \hbox (104.42795pt too wide) in paragraph at lines 154--155
+Overfull \hbox (104.42795pt too wide) in paragraph at lines 167--168
  [][] 
  []
 
-[6]
-Underfull \hbox (badness 10000) in paragraph at lines 158--161
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 171--174
 
  []
 
-<pixs/first_use_model_chooser.png, id=37, 177.66376pt x 123.46124pt>
+<pixs/first_use_model_chooser.png, id=41, 177.66376pt x 123.46124pt>
 File: pixs/first_use_model_chooser.png Graphic file (type png)
 
-<use pixs/first_use_model_chooser.png> [7 <./pixs/first_use_rom_chooser.png>]
-<pixs/first_use_works_fine.png, id=42, 200.24812pt x 420.82219pt>
+<use pixs/first_use_model_chooser.png> [8 <./pixs/first_use_rom_chooser.png>]
+<pixs/first_use_works_fine.png, id=46, 200.24812pt x 420.82219pt>
 File: pixs/first_use_works_fine.png Graphic file (type png)
 
 <use pixs/first_use_works_fine.png>
-Underfull \hbox (badness 10000) in paragraph at lines 168--173
+Underfull \hbox (badness 10000) in paragraph at lines 181--186
 
  []
 
-[8 <./pixs/first_use_model_chooser.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 174--177
+[9 <./pixs/first_use_model_chooser.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 187--190
 
  []
 
-[9 <./pixs/first_use_works_fine.png>]
+[10 <./pixs/first_use_works_fine.png>]
 Chapter 3.
-<pixs/popup.png, id=51, 250.68657pt x 234.1247pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 193--197
+
+ []
+
+<pixs/tilp2_window.png, id=55, 492.33937pt x 252.945pt>
+File: pixs/tilp2_window.png Graphic file (type png)
+
+<use pixs/tilp2_window.png>
+Overfull \hbox (147.33815pt too wide) in paragraph at lines 207--208
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 203--209
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 203--209
+
+ []
+
+[11
+
+] <pixs/tilp2_getrom_warning.png, id=59, 320.69812pt x 111.41624pt>
+File: pixs/tilp2_getrom_warning.png Graphic file (type png)
+
+<use pixs/tilp2_getrom_warning.png>
+Underfull \hbox (badness 10000) in paragraph at lines 211--219
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 211--219
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 221--222
+
+ []
+
+<pixs/tilp2_getrom_dumper.png, id=60, 357.58594pt x 137.01187pt>
+File: pixs/tilp2_getrom_dumper.png Graphic file (type png)
+
+<use pixs/tilp2_getrom_dumper.png>
+Overfull \hbox (12.58505pt too wide) in paragraph at lines 225--226
+ [][] 
+ []
+
+[12 <./pixs/tilp2_window.png (PNG copy)> <./pixs/tilp2_getrom_warning.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 228--229
+
+ []
+
+<pixs/tilp2_getrom_transfert.png, id=66, 123.46124pt x 121.20282pt>
+File: pixs/tilp2_getrom_transfert.png Graphic file (type png)
+
+<use pixs/tilp2_getrom_transfert.png>
+Underfull \hbox (badness 10000) in paragraph at lines 239--242
+
+ []
+
+[13 <./pixs/tilp2_getrom_dumper.png> <./pixs/tilp2_getrom_transfert.png>]
+Chapter 4.
+<pixs/popup.png, id=72, 250.68657pt x 234.1247pt>
 File: pixs/popup.png Graphic file (type png)
  <use pixs/popup.png>
-Underfull \hbox (badness 10000) in paragraph at lines 180--186
+Underfull \hbox (badness 10000) in paragraph at lines 247--253
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 187--188
+Underfull \hbox (badness 10000) in paragraph at lines 254--255
 
  []
 
-[10
+[14
 
- <./pixs/popup.png>] <pixs/send_file.png, id=56, 250.68657pt x 234.1247pt>
+ <./pixs/popup.png>] <pixs/send_file.png, id=77, 250.68657pt x 234.1247pt>
 File: pixs/send_file.png Graphic file (type png)
 
-<use pixs/send_file.png> [11]
-<pixs/send_file_chooser.png, id=60, 380.17032pt x 367.3725pt>
+<use pixs/send_file.png> [15]
+<pixs/send_file_chooser.png, id=81, 380.17032pt x 367.3725pt>
 File: pixs/send_file_chooser.png Graphic file (type png)
 
 <use pixs/send_file_chooser.png>
-Overfull \hbox (35.16939pt too wide) in paragraph at lines 215--216
+Overfull \hbox (35.16939pt too wide) in paragraph at lines 282--283
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 211--217
+Underfull \hbox (badness 10000) in paragraph at lines 278--284
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 211--217
+Underfull \hbox (badness 10000) in paragraph at lines 278--284
 
  []
 
-[12 <./pixs/send_file.png>]
-<pixs/send_file_chooser_pattern.png, id=66, 116.68594pt x 136.25906pt>
+[16 <./pixs/send_file.png>]
+<pixs/send_file_chooser_pattern.png, id=86, 116.68594pt x 136.25906pt>
 File: pixs/send_file_chooser_pattern.png Graphic file (type png)
 
 <use pixs/send_file_chooser_pattern.png>
-Underfull \hbox (badness 10000) in paragraph at lines 218--225
+Underfull \hbox (badness 10000) in paragraph at lines 285--292
 
  []
 
-[13 <./pixs/send_file_chooser.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 227--228
+[17 <./pixs/send_file_chooser.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 294--295
 
  []
 
-<pixs/send_file_loading.png, id=71, 295.1025pt x 628.59843pt>
+<pixs/send_file_loading.png, id=91, 295.1025pt x 628.59843pt>
 File: pixs/send_file_loading.png Graphic file (type png)
 
 <use pixs/send_file_loading.png>
-<pixs/receive_file.png, id=72, 250.68657pt x 234.1247pt>
+<pixs/receive_file.png, id=92, 250.68657pt x 234.1247pt>
 File: pixs/receive_file.png Graphic file (type png)
 
-<use pixs/receive_file.png> [14 <./pixs/send_file_chooser_pattern.png> <./pixs/
+<use pixs/receive_file.png> [18 <./pixs/send_file_chooser_pattern.png> <./pixs/
 send_file_loading.png>]
-<pixs/receive_file_loading.png, id=78, 222.8325pt x 103.88812pt>
+<pixs/receive_file_loading.png, id=99, 222.8325pt x 103.88812pt>
 File: pixs/receive_file_loading.png Graphic file (type png)
 
 <use pixs/receive_file_loading.png>
-Underfull \hbox (badness 10000) in paragraph at lines 241--246
+Underfull \hbox (badness 10000) in paragraph at lines 308--313
 
  []
 
-<pixs/receive_file_list.png, id=79, 231.86626pt x 225.84375pt>
+<pixs/receive_file_list.png, id=100, 231.86626pt x 225.84375pt>
 File: pixs/receive_file_list.png Graphic file (type png)
 
 <use pixs/receive_file_list.png>
-Underfull \hbox (badness 10000) in paragraph at lines 247--254
+Underfull \hbox (badness 10000) in paragraph at lines 314--321
 
  []
 
-[15 <./pixs/receive_file.png> <./pixs/receive_file_loading.png>]
-<pixs/receive_file_separate_or_grouped.png, id=85, 231.86626pt x 225.84375pt>
+[19 <./pixs/receive_file.png> <./pixs/receive_file_loading.png>]
+<pixs/receive_file_separate_or_grouped.png, id=106, 231.86626pt x 225.84375pt>
 File: pixs/receive_file_separate_or_grouped.png Graphic file (type png)
 
 <use pixs/receive_file_separate_or_grouped.png>
-Underfull \hbox (badness 10000) in paragraph at lines 255--262
+Underfull \hbox (badness 10000) in paragraph at lines 322--329
 
  []
 
-<pixs/receive_file_chooser.png, id=86, 453.19313pt x 350.81062pt>
+<pixs/receive_file_chooser.png, id=107, 453.19313pt x 350.81062pt>
 File: pixs/receive_file_chooser.png Graphic file (type png)
 
 <use pixs/receive_file_chooser.png>
-Overfull \hbox (17.555pt too wide) in paragraph at lines 268--269
+Overfull \hbox (17.555pt too wide) in paragraph at lines 335--336
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 263--270
+Underfull \hbox (badness 10000) in paragraph at lines 330--337
 
  []
 
-[16 <./pixs/receive_file_list.png> <./pixs/receive_file_separate_or_grouped.png
->] <pixs/open_rom.png, id=92, 250.68657pt x 234.1247pt>
+[20 <./pixs/receive_file_list.png> <./pixs/receive_file_separate_or_grouped.png
+>] <pixs/open_rom.png, id=113, 250.68657pt x 234.1247pt>
 File: pixs/open_rom.png Graphic file (type png)
 
-<use pixs/open_rom.png> [17 <./pixs/receive_file_chooser.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 279--282
+<use pixs/open_rom.png> [21 <./pixs/receive_file_chooser.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 346--349
 
  []
 
-<pixs/open_rom_chooser.png, id=97, 362.85562pt x 325.96782pt>
+<pixs/open_rom_chooser.png, id=118, 362.85562pt x 325.96782pt>
 File: pixs/open_rom_chooser.png Graphic file (type png)
 
-<use pixs/open_rom_chooser.png> [18 <./pixs/open_rom.png>]
-<pixs/open_rom_chooser_pattern.png, id=103, 70.76437pt x 42.1575pt>
+<use pixs/open_rom_chooser.png> [22 <./pixs/open_rom.png>]
+<pixs/open_rom_chooser_pattern.png, id=123, 70.76437pt x 42.1575pt>
 File: pixs/open_rom_chooser_pattern.png Graphic file (type png)
 
 <use pixs/open_rom_chooser_pattern.png>
-Underfull \hbox (badness 10000) in paragraph at lines 288--293
+Underfull \hbox (badness 10000) in paragraph at lines 355--360
 
  []
 
-<pixs/save_calculator.png, id=104, 250.68657pt x 234.1247pt>
+<pixs/save_calculator.png, id=124, 250.68657pt x 234.1247pt>
 File: pixs/save_calculator.png Graphic file (type png)
 
-<use pixs/save_calculator.png> [19 <./pixs/open_rom_chooser.png> <./pixs/open_r
+<use pixs/save_calculator.png> [23 <./pixs/open_rom_chooser.png> <./pixs/open_r
 om_chooser_pattern.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 304--306
+Underfull \hbox (badness 10000) in paragraph at lines 371--373
 
  []
 
-<pixs/revert_calculator.png, id=110, 250.68657pt x 234.1247pt>
+<pixs/revert_calculator.png, id=130, 250.68657pt x 234.1247pt>
 File: pixs/revert_calculator.png Graphic file (type png)
 
 <use pixs/revert_calculator.png>
-Underfull \hbox (badness 10000) in paragraph at lines 314--315
+Underfull \hbox (badness 10000) in paragraph at lines 381--382
 
  []
 
-[20 <./pixs/save_calculator.png> <./pixs/revert_calculator.png>]
+[24 <./pixs/save_calculator.png> <./pixs/revert_calculator.png>]
 File: pixs/revert_calculator.png Graphic file (type png)
 
 <use pixs/revert_calculator.png>
-<pixs/debugger.png, id=116, 250.68657pt x 234.1247pt>
+<pixs/debugger.png, id=137, 250.68657pt x 234.1247pt>
 File: pixs/debugger.png Graphic file (type png)
  <use pixs/debugger.png>
-[21]
-Underfull \hbox (badness 10000) in paragraph at lines 333--334
+[25]
+Underfull \hbox (badness 10000) in paragraph at lines 400--401
 
  []
 
-<pixs/debugger_dialog.png, id=120, 563.85657pt x 398.99063pt>
+<pixs/debugger_dialog.png, id=141, 563.85657pt x 398.99063pt>
 File: pixs/debugger_dialog.png Graphic file (type png)
 
 <use pixs/debugger_dialog.png>
-Overfull \hbox (106.08586pt too wide) in paragraph at lines 337--338
+Overfull \hbox (106.08586pt too wide) in paragraph at lines 404--405
  [][] 
  []
 
-[22 <./pixs/debugger.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 340--347
+[26 <./pixs/debugger.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 407--414
 
  []
 
-<pixs/debugger_disasm_popup.png, id=125, 552.56438pt x 341.02406pt>
+<pixs/debugger_disasm_popup.png, id=146, 552.56438pt x 341.02406pt>
 File: pixs/debugger_disasm_popup.png Graphic file (type png)
 
 <use pixs/debugger_disasm_popup.png>
-Overfull \hbox (97.0521pt too wide) in paragraph at lines 354--355
+Overfull \hbox (97.0521pt too wide) in paragraph at lines 421--422
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 348--356
+Underfull \hbox (badness 10000) in paragraph at lines 415--423
 
  []
 
-[23 <./pixs/debugger_dialog.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 358--360
+[27 <./pixs/debugger_dialog.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 425--427
 
  []
 
-<pixs/debugger_logical.png, id=130, 144.54pt x 57.96657pt>
+<pixs/debugger_logical.png, id=151, 144.54pt x 57.96657pt>
 File: pixs/debugger_logical.png Graphic file (type png)
 
 <use pixs/debugger_logical.png>
-<pixs/debugger_memory_edit.png, id=131, 552.56438pt x 341.02406pt>
+<pixs/debugger_memory_edit.png, id=152, 552.56438pt x 341.02406pt>
 File: pixs/debugger_memory_edit.png Graphic file (type png)
 
 <use pixs/debugger_memory_edit.png>
-Overfull \hbox (97.0521pt too wide) in paragraph at lines 372--373
+Overfull \hbox (97.0521pt too wide) in paragraph at lines 439--440
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 366--374
+Underfull \hbox (badness 10000) in paragraph at lines 433--441
 
  []
 
-[24 <./pixs/debugger_disasm_popup.png> <./pixs/debugger_logical.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 375--380
+[28 <./pixs/debugger_disasm_popup.png> <./pixs/debugger_logical.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 442--447
 
  []
 
-<pixs/debugger_debug.png, id=138, 563.85657pt x 398.99063pt>
+<pixs/debugger_debug.png, id=158, 563.85657pt x 398.99063pt>
 File: pixs/debugger_debug.png Graphic file (type png)
 
 <use pixs/debugger_debug.png>
-Overfull \hbox (106.08586pt too wide) in paragraph at lines 384--385
+Overfull \hbox (106.08586pt too wide) in paragraph at lines 451--452
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 381--386
+Underfull \hbox (badness 10000) in paragraph at lines 448--453
 
  []
 
-[25 <./pixs/debugger_memory_edit.png>]
-Overfull \hbox (1.19324pt too wide) in paragraph at lines 387--390
+[29 <./pixs/debugger_memory_edit.png>]
+Overfull \hbox (1.19324pt too wide) in paragraph at lines 454--457
 \T1/cmr/m/n/10 This op-tion opens the Break-point menu when you can "Add", "Re-
 move", "Edit",
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 387--390
+Underfull \hbox (badness 10000) in paragraph at lines 454--457
 
  []
 
-<pixs/debugger_breakpoint.png, id=143, 268.00125pt x 225.84375pt>
+<pixs/debugger_breakpoint.png, id=163, 268.00125pt x 225.84375pt>
 File: pixs/debugger_breakpoint.png Graphic file (type png)
 
-<use pixs/debugger_breakpoint.png> [26 <./pixs/debugger_debug.png>]
+<use pixs/debugger_breakpoint.png> [30 <./pixs/debugger_debug.png>]
 File: pixs/debugger_breakpoint.png Graphic file (type png)
 
 <use pixs/debugger_breakpoint.png>
-Underfull \hbox (badness 10000) in paragraph at lines 396--401
+Underfull \hbox (badness 10000) in paragraph at lines 463--468
 
  []
 
-<pixs/debugger_go.png, id=148, 225.84375pt x 73.77562pt>
+<pixs/debugger_go.png, id=169, 225.84375pt x 73.77562pt>
 File: pixs/debugger_go.png Graphic file (type png)
 
 <use pixs/debugger_go.png>
-Underfull \hbox (badness 10000) in paragraph at lines 403--408
+Underfull \hbox (badness 10000) in paragraph at lines 470--475
 
  []
 
-[27 <./pixs/debugger_breakpoint.png>]
-<pixs/debugger_keypad.png, id=153, 530.73282pt x 250.68657pt>
+[31 <./pixs/debugger_breakpoint.png>]
+<pixs/debugger_keypad.png, id=174, 530.73282pt x 250.68657pt>
 File: pixs/debugger_keypad.png Graphic file (type png)
 
 <use pixs/debugger_keypad.png>
-Overfull \hbox (79.58682pt too wide) in paragraph at lines 413--414
+Overfull \hbox (79.58682pt too wide) in paragraph at lines 480--481
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 410--415
+Underfull \hbox (badness 10000) in paragraph at lines 477--482
 
  []
 
-<pixs/macro.png, id=154, 138.5175pt x 89.58469pt>
+<pixs/macro.png, id=175, 138.5175pt x 89.58469pt>
 File: pixs/macro.png Graphic file (type png)
  <use pixs/macro.png>
-Underfull \hbox (badness 10000) in paragraph at lines 419--428
+Underfull \hbox (badness 10000) in paragraph at lines 486--495
 
  []
 
-[28 <./pixs/debugger_go.png> <./pixs/debugger_keypad.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 429--431
+[32 <./pixs/debugger_go.png> <./pixs/debugger_keypad.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 496--498
 
  []
 
-File: pixs/macro.png Graphic file (type png)
-<use pixs/macro.png>
-Underfull \hbox (badness 10000) in paragraph at lines 438--439
+<pixs/screenshot.png, id=181, 250.68657pt x 234.1247pt>
+File: pixs/screenshot.png Graphic file (type png)
+
+<use pixs/screenshot.png>
+Underfull \hbox (badness 10000) in paragraph at lines 505--506
 
  []
 
-<pixs/screenshot_dialog.png, id=160, 313.9228pt x 390.70969pt>
+<pixs/screenshot_dialog.png, id=182, 313.9228pt x 390.70969pt>
 File: pixs/screenshot_dialog.png Graphic file (type png)
 
-<use pixs/screenshot_dialog.png> [29 <./pixs/macro.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 445--449
+<use pixs/screenshot_dialog.png> [33 <./pixs/macro.png> <./pixs/screenshot.png>
+]
+Underfull \hbox (badness 10000) in paragraph at lines 512--516
 
  []
 
-<pixs/preferences.png, id=165, 250.68657pt x 234.1247pt>
+<pixs/preferences.png, id=188, 250.68657pt x 234.1247pt>
 File: pixs/preferences.png Graphic file (type png)
 
 <use pixs/preferences.png>
-Underfull \hbox (badness 10000) in paragraph at lines 452--457
+Underfull \hbox (badness 10000) in paragraph at lines 519--524
 
  []
 
-[30 <./pixs/screenshot_dialog.png>]
-<pixs/preferences_dialog.png, id=171, 191.9672pt x 187.45032pt>
+[34 <./pixs/screenshot_dialog.png>]
+<pixs/preferences_dialog.png, id=193, 191.9672pt x 187.45032pt>
 File: pixs/preferences_dialog.png Graphic file (type png)
 
 <use pixs/preferences_dialog.png>
-Underfull \hbox (badness 10000) in paragraph at lines 459--466
+Underfull \hbox (badness 10000) in paragraph at lines 526--533
 
  []
 
-<pixs/skin_file_chooser.png, id=172, 465.23813pt x 468.24937pt>
+<pixs/skin_file_chooser.png, id=194, 465.23813pt x 468.24937pt>
 File: pixs/skin_file_chooser.png Graphic file (type png)
 
 <use pixs/skin_file_chooser.png>
-Overfull \hbox (27.191pt too wide) in paragraph at lines 472--473
+Overfull \hbox (27.191pt too wide) in paragraph at lines 539--540
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 467--474
+Underfull \hbox (badness 10000) in paragraph at lines 534--541
 
  []
 
-[31 <./pixs/preferences.png> <./pixs/preferences_dialog.png>]
-<pixs/about.png, id=178, 250.68657pt x 234.1247pt>
+[35 <./pixs/preferences.png> <./pixs/preferences_dialog.png>]
+<pixs/about.png, id=200, 250.68657pt x 234.1247pt>
 File: pixs/about.png Graphic file (type png)
  <use pixs/about.png>
-[32 <./pixs/skin_file_chooser.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 483--484
+[36 <./pixs/skin_file_chooser.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 550--551
 
  []
 
-<pixs/about_dialog.png, id=183, 316.18124pt x 191.9672pt>
+<pixs/about_dialog.png, id=206, 316.18124pt x 191.9672pt>
 File: pixs/about_dialog.png Graphic file (type png)
 
-<use pixs/about_dialog.png> <pixs/quit.png, id=184, 250.68657pt x 234.1247pt>
+<use pixs/about_dialog.png> <pixs/quit.png, id=207, 250.68657pt x 234.1247pt>
 File: pixs/quit.png Graphic file (type png)
 
-<use pixs/quit.png> [33 <./pixs/about.png> <./pixs/about_dialog.png>] [34 <./pi
+<use pixs/quit.png> [37 <./pixs/about.png> <./pixs/about_dialog.png>] [38 <./pi
 xs/quit.png>]
-Chapter 4.
-
-Underfull \hbox (badness 10000) in paragraph at lines 503--505
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 530--532
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 530--532
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 533--542
-
- []
-
-[35
-
-]
-Underfull \hbox (badness 10000) in paragraph at lines 549--550
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 557--558
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 561--562
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 565--566
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 569--570
-
- []
-
-[36]
-Underfull \hbox (badness 10000) in paragraph at lines 573--574
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 577--578
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 585--586
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 589--591
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 589--591
-
- []
-
-[37]
 Chapter 5.
 
-Underfull \hbox (badness 10000) in paragraph at lines 597--600
+Underfull \hbox (badness 10000) in paragraph at lines 570--572
 
  []
 
 
-Overfull \hbox (108.19489pt too wide) in paragraph at lines 601--606
+Underfull \hbox (badness 10000) in paragraph at lines 597--599
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 597--599
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 600--609
+
+ []
+
+[39
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 616--617
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 624--625
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 628--629
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 632--633
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 636--637
+
+ []
+
+[40]
+Underfull \hbox (badness 10000) in paragraph at lines 640--641
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 644--645
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 652--653
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 656--658
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 656--658
+
+ []
+
+[41]
+Chapter 6.
+
+Underfull \hbox (badness 10000) in paragraph at lines 664--667
+
+ []
+
+
+Overfull \hbox (108.19489pt too wide) in paragraph at lines 668--673
 \T1/cmr/m/n/10 The key-bind-ings are de-fined in a key-bind-ings.ini file (usu-
 ally copied into  /.config/tilem2/keybindings.ini). 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 601--606
+Underfull \hbox (badness 10000) in paragraph at lines 668--673
 
  []
 
-[38
+
+Underfull \hbox (badness 10000) in paragraph at lines 674--675
+
+ []
+
+[42
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 714--720
+
+ []
+
+[43]
+Chapter 7.
+
+Underfull \hbox (badness 10000) in paragraph at lines 723--724
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 726--731
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 726--731
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 737--738
+
+ []
+
+[44
 
 ] (./user_manual.aux) ) 
 Here is how much of TeX's memory you used:
- 4474 strings out of 495061
- 61910 string characters out of 1182621
+ 4534 strings out of 495061
+ 62973 string characters out of 1182621
  229405 words of memory out of 3000000
- 7594 multiletter control sequences out of 15000+50000
- 15017 words of font info for 36 fonts, out of 3000000 for 9000
+ 7648 multiletter control sequences out of 15000+50000
+ 15793 words of font info for 37 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
- 37i,8n,49p,217b,1591s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 37i,8n,49p,217b,1603s stack positions out of 5000i,500n,10000p,200000b,50000s
  </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ectt0
 800.525pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ectt0800.600pk> </
 home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk> </home/tib/.tex
 mf-var/fonts/pk/ljfour/jknappen/ec/ecbx2074.600pk> </home/tib/.texmf-var/fonts/
 pk/ljfour/jknappen/ec/ecrm1000.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jkn
-appen/ec/ecbx2488.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm
-1200.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk></
-usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on user_manual.pdf (39 pages, 1842050 bytes).
+appen/ec/ecbx1000.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx
+2488.600pk> </home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> <
+/home/tib/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk></usr/share/tex
+mf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on user_manual.pdf (45 pages, 1951037 bytes).
 PDF statistics:
- 511 PDF objects out of 1000 (max. 8388607)
+ 597 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 181 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 206 words of extra memory for PDF output out of 10000 (max. 10000000)
 
