@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -997,12 +997,23 @@ static void save_debugger_dimension(TilemDebugger *dbg)
 	                 NULL);
 }
 
-/* Free a TilemDebugger. */
-void tilem_debugger_free(TilemDebugger *dbg)
+static void free_all_breakpoints(TilemDebugger *dbg)
 {
 	GSList *l;
 	TilemDebugBreakpoint *bp;
 
+	for (l = dbg->breakpoints; l; l = l->next) {
+		bp = l->data;
+		g_slice_free(TilemDebugBreakpoint, bp);
+	}
+
+	g_slist_free(dbg->breakpoints);
+	dbg->breakpoints = NULL;
+}
+
+/* Free a TilemDebugger. */
+void tilem_debugger_free(TilemDebugger *dbg)
+{
 	g_return_if_fail(dbg != NULL);
 
 	save_debugger_dimension(dbg);
@@ -1021,10 +1032,7 @@ void tilem_debugger_free(TilemDebugger *dbg)
 	if (dbg->misc_actions)
 		g_object_unref(dbg->misc_actions);
 
-	for (l = dbg->breakpoints; l; l = l->next) {
-		bp = l->data;
-		g_slice_free(TilemDebugBreakpoint, bp);
-	}
+	free_all_breakpoints(dbg);
 
 	g_slice_free(TilemDebugger, dbg);
 }
@@ -1209,6 +1217,8 @@ void tilem_debugger_calc_changed(TilemDebugger *dbg)
 	dbg->dasm = tilem_disasm_new();
 
 	dbg->step_bp = 0;
+
+	free_all_breakpoints(dbg);
 
 	calc = dbg->emu->calc;
 	if (!calc)
