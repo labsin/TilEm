@@ -1,24 +1,7 @@
 AC_PREREQ(2.67)
 AC_INIT([TilEm], [pre-release], [tilem-devel@lists.sourceforge.net],
   [tilem], [http://tilem.sourceforge.net/])
-
 AC_CONFIG_SRCDIR([emu/tilem.h])
-
-
-AC_CHECK_HEADERS([stdint.h stdlib.h string.h strings.h unistd.h wchar.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDC
-AC_HEADER_STDBOOL
-AC_C_BIGENDIAN
-AC_C_RESTRICT
-AC_C_INLINE
-AC_TYPE_UINT16_T
-AC_TYPE_UINT64_T
-AC_TYPE_UINTPTR_T
-
-# Checks for library functions.
-AC_CHECK_FUNCS([memmove memset pow strchr strrchr strtol])
 
 # Checks for programs
 
@@ -164,6 +147,17 @@ if test "x$gtk_target" = "xwin32" ; then
   AC_SUBST(TICALCS_BINDIR)
   AC_SUBST(DLLPATH)
 fi
+
+# Checks for header files
+
+AC_HEADER_STDC
+
+# Checks for system and compiler characteristics
+
+AC_C_BIGENDIAN
+AC_C_INLINE
+AC_C_RESTRICT
+AC_TYPE_UINTPTR_T
 
 # Output
 
