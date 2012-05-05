@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  * Copyright (c) 2011 Duponchelle Thibault
  *
  * This program is free software: you can redistribute it and/or
@@ -142,6 +142,10 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
                                         const char *romfname,
                                         const char *statefname,
                                         int model, GError **err);
+
+/* Reload the calculator state from the most recently loaded file. */
+gboolean tilem_calc_emulator_revert_state(TilemCalcEmulator *emu,
+                                          GError **err);
 
 /* Save the calculator state. */
 gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu,

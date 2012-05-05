@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -74,10 +74,7 @@ static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpoin
 	TilemEmulatorWindow *ewin = data;
 	GError *err = NULL;
 
-	if (!tilem_calc_emulator_load_state(ewin->emu, ewin->emu->rom_file_name,
-	                                    ewin->emu->state_file_name,
-	                                    ewin->emu->calc->hw.model_id,
-	                                    &err)) {
+	if (!tilem_calc_emulator_revert_state(ewin->emu, &err)) {
 		messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
 		             "Unable to load calculator state",
 		             "%s", err->message);

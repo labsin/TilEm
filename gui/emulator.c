@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -396,6 +396,72 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		tilem_receive_dialog_free(emu->rcvdlg);
 	emu->rcvdlg = NULL;
 
+	return TRUE;
+}
+
+gboolean tilem_calc_emulator_revert_state(TilemCalcEmulator *emu, GError **err)
+{
+	FILE *romfile, *savfile;
+	char *dname;
+	int errnum = 0;
+
+	g_return_val_if_fail(emu != NULL, FALSE);
+	g_return_val_if_fail(emu->calc != NULL, FALSE);
+	g_return_val_if_fail(emu->rom_file_name != NULL, FALSE);
+	g_return_val_if_fail(emu->state_file_name != NULL, FALSE);
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
+
+	/* Open ROM file */
+
+	if (emu->calc->hw.flags & TILEM_CALC_HAS_FLASH) {
+		romfile = g_fopen(emu->rom_file_name, "rb");
+		if (!romfile) {
+			errnum = errno;
+			dname = g_filename_display_basename(emu->rom_file_name);
+			g_set_error(err, G_FILE_ERROR,
+			            g_file_error_from_errno(errnum),
+			            "Unable to open %s for reading: %s",
+			            dname, g_strerror(errnum));
+			g_free(dname);
+			return FALSE;
+		}
+	}
+	else {
+		romfile = NULL;
+	}
+
+	/* Open state file */
+
+	savfile = g_fopen(emu->state_file_name, "rb");
+	if (!savfile) {
+		errnum = errno;
+		dname = g_filename_display_basename(emu->state_file_name);
+		g_set_error(err, G_FILE_ERROR,
+		            g_file_error_from_errno(errnum),
+		            "Unable to open %s for reading: %s",
+		            dname, g_strerror(errnum));
+		g_free(dname);
+		if (romfile) fclose(romfile);
+		return FALSE;
+	}
+
+	/* Read state */
+
+	tilem_calc_emulator_lock(emu);
+
+	if (tilem_calc_load_state(emu->calc, romfile, savfile)) {
+		g_set_error(err, TILEM_EMULATOR_ERROR,
+		            TILEM_EMULATOR_ERROR_INVALID_STATE,
+		            "The specified ROM or state file is invalid.");
+		tilem_calc_emulator_unlock(emu);
+		if (romfile) fclose(romfile);
+		fclose(savfile);
+		return FALSE;
+	}
+
+	tilem_calc_emulator_unlock(emu);
+	if (romfile) fclose(romfile);
+	fclose(savfile);
 	return TRUE;
 }
 
