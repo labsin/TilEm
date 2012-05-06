@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -796,7 +796,14 @@ static gboolean tilem_disasm_view_move_cursor(GtkTreeView *tv,
 static void toggle_bp(G_GNUC_UNUSED GtkCheckMenuItem *item, gpointer data)
 {
 	TilemDisasmView *dv = data;
+	tilem_disasm_view_toggle_breakpoint(dv);
+}
+
+void tilem_disasm_view_toggle_breakpoint(TilemDisasmView *dv)
+{
 	dword curpos;
+
+	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
 
 	get_cursor_line(dv, &curpos, NULL);
 	if (curpos == (dword) -1)

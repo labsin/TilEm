@@ -351,6 +351,17 @@ static void action_finish(G_GNUC_UNUSED GtkAction *a, gpointer data)
 	                        TILEM_DWORD_TO_PTR(sp));
 }
 
+/* Toggle breakpoint at selected line */
+static void action_toggle_breakpoint(G_GNUC_UNUSED GtkAction *a, gpointer data)
+{
+	TilemDebugger *dbg = data;
+	GtkWidget *focus;
+
+	focus = gtk_window_get_focus(GTK_WINDOW(dbg->window));
+	if (TILEM_IS_DISASM_VIEW(focus))
+		tilem_disasm_view_toggle_breakpoint(TILEM_DISASM_VIEW(focus));
+}
+
 /* Edit breakpoints */
 static void action_edit_breakpoints(G_GNUC_UNUSED GtkAction *a, gpointer data)
 {
@@ -503,6 +514,9 @@ static const GtkActionEntry paused_action_ents[] =
 	   G_CALLBACK(action_step_over) },
 	 { "finish", "tilem-db-finish", "_Finish Subroutine", "F9",
 	   "Run to end of the current subroutine", G_CALLBACK(action_finish) },
+	 { "toggle-breakpoint", NULL, "Toggle Breakpoint", "F2",
+	   "Enable or disable breakpoint at the selected address",
+	   G_CALLBACK(action_toggle_breakpoint) },
 	 { "edit-breakpoints", NULL, "_Breakpoints", "<control>B",
 	   "Add, remove, or modify breakpoints",
 	   G_CALLBACK(action_edit_breakpoints) },
@@ -839,7 +853,8 @@ static const char uidesc[] =
 	" <toolitem action='step'/>"
 	" <toolitem action='step-over'/>"
 	" <toolitem action='finish'/>"
-	"</toolbar>";
+	"</toolbar>"
+	"<accelerator action='toggle-breakpoint'/>";
 
 /* Create a new TilemDebugger. */
 TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)

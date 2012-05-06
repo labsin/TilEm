@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -66,5 +66,8 @@ void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr,
 /* Get currently selected address. */
 gboolean tilem_disasm_view_get_cursor(TilemDisasmView *dv, dword *addr,
                                       gboolean *is_logical);
+
+/* Toggle breakpoint at selected address. */
+void tilem_disasm_view_toggle_breakpoint(TilemDisasmView *dv);
 
 G_END_DECLS
