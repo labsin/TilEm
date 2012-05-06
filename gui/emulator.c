@@ -404,6 +404,7 @@ gboolean tilem_calc_emulator_revert_state(TilemCalcEmulator *emu, GError **err)
 	FILE *romfile, *savfile;
 	char *dname;
 	int errnum = 0;
+	gboolean status = TRUE;
 
 	g_return_val_if_fail(emu != NULL, FALSE);
 	g_return_val_if_fail(emu->calc != NULL, FALSE);
@@ -453,16 +454,17 @@ gboolean tilem_calc_emulator_revert_state(TilemCalcEmulator *emu, GError **err)
 		g_set_error(err, TILEM_EMULATOR_ERROR,
 		            TILEM_EMULATOR_ERROR_INVALID_STATE,
 		            "The specified ROM or state file is invalid.");
-		tilem_calc_emulator_unlock(emu);
-		if (romfile) fclose(romfile);
-		fclose(savfile);
-		return FALSE;
+		status = FALSE;
 	}
 
 	tilem_calc_emulator_unlock(emu);
+
+	if (emu->dbg)
+		tilem_debugger_refresh(emu->dbg, TRUE);
+
 	if (romfile) fclose(romfile);
 	fclose(savfile);
-	return TRUE;
+	return status;
 }
 
 gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu, GError **err)
@@ -560,6 +562,9 @@ void tilem_calc_emulator_reset(TilemCalcEmulator *emu)
 	tilem_calc_emulator_lock(emu);
 	tilem_calc_reset(emu->calc);
 	tilem_calc_emulator_unlock(emu);
+
+	if (emu->dbg)
+		tilem_debugger_refresh(emu->dbg, TRUE);
 }
 
 void tilem_calc_emulator_pause(TilemCalcEmulator *emu)
