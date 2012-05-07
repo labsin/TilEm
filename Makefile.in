@@ -35,7 +35,8 @@ distclean: clean
 	rm -f config.status config.log config.h configure.lineno
 	rm -f aclocal.m4
 	rm -rf autom4te.cache
-	rm -f Makefile emu/Makefile db/Makefile gui/Makefile
+	rm -f installer/win32/Makefile installer/win32/installer.nsi
+	rm -f Makefile emu/Makefile db/Makefile gui/Makefile data/Makefile
 
 Makefile: Makefile.in config.status
 	$(SHELL) ./config.status
