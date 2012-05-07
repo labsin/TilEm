@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009-2011 Benjamin Moody
+ * Copyright (C) 2009-2012 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -585,7 +585,7 @@ enum {
 typedef struct _TilemFlashSector {
 	dword start;
 	dword size;
-	byte writable;
+	byte protectgroup;
 } TilemFlashSector;
 
 typedef struct _TilemFlash {
@@ -596,6 +596,7 @@ typedef struct _TilemFlash {
 	dword progaddr;
 	byte progbyte;
 	byte toggles;
+	byte overridegroup;
 } TilemFlash;
 
 /* Reset Flash */

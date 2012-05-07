@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2011 Benjamin Moody
+ * Copyright (C) 2004-2012 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -74,6 +74,8 @@ void xs_reset(TilemCalc* calc)
 	calc->hwregs[NO_EXEC_RAM_UPPER] = 0x8000;
 
 	calc->hwregs[PROTECTSTATE] = 0;
+
+	calc->flash.overridegroup = 1;
 
 	tilem_z80_set_speed(calc, 6000);
 

@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009-2011 Benjamin Moody
+ * Copyright (C) 2009-2012 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -586,6 +586,8 @@ static int load_new_sav_file(TilemCalc* calc, FILE* savfile)
 			calc->flash.progbyte = value;
 		else if (!strcmp(buf, "flash.toggles"))
 			calc->flash.toggles = value;
+		else if (!strcmp(buf, "flash.overridegroup"))
+			calc->flash.overridegroup = value;
 
 		else
 			set_hw_reg(calc, buf, value);
@@ -794,6 +796,8 @@ int tilem_calc_save_state(TilemCalc* calc, FILE* romfile, FILE* savfile)
 				calc->flash.progbyte);
 			fprintf(savfile, "flash.toggles = %X\n",
 				calc->flash.toggles);
+			fprintf(savfile, "flash.overridegroup = %X\n",
+				calc->flash.overridegroup);
 		}
 
 		if (calc->hw.flags & TILEM_CALC_HAS_MD5_ASSIST) {

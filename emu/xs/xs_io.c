@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2011 Benjamin Moody
+ * Copyright (C) 2004-2012 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -474,6 +474,9 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 				tilem_message(calc, "Flash locked");
 			calc->flash.unlock = value&1;
 		}
+		else {
+			tilem_warning(calc, "Writing to protected port 14");
+		}
 		break;
 
 	case 0x18:
@@ -509,36 +512,52 @@ void xs_z80_out(TilemCalc* calc, dword port, byte value)
 		break;
 
 	case 0x21:
-		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock) {
 			calc->hwregs[PORT21] = value;
 			t = (value >> 4) & 3;
 			calc->hwregs[NO_EXEC_RAM_MASK] = (0x8000 << t) - 0x400;
+			calc->flash.overridegroup = value & 3;
+		}
+		else {
+			tilem_warning(calc, "Writing to protected port 21");
 		}
 		break;
 
 	case 0x22:
-		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock) {
 			calc->hwregs[PORT22] = value;
+		}
+		else {
+			tilem_warning(calc, "Writing to protected port 22");
 		}
 		break;
 
 	case 0x23:
-		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock) {
 			calc->hwregs[PORT23] = value;
+		}
+		else {
+			tilem_warning(calc, "Writing to protected port 23");
 		}
 		break;
 
 	case 0x25:
-		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock) {
 			calc->hwregs[PORT25] = value;
 			calc->hwregs[NO_EXEC_RAM_LOWER] = value * 0x400;
+		}
+		else {
+			tilem_warning(calc, "Writing to protected port 25");
 		}
 		break;
 
 	case 0x26:
-		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
+		if (calc->flash.unlock) {
 			calc->hwregs[PORT26] = value;
 			calc->hwregs[NO_EXEC_RAM_UPPER] = value * 0x400;
+		}
+		else {
+			tilem_warning(calc, "Writing to protected port 26");
 		}
 		break;
 

@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -216,11 +216,12 @@ static gboolean address_editable(TilemCalc *calc, dword a)
 		i = (start + end) / 2;
 		if (a < calc->hw.flashsectors[i].start)
 			end = i;
-		else if (a > (calc->hw.flashsectors[i].start
-		              + calc->hw.flashsectors[i].size))
+		else if (a >= (calc->hw.flashsectors[i].start
+		               + calc->hw.flashsectors[i].size))
 			start = i + 1;
 		else
-			return calc->hw.flashsectors[i].writable;
+			return !(calc->hw.flashsectors[i].protectgroup
+			         & ~calc->flash.overridegroup);
 	}
 
 	g_return_val_if_reached(FALSE);

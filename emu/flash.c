@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2012 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -130,6 +130,11 @@ static const TilemFlashSector* get_sector(TilemCalc* calc, dword pa)
 	return NULL;
 }
 
+static int sector_writable(TilemCalc* calc, const TilemFlashSector* sec)
+{
+	return !(sec->protectgroup & ~calc->flash.overridegroup);
+}
+
 byte tilem_flash_read_byte(TilemCalc* calc, dword pa)
 {
 	byte value;
@@ -180,7 +185,7 @@ void tilem_flash_erase_address(TilemCalc* calc, dword pa)
 {
 	const TilemFlashSector* sec = get_sector(calc, pa);
 
-	if (sec->writable) {
+	if (sector_writable(calc, sec)) {
 		tilem_message(calc, "Erasing Flash sector at %06x", pa);
 		erase_sector(calc, sec->start, sec->size);
 	}
@@ -249,7 +254,7 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 
 	case FLASH_PROG:
 		sec = get_sector(calc, pa);
-		if (!sec->writable)
+		if (!sector_writable(calc, sec))
 			WARN("programming protected sector");
 		else
 			program_byte(calc, pa, v);
@@ -269,7 +274,7 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 	case FLASH_FASTPROG:
 		//WARN2("fast prog %02x->%06x", v, pa);
 		sec = get_sector(calc, pa);
-		if (!sec->writable)
+		if (!sector_writable(calc, sec))
 			WARN("programming protected sector");
 		else
 			program_byte(calc, pa, v);
@@ -306,7 +311,7 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 
 			for (i = 0; i < calc->hw.nflashsectors; i++) {
 				sec = &calc->hw.flashsectors[i];
-				if (sec->writable)
+				if (sector_writable(calc, sec))
 					erase_sector(calc, sec->start,
 						     sec->size);
 			}
