@@ -59,8 +59,21 @@ TilEm2 also provides a full featured debugger with disassembler, breakpoints, me
 Some of you probably already know TilEm because a first version was released around 2000/2001 by Julien Solignac (then maintained by Benjamin Moody since 2004).\newline
 This first version was working fine but there were some issues, skins were too small and bad resolution and a lot of feature were missing.\newline
 Anyway, this software was pretty good (especially because the core emulation was very good).\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/tilem_old.png}}
+\caption{The "old" TilEm}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/tilem_old_menu.png}}
+\caption{The "old" TilEm menu}
+\end{figure}
+
 We decided to rewrite this emulator from scratch, keeping the philosophy of TilEm but improving all the rest.\newline
-A new core has been developped by Benjamin Moody, and I started to work on the GTK user interface (later he helped me for this task).\newline\newline
+A new core has been developped by Benjamin Moody (aka "floppusmaximus"), and I (Thibault Duponchelle aka "contra-sh") started to work on the GTK user interface (later he helped me for this task).\newline\newline
 We are proud to release our work for beta testing !
 
 \section{Features}
@@ -76,6 +89,14 @@ TilEm2 has basically all the TilEm old features plus a lot of new things :\newli
 \item	Use TiEmu skin file format (easy to do your own skin).
 \item	And more...
 \end{itemize}
+
+Here's the right click menu option :\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/popup.png}}
+\caption{The right click popup menu}
+\end{figure}
+
 
 \section{What TilEm2 do NOT do}
 TilEm2 do a lot of stuff that TilEm1 was not able to do, but there's always some feature not implemented (yet).\newline
@@ -96,6 +117,7 @@ Just take a picture of your calc using your smartphone by example.\newline
 Scale it keeping proportion to have around 900 pixels high.\newline
 Then start skinedit, create a new skin, open the picture and set the key positions.\newline
 It takes less than 20/30 minutes I think.\newline
+See the chapter "Create your own skins" to know how to do.\newline
 Then you can test it with TilEm2.That's all!\newline
 Here are the current skins available by default :\newline
 \begin{figure}[H]
@@ -160,6 +182,7 @@ tilem2
 
 \section{First use}
 If you do not specify explicitely a rom on the command line, the first launch will ask you which rom you want to use.\newline
+If you don't know what's a rom or how to get it, please read the chapter "Get a rom".\newline
 TilEm2 will open a file chooser dialog.\newline
 
 \begin{figure}[H]
@@ -204,7 +227,7 @@ Launch your best friend tilp2 as always.\newline\newline
 Here's what you have usually:\newline
 \begin{figure}[H]
 \centering
-\scalebox{1}{\includegraphics{pixs/tilp2_window.png}}
+\scalebox{0.8}{\includegraphics{pixs/tilp2_window.png}}
 \caption{The tilp main window}
 \end{figure}
 
@@ -240,9 +263,188 @@ This is the fastest method to get a rom but you must have the calc in your posse
 So please be careful about the law.\newline
 I can't give you links, but there's a lot of website which allow you to get a rom without using tilp.\newline
 
+\chapter{Main features}
+
+In addition to emulate the behaviour of a real calc, TilEm2 features main functionnalities as file loading and file export, screenshot, debugger.\newline
+In this chapter, we will talk about these main features.\newline
+In an another chapter, yoou will find a detailled explanation of all options of TilEm2.\newline
+
+\section{Send a file from PC to TilEm2}
+
+Here we talk about sending a file from computer to emulated calc.\newline
+You downloaded a file on the web and you want to test it before sending it to your calc?\newline
+You compiled a file and you want to see the result?\newline
+So you probably want to use send file feature...\newline\newline
+There's 3 ways to do that.\newline
+
+\subsection{Using the right click menu option}
+
+Firstly right click on the calc.\newline
+This menu popup will appear : \newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/send_file.png}}
+\caption{The "Send File..." menu entry}
+\end{figure}
+Click on Send file...\newline
+(You can bypass the popup menu by clicking CTRL + O)\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/send_file_chooser.png}}
+\caption{The "Send File..." file chooser dialog}
+\end{figure}
+Then explore your computer and choose the file(s) you want to send.\newline
+Usually, variable are suffixed by something like .82p (ti82), .83p (ti83) .8xp (ti83+, ti84+), .86p (ti86) or something else.\newline
+Grouped files are generally suffixed by .82g (ti82), .83g (ti83), .8xg (ti83+, ti84+).86g (ti86) or something else.\newline
+Some other special extension as .8kv are flashapp for ti83+, ti84+.\newline
+And a lot of other file extension.\newline
+
+It could take some time to load a variable so a current progress bar is printed while loading to know what's happening.\newline
+
+As soon as you press OK, the file start to be loaded and a progress bar is displayed.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/send_file_loading.png}}
+\caption{The "Senf File..." progress bar update}
+\end{figure}
 
 
-\chapter{Utilisation}
+\subsection{Using drag and drop}
+Simply select one or more files on your computer and use drag and drop to
+
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/send_file_drag_and_drop.png}}
+\caption{Drag and Drop}
+\end{figure}
+
+You will not see any visual feedback (no progress bar) but you can see in your terminal eventually the libticalcs debugging messages.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/send_file_drag_and_drop_libticalcs.png}}
+\caption{Drag and Drop}
+\end{figure}
+
+
+You can check if your program is correctly uploaded to calc by listing them inside the program menu (if it's a program) :
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/send_file_list.png}}
+\caption{Check if a programs is uploaded correctly (ti83)}
+\end{figure}
+
+\subsection{Using the command line}
+
+You can also send a file to the calc at startup using command line parameters.\newline
+All the non options args are sent to the calc.\newline
+
+\begin{lstlisting}
+tilem2 -r $rom ion.83g
+\end{lstlisting}
+This example will load the group file ion.83g in the calc memory.\newline
+
+\section{Get a var from calc to PC}
+
+To get a program, list, screen, application or whatever which is considered are a var on the calc you need to use the right click menu options :\newline
+(Or you can simply use CTRL + S)\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/receive_file.png}}
+\caption{The "Receive File..." dialog}
+\end{figure}
+
+At this point, TilEm2 will (try to) get the variables and print them into a list.\newline
+This is why you will see the progress bar.\newline
+Warning : update is not done each time the window is popup, you need to refresh manually the vars.\newline\newline
+You can select one or more vars in the list then saving it by clicking "Save".\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/receive_file_list.png}}
+\caption{Listing the variables}
+\end{figure}
+
+A check button lets you choose the format of the output.\newline
+If you want to get more than one var, you can save it as grouped file or as separate files (separate files is as you get it one by one).\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/receive_file_separate_or_grouped.png}}
+\caption{Listing the variables}
+\end{figure}
+
+Then simply click save and choose a place to backup the var(s).\newline
+
+
+\section{Record or grab a screenshot}
+
+\subsection{Grab a screenshot using "Quick Screenshot"}
+
+You can grab a screenshot without using screenshot dialog.\newline
+Simply click on the "Quick Screenshot" menu option or SHIFT + CTRL + PRINT.\newline
+The screenshot use the default options (or the options you have given into screenshot dialog).\newline
+The picture is stored into the directory you usually use for screenshot OR if not exists into the ~/.config/tilem2/screenshots/ or equivalent if you're not on Linux.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/quick_screenshot.png}}
+\caption{The "Quick Screenshot" submenu}
+\end{figure}
+
+\subsection{Grab a screenshot using the screnshot dialog}
+
+Click on "Screenshot" menu option or use CTRL + PRINT.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot.png}}
+\caption{The "Screenshot..." submenu}
+\end{figure}
+
+The screenshot window will open.\newline
+TilEm2 automatically grab a screenshot at startup.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_dialog_grab.png}}
+\caption{The window opens with a first grabed screenshot}
+\end{figure}
+
+You can choose to "Save" it or to grab another screenshot.\newline
+There's a lot of options as size, foreground/background color etc...\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_dialog.png}}
+\caption{The options}
+\end{figure}
+
+There's some differents kind of output format as png, bmp or some other else.\newline
+
+\subsection{Record a gif}
+
+Click on "Screenshot" menu option or use CTRL + PRINT.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot.png}}
+\caption{The "Screenshot..." submenu}
+\end{figure}
+
+The screenshot window will open.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_dialog.png}}
+\caption{The "Screenshot" window}
+\end{figure}
+
+You can record a gif by clicking "Record".\newline
+Stop the gif by clicking "Stop" (What a surprise :D).\newline
+As soon you click "Stop", a preview is available in the picture area.\newline
+There's a lot of options as size, foreground/background color etc...\newline
+You can set these options after recording the animation.\newline
+
+When you have the desired animation, clickon "Save" button and choose a place and a filename to save the gif.\newline
+
+\chapter{List of functionnalities}
 \section{Menu}
 As TilEm1, the menu is a popup menu (right click).\newline
 All you want to do need to use this menu.\newline
@@ -514,6 +716,15 @@ As you can see TilEm2 has a lot of screenshot configuration.\newline
 So you can change the size, change the foreground and background colors.\newline
 Use or not grayscale.\newline
 
+\section{Quick Screenshot}
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/quick_screenshot.png}}
+\caption{The "Quick Screenshot" submenu}
+\end{figure}
+By clicking on this option, you grab a screenshot.\newline
+
+
 \section{Preferences}
 
 This is where you can set the skin (or disable using it) and some important other stuff.\newline
@@ -741,7 +952,86 @@ I put this code into exec.sh then for testing my program I simply do :\newline
 
 And my file is loaded and launched.
 
+\chapter{Create your own skin}
+
+As mentionned previously, TilEm2 uses a TiEmu skin file format.\newline
+So it's easy to do your own skins.\newline
+
+\section{Download tiem-skinedit}
+
+Skinedit is a part of TiEmu, you can download it here :\newline
+http://www.ticalc.org/archives/files/fileinfo/232/23201.html\newline
+
+\section{Create the skin}
+Now, I will explain to you how to create your own skins.\newline
+A picture of a game boy will be our example.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.9}{\includegraphics{pixs/gameboy.jpg}}
+\caption{Game boy}
+\end{figure}
+
+Firstly you need to download tiemu-skinedit (author : Julien Solignac).\newline
+Then launch it by :\newline
+\begin{lstlisting}
+tiemu-skinedit &
+\end{lstlisting}
 
 
+skinedit starts...\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/skinedit_start.png}}
+\caption{The skinedit window}
+\end{figure}
+Click on File -> New .\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/skinedit_file_new.png}}
+\caption{Create a new skin}
+\end{figure}
+
+Choose a picture then click "Ok".\newline
+
+Then find a picture and resize it to 900 pixels of height (keeping the proportions).\newline
+Usually I use TheGimp like this.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/gimp_resize.png}}
+\caption{Resize the picture}
+\end{figure}
+
+But it works with any size, just 900 pixels is nice I think.\newline
+The picture is loaded and a popup ask you to give some informations (title, author, model, contrast.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/skinedit_picture_properties.png}}
+\caption{Skinedit ask properties}
+\end{figure}
+
+
+Then click on "LCD" then select the region dedicated to LCD (right clikc to save).\newline
+Click keys then define the region for each keys (or only some of them).\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.3}{\includegraphics{pixs/skinedit_define_keys.png}}
+\caption{Define the keys}
+\end{figure}
+
+When it's ok, save the file with a skn file extension.\newline
+
+And let's see the result ! 
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/gameboy.png}}
+\caption{No comment !}
+\end{figure}
+
+You can also convert a TiEmu or VTI skin file using skinedit then use it with TilEm2 !\newline
+
+Do not hesitate to send us your skins file, maybe we could use it as official skin !\newline
 
 \end{document}

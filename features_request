@@ -1,0 +1,10 @@
+
+Chickendude :
+- Print the hexa values of an instruction into the debugger
+- When going up in the debugger, print instruction by instruction instead of byte per byte
+
+Guillaume Hoffman : 
+- Could launch a program and save a screenshot automatically without gui
+- Terminal output for the lcd
+
+
