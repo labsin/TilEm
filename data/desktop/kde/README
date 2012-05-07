@@ -1,0 +1,9 @@
+This is greatly inspired from TiEmu.
+Thanks to the authors.
+
+This directory contains shortcuts and mime types for KDE integration.
+You have to copy:
+- tilem2.desktop to  
+        $HOME/.local/share/applications or /usr/share/applications
+- x-tilem2-*.desktop to  
+        $HOME/.kde/share/mimelnk/application or /usr/share/mimelnk/application

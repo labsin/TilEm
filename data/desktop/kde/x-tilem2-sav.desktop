@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+MimeType=application/x-tilem2-sav
+Comment=TilEm2 State Image
+Comment[fr]=Fichier Image d'Etat
+Icon=/usr/local/share/tilem2/icons/  
+Type=MimeType
+Patterns=*.sav;
+
