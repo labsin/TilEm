@@ -1,8 +1,0 @@
-[deskktop Entry]
-Encoding=UTF-8
-MimeType=application/x-tilem2
-Comment=TilEm Rom File
-Comment[fr]=Fichier Rom TilEm
-Icon=/usr/local/share/tilem2/icons/  
-Type=MimeType
-Patterns=*.rom;

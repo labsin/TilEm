@@ -6,6 +6,7 @@ datadir = @datadir@
 pkgdatadir = @datadir@/tilem2
 mandir = @mandir@
 icondir = @datadir@/icons
+applicationsdir = @datadir@/applications
 
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
@@ -59,6 +60,8 @@ install:
 	 done ; \
 	done
 	$(INSTALL_DATA) $(srcdir)/icons/hicolor/index.theme $(DESTDIR)$(pkgdatadir)/icons/hicolor
+	$(INSTALL) -d -m 755 $(DESTDIR)$(applicationsdir)
+	$(INSTALL_DATA) $(srcdir)/desktop/tilem2.desktop $(DESTDIR)$(applicationsdir)
 
 uninstall:
 	rm -f $(DESTDIR)$(pkgdatadir)/keybindings.ini
@@ -89,6 +92,7 @@ uninstall:
 	-rmdir $(DESTDIR)$(pkgdatadir)/symbols
 	-rmdir $(DESTDIR)$(pkgdatadir)/skins
 	-rmdir $(DESTDIR)$(pkgdatadir)
+	rm -f $(DESTDIR)$(applicationsdir)/tilem2.desktop
 
 Makefile: Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status
