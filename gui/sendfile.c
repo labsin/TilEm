@@ -446,7 +446,7 @@ static int get_cmdline_slot(const char *str, const char **name)
 		return TI81_SLOT_A + g_ascii_toupper(str[0]) - 'A';
 	}
 
-	if (str[0] == '=' && str[1] == '=') {
+	if (str[0] == '@' && str[1] == '=') {
 		*name = str + 2;
 		return TI81_SLOT_THETA;
 	}
