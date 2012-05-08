@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -86,6 +86,7 @@ static char * get_default_config_dir()
 static char * find_filev(GFileTest test, const char *name, va_list rest)
 {
 	char *fullname, *dname, *path;
+	const char *userdir;
 	const char * const *sysdirs;
 
 	fullname = build_filenamev(name, rest);
@@ -130,6 +131,15 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 	}
 	g_free(path);
 #endif
+
+	userdir = g_get_user_data_dir();
+	if (userdir) {
+		path = g_build_filename(userdir, "tilem2", fullname, NULL);
+		if (g_file_test(path, test)) {
+			g_free(fullname);
+			return path;
+		}
+	}
 
 	sysdirs = g_get_system_data_dirs();
 	while (sysdirs && sysdirs[0]) {

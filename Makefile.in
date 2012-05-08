@@ -31,6 +31,16 @@ uninstall:
 	cd gui && $(MAKE) uninstall
 	cd data && $(MAKE) uninstall
 
+install-home: all
+	$(MAKE) install \
+	  bindir=$(HOME)/bin \
+	  datarootdir=$${XDG_DATA_HOME:-$(HOME)/.local/share}
+
+uninstall-home:
+	$(MAKE) uninstall \
+	  bindir=$(HOME)/bin \
+	  datarootdir=$${XDG_DATA_HOME:-$(HOME)/.local/share}
+
 distclean: clean
 	rm -f config.status config.log config.h configure.lineno
 	rm -f aclocal.m4
