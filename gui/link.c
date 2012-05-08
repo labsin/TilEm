@@ -805,7 +805,7 @@ static gboolean get_dirlist_ti81(TilemCalcEmulator *emu,
 
 	tilem_em_wake_up(emu, TRUE);
 
-	for (i = 0; i < TI81_SLOT_MAX; i++) {
+	for (i = 0; i <= TI81_SLOT_MAX; i++) {
 		/* put Prgm0 after Prgm9, the way it appears in the menu */
 		if (i < 9)
 			slot = i + 1;
