@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2009 Benjamin Moody
+ * Copyright (C) 2004-2012 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -29,17 +29,17 @@
 #include "x7.h"
 
 static const TilemFlashSector flashsectors[] = {
-	{0x000000, 0x10000, 1},
-	{0x010000, 0x10000, 1},
-	{0x020000, 0x10000, 1},
-	{0x030000, 0x10000, 1},
-	{0x040000, 0x10000, 1},
-	{0x050000, 0x10000, 1},
-	{0x060000, 0x10000, 1},
-	{0x070000, 0x08000, 1},
-	{0x078000, 0x02000, 1},
-	{0x07A000, 0x02000, 1},
-	{0x07C000, 0x04000, 0}};
+	{0x000000, 0x10000, 0},
+	{0x010000, 0x10000, 0},
+	{0x020000, 0x10000, 0},
+	{0x030000, 0x10000, 0},
+	{0x040000, 0x10000, 0},
+	{0x050000, 0x10000, 0},
+	{0x060000, 0x10000, 0},
+	{0x070000, 0x08000, 0},
+	{0x078000, 0x02000, 0},
+	{0x07A000, 0x02000, 0},
+	{0x07C000, 0x04000, 1}};
 
 #define NUM_FLASH_SECTORS (sizeof(flashsectors) / sizeof(TilemFlashSector))
 
