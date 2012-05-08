@@ -7,6 +7,7 @@ pkgdatadir = @datadir@/tilem2
 mandir = @mandir@
 icondir = @datadir@/icons
 applicationsdir = @datadir@/applications
+mimedir = @datadir@/mime
 
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
@@ -17,6 +18,8 @@ VPATH = @srcdir@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 SHELL = @SHELL@
+UPDATE_DESKTOP_DATABASE = @UPDATE_DESKTOP_DATABASE@
+UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 
 # Custom action and status icons go in these directories.  These icons
 # are only used by TilEm, so they are installed in DATADIR/tilem2/icons.
@@ -62,6 +65,10 @@ install:
 	$(INSTALL_DATA) $(srcdir)/icons/hicolor/index.theme $(DESTDIR)$(pkgdatadir)/icons/hicolor
 	$(INSTALL) -d -m 755 $(DESTDIR)$(applicationsdir)
 	$(INSTALL_DATA) $(srcdir)/desktop/tilem2.desktop $(DESTDIR)$(applicationsdir)
+	$(INSTALL) -d -m 755 $(DESTDIR)$(mimedir)/packages
+	$(INSTALL_DATA) $(srcdir)/desktop/tilem2.xml $(DESTDIR)$(mimedir)/packages
+	[ -n "$(DESTDIR)" ] || $(UPDATE_DESKTOP_DATABASE) $(applicationsdir)
+	[ -n "$(DESTDIR)" ] || $(UPDATE_MIME_DATABASE) $(mimedir)
 
 uninstall:
 	rm -f $(DESTDIR)$(pkgdatadir)/keybindings.ini
@@ -81,7 +88,7 @@ uninstall:
 	  rm -f $(DESTDIR)$(icondir)/$$i/`basename $$j` ; \
 	 done ; \
 	done
-	-for i in $(icondirs) ; do \
+	-for i in $(pkg_icondirs) ; do \
 	 rmdir $(DESTDIR)$(pkgdatadir)/icons/$$i ; \
 	done
 	-rmdir $(DESTDIR)$(pkgdatadir)/icons/hicolor/16x16
@@ -93,6 +100,9 @@ uninstall:
 	-rmdir $(DESTDIR)$(pkgdatadir)/skins
 	-rmdir $(DESTDIR)$(pkgdatadir)
 	rm -f $(DESTDIR)$(applicationsdir)/tilem2.desktop
+	rm -f $(DESTDIR)$(mimedir)/packages/tilem2.xml
+	[ -n "$(DESTDIR)" ] || $(UPDATE_DESKTOP_DATABASE) $(applicationsdir)
+	[ -n "$(DESTDIR)" ] || $(UPDATE_MIME_DATABASE) $(mimedir)
 
 Makefile: Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status

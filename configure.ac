@@ -30,6 +30,11 @@ AC_ARG_VAR(RANLIB, [Program to make a static library linkable])
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
+AC_CHECK_PROG([UPDATE_DESKTOP_DATABASE],
+              [update-desktop-database], [update-desktop-database], [:])
+AC_CHECK_PROG([UPDATE_MIME_DATABASE],
+              [update-mime-database], [update-mime-database], [:])
+
 # Checks for libraries
 
 m4_define(with_flags, [
