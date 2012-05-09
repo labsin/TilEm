@@ -1,6 +1,7 @@
 \documentclass[10pt]{report}
 \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{floatrow}
 \usepackage{float}
@@ -10,6 +11,13 @@
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{5}
 
+\newcommand{\submenu}{$\vartriangleright$}
+
+\newcommand{\calckey}[1]{\textsf{[#1]}}
+\newcommand{\calcuparrow}{\calckey{$\bigtriangleup$}}
+\newcommand{\calcleftarrow}{\calckey{$\vartriangleleft$}}
+\newcommand{\calcrightarrow}{\calckey{$\vartriangleright$}}
+\newcommand{\calcdownarrow}{\calckey{$\bigtriangledown$}}
 
 \lstset{
 	language=bash,
@@ -217,57 +225,129 @@ The last used rom is automatically used for the next launch of TilEm2.\newline
 You can save the current state of the calculator by using "Save Calculator".\newline
 If you cancel the rom chooser dialog, TilEm2 automatically shutdown.\newline
 
-\chapter{Get a rom}
+\chapter{Getting a ROM image}
 
-As we said before, you must provide a rom to TilEm to get it working correctly.\newline
-A rom is the brain of the calculator, TilEm only emulate the body (hardware).\newline
-We can't provide a rom for you because this is not allowed by the law.\newline
-There's many way to get a rom, here are some of them : \newline
+In order to emulate a calculator, you must have a copy of the
+calculator's operating system.  This file is referred to as a ``ROM
+image,'' because, traditionally, the OS was stored in the calculator's
+Read-Only Memory.  (More recent calculator models store the OS in
+Flash memory instead, but the name has stuck.)
+
+The ROM code (which forms the ``brain'' of the calculator) is
+copyrighted by TI, so it is not included with TilEm.  Instead, you
+will need to copy the ROM from a calculator you own.  There are
+various ways to do so:
+
 \begin{itemize}
-\item Get it from your calculator using tilp.
-\item Download it from the web (you must have the real calc in your possession!!)
+\item For most calculator models, you can connect the calculator to
+  your PC and download the ROM directly using the free software TiLP\@.
+
+\item For the TI-83 Plus and TI-84 Plus, Andree Chea's \textsf{rom8x}
+  tool allows you to copy a portion of the code from your calculator
+  (using either TiLP or some other software, such as TI Graph Link or
+  TI-Connect) and combine it with one of the OS upgrade files that are
+  available from TI's website.
+
+\item For the TI-81, the \textsf{dump81} package can be used to copy
+  the ROM contents using a digital camera.  The other option (since
+  the TI-81 has no I/O ports) is to take apart your calculator,
+  desolder its ROM chip, and read the contents with an EEPROM
+  programmer.
 \end{itemize}
 
-\section{Get a rom using tilp}
-Launch your best friend tilp2 as always.\newline\newline
-Here's what you have usually:\newline
+\section{Getting a ROM using TiLP}
+TiLP is a free software program for communicating with TI calculators
+of all types.  Like TilEm, it runs on a variety of platforms,
+including Windows, Mac OS X, GNU/Linux, and FreeBSD\@.  (If you've
+installed TilEm from source, you've already done most of the work of
+installing TiLP\@.)  You can download TiLP from
+\url{http://tilp.sourceforge.net/}.
+
+To use TiLP, you will also need a cable to connect your calculator to
+your computer.  The TI-84 Plus can be connected using a standard
+mini-USB cable; for other calculators, you can either buy an official
+TI Graph Link cable, or (if you're feeling adventurous) build your
+own.
+
+\subsection*{Starting TiLP}
+When you launch TiLP, the main window appears:
 \begin{figure}[H]
 \centering
 \scalebox{0.8}{\includegraphics{pixs/tilp2_window.png}}
-\caption{The tilp main window}
+\caption{The TiLP main window}
 \end{figure}
 
-At this point, you should be able to dirlist your calc (if not, the calc is not connected).\newline
-In this case, change the cable or the model and retry.\newline
-Try to launch tilp in sudo or root mode, sometimes it helps.\newline\newline
-Then click on the "Opérating System" label:\newline 
+If it does not detect your calculator automatically, select
+\textsf{File} \submenu\ \textsf{Change Device} (for older versions of
+TiLP, right click on the left pane and select \textsf{Change Device}.)
+Ensure that the ``Cable'' and ``Calc'' options are correct, and that
+your calculator is turned on and connected.  Click the
+\textsf{Dirlist} button to list the variables on your calculator, and
+test whether the cable is working.
+
+Dumping the ROM requires you to run an assembly program on your
+calculator.  Although these programs have been well tested, there is
+always the possibility of something going wrong, so you may want to
+take this opportunity to back up any important files from your
+calculator.
+
+\subsection*{Installing a shell}
+If you have a TI-73, TI-82 or TI-85, you will first need to install an
+assembly shell.  These shells are not included with TilEm or TiLP, but
+can be downloaded from the Web:
+\begin{itemize}\raggedright
+\item Mallard for the TI-73: \url{http://www.ticalc.org/pub/73/asm/shells/mallard.zip}
+\item SNG for the TI-82: \url{http://www.ticalc.org/pub/82/asm/shells/sng.zip}
+\item ZShell for the TI-85: \url{http://www.ticalc.org/pub/85/asm/shells/zshell.zip}
+\end{itemize}
+
+To install the shell, you will need to send a memory backup file.
+Note that this replaces the entire calculator memory contents.  First,
+put the calculator into link mode if necessary:
+\begin{itemize}
+\item On the TI-82, press
+  \calckey{2nd} \calckey{X,T,$\theta$} \calcrightarrow\ \calckey{ENTER}.
+\item On the TI-85, press
+  \calckey{2nd} \calckey{x-VAR} \calckey{F2}.
+\end{itemize}
+Next, use the \textsf{Restore} option in TiLP to send the .73B, .82B,
+or .85B file to your calculator.  You will need to press
+\calckey{ENTER} on the TI-82, or \calckey{F1} on the TI-85, to accept
+the memory backup.
+
+\subsection*{Running the ROM dumper}
+If you have a TI-82 or TI-85, put the calculator into link mode again
+(using the same key sequence as above.)  Next, double-click on the
+\textsf{Operating System} item in TiLP\@.  It will show a warning message:
 \begin{figure}[H]
 \centering
 \scalebox{1}{\includegraphics{pixs/tilp2_getrom_warning.png}}
 \caption{The warning about the law}
 \end{figure}
-
-In fact, tilp2 sends a romdumper to the calc, the execute it remotely and get the rom.\newline
-
+It will ask you again to confirm that you know what you're doing:
 \begin{figure}[H]
 \centering
 \scalebox{1}{\includegraphics{pixs/tilp2_getrom_dumper.png}}
 \caption{The warning before launching rom dumper}
 \end{figure}
-Click forward !!\newline
 
+The ROM dumper will then be transferred, and if possible, launched
+automatically.  On the TI-73, TI-82, or TI-85, you will need to launch
+the ROM dumper manually:
+\begin{itemize}
+\item On the TI-73, run \textsf{prgmA} to start Mallard; ``ROM Dump''
+  should already be selected, so just press \calckey{ENTER}.
+\item On the TI-82, run \textsf{prgmROMDUMP}.
+\item On the TI-85, press \calckey{CUSTOM} \calckey{F1} to start
+  ZShell; select ``ROMDump'' and press \calckey{ENTER} to run it.
+\end{itemize}
+
+The ROM transfer will take some time\dots
 \begin{figure}[H]
 \centering
 \scalebox{1}{\includegraphics{pixs/tilp2_getrom_transfert.png}}
 \caption{The transfert}
 \end{figure}
-
-
-\section{Get a rom from the web}
-
-This is the fastest method to get a rom but you must have the calc in your possession.\newline
-So please be careful about the law.\newline
-I can't give you links, but there's a lot of website which allow you to get a rom without using tilp.\newline
 
 \chapter{Main features}
 
