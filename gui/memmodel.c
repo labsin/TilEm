@@ -31,6 +31,160 @@
 #include "memmodel.h"
 #include "charmap.h"
 
+/* GTK+ requires us to supply several property values for every byte,
+   and we might have hundreds of bytes that need to be refreshed each
+   time the window is repainted.  To avoid locking and unlocking the
+   calc for every call to tilem_mem_model_get_value(), we can retrieve
+   information for an entire block of memory and keep it in cache.
+
+   For each address, we cache the current byte value (8 bits), whether
+   or not it is editable (1 bit), and its physical address (up to 22
+   bits for current calculator models), so everything fits in a
+   guint32.  For future models, this scheme might need to be
+   modified. */
+
+#define CACHE_BLOCK_SIZE 256
+#define CACHE_NUM_BLOCKS 16
+
+typedef struct {
+	dword address;
+	guint32 *info;
+} MemModelCacheBlock;
+
+/* Check if a given physical address is editable (i.e., located in RAM
+   or in a non-protected Flash sector) */
+static gboolean address_editable(TilemCalc *calc, dword a)
+{
+	int start, end, i;
+
+	if (a >= calc->hw.romsize)
+		/* address is in RAM */
+		return TRUE;
+
+	if (!(calc->hw.flags & TILEM_CALC_HAS_FLASH))
+		/* calc does not use Flash */
+		return FALSE;
+
+	/* address is in Flash -> check if sector is protected */
+	start = 0;
+	end = calc->hw.nflashsectors;
+	while (start < end) {
+		i = (start + end) / 2;
+		if (a < calc->hw.flashsectors[i].start)
+			end = i;
+		else if (a >= (calc->hw.flashsectors[i].start
+		               + calc->hw.flashsectors[i].size))
+			start = i + 1;
+		else
+			return !(calc->hw.flashsectors[i].protectgroup
+			         & ~calc->flash.overridegroup);
+	}
+
+	g_return_val_if_reached(FALSE);
+}
+
+/* Copy calc memory contents into cache. */
+static void fill_cache_block(TilemMemModel *mm, MemModelCacheBlock *cb)
+{
+	TilemCalc *calc;
+	dword i, addr, phys;
+	byte value, editable;
+
+	g_return_if_fail(mm->emu != NULL);
+
+	tilem_calc_emulator_lock(mm->emu);
+	calc = mm->emu->calc;
+	if (!calc) {
+		tilem_calc_emulator_unlock(mm->emu);
+		return;
+	}
+
+	for (i = 0; i < CACHE_BLOCK_SIZE; i++) {
+		addr = (cb->address + i) % mm->wrap_addr;
+
+		if (mm->use_logical)
+			phys = (*calc->hw.mem_ltop)(calc, addr);
+		else
+			phys = addr;
+
+		editable = address_editable(calc, phys);
+		value = calc->mem[phys];
+
+		cb->info[i] = (value
+		               | (editable << 8)
+		               | (phys << 9));
+	}
+
+	tilem_calc_emulator_unlock(mm->emu);
+}
+
+/* Retrieve info for given address. */
+static guint32 get_mem_info(TilemMemModel *mm, dword addr)
+{
+	GList *l;
+	MemModelCacheBlock *cb;
+	dword start, index;
+
+	start = addr & ~(CACHE_BLOCK_SIZE - 1);
+	index = addr & (CACHE_BLOCK_SIZE - 1);
+
+	for (l = mm->cache->head; l; l = l->next) {
+		cb = l->data;
+		if (cb->address == start) {
+			if (l->prev) {
+				/* Move this cache block to the start
+				   of the list */
+				g_queue_unlink(mm->cache, l);
+				g_queue_push_head_link(mm->cache, l);
+			}
+
+			return cb->info[index];
+		}
+	}
+
+	/* Data not found in cache; drop the least recently used block
+	   and retrieve the requested block from the calc */
+	l = g_queue_pop_tail_link(mm->cache);
+	g_queue_push_head_link(mm->cache, l);
+	cb = l->data;
+	cb->address = start;
+	fill_cache_block(mm, cb);
+	return cb->info[index];
+}
+
+/* Get address's byte value. */
+static byte get_value(TilemMemModel *mm, dword addr)
+{
+	return (get_mem_info(mm, addr) & 0xff);
+}
+
+/* Get address's editability. */
+static gboolean get_editable(TilemMemModel *mm, dword addr)
+{
+	return ((get_mem_info(mm, addr) >> 8) & 1);
+}
+
+/* Get address's corresponding physical address. */
+static dword get_phys_addr(TilemMemModel *mm, dword addr)
+{
+	return (get_mem_info(mm, addr) >> 9);
+}
+
+/* Clear cache.  This function should be called any time something
+   happens that might affect memory contents. */
+void tilem_mem_model_clear_cache(TilemMemModel *mm)
+{
+	GList *l;
+	MemModelCacheBlock *cb;
+
+	g_return_if_fail(TILEM_IS_MEM_MODEL(mm));
+
+	for (l = mm->cache->head; l; l = l->next) {
+		cb = l->data;
+		cb->address = (dword) -1;
+	}
+}
+
 /* Get flags for the model */
 static GtkTreeModelFlags
 tilem_mem_model_get_flags(G_GNUC_UNUSED GtkTreeModel *model)
@@ -195,38 +349,6 @@ static gboolean tilem_mem_model_iter_parent(G_GNUC_UNUSED GtkTreeModel *model,
 	return FALSE;
 }
 
-/* Check if a given physical address is editable (i.e., located in RAM
-   or in a non-protected Flash sector) */
-static gboolean address_editable(TilemCalc *calc, dword a)
-{
-	int start, end, i;
-
-	if (a >= calc->hw.romsize)
-		/* address is in RAM */
-		return TRUE;
-
-	if (!(calc->hw.flags & TILEM_CALC_HAS_FLASH))
-		/* calc does not use Flash */
-		return FALSE;
-
-	/* address is in Flash -> check if sector is protected */
-	start = 0;
-	end = calc->hw.nflashsectors;
-	while (start < end) {
-		i = (start + end) / 2;
-		if (a < calc->hw.flashsectors[i].start)
-			end = i;
-		else if (a >= (calc->hw.flashsectors[i].start
-		               + calc->hw.flashsectors[i].size))
-			start = i + 1;
-		else
-			return !(calc->hw.flashsectors[i].protectgroup
-			         & ~calc->flash.overridegroup);
-	}
-
-	g_return_val_if_reached(FALSE);
-}
-
 /* Retrieve value for a given column */
 static void tilem_mem_model_get_value(GtkTreeModel *model,
                                       GtkTreeIter *iter,
@@ -242,24 +364,15 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 	mm = TILEM_MEM_MODEL(model);
 
 	g_return_if_fail(mm->emu != NULL);
-	
+	g_return_if_fail(mm->emu->calc != NULL);
+
 	n = get_row_number(model, iter);
 
-	tilem_calc_emulator_lock(mm->emu);
 	calc = mm->emu->calc;
-	if (!calc) {
-		tilem_calc_emulator_unlock(mm->emu);
-		return;
-	}
 
 	addr = (mm->start_addr
 	        + n * mm->row_size
 	        + column / MM_COLUMNS_PER_BYTE) % mm->wrap_addr;
-
-	if (mm->use_logical)
-		phys = calc->hw.mem_ltop(calc, addr);
-	else
-		phys = addr;
 
 	column %= MM_COLUMNS_PER_BYTE;
 
@@ -272,40 +385,67 @@ static void tilem_mem_model_get_value(GtkTreeModel *model,
 		break;
 
 	case MM_COL_HEX_0:
-		g_snprintf(buf, sizeof(buf), "%02X", calc->mem[phys]);
+		g_snprintf(buf, sizeof(buf), "%02X", get_value(mm, addr));
 		g_value_init(value, G_TYPE_STRING);
 		g_value_set_string(value, buf);
 		break;
 
 	case MM_COL_CHAR_0:
-		s = ti_to_unicode(calc->hw.model_id, calc->mem[phys]);
+		s = ti_to_unicode(calc->hw.model_id, get_value(mm, addr));
 		g_value_init(value, G_TYPE_STRING);
 		g_value_set_string(value, s);
 		g_free(s);
 		break;
 
 	case MM_COL_BYTE_PTR_0:
+		phys = get_phys_addr(mm, addr);
 		g_value_init(value, G_TYPE_POINTER);
 		g_value_set_pointer(value, &calc->mem[phys]);
 		break;
 
 	case MM_COL_EDITABLE_0:
 		g_value_init(value, G_TYPE_BOOLEAN);
-		g_value_set_boolean(value, address_editable(calc, phys));
+		g_value_set_boolean(value, get_editable(mm, addr));
 		break;
 	}
-
-	tilem_calc_emulator_unlock(mm->emu);
-}
-
-static void tilem_mem_model_class_init(G_GNUC_UNUSED TilemMemModelClass *klass)
-{
 }
 
 static void tilem_mem_model_init(TilemMemModel *mm)
 {
+	int i;
+	MemModelCacheBlock *cb;
+
 	mm->stamp = g_random_int();
 	mm->row_size = 1;
+
+	mm->cache = g_queue_new();
+	for (i = 0; i < CACHE_NUM_BLOCKS; i++) {
+		cb = g_slice_new(MemModelCacheBlock);
+		cb->address = (dword) -1;
+		cb->info = g_new(guint32, CACHE_BLOCK_SIZE);
+		g_queue_push_head(mm->cache, cb);
+	}
+}
+
+static void tilem_mem_model_finalize(GObject *obj)
+{
+	TilemMemModel *mm;
+	MemModelCacheBlock *cb;
+
+	g_return_if_fail(TILEM_IS_MEM_MODEL(obj));
+	mm = TILEM_MEM_MODEL(obj);	                 
+
+	while ((cb = g_queue_pop_head(mm->cache))) {
+		g_free(cb->info);
+		g_slice_free(MemModelCacheBlock, cb);
+	}
+}
+
+static void tilem_mem_model_class_init(TilemMemModelClass *klass)
+{
+	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
+
+	obj_class->finalize = &tilem_mem_model_finalize;
 }
 
 static void tilem_mem_tree_model_init(GtkTreeModelIface *iface)

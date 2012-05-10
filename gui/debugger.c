@@ -36,6 +36,7 @@
 #include "files.h"
 #include "msgbox.h"
 #include "fixedtreeview.h"
+#include "memmodel.h"
 
 /* Stack list */
 enum
@@ -1145,6 +1146,7 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 	TilemCalc *calc;
 	gboolean paused;
 	gboolean updatedasm = FALSE;
+	GtkTreeModel *model;
 
 	dbg->refreshing = TRUE;
 	dbg->delayed_refresh = FALSE;
@@ -1171,6 +1173,9 @@ static void refresh_all(TilemDebugger *dbg, gboolean updatemem)
 	}
 
 	tilem_calc_emulator_unlock(dbg->emu);
+	
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(dbg->mem_view));
+	tilem_mem_model_clear_cache(TILEM_MEM_MODEL(model));
 
 	gtk_widget_queue_draw(dbg->mem_view);
 

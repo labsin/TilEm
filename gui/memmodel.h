@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -59,6 +59,7 @@ typedef struct _TilemMemModel {
 	dword start_addr;
 	dword wrap_addr;
 	gboolean use_logical;
+	GQueue *cache;
 } TilemMemModel;
 
 typedef struct _TilemMemModelClass {
@@ -70,5 +71,7 @@ GType tilem_mem_model_get_type(void) G_GNUC_CONST;
 GtkTreeModel * tilem_mem_model_new(TilemCalcEmulator* emu,
                                    int rowsize, dword start,
                                    gboolean logical);
+
+void tilem_mem_model_clear_cache(TilemMemModel *mm);
 
 G_END_DECLS
