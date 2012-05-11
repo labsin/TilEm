@@ -530,7 +530,645 @@ You can set these options after recording the animation.\newline
 
 When you have the desired animation, clickon "Save" button and choose a place and a filename to save the gif.\newline
 
+\section{Use the debugger}
+This is an important part of an emulator...\newline
+The debugger provide an easy way to inspect the core of the calc and to find bugs into your projects.\newline
+
+\subsection{General presentation}
+
+When you start the debugger (using "Pause" or the right click menu entry) 
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/debugger.png}}
+\caption{The "Debugger" menu entry}
+\end{figure}
+
+The calc will be paused automatically (you can't work with debugger while calc is running that's evident).\newline
+If you click on F5 to run the calc the emulator will be deactivated to prevent to edit anything in the debugger.\newline
+You can pause the calc by clicking ESC (escape).\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/debugger_pause.png}}
+\caption{The "Pause" menu entry (Debug menu)}
+\end{figure}
+
+Or by using the "Pause" button (tool bar behind the menu bar).\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/debugger_pause_button.png}}
+\caption{The "Pause" button}
+\end{figure}
+
+The aim of the debugger is to show the disasm memory, the registers, stack and the memory.\newline
+The values are written in hexadecimal format.Not decimal.\newline
+What does it mean?\newline
+Simply one little sample :\newline
+increment 0 = 1;\newline
+increment 1 = 2;\newline
+increment 2 = 3;\newline
+increment 3 = 4;\newline
+increment 4 = 5;\newline
+increment 5 = 6;\newline
+increment 6 = 7;\newline
+increment 7 = 8;\newline
+increment 8 = 9;\newline
+increment 9 = A;\newline
+increment A = B;\newline
+increment B = C;\newline
+increment C = D;\newline
+increment D = E;\newline
+increment E = F;\newline
+increment F = 10;\newline
+Ok we will not explain more the hexadecimal format, just accept the fact that's in hexadecimal format.\newline
+For a large part of TilEm2 users, hexadecimal is not a surprise :)\newline\newline
+Let's talk about widget organization.\newline
+
+
+\subsection{Widget organization}
+
+There's at least 6 zones into this window :\newline
+\begin{itemize}
+\item The menu bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_menu_bar.png}}
+\caption{The menu bar}
+\end{figure}
+\item The button bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_button_bar.png}}
+\caption{The button bar}
+\end{figure}
+\item The disasm view :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_disasm_view.png}}
+\caption{The disasm view}
+\end{figure}
+\item The memory view :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_memory_view.png}}
+\caption{The memory view}
+\end{figure}
+\item The register view :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_register_view.png}}
+\caption{The register view}
+\end{figure}
+\item The stack view :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_stack_view.png}}
+\caption{The stack view}
+\end{figure}
+\end{itemize}
+
+All this view produce the debugger (there's some other window hidden by example breakpoints dialog and keypad window).\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/debugger_view.png}}
+\caption{The debugger}
+\end{figure}
+
+\subsection{Use the disasm view}
+
+As you probably know, there's a register which store the adress of the current instruction.\newline
+It's called PC ("Program Counter").\newline
+If you look into the value of PC, you should recognize that the value is the same as the adress pointed by a yellow arrow in the disasm.\newline 
+This is the current instruction which is executed.\newline
+See this example :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/debugger_pc_equal_current_instruction.png}}
+\caption{The value of PC is 05F3 as the adress of the current instruction}
+\end{figure}
+
+As you may know, even if z80 is most like "RISC" methodology (in the sense the mnemo are pretty simple and fast) the size of the instruction depends the instruction itself.\newline
+That's why the adress are not linearly incremented.\newline
+Sometimes an instruction is stored on 1 byte, sometimes 2 bytes, sometimes 3 bytes etc...\newline
+
+A sample for 1 byte sized instruction :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_instruction_1bytes.png}}
+\caption{Only one byte for RET}
+\end{figure}
+
+A sample for 2 bytes sized instruction :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_instruction_2bytes.png}}
+\caption{2 bytes...}
+\end{figure}
+
+A sample for 3 bytes sized instruction :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_instruction_3bytes.png}}
+\caption{3 bytes...}
+\end{figure}
+
+This view show the disasm memory, so you can see the entire memory, but not as hexadecimal value but as assembly mnemos.\newline
+As you can see, some values are replaced by their symbols.
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_replaced_symbol.png}}
+\caption{The value is replaced by its symbol}
+\end{figure}
+
+This is not a default behavious of a z80 debugger, so that's the job of an equate file loaded by TilEm2 at startup (files called .sym into the data directory).\newline
+In fact that's just adress values replaced by a label (for human readable purpose).\newline
+Exactly as you use an equate file instead of calling directly the adress for a call.\newline
+When you use "call BUFCOPY" (ti83), you don't want to see the exact value of this jump.\newline
+
+Always about the disasm view, you can "Goto adress..." : \newline
+Using right click on the disasm view : \newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_goto_adress.png}}
+\caption{The "Goto adress..." right click menu entry.}
+\end{figure}
+
+Or using the "Go" menu into the menu bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_go.png}}
+\caption{The "Go" menu.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_goto_adress_menu.png}}
+\caption{The "Goto adress..." from the go menu}
+\end{figure}
+
+This option lets you choose an adress to "jump" (only user interface no action on the calc).\newline
+Because it can be very annoying to scroll the disasm view.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_goto_adress_input.png}}
+\caption{Enter the adress...}
+\end{figure}
+One more time : "Goto adress" doesn't change anything to the "PC" or whatever.\newline 
+
+You can also use CTRL + L to do this task without using the mouse.\newline
+
+Another option is to jump to the "PC". It's like goto adress, but without prompting an adress, it will jump to the "PC" directly.\newline
+
+Using it from the menu bar ("Go" menu) : \newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_current_pc_menu.png}}
+\caption{The "Goto adress..." from the go menu}
+\end{figure}
+
+Or right click on the disasm view :\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_current_pc.png}}
+\caption{The "Goto adress..." from the go menu}
+\end{figure}
+
+Now let's talk about interactivity.\newline
+As you can see, a a lot of informations are updated each time the calc run (or do a step).\newline
+Stack, registers, and memory is updated in the same time the disasm view is modified.\newline
+There's of course some possible actions to do to execute one or more steps.\newline
+Here we will only study disasm related stuff, keeping breakpoints and registers/stack for later.\newline
+The actions you could do :\newline
+
+\begin{itemize}
+\item Step : Execute one instruction.
+\item Step Over : Run to the next line skipping subroutines.
+\item Finish Subroutine : Run to the end of the current subroutine.
+\end{itemize}
+
+\paragraph{Step}
+
+You can execute this action by clicking on the button in the button bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_step.png}}
+\caption{The "Step" button} 
+\end{figure}
+
+Or click on the "Step" menu entry into the "Debug" menu into the menu bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_step_menu.png}}
+\caption{The "Step" menu entry} 
+\end{figure}
+
+Or simply use "F7".\newline\newline
+
+This action simply execute one step.\newline
+Warning : Execute one step doesn't mean going to the next line !\newline
+If the instruction is a call or a jump, it will load another value into the "PC" so possibly jump elsewhere.\newline
+This action is the best choice to follow "step by step" the behaviour of a program.\newline
+
+\paragraph{Step Over}
+
+You can execute this action by clicking on the button in the button bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_step_over.png}}
+\caption{The "Step Over" button} 
+\end{figure}
+
+Or click on the "Step Over" menu entry into the "Debug" menu into the menu bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_step_over_menu.png}}
+\caption{The "Step Over" menu entry} 
+\end{figure}
+
+Or simply use "F8".\newline\newline
+
+This instruction is useful to do not enter into subroutines.\newline
+What's a subroutine?\newline
+Simply a jump materialized by a CALL (or BCALL) which push the return adress and finish by a RET.\newline
+
+\paragraph{Finish Subroutine}
+
+You can execute this action by clicking on the button in the button bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_finish_subroutine.png}}
+\caption{The "Finish Subroutine" button} 
+\end{figure}
+
+Or click on the "Finish Subroutine" menu entry into the "Debug" menu into the menu bar :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_finish_subroutine_menu.png}}
+\caption{The "Finish Subroutine" menu entry} 
+\end{figure}
+
+Or simply use "F9".\newline
+
+This action simply run to the RET instruction then pause after the execution of the RET (which is basically poping the value on the stack into "PC").\newline
+This "Finish Subroutine" is helpful if you enter a subroutine which is quite long and you don't want to inspect it, so simply finish the suroutine easily.\newline
+
+\subsection{Use the register view}
+In addition to run step by step and inspect the disasm instruction, you would probably know what's happening when you run one instruction.\newline
+Why a jump is never executed? What's the content of a register after an instruction?
+What's the flag state after an instruction?\newline\newline
+The register view provide an easy way to inspect and edit the register values.\newline\newline
+
+Firstly some asm z80 reminiscence :\newline
+\begin{itemize}
+\item "SP" is the Stack Pointer (the top of the stack will always be stored into the value of "SP").\newline
+\item "PC" is the "Progam Counter", so the adress of the current instruction.\newline
+\item "HL", "DE", "BC" are generalistic registers. They could be splitted into 2 registers of 8 bits.\newline
+Usually, "HL" is used as source for load memory operation, "DE" is usually used as destination, and "BC" is usually used as counter.See by example LDIR and LDDR instructions.\newline
+There's a special register called "AF" which is basically rarely used as 16 bits register because "F" is a 8 bit flag register and "A" is the accumulator register.\newline
+\item "A" is the most used register (by the user).\newline
+\item "F" is a register which is often updated depending the instruction (LD never update it, but AND, CP, SUB, etc... does).\newline
+Wikipedia says : "(A) and flag bits (F) carry, zero, minus, parity/overflow, half-carry (used for BCD), and an Add/Subtract flag (usually called N) also for BCD".\newline
+The "F" register is used very often when you do JMP [condition], label or CALL [condition], label  (label could be an adress).\newline
+There's some other registers "IX" and "IY" which are 16bits registers.\newline
+\item "IX" and "IY" are usually used as offset (SET use IY by example).\newline
+Some other registers are called "shadow register".\newline
+Their names are "AF'", "HL'", "DE'", "BC'".\newline
+You can exchange the value of non shadow register by executing EXX and EX.\newline
+To finish to explains what you can see in the register part, there's "IM" which is interrupt mode.\newline 
+\item The level of "IM" (0, 1 or 2) determine which interrupts are executed or not (HALT or an home made interrupt by example are not executed in all modes.\newline
+\item "EI" is enable interrupt.\newline
+\item "I" is the adress of the interrupt vector.\newline
+\end{itemize}
+
+The values of these registers are updated (not always) and you can inspect what your program is doing.\newline
+You can also edit these registers/values just by clicking on the input and replace the current value.\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_register_edit.png}}
+\caption{Edit the register "AF"}
+\end{figure}
+
+There's a bunch of toggle button to show and edit the "F" flag.\newline
+If you click on a button, you will set or reset a bit of the "F" register.\newline
+You can see that each time you toggle a button the "AF" register is modified.\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_flag_toggle.png}}
+\caption{Toggle the bit flags of "F" register (a part of "AF")}
+\end{figure}
+
+You can change the values of the register as you want for testing what could happen if a value was different or whatever you want.\newline
+If you try to change "PC" value, you will see the disasm view updated.\newline
+Warning : this is usually not useful but why not...\newline
+
+If you try to change the "SP" value, you will see the stack view updated.\newline
+Try by example to set "FFFF" as value of SP... Then the stack view only contains one value !\newline
+
+\subsection{Use the stack view}
+
+TilEm2 provide a view of the stack represented as a list of "address: value".\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_stack_view.png}}
+\caption{The stack view}
+\end{figure}
+
+You can navigate through the values in the stack to inspect them.\newline
+
+Let's a little explanation about what's a stack?\newline
+The stack is a particular memory access to store an retrieve values using the LIFO method.\newline
+The higher place in the stack is always the lower adress.\newline
+For ti83, the stack starts at adress FFFF for the first value.\newline
+Each time you PUSH a value, the "SP" is decremented by 2 (each place is 2 bytes).\newline
+A POP increment the "SP" by 2.\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/stack.png}}
+\caption{The stack concept (LIFO)}
+\end{figure}
+
+
+As said previously, if you try to set manually the "SP" to the value FFFF (for ti83), you will completely drop all values of the stack except the last one.\newline
+This view is basically more a feedback because you can't edit it. 
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_stack_empty.png}}
+\caption{Trying to set manually "SP" to FFFF}
+\end{figure}
+
+There's an interesting feature in TilEm2 which help to find the instruction which modify the stack.\newline
+You can find these actions in "Go" menu into the menu bar.\newline
+Or using ALT+PAGEUP or ALT+PAGEDOWN.\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_stack_previous_next.png}}
+\caption{Look for the instruction which modify the stack}
+\end{figure}
+
+When you use this, you will jump (not really jump) to the instruction which modify the current stack value.\newline
+It will update your disasm view but change nothing to the current state of the calc (no change in registers, "PC" not modified etc...).\newline
+
+\subsection{The memory view}
+
+This should be easy to understand that this view only print the memory in hexadecimal format.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_memory_view.png}}
+\caption{The memory view}
+\end{figure}
+
+You can scroll through the memory and edit it (when it possible).\newline
+To edit, simply click on a particular value.\newline 
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_memory_edit.png}}
+\caption{Edit the memory}
+\end{figure}
+
+Now, try to edit the value in the adress 0000 (for ti83).\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_memory_cant_edit.png}}
+\caption{Can't edit the entire memory}
+\end{figure}
+
+You simply can't !\newline
+Why TilEm2 do that?\newline
+Simply this is a place of ROM (so read only).\newline
+In fact you can't edit the entire memory but only some part (but your programs and variables will always be in RAM so you could edit it without any problem.\newline
+
+\subsection{Logical or Absolute adresses}
+
+Now that we have seen a big part of the debugger, let's see an option which will change the notation of the adress into logical or absolute representation.\newline
+Here's the result :\newline
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_absolute.png}}
+\caption{Absolute representation of the adresses}
+\end{figure}
+
+\subsection{Keypad}
+
+There's a completely independant widget which is poped up when you click on "Keypad" into the "View" menu into the menu bar.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{1}{\includegraphics{pixs/debugger_keypad_menu.png}}
+\caption{The "Keypad" menu entry into the "View" menu}
+\end{figure}
+
+This widget allow you to see how the buttons are connected (which bit in which group).\newline
+This is mostly used in direct input (use non blocking port to scan keys instead of a system call as CALL GETKEY).\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_keypad_group1.png}}
+\caption{The \calckey{DIV} and \calckey{MUL} keys are connected to bit 4 and bit 5 in group 1}
+\end{figure}
+
+\subsection{Breakpoints}
+
+Imagine that you want to inspect a part of code, but how to run the program normally and stop just before the part of the code you want inspect?\newline
+Try to run/pause randomly to finally stop in the right zone is stupid (and hard to do usually).\newline
+The solution is to use breakpoints.\newline
+What's a breakpoint?\newline
+A breakpoint is just say "When the "PC" is equal to this adress, then pause the program".\newline
+Assuming you have a routine called "DrawGbuf" and you want to stop just at the start of this routine.\newline
+How to know the adress?\newline
+Simply use the correct option in your assembler to generate the "listing" file which contains the equates between labels and adress (-T option with spasm).\newline
+Then look for the "DrawGbuf" label into the file (with spasm the file use the ".lst" extension).\newline
+I found the adress 9e4f (hexadecimal of course).\newline
+\begin{lstlisting}
+tib@cobra:~/Code/z80/project5$ cat project.lst | grep drawGbuf
+71 9dce: CD 4F 9E -  	call drawGbuf
+94 9e4f: -  -  -  -  drawGbuf:
+\end{lstlisting}
+As you can see, a label does not take place into the final binary, it's only a name for an adress only for human.\newline
+
+Now you have the adress, simply run TilEm2, launch debugger, then open the breakpoint dialog :\newline
+In the menu bar, click on "Debug" and click on "Breakpoints" :\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_menu.png}}
+\caption{The "Breakpoints" menu entry in the menu bar}
+\end{figure}
+
+Or simply press CTRL+B.\newline
+Then the "Breakpoints" dialog appears :\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint.png}}
+\caption{The "Breakpoints" menu}
+\end{figure}
+
+As we want to set a breakpoint on 9e4f (which is the start of the "DrawGbuf" subroutine), we need to "Add", so simply click on "Add".\newline
+Another dialog opens and we simply keep the default values and type 9e4f in the "Adress" input.\newline 
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_adding.png}}
+\caption{Add a breakpoint}
+\end{figure}
+The list of breakpoints is updated and as we can see the breakpoints is present.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_added.png}}
+\caption{Breakpoint added}
+\end{figure}
+
+Now use "Run" from the button bar, of the "Debug" menu or simply "F5".\newline
+The debugger will stop when the adress is encountered (could be never).\newline
+In our case, I know that "DrawGbuf" is frequently used because I use it as soon as possible to refresh the lcd.\newline
+So as soon as I do "F5" (run), the debugger stop on the 9e4f adress.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.6}{\includegraphics{pixs/debugger_breakpoint_encountered.png}}
+\caption{Breakpoint reached}
+\end{figure}
+
+As my first idea was to inspect the instructions into this subroutine, I can step by step and eventually do "F5" which will run and breaks immediately (I've said this is used very often in my code).\newline
+
+Ok I assume you have understood this basic example of uses breakpoints.\newline
+
+Now, I want to add another breakpoint on 9e8f which is a bit higher in memory.\newline
+So CTRL+B then "Add" then put 9e8f into the text input.\newline
+Now I have :\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_added_second.png}}
+\caption{Breakpoint added}
+\end{figure}
+Finally I see it's was never reached so I want to change the adress so I launch the breakpoints dialog and click "Edit".\newline
+And I put an adress just after the first breakpoint.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_edit.png}}
+\caption{Breakpoint edited}
+\end{figure}
+
+Then I run, and I see that the second breakpoint is reached :).\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.6}{\includegraphics{pixs/debugger_breakpoint_encountered_second.png}}
+\caption{Breakpoint reached}
+\end{figure}
+
+Now If I want to delete a breakpoint, I simply use "Delete".\newline
+If I want to keep the breakpoint but just deactivate it temporarly, then uncheck the checkbox into the "Type" column.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_deactivate.png}}
+\caption{Breakpoint deactivated}
+\end{figure}
+
+I can break the program using a range of adress.\newline
+By example, I want to stop the execution between 9e4f and 9e56 because I'm not sure where exactly to add the breakpoint.\newline
+So I deactivate my previous breakpoints and "Add" a breakpoint with a range of value (use toggle button "Range") starting from 9e4f then finishing at 9e56.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_range.png}}
+\caption{Breakpoint with a range of adress}
+\end{figure}
+
+Our list look like this now :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_added_range.png}}
+\caption{Breakpoint added with a range of adress}
+\end{figure}
+
+And each instruction inside this range is marked as "Break" :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_all_break.png}}
+\caption{A bunch of breakpoints}
+\end{figure}
+
+%%%%%%%%%%%% I can't figure out how this feature works
+Now, I want to put a breakpoint on each RET.\newline
+So I use "Add" then I choose "Z80 Instruction" into the "Breakpoint type" listbox.\newline
+As you know RET is "C9" as opcode so just type C9 
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_ret.png}}
+\caption{Set a breakpoint on RET instruction}
+\end{figure}
+
+Then we have :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_ret_added.png}}
+\caption{The new breakpoint is added}
+\end{figure}
+Ok now just remove this breakpoint.\newline
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+You can also set a breakpoint when accessing the ports.\newline
+As I use "Direct Input" method to scan keys in the project, I want to see when I read from the port 1 (keyboard).\newline
+So I click on "Add" then I choose "I/O" port then I check "Reading" then I give the 01 value for the keyboard port.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_direct_input.png}}
+\caption{A breakpoint on keyboard port reading}
+\end{figure}
+
+Let's see if all is correct.\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_added_direct_input.png}}
+\caption{Successfully added.}
+\end{figure}
+
+And of course it works fine :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_direct_input_encountered.png}}
+\caption{Breaks just after the 01 port reading}
+\end{figure}
+
+As you can see it stops just after reading the port (on the CP mnemo which is the group to test).\newline
+
+Now I want to stop on "Undocumented instruction" and "Illegal instruction".\newline
+An undocumented instruction is an instruction which was not explained into the z80 datasheet but usable anyway.\newline
+A illegal instruction is just a bad instruction .\newline
+To do that, I simply check the check button like this :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_undocumented_illegal.png}}
+\caption{Stop on illegal and undocumented instructions}
+\end{figure}
+
+Finally, as I finished to debug my application and just want to run it normally, I just clear all the breakpoints by clicking "Clear".\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_clear_warning.png}}
+\caption{The warning before clearing all the breakpoints}
+\end{figure}
+Simply click "Clear" then all will disappear.\newline\newline
+
+To finish about breakpoints, you should know that you can check "Reading", "Writing" and "Executing" for a "Memory adress" breakpoint too.\newline
+You can also specify logical or absolute adresses.\newline\newline
+
+You can set a breakpoint easily without using the breakpoint dialog by doing right click then "Breakpoint Here".\newline
+It will put a breakpoint on the current instruction selected into the disasm view.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_here.png}}
+\caption{Set a breakpoint here}
+\end{figure}
+
+
 \chapter{List of functionnalities}
+
+This chapter is most like a dictionnary than real explanation. Please refer to the first part ("Basic tasks") for the subject which are already explained.\newline
 \section{Menu}
 As TilEm1, the menu is a popup menu (right click).\newline
 All you want to do need to use this menu.\newline
@@ -682,7 +1320,7 @@ Guess what does this option :)
 
 \begin{figure}[H]
 \centering
-\scalebox{0.8}{\includegraphics{pixs/debugger.png}}
+\scalebox{0.6}{\includegraphics{pixs/debugger.png}}
 \caption{The "Debugger" menu entry}
 \end{figure}
 When you click on this option, the debugger window will appear.\newline
@@ -719,6 +1357,12 @@ You can switch it into the "View" menu.\newline
 \caption{Switch between logical and absolute adresses}
 \end{figure}
 The second big frame is the memory view.\newline
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\includegraphics{pixs/debugger_memory_view.png}}
+\caption{The memory view}
+\end{figure}
 For this view you can switch the adresses representation if you want.\newline
 In this view you can see what your calculator contains.\newline
 You can also edit the memory and change some values by your own.\newline
@@ -736,7 +1380,7 @@ The finally the stack.\newline
 At the top of the debugger window, you can see a menu "Debug".\newline
 \begin{figure}[H]
 \centering
-\scalebox{0.8}{\includegraphics{pixs/debugger_debug.png}}
+\scalebox{0.6}{\includegraphics{pixs/debugger_debug.png}}
 \caption{The "Debug" menu entry}
 \end{figure}
 The options are the same than buttons but there is a big news : breakpoints.\newline
@@ -751,7 +1395,7 @@ This option opens the Breakpoint menu when you can "Add", "Remove", "Edit", "Cle
 The easiest way to add a breakpoint is to right click on the disasm view and click on "Breakpoint here" but you can also set a breakpoint using its adress (logical or absolute).\newline
 \begin{figure}[H]
 \centering
-\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint.png}}
+\scalebox{0.8}{\includegraphics{pixs/debugger_breakpoint_add.png}}
 \caption{Adding a breakpoint}
 \end{figure}
 
@@ -879,7 +1523,6 @@ Application Options:
   -r, --rom=FILE            The rom file to run
   -k, --skin=FILE           The skin file to use
   -m, --model=NAME          The model to use
-  -f, --file=FILE           The file to load
   -s, --state-file=FILE     The state-file to use
   -l, --without-skin        Start in skinless mode
   --reset                   Reset the calc at startup
@@ -892,8 +1535,12 @@ Application Options:
 \end{lstlisting}
 
 You should usually use something like : \newline
-tilem2 -r /path/to/my/rom\newline\newline
 
+\begin{lstlisting}
+tilem2 -r /path/to/my/rom\newline\newline
+\end{lstlisting}
+
+All the non option arguments are considered as files to be loaded.\newline
 But as you can see you can specify the skin with -k.\newline
 If you usually use more than one model, you can try -m and it will load the rom associated with this model (if you already start a rom from this model).\newline
 You can specify a different save state (by default it uses the one which is called as the rom file).\newline
@@ -948,7 +1595,7 @@ tilem2 -r $rom --normal-speed
 \end{lstlisting}
 Play a macro at startup:\newline
 \begin{lstlisting}
-tilem2 -r $rom -f /path/to/my/best/program -p /path/to/my/macro
+tilem2 -r $rom /path/to/my/best/program -p /path/to/my/macro
 \end{lstlisting}
 Warning, in this situation, load + macro play, the load is done before the macro playing.\newline\newline
 You can also launch debugger (and pause the calc by extension) :\newline
@@ -1063,7 +1710,7 @@ Then launch it by :\newline
 \begin{lstlisting}
 tiemu-skinedit &
 \end{lstlisting}
-
+Or by clicking on the icon if you have it on your desktop.\newline
 
 skinedit starts...\newline
 \begin{figure}[H]
@@ -1090,7 +1737,11 @@ Usually I use TheGimp like this.\newline
 \end{figure}
 
 But it works with any size, just 900 pixels is nice I think.\newline
-The picture is loaded and a popup ask you to give some informations (title, author, model, contrast.\newline
+The picture is loaded and a popup ask you to give some informations (title, author, model, contrast).\newline
+The title is a comment added in the skin file.\newline
+Same thing for the author which is very important for licencing informations.\newline
+Model is the model of the calc (here I used ti83.\newline
+Contrast is the contrast for the lcd, you can choose the background and foreground color (or just set "low contrast" or "high contrast").\newline
 
 \begin{figure}[H]
 \centering
@@ -1098,16 +1749,30 @@ The picture is loaded and a popup ask you to give some informations (title, auth
 \caption{Skinedit ask properties}
 \end{figure}
 
+Then click on "LCD" then select the region dedicated to LCD.\newline
+When you're satisfied by the region, simply do a right click to save the region.\newline\newline
+Then click "keys" button.\newline 
+\begin{figure}[H]
+\centering
+\scalebox{0.6}{\includegraphics{pixs/skinedit_list_keys.png}}
+\caption{Select the \calckey{Right arrow} key to be defined}
+\end{figure}
 
-Then click on "LCD" then select the region dedicated to LCD (right clikc to save).\newline
-Click keys then define the region for each keys (or only some of them).\newline
+Select the key, then define a region (select a region then right click to save).\newline
 \begin{figure}[H]
 \centering
 \scalebox{0.3}{\includegraphics{pixs/skinedit_define_keys.png}}
-\caption{Define the keys}
+\caption{Define the \calckey{ENTER} key}
 \end{figure}
+What I could say about the skin format is that each key is defined by a rectangular region (there's a max number of keys hardcoded at the value 60).\newline
+So each time you define a key, it will be saved as a rectangle into the skin file, the other unused slots keep the 0,0,0,0 values).\newline
+LCD region use the same system, with some more information (contrast...).\newline\newline
+When you've defined all the keys (usually it's what you should do) or only some of them (as it's the case in our funny example), you can check it one by one to be sure it's ok.\newline
+The keys are listed in the right order. First key in the list is the left top key (usually \calckey{Y=}), last key is the right down key (usually \calckey{ENTER}).\newline
+Warning : do not supperpose regions (it's sometimes hard to do with arrow keys).\newline
 
-When it's ok, save the file with a skn file extension.\newline
+For this tutorial, I just defined arrows, start = \calckey{ON}, select = \calckey{2nd}, B button = \calckey{PRGM} and A button = \calckey{ENTER}
+When it's ok, save the file with a ".skn" file extension.\newline
 
 And let's see the result ! 
 \begin{figure}[H]
