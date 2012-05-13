@@ -466,6 +466,11 @@ Then simply click save and choose a place to backup the var(s).\newline
 
 \section{Record or grab a screenshot}
 
+As screenies are a good way to show your projects or whatever you want, TilEm2 provide a complete screenshot dialog.\newline
+We think this dialog to be user friendly and powerful.\newline
+There's also a special manner to quickly screenshoot the lcd content ("Quick Screenshot" or SHIFT + CTRL + PRINT).\newline
+We will describe this method in a first subsection then we will talk about more powerful methods.\newline
+
 \subsection{Grab a screenshot using "Quick Screenshot"}
 
 You can grab a screenshot without using screenshot dialog.\newline
@@ -529,6 +534,68 @@ There's a lot of options as size, foreground/background color etc...\newline
 You can set these options after recording the animation.\newline
 
 When you have the desired animation, clickon "Save" button and choose a place and a filename to save the gif.\newline
+
+\subsection{Screenshot options}
+
+Static screenshots and animated screenshots both use settings. Here's how to use these seetings.\newline
+
+\paragraph{Size}
+
+You can choose between 3 "default" size for the screenies :\newline
+\begin{itemize}
+\item 96 x 64
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_grab_small.png}}
+\caption{Small (or normal)}
+\end{figure}
+\item 192 x 128
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_grab_medium.png}}
+\caption{Medium}
+\end{figure}
+\item 288 x 192
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_grab_big.png}}
+\caption{Big}
+\end{figure}
+\end{itemize}
+
+This is "default" sized screenies but you can set your own (warning : try to keep the ratio).\newline
+Setting your own size could produce some curious results (here the biggest possible) :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_grab_huge.png}}
+\caption{Huge !}
+\end{figure}
+
+There's a setting called "Animation speed" which is used by the animated screenies.\newline
+If you increment this value, the animation will run faster.\newline
+A visual feedback will show you the effect of increasing this value.\newline
+The max is set to 100.\newline
+
+Below the "animation speed" there's 2 color chooser which allow you to set your own colors for foreground and background colors (as you know z80 calc LCD is monochrome).\newline
+The grayscales screenies are fully compatible with this setting of course (because it's no more than "flashing").\newline
+Here's a sample of what you get if you choose a pink as foreground color and green as background color :\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_grab_color.png}}
+\caption{Colored screenshot}
+\end{figure}
+
+Let's see a bunch of colored screenies:\newline
+\begin{figure}[H]
+\centering
+\scalebox{0.5}{\includegraphics{pixs/screenshot_color_diaporama.png}}
+\caption{Some other samples}
+\end{figure}
+
+Of course these settings are usually used to correct contrast or simply set a better color ratio (not to do the useless but funny screenshots I've shown just before).\newline
+
+A last setting called "Grayscale" let you choose the rendering mode.\newline
+%%%% Benjamin could you talk about grayscale checkbox here %%%
 
 \section{Use the debugger}
 This is an important part of an emulator...\newline
