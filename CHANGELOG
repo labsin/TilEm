@@ -1,4 +1,5 @@
-/* This file only contains the changelog for the gui, some things could be missing */
+/* This file only contains the changelog for the gui/doc/data, some things could be missing (core changes...)*/
+/* This changelog was started when I started to work on TilEm2 */
 
 /*  contra-sh : 
 * ---18/08/09---
@@ -106,7 +107,7 @@
 * - Refresh register on click.
 * ---05/08/10---
 * - More than one month without working on tilem...Only commit old modif, and skn/README file.
-* - Refresh stack on click (number of entry is correct but value not)				      
+* - Refresh stack on click (number of entry is correct but value not)
 * ---06/08/10---
 * - Working on a new system of configuration file.The config.dat is now a binary file (as .skn but totally differennt). At start, a CONFIG_INFOS struct is filling, then when clicking on right menu, this struct is modified, then when you stop tilem, config.dat is writed on disc. 
 * ---09/08/10---
@@ -294,5 +295,22 @@
 * - Benjamin added some correction to install properly the icons.
 * ---27/04/12---
 * - Some modifications on the configure script because something was failing on my debian wheezy. It works fine yet (using squeeze and gtk/glib downgraded packages and some minor modifications on configure scripts).
+* ---03/05/12---
+* - Reverting changes on the configure script because it was not the fault of configure script.
+* ---07/05/12---
+* - Update doc (add "basic task" chapter).
+* - Update .desktop files.
+* ---08/05/12---
+* - Benjamin added a rule to install in the $HOME directory.
+* - Benjamin added MIME type files.
+* ---09/05/12---
+* - Benjamin added a piece of documentation about "getting ROM".
+* ---11/05/12---
+* - Add an huge explanation for debugger part into the documentation.
+* ---13/05/12---
+* - Add some screenshot documentation.
+* ---15/05/12---
+* - Benjamin add README, THANKS and COPYING file.
+* - Update screenshot doc.
 */
 
