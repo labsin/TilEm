@@ -64,7 +64,7 @@ static gboolean prompt_overwrite(GtkWindow *win, const char *dirname,
 {
 	int i;
 	char *dname;
-	GString *conflicts;
+	GString *conflicts = NULL;
 	int nconflicts = 0;
 	GtkWidget *dlg, *btn;
 	int response;
@@ -174,7 +174,7 @@ static gboolean prompt_save_group(TilemReceiveDialog *rcvdialog, GList *rows)
 	GtkTreePath *path;
 	GtkTreeIter iter;
 	TilemVarEntry *tve;
-	GSList *velist;
+	GSList *velist = NULL;
 
 	tilem_config_get("download", "receivefile_recentdir/f", &dir, NULL);	
 	if (!dir) dir = g_get_current_dir();
