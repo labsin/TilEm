@@ -73,6 +73,9 @@ $(main_program): $(top_builddir)/gui/$(main_program)
 
 install-data:
 	cd $(top_builddir)/data && $(MAKE) install prefix=$(abs_builddir)
+	rm -rf share/mime
+	rm -rf share/applications
+	rm -rf share/icons
 
 # Install GTK+ configuration
 
