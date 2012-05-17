@@ -1,5 +1,5 @@
 AC_PREREQ(2.67)
-AC_INIT([TilEm], [pre-release], [tilem-devel@lists.sourceforge.net],
+AC_INIT([TilEm], [2.0], [tilem-devel@lists.sourceforge.net],
   [tilem], [http://tilem.sourceforge.net/])
 AC_CONFIG_SRCDIR([emu/tilem.h])
 
@@ -74,11 +74,14 @@ if test "x$gtk_target" = "xwin32" && test "x$GCC" = "xyes" ; then
   CFLAGS="$CFLAGS -mms-bitfields"
   GUI_LDFLAGS="-mwindows"
   LIBS="-lcomdlg32 -lshell32 -lole32 $LIBS"
+  gui_extra_objects="tilem2rc.o"
 else
   GUI_LDFLAGS=""
+  gui_extra_objects=""
 fi
 
 AC_SUBST(GUI_LDFLAGS)
+AC_SUBST(gui_extra_objects)
 
 with_flags(GTK,
   [ AC_CHECK_FUNC(gtk_init, [ have_gtk=yes ], [ have_gtk=no ]) ])
@@ -128,6 +131,7 @@ fi
 if test "x$gtk_target" = "xwin32" ; then
   AC_CHECK_TOOL([STRIP], [strip], [:])
   AC_CHECK_TOOL([OBJDUMP], [objdump], [objdump])
+  AC_CHECK_TOOL([WINDRES], [windres], [windres])
   AC_CHECK_PROG([MAKENSIS], [makensis], [makensis])
   AC_PROG_LN_S
 
@@ -172,6 +176,7 @@ AC_CONFIG_FILES([Makefile
                  db/Makefile
                  data/Makefile
                  gui/Makefile
+                 gui/tilem2.rc
                  installer/win32/Makefile
                  installer/win32/installer.nsi])
 AC_OUTPUT

@@ -22,6 +22,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 SHELL = @SHELL@
+WINDRES = @WINDRES@
 
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
@@ -37,6 +38,8 @@ TILEMDB_LIBS = -L$(top_builddir)/db -ltilemdb
 
 DEF_SHARE_DIR = -DSHARE_DIR=\"$(pkgdatadir)\" \
 	-DUNINSTALLED_SHARE_DIR=\"$(top_srcdir)/data\"
+
+gui_extra_objects = @gui_extra_objects@
 
 objects = tilem2.o \
 	address.o \
@@ -71,7 +74,8 @@ objects = tilem2.o \
 	ti81prg.o \
 	menu.o \
 	rcvmenu.o \
-	tool.o
+	tool.o \
+	$(gui_extra_objects)
 
 libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
 
@@ -226,6 +230,17 @@ ti81prg.o: ti81prg.c ti81prg.h ../emu/tilem.h
 # Character conversion
 charmap.o: charmap.c charmap.h ../emu/tilem.h
 	$(compile) -c $(srcdir)/charmap.c
+
+# Windows resource file
+tilem2rc.o: tilem2.rc
+	major=`echo "@PACKAGE_VERSION@" | sed 's/\..*//'` ; \
+	minor=`echo "@PACKAGE_VERSION@" | sed 's/.*\.//;s/[^0-9].*//'` ; \
+	svnver=`svnversion "$(top_srcdir)" 2>/dev/null | sed 's/[^0-9].*//'` ; \
+	[ -n "$$svnver" ] || svnver=0 ; \
+	$(WINDRES) -DBUILD_VERSION=$$major,$$minor,0,$$svnver tilem2.rc tilem2rc.o
+
+tilem2.rc: tilem2.rc.in $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status gui/tilem2.rc
 
 install: tilem2@EXEEXT@
 	$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
