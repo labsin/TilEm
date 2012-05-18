@@ -35,7 +35,7 @@ all: install
 
 #### Build the installer
 
-dist: install
+dist: install installer.nsi
 	rm -f files.nsi rmfiles.nsi rmdirs.nsi
 	set -e ; for file in $(install_files) ; do \
 	  name=`echo "$$file" | sed 's,/,\\\\,g'` ; \
@@ -58,6 +58,8 @@ dist: install
 	done
 	$(MAKENSIS) installer.nsi
 
+installer.nsi: installer.nsi.in $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status installer/win32/installer.nsi
 
 #### Install files into this directory
 

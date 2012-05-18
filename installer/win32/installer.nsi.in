@@ -1,12 +1,24 @@
-!include "MUI.nsh"
-
 Name "@PACKAGE_NAME@"
 OutFile "@PACKAGE_TARNAME@-@PACKAGE_VERSION@.exe"
-InstallDir "$PROGRAMFILES\@PACKAGE_NAME@\"
 SetCompressor /solid lzma
 
+!define MULTIUSER_EXECUTIONLEVEL Highest
+!define MULTIUSER_MUI
+!define MULTIUSER_INSTALLMODE_INSTDIR "@PACKAGE_NAME@"
+!include "MultiUser.nsh"
+!include "MUI2.nsh"
+
+Var StartMenuFolder
+
+!define MUI_FINISHPAGE_RUN ""
+!define MUI_FINISHPAGE_RUN_TEXT "Create a desktop shortcut"
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
+!define MUI_FINISHPAGE_RUN_FUNCTION desktopicon
+
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MULTIUSER_PAGE_INSTALLMODE
 !insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -16,15 +28,56 @@ SetCompressor /solid lzma
 
 !insertmacro MUI_LANGUAGE "English"
 
+Function .onInit
+	!insertmacro MULTIUSER_INIT
+FunctionEnd
+
+Function un.onInit
+	UserInfo::GetAccountType
+	Pop $MultiUser.Privileges
+	ReadINIStr $0 "$INSTDIR\uninstall.ini" "Uninstall" "InstallMode"
+	${if} $0 == "AllUsers"
+		call un.MultiUser.InstallMode.AllUsers
+	${else}
+		call un.MultiUser.InstallMode.CurrentUser
+	${endif}
+FunctionEnd
+
+Function desktopicon
+	SetShellVarContext current
+	CreateShortCut "$DESKTOP\TilEm.lnk" "$INSTDIR\tilem2.exe"
+FunctionEnd
+
 Section
-        SetOutPath "$INSTDIR"
+	SetOutPath "$INSTDIR"
 	!include "files.nsi"
+
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\TilEm.lnk" "$INSTDIR\tilem2.exe"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall TilEm.lnk" "$INSTDIR\uninstall.exe"
+		WriteINIStr "$INSTDIR\uninstall.ini" "Uninstall" "StartMenuFolder" $StartMenuFolder
+	!insertmacro MUI_STARTMENU_WRITE_END
+
+	WriteINIStr "$INSTDIR\uninstall.ini" "Uninstall" "InstallMode" $MultiUser.InstallMode
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
 Section "Uninstall"
 	!include "rmfiles.nsi"
 	!include "rmdirs.nsi"
+
+	ReadINIStr $StartMenuFolder "$INSTDIR\uninstall.ini" "Uninstall" "StartMenuFolder"
+	${if} $StartMenuFolder != ""
+		Delete "$SMPROGRAMS\$StartMenuFolder\TilEm.lnk"
+		Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall TilEm.lnk"
+		RmDir "$SMPROGRAMS\$StartMenuFolder"
+	${endif}
+
+	SetShellVarContext current
+	Delete "$DESKTOP\TilEm.lnk"
+
+	Delete "$INSTDIR\uninstall.ini"
 	Delete "$INSTDIR\uninstall.exe"
 	RmDir "$INSTDIR"
 SectionEnd
