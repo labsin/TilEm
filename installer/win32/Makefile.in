@@ -15,7 +15,9 @@ VPATH = @srcdir@
 
 main_program = tilem2.exe
 
-install_files = $(main_program) *.dll
+docs = README NEWS COPYING CHANGELOG THANKS
+
+install_files = $(main_program) *.dll *.txt
 install_subdirs = etc lib share
 
 extra_gtk_files = lib/gtk-2.0/2.10.0/engines/libwimp.dll
@@ -78,6 +80,9 @@ install-data:
 	rm -rf share/mime
 	rm -rf share/applications
 	rm -rf share/icons
+	set -e ; for file in $(docs) ; do \
+	 sed 's/\r*$$/\r/' < $(top_srcdir)/$$file > $$file.txt ; \
+	done
 
 # Install GTK+ configuration
 
