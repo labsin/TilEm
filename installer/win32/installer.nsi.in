@@ -12,7 +12,6 @@ Var StartMenuFolder
 
 !define MUI_FINISHPAGE_RUN ""
 !define MUI_FINISHPAGE_RUN_TEXT "Create a desktop shortcut"
-!define MUI_FINISHPAGE_RUN_NOTCHECKED
 !define MUI_FINISHPAGE_RUN_FUNCTION desktopicon
 
 !insertmacro MUI_PAGE_WELCOME
