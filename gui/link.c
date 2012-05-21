@@ -1061,7 +1061,7 @@ static gboolean receive_files_nonsilent(TilemCalcEmulator *emu,
 
 	nvars = g_slist_length(rf->entries);
 
-	vars = g_new0(FileContent *, nvars);
+	vars = g_new0(FileContent *, nvars + 1);
 	i = 0;
 	for (l = rf->entries; l; l = l->next) {
 		tve = l->data;
