@@ -580,7 +580,7 @@ static gboolean prompt_overwrite(const char *fname,
 	if (!g_file_test(fname, G_FILE_TEST_EXISTS))
 		return TRUE;
 
-	if (g_file_test(fname, G_FILE_TEST_IS_REGULAR))
+	if (!g_file_test(fname, G_FILE_TEST_IS_REGULAR))
 		return FALSE;
 
 	p = g_filename_display_basename(fname);
