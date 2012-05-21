@@ -127,6 +127,7 @@ void tilem_gray_lcd_free(TilemGrayLCD *glcd)
 	tilem_free(glcd->newbits);
 	tilem_free(glcd->tchange);
 	tilem_free(glcd->tframestart);
+	tilem_free(glcd->framestamp);
 	tilem_free(glcd->curpixels);
 	tilem_free(glcd->framebasepixels);
 	tilem_free(glcd);

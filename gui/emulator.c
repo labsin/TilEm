@@ -173,6 +173,7 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 	g_free(emu->key_queue);
 
 	g_free(emu->rom_file_name);
+	g_free(emu->state_file_name);
 
 	g_mutex_free(emu->calc_mutex);
 	g_mutex_free(emu->lcd_mutex);
