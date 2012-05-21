@@ -15,7 +15,7 @@ VPATH = @srcdir@
 
 main_program = tilem2.exe
 
-docs = README NEWS COPYING CHANGELOG THANKS
+docs = README KEYS NEWS COPYING CHANGELOG THANKS
 
 install_files = $(main_program) *.dll *.txt
 install_subdirs = etc lib share

@@ -3,8 +3,8 @@ KEYBOARD BINDINGS
  This list shows the default keyboard controls for TilEm.  You can
  modify these, if you like, by editing 'keybindings.ini'.  (Place the
  modified version of keybindings.ini in your TilEm configuration
- directory - $HOME/.config/tilem2/ on Unix, or $PROFILE\Local
- Settings\Application Data\tilem2 on Windows.)
+ directory - $HOME/.config/tilem2/ on Unix, or
+ $PROFILE\Local Settings\Application Data\tilem2 on Windows.)
 
  In the following list:
    S = Shift
