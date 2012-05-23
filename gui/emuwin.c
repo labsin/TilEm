@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -52,6 +52,19 @@ static void set_size_hints(GtkWidget *widget, gpointer data)
 		gdk_window_set_geometry_hints(gtk_widget_get_window(widget),
 		                              &ewin->geomhints,
 		                              ewin->geomhintmask);
+}
+
+static void window_state_changed(G_GNUC_UNUSED GtkWidget *w,
+                                 GdkEventWindowState *event, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	ewin->window_state = event->new_window_state;
+}
+
+static gboolean window_maximized(TilemEmulatorWindow *ewin)
+{
+	return (ewin->window_state & (GDK_WINDOW_STATE_MAXIMIZED
+	                              | GDK_WINDOW_STATE_FULLSCREEN));
 }
 
 static gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
@@ -372,7 +385,10 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 
 	gtk_widget_set_size_request(emuwin, minwidth, minheight);
 	gtk_container_add(GTK_CONTAINER(ewin->window), emuwin);
-	gtk_window_resize(GTK_WINDOW(ewin->window), curwidth, curheight);
+
+	if (!window_maximized(ewin))
+		gtk_window_resize(GTK_WINDOW(ewin->window),
+		                  curwidth, curheight);
 
 	gtk_widget_show_all(emuwin);
 
@@ -387,9 +403,10 @@ static void window_destroy(G_GNUC_UNUSED GtkWidget *w, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
 
-	tilem_config_set("settings",
-	                 "zoom/r", ewin->zoom_factor,
-	                 NULL);
+	if (!window_maximized(ewin))
+		tilem_config_set("settings",
+		                 "zoom/r", ewin->zoom_factor,
+		                 NULL);
 
 	ewin->window = ewin->layout = ewin->lcd = ewin->background = NULL;
 }
@@ -414,7 +431,9 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 
 	/* Create the window */
 	ewin->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	
+
+	g_signal_connect(ewin->window, "window-state-event",
+	                 G_CALLBACK(window_state_changed), ewin);
 	g_signal_connect(ewin->window, "destroy",
 	                 G_CALLBACK(window_destroy), ewin);
 
