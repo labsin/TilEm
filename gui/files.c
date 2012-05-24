@@ -27,6 +27,10 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#ifdef G_OS_WIN32
+# include <shlobj.h>
+#endif
+
 #include "files.h"
 
 static char *program_dir;
@@ -55,23 +59,59 @@ static char *build_filenamev(const char *start, va_list rest)
 	return g_build_filenamev(args);
 }
 
+#ifdef G_OS_WIN32
+static char * get_special_folder(int csidl)
+{
+	char lpath[MAX_PATH+1];
+	wchar_t wpath[MAX_PATH+1];
+	LPITEMIDLIST pidl = NULL;
+	gchar *s = NULL;
+
+	if (SHGetSpecialFolderLocation(NULL, csidl, &pidl))
+		return NULL;
+
+	if (G_WIN32_HAVE_WIDECHAR_API()) {
+		if (SHGetPathFromIDListW(pidl, wpath))
+			s = g_utf16_to_utf8(wpath, -1, NULL, NULL, NULL);
+	}
+	else {
+		if (SHGetPathFromIDListA(pidl, lpath))
+			s = g_locale_to_utf8(lpath, -1, NULL, NULL, NULL);
+	}
+
+	CoTaskMemFree(pidl);
+	return s;
+}
+#endif
+
 /* Get the default configuration directory.
 
    On Unix, this is $XDG_CONFIG_HOME/tilem2 (where $XDG_CONFIG_HOME
    defaults to $HOME/.config/ if not set.)
 
-   On Windows, this is $CSIDL_APPDATA/tilem2 (where $CSIDL_APPDATA is
-   typically the "Application Data" directory within the user
-   profile.)
+   On Windows, this is $CSIDL_LOCAL_APPDATA\tilem2 (where
+   $CSIDL_LOCAL_APPDATA is typically "Local Settings\Application Data"
+   in the user's profile.)
 
    Result is cached and should not be freed. */
 static char * get_default_config_dir()
 {
 	static char *result;
 
-	if (!result)
+	if (!result) {
+#ifdef G_OS_WIN32
+		/* Do not use g_get_user_config_dir() on Windows,
+		   because the behavior of that function is not
+		   consistent across versions of GLib. */
+		char *s = get_special_folder(CSIDL_LOCAL_APPDATA);
+		if (s)
+			result = g_build_filename(s, "tilem2", NULL);
+		g_free(s);
+#else
 		result = g_build_filename(g_get_user_config_dir(),
 		                          "tilem2", NULL);
+#endif
+	}
 
 	return result;
 }
