@@ -65,3 +65,11 @@ style "msw-combobox-thickness" = "msw-default"
 
 widget_class "*TreeView*ComboBox*" style "msw-combobox-thickness"
 widget_class "*ComboBox*GtkFrame*" style "msw-combobox-thickness"
+
+# work around issue with "list-style" cellrenderercombos not emitting
+# the "edited" signal - GNOME bug #317387
+style "menu-style-combo"
+{
+  GtkComboBox::appears-as-list = 0
+}
+widget_class "*.GtkTreeView.GtkComboBox" style "menu-style-combo"
