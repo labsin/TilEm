@@ -93,37 +93,27 @@ fi
 
 # Libticalcs2 and related libraries
 
-AC_ARG_WITH(ticalcs2,
-  AS_HELP_STRING([--with-ticalcs2], [use libticalcs2 (default)]),
-    [ use_ticalcs=$withval ], [ use_ticalcs=auto ])
-AC_ARG_WITH(calcprotocols,
-  AS_HELP_STRING([--with-calcprotocols], [use libcalcprotocols]),
-    [ use_calcprotocols=$withval ], [ use_calcprotocols=auto ])
+PKG_CHECK_MODULES(TICALCS, ticalcs2 ticables2 tifiles2 ticonv,
+                  [ have_ticalcs=maybe ], [ have_ticalcs=no ])
 
-init_function=ticalcs_library_init
-
-if test "x$TICALCS_LIBS" = "x" &&
-   test "x$use_ticalcs" != "xno" &&
-   test "x$use_calcprotocols" != "xyes" ; then
-  PKG_CHECK_MODULES(TICALCS, ticalcs2 ticables2 tifiles2 ticonv, [ : ], [ : ])
+if test "x$have_ticalcs" = "xmaybe" ; then
+  with_flags(TICALCS,
+    [ AC_CHECK_FUNC(ticalcs_library_init, [ have_ticalcs=yes ], [ have_ticalcs=no ]) ])
 fi
 
-if test "x$TICALCS_LIBS" = "x" &&
-   test "x$use_ticalcs" != "xyes" &&
-   test "x$use_calcprotocols" != "xno" ; then
-  PKG_CHECK_MODULES(CALCPROTOCOLS, calcprotocols calccables calcfiles calcconv,
-    [ TICALCS_CFLAGS="$CALCPROTOCOLS_CFLAGS -I\$(top_srcdir)/tilibs-compat"
-      TICALCS_LIBS="$CALCPROTOCOLS_LIBS"
-      init_function=calcprotocols_library_init ],
-    [ : ])
-fi
-
-with_flags(TICALCS,
-  [ AC_CHECK_FUNC($init_function, [ have_ticalcs=yes ], [ have_ticalcs=no ]) ])
 if test "x$have_ticalcs" != "xyes" ; then
-  AC_MSG_ERROR([libticalcs2/libcalcprotocols not found or not usable.
-You must install one of these two libraries, including the
--dev/-devel packages if appropriate.])
+  AC_MSG_ERROR([libticalcs2 not found or not usable.
+
+$TICALCS_PKG_ERRORS
+
+You must install libticalcs2, libticables2, libtifiles2, and libticonv
+(including the -dev/-devel packages if appropriate.)  These libraries
+are available from <http://lpg.ticalc.org/prj_tilp/>.
+
+If you have installed the libraries in a non-standard location (or if
+you're cross-compiling), you will need to add the location of
+ticalcs2.pc to your PKG_CONFIG_PATH environment variable, or set the
+TICALCS_CFLAGS and TICALCS_LIBS environment variables by hand.])
 fi
 
 # Tools used for building the Windows installer

@@ -614,8 +614,6 @@ MAKENSIS
 WINDRES
 OBJDUMP
 STRIP
-CALCPROTOCOLS_LIBS
-CALCPROTOCOLS_CFLAGS
 TICALCS_LIBS
 TICALCS_CFLAGS
 gui_extra_objects
@@ -685,8 +683,6 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_gtk_deprecated
-with_ticalcs2
-with_calcprotocols
 '
       ac_precious_vars='build_alias
 host_alias
@@ -707,9 +703,7 @@ PKG_CONFIG_LIBDIR
 GTK_CFLAGS
 GTK_LIBS
 TICALCS_CFLAGS
-TICALCS_LIBS
-CALCPROTOCOLS_CFLAGS
-CALCPROTOCOLS_LIBS'
+TICALCS_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1324,12 +1318,6 @@ Optional Features:
   --disable-gtk-deprecated
                           Disable deprecated GTK+ API
 
-Optional Packages:
-  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
-  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-ticalcs2         use libticalcs2 (default)
-  --with-calcprotocols    use libcalcprotocols
-
 Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
@@ -1355,10 +1343,6 @@ Some influential environment variables:
               C compiler flags for TICALCS, overriding pkg-config
   TICALCS_LIBS
               linker flags for TICALCS, overriding pkg-config
-  CALCPROTOCOLS_CFLAGS
-              C compiler flags for CALCPROTOCOLS, overriding pkg-config
-  CALCPROTOCOLS_LIBS
-              linker flags for CALCPROTOCOLS, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3764,28 +3748,6 @@ fi
 # Libticalcs2 and related libraries
 
 
-# Check whether --with-ticalcs2 was given.
-if test "${with_ticalcs2+set}" = set; then :
-  withval=$with_ticalcs2;  use_ticalcs=$withval
-else
-   use_ticalcs=auto
-fi
-
-
-# Check whether --with-calcprotocols was given.
-if test "${with_calcprotocols+set}" = set; then :
-  withval=$with_calcprotocols;  use_calcprotocols=$withval
-else
-   use_calcprotocols=auto
-fi
-
-
-init_function=ticalcs_library_init
-
-if test "x$TICALCS_LIBS" = "x" &&
-   test "x$use_ticalcs" != "xno" &&
-   test "x$use_calcprotocols" != "xyes" ; then
-
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for TICALCS" >&5
 $as_echo_n "checking for TICALCS... " >&6; }
@@ -3844,106 +3806,27 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$TICALCS_PKG_ERRORS" >&5
 
-	 :
+	 have_ticalcs=no
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	 :
+	 have_ticalcs=no
 else
 	TICALCS_CFLAGS=$pkg_cv_TICALCS_CFLAGS
 	TICALCS_LIBS=$pkg_cv_TICALCS_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	 :
-fi
-fi
-
-if test "x$TICALCS_LIBS" = "x" &&
-   test "x$use_ticalcs" != "xyes" &&
-   test "x$use_calcprotocols" != "xno" ; then
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CALCPROTOCOLS" >&5
-$as_echo_n "checking for CALCPROTOCOLS... " >&6; }
-
-if test -n "$CALCPROTOCOLS_CFLAGS"; then
-    pkg_cv_CALCPROTOCOLS_CFLAGS="$CALCPROTOCOLS_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"calcprotocols calccables calcfiles calcconv\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "calcprotocols calccables calcfiles calcconv") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_CALCPROTOCOLS_CFLAGS=`$PKG_CONFIG --cflags "calcprotocols calccables calcfiles calcconv" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$CALCPROTOCOLS_LIBS"; then
-    pkg_cv_CALCPROTOCOLS_LIBS="$CALCPROTOCOLS_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"calcprotocols calccables calcfiles calcconv\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "calcprotocols calccables calcfiles calcconv") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_CALCPROTOCOLS_LIBS=`$PKG_CONFIG --libs "calcprotocols calccables calcfiles calcconv" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
+	 have_ticalcs=maybe
 fi
 
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        CALCPROTOCOLS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "calcprotocols calccables calcfiles calcconv" 2>&1`
-        else
-	        CALCPROTOCOLS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "calcprotocols calccables calcfiles calcconv" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$CALCPROTOCOLS_PKG_ERRORS" >&5
-
-	 :
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	 :
-else
-	CALCPROTOCOLS_CFLAGS=$pkg_cv_CALCPROTOCOLS_CFLAGS
-	CALCPROTOCOLS_LIBS=$pkg_cv_CALCPROTOCOLS_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	 TICALCS_CFLAGS="$CALCPROTOCOLS_CFLAGS -I\$(top_srcdir)/tilibs-compat"
-      TICALCS_LIBS="$CALCPROTOCOLS_LIBS"
-      init_function=calcprotocols_library_init
-fi
-fi
-
+if test "x$have_ticalcs" = "xmaybe" ; then
 
   save_cflags="$CFLAGS"
   save_libs="$LIBS"
   CFLAGS="$CFLAGS $TICALCS_CFLAGS"
   LIBS="$LIBS $TICALCS_LIBS"
-   as_ac_var=`$as_echo "ac_cv_func_$init_function" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$init_function" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+   ac_fn_c_check_func "$LINENO" "ticalcs_library_init" "ac_cv_func_ticalcs_library_init"
+if test "x$ac_cv_func_ticalcs_library_init" = xyes; then :
    have_ticalcs=yes
 else
    have_ticalcs=no
@@ -3952,10 +3835,21 @@ fi
   CFLAGS="$save_cflags"
   LIBS="$save_libs"
 
+fi
+
 if test "x$have_ticalcs" != "xyes" ; then
-  as_fn_error $? "libticalcs2/libcalcprotocols not found or not usable.
-You must install one of these two libraries, including the
--dev/-devel packages if appropriate." "$LINENO" 5
+  as_fn_error $? "libticalcs2 not found or not usable.
+
+$TICALCS_PKG_ERRORS
+
+You must install libticalcs2, libticables2, libtifiles2, and libticonv
+(including the -dev/-devel packages if appropriate.)  These libraries
+are available from <http://lpg.ticalc.org/prj_tilp/>.
+
+If you have installed the libraries in a non-standard location (or if
+you're cross-compiling), you will need to add the location of
+ticalcs2.pc to your PKG_CONFIG_PATH environment variable, or set the
+TICALCS_CFLAGS and TICALCS_LIBS environment variables by hand." "$LINENO" 5
 fi
 
 # Tools used for building the Windows installer
