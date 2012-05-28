@@ -279,6 +279,7 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 
 	/* create LCD widget */
 	ewin->lcd = gtk_drawing_area_new();
+	gtk_widget_set_double_buffered(ewin->lcd, FALSE);
 
 	/* create background image and layout */
 	if (ewin->skin) {
