@@ -13,6 +13,27 @@ VPATH = @srcdir@
 @SET_MAKE@
 SHELL = @SHELL@
 
+INSTALL = @INSTALL@
+
+distname = @PACKAGE_TARNAME@-@PACKAGE_VERSION@
+
+distfiles = CHANGELOG COPYING INSTALL KEYS NEWS README THANKS TODO \
+	aclocal.m4 config.h.in configure configure.ac install-sh \
+	Makefile.in \
+	data/Makefile.in \
+	data/keybindings.ini \
+	data/desktop/*.desktop data/desktop/*.xml \
+	data/icons/hicolor/index.theme data/icons/hicolor/*/*/*.png \
+	data/icons-svg/*.svg \
+	data/skins/README data/skins/*.skn \
+	data/symbols/*.sym \
+	db/Makefile.in db/*.c db/*.h \
+	emu/Makefile.in emu/*.c emu/*.h emu/x*/*.c emu/x*/*.h \
+	gui/Makefile.in gui/*.c gui/*.h gui/*.ico gui/*.rc.in \
+	installer/win32/Makefile.in \
+	installer/win32/installer.nsi.in installer/win32/gtkrc \
+	installer/win32/COPYING-ZLIB installer/win32/COPYING-PIXMAN
+
 all:
 	cd emu && $(MAKE)
 	cd db && $(MAKE)
@@ -22,6 +43,7 @@ clean:
 	cd emu && $(MAKE) clean
 	cd db && $(MAKE) clean
 	cd gui && $(MAKE) clean
+	cd installer/win32 && $(MAKE) clean
 
 install: all
 	cd gui && $(MAKE) install
@@ -43,10 +65,21 @@ uninstall-home:
 
 distclean: clean
 	rm -f config.status config.log config.h configure.lineno
-	rm -f aclocal.m4
 	rm -rf autom4te.cache
 	rm -f installer/win32/Makefile installer/win32/installer.nsi
+	rm -f gui/tilem2.rc
 	rm -f Makefile emu/Makefile db/Makefile gui/Makefile data/Makefile
+
+dist:
+	rm -rf $(distname)
+	mkdir $(distname)
+	set -e ; files=`cd $(srcdir) ; echo $(distfiles)` ; \
+	for f in $$files ; do \
+	  dir=`echo $(distname)/$$f | sed 's,/[^/]*$$,,'` ; \
+	  [ -d $$dir ] || $(INSTALL) -d $$dir ; \
+	  cp -p $(srcdir)/$$f $$dir ; \
+	done
+	tar cv $(distname) | gzip -c -9 > $(distname).tar.gz
 
 Makefile: Makefile.in config.status
 	$(SHELL) ./config.status
@@ -55,4 +88,4 @@ config.status: configure
 	$(SHELL) ./config.status --recheck
 
 .PRECIOUS: Makefile config.status
-.PHONY: all clean distclean install uninstall
+.PHONY: all clean dist distclean install install-home uninstall uninstall-home
