@@ -31,10 +31,10 @@ supported by the GTK+ library.
 
                              Installation
                             --------------
-Packages for Microsoft Windows will soon be available from the TilEm
-project website (http://lpg.ticalc.org/prj_tilem/).  For other
-platforms, you will need to compile TilEm from source; please see the
-file 'INSTALL' in the source package.
+Packages for Microsoft Windows are available from the TilEm project
+website (http://lpg.ticalc.org/prj_tilem/).  For other platforms, you
+will need to compile TilEm from source; please see the file 'INSTALL'
+in the source package.
 
 
                              Using TilEm
@@ -72,7 +72,8 @@ Other features of TilEm include:
  - Capturing screenshots, both normal and animated
  - Recording and replaying keystroke macros
 
-For more information, see the User's Manual.
+For more information, see the TilEm User's Manual:
+  http://lpg.ticalc.org/prj_tilem2/doc.html
 
 
                           About this program
