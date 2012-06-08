@@ -79,7 +79,7 @@ dist:
 	  [ -d $$dir ] || $(INSTALL) -d $$dir ; \
 	  cp -p $(srcdir)/$$f $$dir ; \
 	done
-	tar cv $(distname) | gzip -c -9 > $(distname).tar.gz
+	tar cv $(distname) | bzip2 -c -9 > $(distname).tar.bz2
 
 Makefile: Makefile.in config.status
 	$(SHELL) ./config.status
