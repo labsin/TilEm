@@ -75,8 +75,11 @@ static gboolean refresh_lcd(gpointer data)
 static void tmr_screen_update(TilemCalc *calc, void *data)
 {
 	TilemCalcEmulator *emu = data;
+	dword old_stamp;
 
 	g_mutex_lock(emu->lcd_mutex);
+
+	old_stamp = emu->lcd_buffer->stamp;
 
 	if (emu->glcd)
 		tilem_gray_lcd_get_frame(emu->glcd, emu->lcd_buffer);
@@ -97,7 +100,9 @@ static void tmr_screen_update(TilemCalc *calc, void *data)
 		}
 	}
 
-	if (!emu->lcd_update_pending) {
+	/* don't force an update if screen hasn't changed (or if we're
+	   still waiting for the GUI to handle our last update) */
+	if (!emu->lcd_update_pending && emu->lcd_buffer->stamp != old_stamp) {
 		emu->lcd_update_pending = TRUE;
 		g_idle_add_full(G_PRIORITY_DEFAULT, &refresh_lcd, emu, NULL);
 	}
