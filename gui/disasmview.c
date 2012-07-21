@@ -715,6 +715,51 @@ static gboolean move_down_lines(TilemDisasmView *dv, int count)
 	return TRUE;
 }
 
+/* Move up by COUNT pages */
+static void move_up_pages(TilemDisasmView *dv, int count)
+{
+	TilemCalc *calc;
+	int i;
+	dword pos;
+
+	tilem_calc_emulator_lock(dv->dbg->emu);
+	calc = dv->dbg->emu->calc;
+
+	pos = dv->startpos;
+
+	while (count > 0) {
+		for (i = 0; i < dv->nlines; i++)
+			pos = get_prev_pos(dv, calc, pos);
+		count--;
+	}
+
+	tilem_calc_emulator_unlock(dv->dbg->emu);
+	refresh_disassembly(dv, pos, dv->nlines, pos - 1);
+}
+
+/* Move down by COUNT pages */
+static void move_down_pages(TilemDisasmView *dv, int count)
+{
+	TilemCalc *calc;
+	int i;
+	dword pos;
+
+	tilem_calc_emulator_lock(dv->dbg->emu);
+	calc = dv->dbg->emu->calc;
+
+	pos = dv->endpos;
+	count--;
+
+	while (count > 0) {
+		for (i = 0; i < dv->nlines; i++)
+			pos = get_next_pos(dv, calc, pos);
+		count--;
+	}
+
+	tilem_calc_emulator_unlock(dv->dbg->emu);
+	refresh_disassembly(dv, pos, dv->nlines, pos - 1);
+}
+
 /* Move down by COUNT bytes */
 static void move_bytes(TilemDisasmView *dv, int count)
 {
@@ -767,8 +812,10 @@ static gboolean tilem_disasm_view_move_cursor(GtkTreeView *tv,
 	case GTK_MOVEMENT_PARAGRAPHS:
 	case GTK_MOVEMENT_PARAGRAPH_ENDS:
 	case GTK_MOVEMENT_PAGES:
-		/* FIXME: might be better to move by actual "pages" of code */
-		move_bytes(dv, count * 0x100);
+		if (count < 0)
+			move_up_pages(dv, -count);
+		else
+			move_down_pages(dv, count);
 		return TRUE;
 
 	case GTK_MOVEMENT_BUFFER_ENDS:
