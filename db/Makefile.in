@@ -20,7 +20,7 @@ DEFS = @DEFS@
 RANLIB = @RANLIB@
 SHELL = @SHELL@
 
-objects = disasm.o listing.o lstfile.o
+objects = disasm.o prevaddr.o listing.o lstfile.o
 
 compile = $(CC) -I$(top_builddir) -I$(top_srcdir)/emu -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS)
 
@@ -34,6 +34,9 @@ libtilemdb.a: $(objects)
 
 disasm.o: disasm.c tilemdb.h ../emu/tilem.h ../config.h
 	$(compile) -c $(srcdir)/disasm.c
+
+prevaddr.o: prevaddr.c tilemdb.h ../emu/tilem.h ../config.h
+	$(compile) -c $(srcdir)/prevaddr.c
 
 # Listing file management
 

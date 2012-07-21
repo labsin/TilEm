@@ -92,7 +92,7 @@ common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
 all: tilem2@EXEEXT@
 
 #Main emulator GUI
-tilem2@EXEEXT@: $(objects) ../emu/libtilemcore.a
+tilem2@EXEEXT@: $(objects) ../emu/libtilemcore.a ../db/libtilemdb.a
 	$(link) -o tilem2@EXEEXT@ $(objects) $(libs)
 
 tilem2.o: tilem2.c icons.h files.h $(common_headers)

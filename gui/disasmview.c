@@ -153,7 +153,7 @@ static dword get_next_pos(TilemDisasmView *dv, TilemCalc *calc, dword pos)
 /* Get "previous" position */
 static dword get_prev_pos(TilemDisasmView *dv, TilemCalc *calc, dword pos)
 {
-	dword addr = POS_TO_ADDR(pos);
+	dword addr = POS_TO_ADDR(pos), a2;
 
 	g_return_val_if_fail(calc != NULL, 0);
 
@@ -161,17 +161,13 @@ static dword get_prev_pos(TilemDisasmView *dv, TilemCalc *calc, dword pos)
 		return pos - 1;
 	}
 	else {
-		if (addr > 0)
-			addr--;
-		else if (dv->use_logical)
-			addr = 0xffff;
-		else
-			addr = (calc->hw.romsize + calc->hw.ramsize - 1);
+		a2 = tilem_disasm_guess_prev_address(dv->dbg->dasm, calc,
+		                                     !dv->use_logical, addr);
 
-		if (get_label(dv, calc, addr))
-			return ADDR_TO_POS(addr) + 1;
+		if (a2 != addr && get_label(dv, calc, a2))
+			return ADDR_TO_POS(a2) + 1;
 		else
-			return ADDR_TO_POS(addr);
+			return ADDR_TO_POS(a2);
 	}
 }
 

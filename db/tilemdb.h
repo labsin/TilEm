@@ -1,7 +1,7 @@
 /*
  * libtilemdb - Utilities for debugging Z80 assembly programs
  *
- * Copyright (C) 2010 Benjamin Moody
+ * Copyright (C) 2010-2012 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -61,6 +61,11 @@ const char* tilem_disasm_get_label_at_address(const TilemDisasm* dasm,
 void tilem_disasm_disassemble(const TilemDisasm* dasm, TilemCalc* calc,
 			      int phys, dword addr, dword* nextaddr,
 			      char* buffer, int bufsize);
+
+/* Determine the most likely address for the instruction preceding
+   this one. */
+dword tilem_disasm_guess_prev_address(const TilemDisasm* dasm,
+                                      TilemCalc* calc, int phys, dword addr);
 
 
 /* Assembly listing files */
