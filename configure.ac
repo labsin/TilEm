@@ -37,6 +37,8 @@ AC_CHECK_PROG([UPDATE_MIME_DATABASE],
 
 # Checks for libraries
 
+AC_CHECK_LIB(m, pow, [ LIBS="-lm $LIBS" ])
+
 m4_define(with_flags, [
   save_cflags="$CFLAGS"
   save_libs="$LIBS"
