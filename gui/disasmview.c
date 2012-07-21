@@ -781,7 +781,7 @@ static void move_bytes(TilemDisasmView *dv, int count)
 	}
 
 	pos = ADDR_TO_POS(addr);
-	refresh_disassembly(dv, pos, dv->nlines, pos - 1);
+	refresh_disassembly(dv, pos, dv->nlines, pos);
 }
 
 /* Move the cursor (action signal) */
@@ -832,6 +832,13 @@ static gboolean tilem_disasm_view_move_cursor(GtkTreeView *tv,
 	}
 
 	return (*GTK_TREE_VIEW_CLASS(parent_class)->move_cursor)(tv, step, count);
+}
+
+/* Scroll view by a fixed number of bytes. */
+void tilem_disasm_view_scroll_bytes(TilemDisasmView *dv, int n)
+{
+	g_return_if_fail(TILEM_IS_DISASM_VIEW(dv));
+	move_bytes(dv, n);
 }
 
 /* Popup menu */

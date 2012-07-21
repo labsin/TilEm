@@ -63,6 +63,9 @@ void tilem_disasm_view_refresh(TilemDisasmView *dv);
 void tilem_disasm_view_go_to_address(TilemDisasmView *dv, dword addr,
                                      gboolean logical);
 
+/* Scroll view by a fixed number of bytes. */
+void tilem_disasm_view_scroll_bytes(TilemDisasmView *dv, int n);
+
 /* Get currently selected address. */
 gboolean tilem_disasm_view_get_cursor(TilemDisasmView *dv, dword *addr,
                                       gboolean *is_logical);

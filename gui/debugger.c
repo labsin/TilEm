@@ -483,6 +483,28 @@ static void action_go_to_pc(G_GNUC_UNUSED GtkAction *action, gpointer data)
 	go_to_stack_pos(dbg, -1);
 }
 
+/* Jump one byte backward */
+static void action_scroll_prev_byte(G_GNUC_UNUSED GtkAction *action,
+                                    gpointer data)
+{
+	TilemDebugger *dbg = data;
+	TilemDisasmView *dv = TILEM_DISASM_VIEW(dbg->disasm_view);
+
+	tilem_disasm_view_scroll_bytes(dv, -1);
+	gtk_widget_grab_focus(dbg->disasm_view);
+}
+
+/* Jump one byte forward */
+static void action_scroll_next_byte(G_GNUC_UNUSED GtkAction *action,
+                                    gpointer data)
+{
+	TilemDebugger *dbg = data;
+	TilemDisasmView *dv = TILEM_DISASM_VIEW(dbg->disasm_view);
+
+	tilem_disasm_view_scroll_bytes(dv, 1);
+	gtk_widget_grab_focus(dbg->disasm_view);
+}
+
 /* Jump to previous stack entry */
 static void action_prev_stack_entry(G_GNUC_UNUSED GtkAction *action,
                                         gpointer data)
@@ -532,7 +554,13 @@ static const GtkActionEntry paused_action_ents[] =
 	   G_CALLBACK(action_prev_stack_entry) },
 	 { "next-stack-entry", GTK_STOCK_GO_DOWN, "_Next Stack Entry", "<alt>Page_Down",
 	   "Jump to the next address in the stack",
-	   G_CALLBACK(action_next_stack_entry) }};
+	   G_CALLBACK(action_next_stack_entry) },
+	 { "scroll-prev-byte", NULL, "One Byte _Backward", "<control>Up",
+	   "Scroll backward by one byte",
+	   G_CALLBACK(action_scroll_prev_byte) },
+	 { "scroll-next-byte", NULL, "One Byte _Forward", "<control>Down",
+	   "Scroll forward by one byte",
+	   G_CALLBACK(action_scroll_next_byte) }};
 
 static const GtkRadioActionEntry mem_mode_ents[] =
 	{{ "view-logical", 0, "_Logical Addresses", 0,
@@ -842,6 +870,8 @@ static const char uidesc[] =
 	" <menu action='go-menu'>"
 	"  <menuitem action='go-to-address'/>"
 	"  <menuitem action='go-to-pc'/>"
+	"  <menuitem action='scroll-prev-byte'/>"
+	"  <menuitem action='scroll-next-byte'/>"
 	"  <separator/>"
 	"  <menuitem action='prev-stack-entry'/>"
 	"  <menuitem action='next-stack-entry'/>"
