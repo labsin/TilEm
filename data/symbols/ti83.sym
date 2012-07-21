@@ -1,5 +1,5 @@
 [macros]
-# Nothing currently 
+# Nothing currently
 
 [labels]
 0008 rOP1TOOP2
@@ -21,8 +21,8 @@
 8009 apdSubTimer
 800a apdTimer
 800b curTime
-800c curRow 
-800d curCol 
+800c curRow
+800d curCol
 800e curOffset
 800f curUnder
 8010 curY
