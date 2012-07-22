@@ -39,7 +39,7 @@ dword tilem_disasm_guess_prev_address(const TilemDisasm* dasm,
 	unsigned int i;
 	dword a1, a2;
 
-#define DEST(x) destbuf[addr - (x)]
+#define DEST(x) destbuf[addr - 1 - (x)]
 
 	while (n < REWIND_LIMIT) {
 		n++;
