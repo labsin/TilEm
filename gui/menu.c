@@ -76,7 +76,7 @@ static void action_revert_calc(G_GNUC_UNUSED GtkAction *act, G_GNUC_UNUSED gpoin
 
 	if (!tilem_calc_emulator_revert_state(ewin->emu, &err)) {
 		messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
-		             "Unable to load calculator state",
+		             _("Unable to load calculator state"),
 		             "%s", err->message);
 		g_error_free(err);
 	}
@@ -157,80 +157,80 @@ static void action_quit(G_GNUC_UNUSED GtkAction *act,
 
 static const GtkActionEntry main_action_ents[] =
 	{{ "send-file",
-	   GTK_STOCK_OPEN, "Send _File...", "<ctrl>O",
-	   "Send a program or variable file to the calculator",
+	   GTK_STOCK_OPEN, N_("Send _File..."), "<ctrl>O",
+	   N_("Send a program or variable file to the calculator"),
 	   G_CALLBACK(action_send_file) },
 
 	 { "receive-file",
-	   GTK_STOCK_SAVE_AS, "Re_ceive File...", "<ctrl>S",
-	   "Receive a program or variable from the calculator",
+	   GTK_STOCK_SAVE_AS, N_("Re_ceive File..."), "<ctrl>S",
+	   N_("Receive a program or variable from the calculator"),
 	   G_CALLBACK(action_receive_file) },
  
 	 { "open-calc",
-	   GTK_STOCK_OPEN, "_Open Calculator...", "<shift><ctrl>O",
-	   "Open a calculator ROM file",
+	   GTK_STOCK_OPEN, N_("_Open Calculator..."), "<shift><ctrl>O",
+	   N_("Open a calculator ROM file"),
 	   G_CALLBACK(action_open_calc) },
 	 { "save-calc",
-	   GTK_STOCK_SAVE, "_Save Calculator", "<shift><ctrl>S",
-	   "Save current calculator state",
+	   GTK_STOCK_SAVE, N_("_Save Calculator"), "<shift><ctrl>S",
+	   N_("Save current calculator state"),
 	   G_CALLBACK(action_save_calc) },
 	 { "revert-calc",
-	   GTK_STOCK_REVERT_TO_SAVED, "Re_vert Calculator State", 0,
-	   "Revert to saved calculator state",
+	   GTK_STOCK_REVERT_TO_SAVED, N_("Re_vert Calculator State"), 0,
+	   N_("Revert to saved calculator state"),
 	   G_CALLBACK(action_revert_calc) },
 	 { "reset-calc",
-	   GTK_STOCK_CLEAR, "_Reset Calculator", "<shift><ctrl>Delete",
-	   "Reset the calculator",
+	   GTK_STOCK_CLEAR, N_("_Reset Calculator"), "<shift><ctrl>Delete",
+	   N_("Reset the calculator"),
 	   G_CALLBACK(action_reset_calc) },
 
 	 { "start-debugger",
-	   0, "_Debugger", "Pause",
-	   "Pause emulation and start the debugger",
+	   0, N_("_Debugger"), "Pause",
+	   N_("Pause emulation and start the debugger"),
 	   G_CALLBACK(action_start_debugger) },
 
 	 { "begin-macro",
-	   GTK_STOCK_MEDIA_RECORD, "_Record", 0,
-	   "Begin recording a macro",
+	   GTK_STOCK_MEDIA_RECORD, N_("_Record"), 0,
+	   N_("Begin recording a macro"),
 	   G_CALLBACK(action_begin_macro) },
 	 { "end-macro",
-	   GTK_STOCK_MEDIA_STOP, "S_top", 0,
-	   "Begin recording a macro",
+	   GTK_STOCK_MEDIA_STOP, N_("S_top"), 0,
+	   N_("Begin recording a macro"),
 	   G_CALLBACK(action_end_macro) },
 	 { "play-macro",
-	   GTK_STOCK_MEDIA_PLAY, "_Play", 0,
-	   "Play back the current macro",
+	   GTK_STOCK_MEDIA_PLAY, N_("_Play"), 0,
+	   N_("Play back the current macro"),
 	   G_CALLBACK(action_play_macro) },
 	 { "open-macro",
-	   GTK_STOCK_OPEN, "_Open Macro File...", "",
-	   "Load a macro from a file",
+	   GTK_STOCK_OPEN, N_("_Open Macro File..."), "",
+	   N_("Load a macro from a file"),
 	   G_CALLBACK(action_open_macro) },
 	 { "save-macro",
-	   GTK_STOCK_SAVE_AS, "_Save Macro File...", "",
-	   "Save current macro to a file",
+	   GTK_STOCK_SAVE_AS, N_("_Save Macro File..."), "",
+	   N_("Save current macro to a file"),
 	   G_CALLBACK(action_save_macro) },
 
 	 { "screenshot",
-	   0, "S_creenshot...", "<ctrl>Print",
-	   "Save a screenshot",
+	   0, N_("S_creenshot..."), "<ctrl>Print",
+	   N_("Save a screenshot"),
 	   G_CALLBACK(action_screenshot) },
 	 { "quick-screenshot",
-	   0, "_Quick Screenshot", "<shift><ctrl>Print",
-	   "Save a screenshot using default settings",
+	   0, N_("_Quick Screenshot"), "<shift><ctrl>Print",
+	   N_("Save a screenshot using default settings"),
 	   G_CALLBACK(action_quick_screenshot) },
 
 	 { "preferences",
 	   GTK_STOCK_PREFERENCES, 0, 0,
-	   "Edit emulator settings",
+	   N_("Edit emulator settings"),
 	   G_CALLBACK(action_preferences) },
 
 	 { "about",
-	   GTK_STOCK_ABOUT, "_About", "",
-	   "Print some informations about TilEm 2 and its authors",
+	   GTK_STOCK_ABOUT, N_("_About"), "",
+	   N_("Print some informations about TilEm 2 and its authors"),
 	   G_CALLBACK(action_about) },
 
 	 { "quit",
-	   GTK_STOCK_QUIT, "_Quit", "<ctrl>Q",
-	   "Quit the application",
+	   GTK_STOCK_QUIT, N_("_Quit"), "<ctrl>Q",
+	   N_("Quit the application"),
 	   G_CALLBACK(action_quit) }};
 
 static GtkWidget *add_item(GtkWidget *menu, GtkAccelGroup *accelgrp,
@@ -298,7 +298,7 @@ void build_menu(TilemEmulatorWindow* ewin)
 
 	add_item(menu, ag, acts, "start-debugger");
 	
-	submenu = add_submenu(menu, "_Macro");
+	submenu = add_submenu(menu, _("_Macro"));
 	add_item(submenu, ag, acts, "begin-macro");
 	add_item(submenu, ag, acts, "end-macro");
 	add_item(submenu, ag, acts, "play-macro");

@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle 
- * Copyright (c) 2010 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -277,7 +277,7 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 	if (noptions < 2) /* no choice */
 		return default_model;
 
-	dlg = gtk_dialog_new_with_buttons("Select Calculator Type",
+	dlg = gtk_dialog_new_with_buttons(_("Select Calculator Type"),
 	                                  GTK_WINDOW(parent_window),
 	                                  GTK_DIALOG_MODAL,
 	                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -311,7 +311,7 @@ char choose_rom_popup(GtkWidget *parent_window, const char *filename,
 	gtk_toggle_button_set_active(btns[defoption], TRUE);
 
 	fn = g_filename_display_basename(filename);
-	msg = g_strdup_printf("Calculator type for %s:", fn);
+	msg = g_strdup_printf(_("Calculator type for %s:"), fn);
 	frame = new_frame(msg, vbox);
 	g_free(fn);
 	g_free(msg);
@@ -359,7 +359,7 @@ char * utf8_to_filename(const char *utf8str)
 
 	ic = g_iconv_open(charsets[0], "UTF-8");
 	if (!ic) {
-		g_warning("utf8_to_filename: unsupported charset %s",
+		g_warning(_("utf8_to_filename: unsupported charset %s"),
 		          charsets[0]);
 		return g_strdup(utf8str);
 	}
@@ -371,7 +371,7 @@ char * utf8_to_filename(const char *utf8str)
 
 	while (g_iconv(ic, &ibuf, &icount, &obuf, &ocount) == (gsize) -1) {
 		if (errno != EILSEQ) {
-			g_warning("utf8_to_filename: error in conversion");
+			g_warning(_("utf8_to_filename: error in conversion"));
 			g_free(result);
 			g_iconv_close(ic);
 			return g_strdup(utf8str);
@@ -425,7 +425,7 @@ char * get_default_filename(const TilemVarEntry *tve)
 		g_string_append(str, tve->name_str);
 	}
 	else {
-		g_string_append(str, "untitled");
+		g_string_append(str, _("untitled"));
 	}
 	g_string_append_c(str, '.');
 	g_string_append(str, tve->file_ext);

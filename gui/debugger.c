@@ -56,9 +56,9 @@ enum {
 
 /* Labels for the entries */
 static const char * const reg_labels[] = {
-	"A_F:", "B_C:", "D_E:", "H_L:", "I_X:", "SP:",
-	"AF':", "BC':", "DE':", "HL':", "I_Y:", "PC:",
-	"IM:", "I:"
+	N_("A_F:"), N_("B_C:"), N_("D_E:"), N_("H_L:"), N_("I_X:"), N_("SP:"),
+	N_("AF':"), N_("BC':"), N_("DE':"), N_("HL':"), N_("I_Y:"), N_("PC:"),
+	N_("IM:"), N_("I:")
 };
 
 /* Labels for the flag buttons */
@@ -119,8 +119,8 @@ static void load_default_symbols(TilemDebugger *dbg)
 		errstr = g_strerror(errno);
 		dname = g_filename_display_name(path);
 		messagebox02(NULL, GTK_MESSAGE_ERROR,
-		             "Unable to read symbols",
-		             "An error occurred while reading %s: %s",
+		             _("Unable to read symbols"),
+		             _("An error occurred while reading %s: %s"),
 		             dname, errstr);
 		g_free(dname);
 		g_free(path);
@@ -433,7 +433,7 @@ static void action_go_to_address(G_GNUC_UNUSED GtkAction *action, gpointer data)
 	addr_set = tilem_disasm_view_get_cursor(dv, &addr, &logical);
 
 	if (!tilem_prompt_address(dbg, GTK_WINDOW(dbg->window),
-	                          "Go to Address", "Address:",
+	                          _("Go to Address"), _("Address:"),
 	                          &addr, !logical, addr_set))
 		return;
 
@@ -524,60 +524,60 @@ static void action_next_stack_entry(G_GNUC_UNUSED GtkAction *action,
 
 
 static const GtkActionEntry run_action_ents[] =
-	{{ "pause", GTK_STOCK_MEDIA_PAUSE, "_Pause", "Escape",
-	   "Pause emulation", G_CALLBACK(action_pause) }};
+	{{ "pause", GTK_STOCK_MEDIA_PAUSE, N_("_Pause"), "Escape",
+	   N_("Pause emulation"), G_CALLBACK(action_pause) }};
 
 static const GtkActionEntry paused_action_ents[] =
-	{{ "run", GTK_STOCK_MEDIA_PLAY, "_Run", "F5",
-	   "Resume emulation", G_CALLBACK(action_run) },
-	 { "step", "tilem-db-step", "_Step", "F7",
-	   "Execute one instruction", G_CALLBACK(action_step) },
-	 { "step-over", "tilem-db-step-over", "Step _Over", "F8",
-	   "Run to the next line (skipping over subroutines)",
+	{{ "run", GTK_STOCK_MEDIA_PLAY, N_("_Run"), "F5",
+	   N_("Resume emulation"), G_CALLBACK(action_run) },
+	 { "step", "tilem-db-step", N_("_Step"), "F7",
+	   N_("Execute one instruction"), G_CALLBACK(action_step) },
+	 { "step-over", "tilem-db-step-over", N_("Step _Over"), "F8",
+	   N_("Run to the next line (skipping over subroutines)"),
 	   G_CALLBACK(action_step_over) },
-	 { "finish", "tilem-db-finish", "_Finish Subroutine", "F9",
-	   "Run to end of the current subroutine", G_CALLBACK(action_finish) },
-	 { "toggle-breakpoint", NULL, "Toggle Breakpoint", "F2",
-	   "Enable or disable breakpoint at the selected address",
+	 { "finish", "tilem-db-finish", N_("_Finish Subroutine"), "F9",
+	   N_("Run to end of the current subroutine"), G_CALLBACK(action_finish) },
+	 { "toggle-breakpoint", NULL, N_("Toggle Breakpoint"), "F2",
+	   N_("Enable or disable breakpoint at the selected address"),
 	   G_CALLBACK(action_toggle_breakpoint) },
-	 { "edit-breakpoints", NULL, "_Breakpoints", "<control>B",
-	   "Add, remove, or modify breakpoints",
+	 { "edit-breakpoints", NULL, N_("_Breakpoints"), "<control>B",
+	   N_("Add, remove, or modify breakpoints"),
 	   G_CALLBACK(action_edit_breakpoints) },
-	 { "go-to-address", GTK_STOCK_JUMP_TO, "_Address...", "<control>L",
-	   "Jump to an address",
+	 { "go-to-address", GTK_STOCK_JUMP_TO, N_("_Address..."), "<control>L",
+	   N_("Jump to an address"),
 	   G_CALLBACK(action_go_to_address) },
-	 { "go-to-pc", NULL, "Current P_C", "<alt>Home",
-	   "Jump to the current program counter",
+	 { "go-to-pc", NULL, N_("Current P_C"), "<alt>Home",
+	   N_("Jump to the current program counter"),
 	   G_CALLBACK(action_go_to_pc) },
-	 { "prev-stack-entry", GTK_STOCK_GO_UP, "_Previous Stack Entry", "<alt>Page_Up",
-	   "Jump to the previous address in the stack",
+	 { "prev-stack-entry", GTK_STOCK_GO_UP, N_("_Previous Stack Entry"), "<alt>Page_Up",
+	   N_("Jump to the previous address in the stack"),
 	   G_CALLBACK(action_prev_stack_entry) },
-	 { "next-stack-entry", GTK_STOCK_GO_DOWN, "_Next Stack Entry", "<alt>Page_Down",
-	   "Jump to the next address in the stack",
+	 { "next-stack-entry", GTK_STOCK_GO_DOWN, N_("_Next Stack Entry"), "<alt>Page_Down",
+	   N_("Jump to the next address in the stack"),
 	   G_CALLBACK(action_next_stack_entry) },
-	 { "scroll-prev-byte", NULL, "One Byte _Backward", "<control>Up",
-	   "Scroll backward by one byte",
+	 { "scroll-prev-byte", NULL, N_("One Byte _Backward"), "<control>Up",
+	   N_("Scroll backward by one byte"),
 	   G_CALLBACK(action_scroll_prev_byte) },
-	 { "scroll-next-byte", NULL, "One Byte _Forward", "<control>Down",
-	   "Scroll forward by one byte",
+	 { "scroll-next-byte", NULL, N_("One Byte _Forward"), "<control>Down",
+	   N_("Scroll forward by one byte"),
 	   G_CALLBACK(action_scroll_next_byte) }};
 
 static const GtkRadioActionEntry mem_mode_ents[] =
-	{{ "view-logical", 0, "_Logical Addresses", 0,
-	   "Show contents of the current Z80 address space", 1 },
-	 { "view-absolute", 0, "_Absolute Addresses", 0,
-	   "Show all memory contents", 0 }};
+	{{ "view-logical", 0, N_("_Logical Addresses"), 0,
+	   N_("Show contents of the current Z80 address space"), 1 },
+	 { "view-absolute", 0, N_("_Absolute Addresses"), 0,
+	   N_("Show all memory contents"), 0 }};
 
 static const GtkActionEntry misc_action_ents[] =
-	{{ "debug-menu", 0, "_Debug", 0, 0, 0 },
-	 { "view-menu", 0, "_View", 0, 0, 0 },
-	 { "go-menu", 0, "_Go", 0, 0, 0 },
+	{{ "debug-menu", 0, N_("_Debug"), 0, 0, 0 },
+	 { "view-menu", 0, N_("_View"), 0, 0, 0 },
+	 { "go-menu", 0, N_("_Go"), 0, 0, 0 },
 	 { "close", GTK_STOCK_CLOSE, 0, 0,
-	   "Close the debugger", G_CALLBACK(action_close) }};
+	   N_("Close the debugger"), G_CALLBACK(action_close) }};
 
 static const GtkToggleActionEntry misc_toggle_ents[] =
-	{{ "view-keypad", 0, "_Keypad", 0,
-	   "Show the calculator keypad state",
+	{{ "view-keypad", 0, N_("_Keypad"), 0,
+	   N_("Show the calculator keypad state"),
 	   G_CALLBACK(action_view_keypad), FALSE }};
 
 /* Callbacks */
@@ -743,7 +743,7 @@ static GtkWidget *create_registers(TilemDebugger *dbg)
 	gtk_table_set_col_spacing(GTK_TABLE(tbl), 1, 12);
 
 	for (i = 0; i < 12; i++) {
-		lbl = gtk_label_new_with_mnemonic(reg_labels[i]);
+		lbl = gtk_label_new_with_mnemonic(_(reg_labels[i]));
 		gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 		gtk_table_attach(GTK_TABLE(tbl), lbl,
 		                 2 * (i / 6), 2 * (i / 6) + 1,
@@ -777,7 +777,7 @@ static GtkWidget *create_registers(TilemDebugger *dbg)
 	hbox = gtk_hbox_new(FALSE, 6);
 
 	for (i = 12; i < 14; i++) {
-		lbl = gtk_label_new(reg_labels[i]);
+		lbl = gtk_label_new(_(reg_labels[i]));
 		gtk_box_pack_start(GTK_BOX(hbox), lbl, FALSE, FALSE, 0);
 
 		dbg->reg_entries[i] = ent = gtk_entry_new();
@@ -792,7 +792,7 @@ static GtkWidget *create_registers(TilemDebugger *dbg)
 	gtk_entry_set_width_chars(GTK_ENTRY(dbg->reg_entries[R_IM]), 2);
 	gtk_entry_set_width_chars(GTK_ENTRY(dbg->reg_entries[R_I]), 3);
 
-	dbg->iff_checkbox = btn = gtk_check_button_new_with_label("EI");
+	dbg->iff_checkbox = btn = gtk_check_button_new_with_label(_("EI"));
 	g_signal_connect(btn, "toggled", G_CALLBACK(iff_edited), dbg);
 	gtk_box_pack_start(GTK_BOX(hbox), btn, TRUE, TRUE, 0);
 
@@ -907,8 +907,8 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	dbg->last_bp_mode = TILEM_DB_BREAK_EXEC;
 
 	dbg->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(dbg->window), "TilEm Debugger");
-	gtk_window_set_role(GTK_WINDOW(dbg->window), "Debugger");
+	gtk_window_set_title(GTK_WINDOW(dbg->window), _("TilEm Debugger"));
+	gtk_window_set_role(GTK_WINDOW(dbg->window), _("Debugger"));
 
 	tilem_config_get("debugger",
 	                 "width/i", &defwidth,
@@ -1136,7 +1136,7 @@ static GtkTreeModel* fill_stk_list(TilemDebugger *dbg)
 	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 	i = dbg->emu->calc->z80.r.sp.w.l;
 	while  (i < 0x10000 && n < 512) {
-	        g_snprintf(stack_offset, sizeof(stack_offset), "%04X:", i);
+		g_snprintf(stack_offset, sizeof(stack_offset), _("%04X:"), i);
 
 		v = read_mem_word(dbg->emu->calc, i);
 		g_snprintf(stack_value, sizeof(stack_value), "%04X", v);

@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -28,6 +28,7 @@
 #include <gobject/gvaluecollector.h>
 
 #include "fixedtreeview.h"
+#include "gettext.h"
 
 /* Style set on tree view; update column sizes */
 static void ftv_style_set(GtkWidget *treeview,
@@ -135,7 +136,7 @@ void fixed_tree_view_init(GtkWidget *treeview, int colgroupsize, ...)
 	col = va_arg(ap, int);
 	while (col != -1) {
 		if (col < 0 || col >= colgroupsize) {
-			g_critical("missing sentinel");
+			g_critical(_("missing sentinel"));
 			break;
 		}
 

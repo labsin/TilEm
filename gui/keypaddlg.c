@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -114,7 +114,7 @@ TilemKeypadDialog *tilem_keypad_dialog_new(TilemDebugger *dbg)
 	kpdlg->dbg = dbg;
 
 	kpdlg->window = gtk_dialog_new_with_buttons
-		("Keypad", NULL, 0,
+		(_("Keypad"), NULL, 0,
 		 GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 		 NULL);
 
@@ -152,7 +152,7 @@ TilemKeypadDialog *tilem_keypad_dialog_new(TilemDebugger *dbg)
 	/* Check buttons for key groups (output bits) */
 
 	for (i = 0; i < NGROUPS; i++) {
-		g_snprintf(buf, sizeof(buf), "Group %d", i);
+		g_snprintf(buf, sizeof(buf), _("Group %d"), i);
 		btn = gtk_check_button_new_with_label(buf);
 		kpdlg->output[i] = btn;
 		gtk_box_pack_start(GTK_BOX(vbox), btn, FALSE, TRUE, 2);
@@ -174,16 +174,16 @@ TilemKeypadDialog *tilem_keypad_dialog_new(TilemDebugger *dbg)
 	gtk_table_set_col_spacings(GTK_TABLE(tbl2), 12);
 
 	lbl = gtk_label_new(NULL);
-	gtk_label_set_markup(GTK_LABEL(lbl), "<b>Scan Groups</b>");
+	gtk_label_set_markup(GTK_LABEL(lbl), _("<b>Scan Groups</b>"));
 	gtk_table_attach(GTK_TABLE(tbl2), lbl, 0, 1, 0, 1,
 	                 GTK_FILL, GTK_FILL, 0, 0);
 
 	lbl = gtk_label_new(NULL);
-	gtk_label_set_markup(GTK_LABEL(lbl), "<b>Keys</b>");
+	gtk_label_set_markup(GTK_LABEL(lbl), _("<b>Keys</b>"));
 	gtk_table_attach(GTK_TABLE(tbl2), lbl, 1, 2, 0, 1,
 	                 GTK_FILL, GTK_FILL, 0, 0);
 
-	lbl = gtk_label_new("Input Value:");
+	lbl = gtk_label_new(_("Input Value:"));
 	gtk_table_attach(GTK_TABLE(tbl2), lbl, 0, 1, 2, 3,
 	                 GTK_FILL, GTK_FILL, 0, 0);
 

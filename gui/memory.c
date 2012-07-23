@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,6 +25,8 @@
 #include <stdarg.h>
 #include <glib.h>
 #include <tilem.h>
+
+#include "gettext.h"
 
 /* Memory management */
 
@@ -74,7 +76,7 @@ void tilem_message(TilemCalc* calc, const char* msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
-	fprintf(stderr, "x%c: ", calc->hw.model_id);
+	fprintf(stderr, _("x%c: "), calc->hw.model_id);
 	vfprintf(stderr, msg, ap);
 	fputc('\n', stderr);
 	va_end(ap);
@@ -84,7 +86,7 @@ void tilem_warning(TilemCalc* calc, const char* msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
-	fprintf(stderr, "x%c: WARNING: ", calc->hw.model_id);
+	fprintf(stderr, _("x%c: WARNING: "), calc->hw.model_id);
 	vfprintf(stderr, msg, ap);
 	fputc('\n', stderr);
 	va_end(ap);
@@ -94,7 +96,7 @@ void tilem_internal(TilemCalc* calc, const char* msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
-	fprintf(stderr, "x%c: INTERNAL ERROR: ", calc->hw.model_id);
+	fprintf(stderr, _("x%c: INTERNAL ERROR: "), calc->hw.model_id);
 	vfprintf(stderr, msg, ap);
 	fputc('\n', stderr);
 	va_end(ap);

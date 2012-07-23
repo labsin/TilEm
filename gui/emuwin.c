@@ -395,7 +395,7 @@ void redraw_screen(TilemEmulatorWindow *ewin)
 
 	if (err) {
 		messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
-		             "Unable to load skin", "%s", err->message);
+		             _("Unable to load skin"), "%s", err->message);
 		g_error_free(err);
 	}
 }

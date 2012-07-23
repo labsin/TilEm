@@ -110,7 +110,7 @@ static void disassemble(TilemDisasmView *dv, TilemCalc *calc, dword pos,
 	if (!(pos & 1) && (lbl = get_label(dv, calc, addr))) {
 		if (mnemonic) {
 			*mnemonic = NULL;
-			*args = g_strdup_printf("%s:", lbl);
+			*args = g_strdup_printf(_("%s:"), lbl);
 		}
 
 		if (nextpos)
@@ -877,7 +877,7 @@ static void prompt_go_to(G_GNUC_UNUSED GtkMenuItem *item, gpointer data)
 	addr = POS_TO_ADDR(curpos);
 
 	if (tilem_prompt_address(dv->dbg, GTK_WINDOW(window),
-	                         "Go to Address", "Address:",
+	                         _("Go to Address"), _("Address:"),
 	                         &addr, !dv->use_logical,
 	                         (curpos != (dword) -1)))
 		tilem_disasm_view_go_to_address(dv, addr, dv->use_logical);
@@ -941,7 +941,7 @@ static void show_popup_menu(TilemDisasmView *dv, GdkEventButton *event)
 
 	/* Enable/disable breakpoint */
 
-	item = gtk_check_menu_item_new_with_mnemonic("_Breakpoint Here");
+	item = gtk_check_menu_item_new_with_mnemonic(_("_Breakpoint Here"));
 
 	get_cursor_line(dv, &curpos, NULL);
 	if (curpos == (dword) -1)
@@ -961,12 +961,12 @@ static void show_popup_menu(TilemDisasmView *dv, GdkEventButton *event)
 
 	/* Jump to address */
 
-	item = gtk_menu_item_new_with_mnemonic("_Go to Address...");
+	item = gtk_menu_item_new_with_mnemonic(_("_Go to Address..."));
 	g_signal_connect(item, "activate", G_CALLBACK(prompt_go_to), dv);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_widget_show(item);
 
-	item = gtk_menu_item_new_with_mnemonic("Go to P_C");
+	item = gtk_menu_item_new_with_mnemonic(_("Go to P_C"));
 	g_signal_connect(item, "activate", G_CALLBACK(go_to_pc), dv);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_widget_show(item);
@@ -1058,14 +1058,14 @@ static void tilem_disasm_view_init(TilemDisasmView *dv)
 	dv->icon_column = col;
 
 	cell = gtk_cell_renderer_text_new();
-	col = gtk_tree_view_column_new_with_attributes("Addr", cell,
+	col = gtk_tree_view_column_new_with_attributes(_("Addr"), cell,
 	                                               "text", COL_ADDRESS,
 	                                               NULL);
 	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_append_column(tv, col);
 
 	col = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(col, "Disassembly");
+	gtk_tree_view_column_set_title(col, _("Disassembly"));
 
 	cell = gtk_cell_renderer_text_new();
 	g_object_set(cell, "xpad", 10, NULL);

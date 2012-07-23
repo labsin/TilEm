@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@
 #include <tilem.h>
 
 #include "ti81prg.h"
+#include "gettext.h"
 
 #define tSpace  0x56
 #define t0      0x10
@@ -317,7 +318,7 @@ int ti81_read_prg_file(FILE *f, TI81Program **prgm)
 
 	sum -= (buf[0] | buf[1] << 8);
 	if (sum & 0xffff)
-		fprintf(stderr, "warning: checksum incorrect\n");
+		fprintf(stderr, _("warning: checksum incorrect\n"));
 
 	*prgm = p;
 	return 0;
@@ -362,7 +363,7 @@ char * ti81_program_slot_to_string(int slot)
 	char *s;
 
 	if (slot == TI81_SLOT_AUTO)
-		strcpy(buf, "Automatic");
+		strcpy(buf, _("Automatic"));
 	else if (slot < 0 || slot > 36)
 		strcpy(buf, "?");
 	else if (slot < 10)

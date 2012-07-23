@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -159,8 +159,8 @@ void show_about()
 {
 	GtkWidget *dialog = gtk_about_dialog_new();
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "2.0"); 
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n");
-	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D");
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _("(c) Benjamin Moody\n(c) Thibault Duponchelle\n(c) Luc Bruant\n"));
+	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("TilEm is a TI Linux Emulator.\n It emulates all current z80 models.\n TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D"));
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://lpg.ticalc.org/prj_tilem/");
 
 	/* Add the logo */	

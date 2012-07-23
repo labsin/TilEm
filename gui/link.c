@@ -1,8 +1,8 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Thibault Duponchelle
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -49,7 +49,7 @@ static int ilp_open(CableHandle* cbl)
 	tilem_em_lock(emu);
 
 	if (emu->ilp_active) {
-		fprintf(stderr, "INTERNAL ERROR: cable already opened\n");
+		fprintf(stderr, _("INTERNAL ERROR: cable already opened\n"));
 		tilem_em_unlock(emu);
 		return 1;
 	}
@@ -68,7 +68,7 @@ static int ilp_close(CableHandle* cbl)
 	tilem_em_lock(emu);
 
 	if (!emu->ilp_active) {
-		fprintf(stderr, "INTERNAL ERROR: cable already closed\n");
+		fprintf(stderr, _("INTERNAL ERROR: cable already closed\n"));
 		tilem_em_unlock(emu);
 		return 1;
 	}
@@ -290,7 +290,7 @@ void begin_link(TilemCalcEmulator *emu, CableHandle **cbl, CalcHandle **ch,
 
 	*ch = ticalcs_handle_new(get_calc_model(emu->calc));
 	if (!*ch) {
-		g_critical("unsupported calc");
+		g_critical(_("unsupported calc"));
 		return;
 	}
 
@@ -321,34 +321,34 @@ static char * get_tilibs_error(int errcode)
 	    || !tifiles_error_get(errcode, &p))
 		return p;
 	else
-		return g_strdup_printf("Unknown error (%d)", errcode);
+		return g_strdup_printf(_("Unknown error (%d)"), errcode);
 }
 
 static char * get_ti81_error(int errcode)
 {
 	switch (errcode) {
 	case TI81_ERR_FILE_IO:
-		return g_strdup("File I/O error");
+		return g_strdup(_("File I/O error"));
 
 	case TI81_ERR_INVALID_FILE:
-		return g_strdup("Not a valid PRG file");
+		return g_strdup(_("Not a valid PRG file"));
 
 	case TI81_ERR_MEMORY:
-		return g_strdup("The calculator does not have enough free memory"
-		                " to load the program.");
+		return g_strdup(_("The calculator does not have enough free memory"
+		                  " to load the program."));
 
 	case TI81_ERR_SLOTS_FULL:
-		return g_strdup("All calculator program slots are in use. "
-		                " You must delete an existing program before"
-		                " loading a new program.");
+		return g_strdup(_("All calculator program slots are in use. "
+		                  " You must delete an existing program before"
+		                  " loading a new program."));
 
 	case TI81_ERR_BUSY:
-		return g_strdup("The calculator is currently busy.  Please"
-		                " exit to the home screen before loading"
-		                " programs.");
+		return g_strdup(_("The calculator is currently busy.  Please"
+		                  " exit to the home screen before loading"
+		                  " programs."));
 
 	default:
-		return g_strdup_printf("Unknown error code (%d)", errcode);
+		return g_strdup_printf(_("Unknown error code (%d)"), errcode);
 	}
 }
 
@@ -375,14 +375,14 @@ static gboolean send_file_ti81(TilemCalcEmulator *emu, struct TilemSendFileInfo 
 	f = g_fopen(sf->filename, "rb");
 	if (!f) {
 		sf->error_message = g_strdup_printf
-			("Failed to open %s for reading: %s",
+			(_("Failed to open %s for reading: %s"),
 			 sf->display_name, g_strerror(errno));
 		return FALSE;
 	}
 
 	if (ti81_read_prg_file(f, &prgm)) {
 		sf->error_message = g_strdup_printf
-			("The file %s is not a valid TI-81 program file.",
+			(_("The file %s is not a valid TI-81 program file."),
 			 sf->display_name);
 		fclose(f);
 		return FALSE;
@@ -480,7 +480,7 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 	model = get_calc_model(emu->calc);
 	cls = tifiles_file_get_class(sf->filename);
 
-	desc = g_strdup_printf("Sending %s", sf->display_name);
+	desc = g_strdup_printf(_("Sending %s"), sf->display_name);
 
 	/* Read input file */
 
@@ -550,8 +550,8 @@ static gboolean send_file_linkport(TilemCalcEmulator *emu, struct TilemSendFileI
 	default:
 		g_free(desc);
 		sf->error_message = g_strdup_printf
-			("The file %s is not a valid program or"
-			 " variable file.",
+			(_("The file %s is not a valid program or"
+			   " variable file."),
 			 sf->display_name);
 		return FALSE;
 	}
@@ -579,7 +579,7 @@ static void send_file_finished(TilemCalcEmulator *emu, gpointer data,
 	struct TilemSendFileInfo *sf = data;
 
 	if (sf->error_message && !cancelled)
-		show_error(emu, "Unable to send file", sf->error_message);
+		show_error(emu, _("Unable to send file"), sf->error_message);
 
 	g_free(sf->filename);
 	g_free(sf->display_name);
@@ -694,7 +694,7 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 	   than "TI83+ Program".)  But this is better than nothing. */
 	model_str = tifiles_model_to_string(tfmodel);
 	type_str = tifiles_vartype2type(tfmodel, ve->type);
-	tve->filetype_desc = g_strdup_printf("%s %s", model_str, type_str);
+	tve->filetype_desc = g_strdup_printf(_("%s %s"), model_str, type_str);
 
 	tve->can_group = !is_flash;
 
@@ -731,7 +731,7 @@ static gboolean get_dirlist_silent(TilemCalcEmulator *emu,
 	GSList *list = NULL;
 	int e = 0;
 
-	begin_link(emu, &cbl, &ch, "Reading variable list");
+	begin_link(emu, &cbl, &ch, _("Reading variable list"));
 	prepare_for_link_receive(emu);
 
 	if (ticalcs_calc_features(ch) & OPS_DIRLIST) {
@@ -767,7 +767,7 @@ static gboolean get_dirlist_nonsilent(TilemCalcEmulator *emu,
 	GSList *list = NULL;
 	int e, i;
 
-	begin_link(emu, &cbl, &ch, "Receiving variables");
+	begin_link(emu, &cbl, &ch, _("Receiving variables"));
 	prepare_for_link_receive(emu);
 
 	fc = tifiles_content_create_regular(ch->model);
@@ -826,7 +826,7 @@ static gboolean get_dirlist_ti81(TilemCalcEmulator *emu,
 		tve->name_str = ti81_program_name_to_string(info.name);
 		tve->slot_str = ti81_program_slot_to_string(info.slot);
 		tve->file_ext = g_strdup("prg");
-		tve->filetype_desc = g_strdup("TI-81 programs");
+		tve->filetype_desc = g_strdup(_("TI-81 programs"));
 		tve->size = info.size;
 		tve->archived = FALSE;
 		tve->can_group = FALSE;
@@ -863,7 +863,7 @@ static void get_dirlist_finished(TilemCalcEmulator *emu, gpointer data,
 	struct dirlistinfo *dl = data;
 
 	if (dl->error_message && !cancelled)
-		show_error(emu, "Unable to receive variable list",
+		show_error(emu, _("Unable to receive variable list"),
 		           dl->error_message);
 	else if (!cancelled && !dl->aborted && emu->ewin && !dl->no_gui) {
 		if (!emu->rcvdlg)
@@ -924,9 +924,9 @@ static gboolean write_output(FileContent **vars, FlashContent **apps,
 	}
 	else {
 		*error_message = g_strdup
-			("Applications cannot be saved in an XXg group"
-			 " file.  Try using TIG format or saving apps"
-			 " individually.");
+			(_("Applications cannot be saved in an XXg group"
+			   " file.  Try using TIG format or saving apps"
+			   " individually."));
 		return FALSE;
 	}
 
@@ -960,7 +960,7 @@ static gboolean receive_files_silent(TilemCalcEmulator* emu,
 	apps = g_new0(FlashContent *, i + 1);
 	nvars = napps = 0;
 
-	begin_link(emu, &cbl, &ch, "Receiving variables");
+	begin_link(emu, &cbl, &ch, _("Receiving variables"));
 
 	for (l = rf->entries; l; l = l->next) {
 		tve = l->data;
@@ -1010,8 +1010,8 @@ static gboolean receive_files_ti81(TilemCalcEmulator* emu,
 
 	if (rf->entries->next) {
 		rf->error_message = g_strdup
-			("TI-81 programs cannot be saved in a group file."
-			 " Try saving programs individually.");
+			(_("TI-81 programs cannot be saved in a group file."
+			   " Try saving programs individually."));
 		return FALSE;
 	}
 
@@ -1027,7 +1027,7 @@ static gboolean receive_files_ti81(TilemCalcEmulator* emu,
 		e = errno;
 		dname = g_filename_display_basename(rf->destination);
 		rf->error_message = g_strdup_printf
-			("Failed to open %s for writing: %s",
+			(_("Failed to open %s for writing: %s"),
 			 dname, g_strerror(e));
 		g_free(dname);
 		ti81_program_free(prgm);
@@ -1039,7 +1039,7 @@ static gboolean receive_files_ti81(TilemCalcEmulator* emu,
 		e = errno;
 		dname = g_filename_display_basename(rf->destination);
 		rf->error_message = g_strdup_printf
-			("Error writing %s: %s",
+			(_("Error writing %s: %s"),
 			 dname, g_strerror(e));
 		g_free(dname);
 		ti81_program_free(prgm);
@@ -1116,7 +1116,7 @@ static void receive_files_finished(TilemCalcEmulator *emu, gpointer data,
 	GSList *l;
 
 	if (rf->error_message && !cancelled)
-		show_error(emu, "Unable to save file", rf->error_message);
+		show_error(emu, _("Unable to save file"), rf->error_message);
 
 	g_free(rf->destination);
 	g_free(rf->error_message);
@@ -1229,7 +1229,7 @@ static gboolean receive_matching_main(TilemCalcEmulator *emu, gpointer data)
 
 	if (!selected) {
 		rm->rf->error_message = g_strdup_printf
-			("Variable %s not found", rm->pattern);
+			(_("Variable %s not found"), rm->pattern);
 		return FALSE;
 	}
 

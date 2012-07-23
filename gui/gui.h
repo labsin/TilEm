@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 #include "skinops.h"
 #include "emuwin.h"
 #include "debugger.h"
+#include "gettext.h"
 
 #include "gtk-compat.h"
 
@@ -383,4 +384,3 @@ void tilem_receive_dialog_free(TilemReceiveDialog *rcvdlg);
    list.  Display the dialog if it's currently hidden. */
 void tilem_receive_dialog_update(TilemReceiveDialog *rcvdlg,
                                  GSList *varlist);
-

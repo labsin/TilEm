@@ -1,6 +1,7 @@
 /*
  *   skinedit - a skin editor for the TiEmu emulator
  *   Copyright (C) 2002 Julien BLACHE <jb@tilp.info>
+ *   Copyright (C) 2012 Benjamin Moody
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -40,6 +41,7 @@ contra-sh :
 
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
+#include "gettext.h"
 
 #define SKIN_ERROR g_quark_from_static_string("skin-error")
 enum {
@@ -56,7 +58,7 @@ int skin_get_type(SKIN_INFOS *si, const char *filename)
 
 	fp = g_fopen(filename, "rb");
 	if (fp == NULL) {
-		fprintf(stderr, "Unable to open this file: <%s>\n", filename);
+		fprintf(stderr, _("Unable to open this file: <%s>\n"), filename);
 		return -1;
 	}
 
@@ -72,7 +74,7 @@ int skin_get_type(SKIN_INFOS *si, const char *filename)
 	else if(!strncmp(str, "VTIv2.5 ", 8))
 		si->type = SKIN_TYPE_VTI;
 	else {
-		fprintf(stderr, "Bad skin format\n");
+		fprintf(stderr, _("Bad skin format\n"));
 		return -1;
 	}
 
@@ -221,7 +223,7 @@ int skin_read_image(SKIN_INFOS *si, FILE *fp, GError **err)
 	si->raw = gdk_pixbuf_loader_get_pixbuf(loader);
 	if(si->raw == NULL) {
 		g_set_error(err, SKIN_ERROR, SKIN_ERROR_INVALID,
-		            "Unable to load background image");
+		            _("Unable to load background image"));
 		g_object_unref(loader);
 		return -1;
 	}
@@ -253,7 +255,7 @@ int skin_load(SKIN_INFOS *si, const char *filename, GError **err)
 		errnum = errno;
 		dname = g_filename_display_basename(filename);
 		g_set_error(err, G_FILE_ERROR, g_file_error_from_errno(errnum),
-		            "Unable to open %s for reading: %s",
+		            _("Unable to open %s for reading: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		return -1;
@@ -264,7 +266,7 @@ int skin_load(SKIN_INFOS *si, const char *filename, GError **err)
 		fclose(fp);
 		dname = g_filename_display_basename(filename);
 		g_set_error(err, SKIN_ERROR, SKIN_ERROR_INVALID,
-		            "The file %s is not a valid skin.", dname);
+		            _("The file %s is not a valid skin."), dname);
 		g_free(dname);
 		return -1;
 	}

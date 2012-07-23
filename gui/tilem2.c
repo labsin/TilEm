@@ -51,18 +51,18 @@ static gboolean cl_fullspeed_flag = FALSE;
 
 static GOptionEntry entries[] =
 {
-	{ "rom", 'r', 0, G_OPTION_ARG_FILENAME, &cl_romfile, "The rom file to run", "FILE" },
-	{ "skin", 'k', 0, G_OPTION_ARG_FILENAME, &cl_skinfile, "The skin file to use", "FILE" },
-	{ "model", 'm', 0, G_OPTION_ARG_STRING, &cl_model, "The model to use", "NAME" },
-	{ "state-file", 's', 0, G_OPTION_ARG_FILENAME, &cl_statefile, "The state-file to use", "FILE" },
-	{ "without-skin", 'l', 0, G_OPTION_ARG_NONE, &cl_skinless_flag, "Start in skinless mode", NULL },
-	{ "reset", 0, 0, G_OPTION_ARG_NONE, &cl_reset_flag, "Reset the calc at startup", NULL },
-	{ "get-var", 0, 0, G_OPTION_ARG_STRING, &cl_getvar, "Get a var at startup", "FILE" },
-	{ "play-macro", 'p', 0, G_OPTION_ARG_FILENAME, &cl_macro_to_run, "Run this macro at startup", "FILE" },
-	{ "debug", 'd', 0, G_OPTION_ARG_NONE, &cl_debug_flag, "Launch debugger", NULL },
-	{ "normal-speed", 0, 0, G_OPTION_ARG_NONE, &cl_normalspeed_flag, "Run at normal speed", NULL },
-	{ "full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, "Run at maximum speed", NULL },
-	{ G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &cl_files_to_load, NULL, "FILE" },
+	{ "rom", 'r', 0, G_OPTION_ARG_FILENAME, &cl_romfile, N_("The rom file to run"), N_("FILE") },
+	{ "skin", 'k', 0, G_OPTION_ARG_FILENAME, &cl_skinfile, N_("The skin file to use"), N_("FILE") },
+	{ "model", 'm', 0, G_OPTION_ARG_STRING, &cl_model, N_("The model to use"), N_("NAME") },
+	{ "state-file", 's', 0, G_OPTION_ARG_FILENAME, &cl_statefile, N_("The state-file to use"), N_("FILE") },
+	{ "without-skin", 'l', 0, G_OPTION_ARG_NONE, &cl_skinless_flag, N_("Start in skinless mode"), NULL },
+	{ "reset", 0, 0, G_OPTION_ARG_NONE, &cl_reset_flag, N_("Reset the calc at startup"), NULL },
+	{ "get-var", 0, 0, G_OPTION_ARG_STRING, &cl_getvar, N_("Get a var at startup"), N_("FILE") },
+	{ "play-macro", 'p', 0, G_OPTION_ARG_FILENAME, &cl_macro_to_run, N_("Run this macro at startup"), N_("FILE") },
+	{ "debug", 'd', 0, G_OPTION_ARG_NONE, &cl_debug_flag, N_("Launch debugger"), NULL },
+	{ "normal-speed", 0, 0, G_OPTION_ARG_NONE, &cl_normalspeed_flag, N_("Run at normal speed"), NULL },
+	{ "full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, N_("Run at maximum speed"), NULL },
+	{ G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &cl_files_to_load, NULL, N_("FILE") },
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };
 
@@ -166,7 +166,7 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 			else if (!g_error_matches(err, TILEM_EMULATOR_ERROR,
 			                          TILEM_EMULATOR_ERROR_NO_ROM)) {
 				messagebox01(NULL, GTK_MESSAGE_ERROR,
-				             "Unable to load calculator state",
+				             _("Unable to load calculator state"),
 				             "%s", err->message);
 			}
 			g_clear_error(&err);
@@ -195,7 +195,7 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 			exit(0);
 		else {
 			messagebox01(NULL, GTK_MESSAGE_ERROR,
-			             "Unable to load calculator state",
+			             _("Unable to load calculator state"),
 			             "%s", err->message);
 			g_clear_error(&err);
 		}
@@ -237,14 +237,14 @@ int main(int argc, char **argv)
 	g_option_context_add_group(context, gtk_get_option_group(TRUE));
 	if (!g_option_context_parse(context, &argc, &argv, &error))
 	{
-		g_printerr("%s: %s\n", g_get_prgname(), error->message);
+		g_printerr(_("%s: %s\n"), g_get_prgname(), error->message);
 		exit (1);
 	}
 
 	if (cl_model) {
 		model = name_to_model(cl_model);
 		if (!model) {
-			g_printerr("%s: unknown model %s\n",
+			g_printerr(_("%s: unknown model %s\n"),
 			           g_get_prgname(), cl_model);
 			return 1;
 		}

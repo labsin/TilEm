@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -130,11 +130,11 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 		return;
 	}
 
-	printf("screenshot saved : %s\n", filename);
+	printf(_("screenshot saved : %s\n"), filename);
 
 	if (!tilem_animation_save(anim, filename, format, NULL, NULL, &err)) {
 		messagebox01(ewin->window, GTK_MESSAGE_ERROR,
-		             "Unable to save screenshot",
+		             _("Unable to save screenshot"),
 		             "%s", err->message);
 		g_error_free(err);
 	}
@@ -323,7 +323,7 @@ static void fill_size_combobox(GtkComboBox *combo,
 	store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 
 	for (i = 0; i < nsizes; i++) {
-		s = g_strdup_printf("%d \303\227 %d",
+		s = g_strdup_printf(_("%d \303\227 %d"),
 		                    sizes[i].width,
 		                    sizes[i].height);
 
@@ -338,7 +338,7 @@ static void fill_size_combobox(GtkComboBox *combo,
 
 	gtk_list_store_append(store, &iter);
 	gtk_list_store_set(store, &iter,
-	                   COL_TEXT, "Custom",
+	                   COL_TEXT, _("Custom"),
 	                   COL_WIDTH, 0,
 	                   COL_HEIGHT, 0,
 	                   -1);
@@ -367,7 +367,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	ssdlg->emu = emu;
 
 	ssdlg->window = gtk_dialog_new_with_buttons
-		("Screenshot",
+		(_("Screenshot"),
 		 (emu->ewin ? GTK_WINDOW(emu->ewin->window) : NULL),
 		 GTK_DIALOG_DESTROY_WITH_PARENT,
 		 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -397,7 +397,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 
 	/* Preview */
 
-	frame = gtk_frame_new("Preview");
+	frame = gtk_frame_new(_("Preview"));
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
 
 	ssdlg->screenshot_preview_image = gtk_image_new();
@@ -415,13 +415,13 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(vbox), GTK_BUTTONBOX_START);
 	gtk_box_set_spacing(GTK_BOX(vbox), 6);
 
-	ssdlg->screenshot = gtk_button_new_with_mnemonic("_Grab");
+	ssdlg->screenshot = gtk_button_new_with_mnemonic(_("_Grab"));
 	gtk_box_pack_start(GTK_BOX(vbox), ssdlg->screenshot, FALSE, FALSE, 0);
 
-	ssdlg->record = gtk_button_new_with_mnemonic("_Record");
+	ssdlg->record = gtk_button_new_with_mnemonic(_("_Record"));
 	gtk_box_pack_start(GTK_BOX(vbox), ssdlg->record, FALSE, FALSE, 0);
 
-	ssdlg->stop = gtk_button_new_with_mnemonic("_Stop");
+	ssdlg->stop = gtk_button_new_with_mnemonic(_("_Stop"));
 	gtk_box_pack_start(GTK_BOX(vbox), ssdlg->stop, FALSE, FALSE, 0);
 	gtk_widget_set_sensitive(GTK_WIDGET(ssdlg->stop), FALSE);
 
@@ -430,17 +430,17 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 
 	/* Options */
 
-	config_expander = gtk_expander_new("Options");
+	config_expander = gtk_expander_new(_("Options"));
 
 	tbl = gtk_table_new(7, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(tbl), 6);
 	gtk_table_set_col_spacings(GTK_TABLE(tbl), 6);
 
-	ssdlg->grayscale_tb = gtk_check_button_new_with_mnemonic("Gra_yscale");
+	ssdlg->grayscale_tb = gtk_check_button_new_with_mnemonic(_("Gra_yscale"));
 	gtk_table_attach(GTK_TABLE(tbl), ssdlg->grayscale_tb,
 	                 0, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 
-	lbl = gtk_label_new_with_mnemonic("Image si_ze:");
+	lbl = gtk_label_new_with_mnemonic(_("Image si_ze:"));
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
@@ -455,7 +455,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), ssdlg->ss_size_combo,
 	                 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 
-	lbl = gtk_label_new_with_mnemonic("_Width:");
+	lbl = gtk_label_new_with_mnemonic(_("_Width:"));
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
@@ -467,7 +467,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), align,
 	                 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
-	lbl = gtk_label_new_with_mnemonic("_Height:");
+	lbl = gtk_label_new_with_mnemonic(_("_Height:"));
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
@@ -480,7 +480,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 1, 2, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
 
 
-	lbl = gtk_label_new_with_mnemonic("Animation s_peed:");
+	lbl = gtk_label_new_with_mnemonic(_("Animation s_peed:"));
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
@@ -494,7 +494,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	               1, 2, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
 
 	/* Foreground color and background color */
-	lbl = gtk_label_new_with_mnemonic("_Foreground:");
+	lbl = gtk_label_new_with_mnemonic(_("_Foreground:"));
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
@@ -506,7 +506,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_table_attach(GTK_TABLE(tbl), align,
 	                 1, 2, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
 	
-	lbl = gtk_label_new_with_mnemonic("_Background:");
+	lbl = gtk_label_new_with_mnemonic(_("_Background:"));
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
@@ -652,11 +652,11 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	g_free(format);
 
 	if (!is_static) {
-		filename = prompt_save_file("Save Screenshot",
+		filename = prompt_save_file(_("Save Screenshot"),
 		                            GTK_WINDOW(ssdlg->window),
 		                            basename, dir,
-		                            "GIF images", "*.gif",
-		                            "All files", "*",
+		                            _("GIF images"), "*.gif",
+		                            _("All files"), "*",
 		                            NULL);
 	}
 	else {
@@ -666,14 +666,14 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 		   installed (png and jpeg also require external
 		   libraries, but we need those libraries anyway for
 		   other reasons) */
-		filename = prompt_save_file("Save Screenshot",
+		filename = prompt_save_file(_("Save Screenshot"),
 		                            GTK_WINDOW(ssdlg->window),
 		                            basename, dir,
-		                            "PNG images", "*.png",
-		                            "GIF images", "*.gif",
-		                            "BMP images", "*.bmp",
-		                            "JPEG images", "*.jpg;*.jpe;*.jpeg",
-		                            "All files", "*",
+		                            _("PNG images"), "*.png",
+		                            _("GIF images"), "*.gif",
+		                            _("BMP images"), "*.bmp",
+		                            _("JPEG images"), "*.jpg;*.jpe;*.jpeg",
+		                            _("All files"), "*",
 		                            NULL);
 	}
 
@@ -691,9 +691,9 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 		format = strrchr(basename, '.');
 		if (!format) {
 			messagebox00(ssdlg->window, GTK_MESSAGE_ERROR,
-			             "Unable to save screenshot",
-			             "File name does not have a"
-			             " recognized suffix");
+			             _("Unable to save screenshot"),
+			             _("File name does not have a"
+			               " recognized suffix"));
 			g_free(filename);
 			g_free(basename);
 			return FALSE;
@@ -709,7 +709,7 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 
 	if (err) {
 		messagebox01(ssdlg->window, GTK_MESSAGE_ERROR,
-		             "Unable to save screenshot",
+		             _("Unable to save screenshot"),
 		             "%s", err->message);
 		g_error_free(err);
 		g_free(dir);

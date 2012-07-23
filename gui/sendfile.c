@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -158,12 +158,12 @@ static void prompt_program_slots(TilemCalcEmulator *emu,
 			used[slot] = 0;
 		}
 		else if (namestr && namestr[0]) {
-			slotlabel[slot] = g_strdup_printf("%s (in use: %s)",
+			slotlabel[slot] = g_strdup_printf(_("%s (in use: %s)"),
 			                                  slotstr, namestr);
 			used[slot] = 1;
 		}
 		else {
-			slotlabel[slot] = g_strdup_printf("%s (in use)", slotstr);
+			slotlabel[slot] = g_strdup_printf(_("%s (in use)"), slotstr);
 			used[slot] = 1;
 		}
 
@@ -226,7 +226,7 @@ static void prompt_program_slots(TilemCalcEmulator *emu,
 
 	cell = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes
-		("File", cell, "text", 0, NULL);
+		(_("File"), cell, "text", 0, NULL);
 	gtk_tree_view_column_set_expand(col, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
@@ -234,14 +234,14 @@ static void prompt_program_slots(TilemCalcEmulator *emu,
 	g_object_set(cell, "model", slotstore, "text-column", 0,
 	             "editable", TRUE, "has-entry", FALSE, NULL);
 	col = gtk_tree_view_column_new_with_attributes
-		("Slot", cell, "text", 1, NULL);
+		(_("Slot"), cell, "text", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
 	g_signal_connect(cell, "edited", G_CALLBACK(slot_edited), slotdlg);
 
 	/* Create dialog */
 
-	dlg = gtk_dialog_new_with_buttons("Select Program Slots",
+	dlg = gtk_dialog_new_with_buttons(_("Select Program Slots"),
 	                                  GTK_WINDOW(parent), GTK_DIALOG_MODAL,
 	                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 	                                  GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -265,9 +265,9 @@ static void prompt_program_slots(TilemCalcEmulator *emu,
 	vbox = gtk_vbox_new(FALSE, 6);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 6);
 
-	lbl = gtk_label_new("Select a slot where each program should be"
-	                    " loaded.  If a program slot is already in use,"
-	                    " its contents will be overwritten.");
+	lbl = gtk_label_new(_("Select a slot where each program should be"
+	                      " loaded.  If a program slot is already in use,"
+	                      " its contents will be overwritten."));
 	gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.0);
 	gtk_label_set_line_wrap(GTK_LABEL(lbl), TRUE);
 	gtk_label_set_width_chars(GTK_LABEL(lbl), 45);
@@ -328,17 +328,17 @@ static void check_prog_slots_finished(TilemCalcEmulator *emu, gpointer data,
 #define PAT_TI86       "*.86?"
 #define PAT_TIG        "*.tig"
 
-#define FLT_TI81       "TI-81 programs", PAT_TI81
-#define FLT_TI73       "TI-73 files", PAT_TI73
-#define FLT_TI82       "TI-82 files", PAT_TI82
-#define FLT_TI83       "TI-83 files", PAT_TI83
-#define FLT_TI83P      "TI-83 Plus files", PAT_TI83P
-#define FLT_TI85       "TI-85 files", PAT_TI85
-#define FLT_TI86       "TI-86 files", PAT_TI86
-#define FLT_TIG        "TIGroup files", PAT_TIG
-#define FLT_ALL        "All files", "*"
+#define FLT_TI81       _("TI-81 programs"), PAT_TI81
+#define FLT_TI73       _("TI-73 files"), PAT_TI73
+#define FLT_TI82       _("TI-82 files"), PAT_TI82
+#define FLT_TI83       _("TI-83 files"), PAT_TI83
+#define FLT_TI83P      _("TI-83 Plus files"), PAT_TI83P
+#define FLT_TI85       _("TI-85 files"), PAT_TI85
+#define FLT_TI86       _("TI-86 files"), PAT_TI86
+#define FLT_TIG        _("TIGroup files"), PAT_TIG
+#define FLT_ALL        _("All files"), "*"
 
-#define DESC_COMPAT "All compatible files"
+#define DESC_COMPAT _("All compatible files")
 
 #define FLT_TI73_COMPAT    DESC_COMPAT, (PAT_TI73 ";" PAT_TIG ";" \
                                          PAT_TI82_NUM ";" \
@@ -505,7 +505,7 @@ void load_file_dialog(TilemEmulatorWindow *ewin)
 	                 "sendfile_recentdir/f", &dir,
 	                 NULL);
 
-	filenames = prompt_link_files("Send File",
+	filenames = prompt_link_files(_("Send File"),
 	                              GTK_WINDOW(ewin->window),
 	                              dir, ewin->emu->calc->hw.model_id);
 	g_free(dir);

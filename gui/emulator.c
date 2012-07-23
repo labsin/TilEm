@@ -257,7 +257,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	if (!rname) {
 		g_set_error(err, TILEM_EMULATOR_ERROR,
 		            TILEM_EMULATOR_ERROR_NO_ROM,
-		            "No ROM file specified");
+		            _("No ROM file specified"));
 		g_free(rname);
 		g_free(sname);
 		return FALSE;
@@ -271,7 +271,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		dname = g_filename_display_basename(rname);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Unable to open %s for reading: %s",
+		            _("Unable to open %s for reading: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		g_free(rname);
@@ -291,7 +291,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		dname = g_filename_display_basename(sname);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Unable to open %s for reading: %s",
+		            _("Unable to open %s for reading: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		g_free(rname);
@@ -317,8 +317,8 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 			dname = g_filename_display_basename(rname);
 			g_set_error(err, TILEM_EMULATOR_ERROR,
 			            TILEM_EMULATOR_ERROR_INVALID_ROM,
-			            "The file %s is not a recognized"
-			            " calculator ROM file.",
+			            _("The file %s is not a recognized"
+			              " calculator ROM file."),
 			            dname);
 			g_free(dname);
 		}
@@ -338,7 +338,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	if (tilem_calc_load_state(calc, romfile, savfile)) {
 		g_set_error(err, TILEM_EMULATOR_ERROR,
 		            TILEM_EMULATOR_ERROR_INVALID_STATE,
-		            "The specified ROM or state file is invalid.");
+		            _("The specified ROM or state file is invalid."));
 		fclose(romfile);
 		if (savfile) fclose(savfile);
 		g_free(rname);
@@ -427,7 +427,7 @@ gboolean tilem_calc_emulator_revert_state(TilemCalcEmulator *emu, GError **err)
 			dname = g_filename_display_basename(emu->rom_file_name);
 			g_set_error(err, G_FILE_ERROR,
 			            g_file_error_from_errno(errnum),
-			            "Unable to open %s for reading: %s",
+			            _("Unable to open %s for reading: %s"),
 			            dname, g_strerror(errnum));
 			g_free(dname);
 			return FALSE;
@@ -445,7 +445,7 @@ gboolean tilem_calc_emulator_revert_state(TilemCalcEmulator *emu, GError **err)
 		dname = g_filename_display_basename(emu->state_file_name);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Unable to open %s for reading: %s",
+		            _("Unable to open %s for reading: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		if (romfile) fclose(romfile);
@@ -459,7 +459,7 @@ gboolean tilem_calc_emulator_revert_state(TilemCalcEmulator *emu, GError **err)
 	if (tilem_calc_load_state(emu->calc, romfile, savfile)) {
 		g_set_error(err, TILEM_EMULATOR_ERROR,
 		            TILEM_EMULATOR_ERROR_INVALID_STATE,
-		            "The specified ROM or state file is invalid.");
+		            _("The specified ROM or state file is invalid."));
 		status = FALSE;
 	}
 
@@ -494,7 +494,7 @@ gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu, GError **err)
 			dname = g_filename_display_basename(emu->rom_file_name);
 			g_set_error(err, G_FILE_ERROR,
 			            g_file_error_from_errno(errnum),
-			            "Unable to open %s for writing: %s",
+			            _("Unable to open %s for writing: %s"),
 			            dname, g_strerror(errnum));
 			g_free(dname);
 			return FALSE;
@@ -512,7 +512,7 @@ gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu, GError **err)
 		dname = g_filename_display_basename(emu->state_file_name);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Unable to open %s for writing: %s",
+		            _("Unable to open %s for writing: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		if (romfile) fclose(romfile);
@@ -532,7 +532,7 @@ gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu, GError **err)
 		dname = g_filename_display_basename(emu->rom_file_name);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Error writing %s: %s",
+		            _("Error writing %s: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		fclose(savfile);
@@ -551,7 +551,7 @@ gboolean tilem_calc_emulator_save_state(TilemCalcEmulator *emu, GError **err)
 		dname = g_filename_display_basename(emu->state_file_name);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Error writing %s: %s",
+		            _("Error writing %s: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		return FALSE;
@@ -863,9 +863,9 @@ int tilem_calc_emulator_prompt_open_rom(TilemCalcEmulator *emu)
 	else
 		dir = g_get_current_dir();
 
-	filename = prompt_open_file("Open Calculator", GTK_WINDOW(get_toplevel(emu)),
-	                            dir, "ROM files", "*.rom;*.clc;*.bin",
-	                            "All files", "*", NULL);
+	filename = prompt_open_file(_("Open Calculator"), GTK_WINDOW(get_toplevel(emu)),
+	                            dir, _("ROM files"), "*.rom;*.clc;*.bin",
+	                            _("All files"), "*", NULL);
 	g_free(dir);
 	if (!filename)
 		return 0;
@@ -883,7 +883,7 @@ int tilem_calc_emulator_prompt_open_rom(TilemCalcEmulator *emu)
 
 	if (err) {
 		messagebox01(GTK_WINDOW(get_toplevel(emu)), GTK_MESSAGE_ERROR,
-		             "Unable to load calculator state",
+		             _("Unable to load calculator state"),
 		             "%s", err->message);
 		g_error_free(err);
 		return -1;

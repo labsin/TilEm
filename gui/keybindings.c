@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle 
- * Copyright (c) 2010-2011 Benjamin Moody
+ * Copyright (c) 2010-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -167,7 +167,7 @@ static void parse_binding_group(TilemCalcEmulator *emu, GKeyFile *gkf,
 
 	keys = g_key_file_get_keys(gkf, group, NULL, NULL);
 	if (!keys) {
-		printf("no bindings for %s\n", group);
+		printf(_("no bindings for %s\n"), group);
 		return;
 	}
 
@@ -189,7 +189,7 @@ static void parse_binding_group(TilemCalcEmulator *emu, GKeyFile *gkf,
 		if (parse_binding(&emu->keybindings[n], k, v, emu->calc))
 			n++;
 		else
-			g_printerr("syntax error in key bindings: '%s=%s'\n",
+			g_printerr(_("syntax error in key bindings: '%s=%s'\n"),
 			           k, v);
 		g_free(v);
 	}
@@ -225,9 +225,9 @@ void tilem_keybindings_init(TilemCalcEmulator *emu, const char *model)
 
 	if (kfname == NULL) {
 		messagebox00(NULL, GTK_MESSAGE_ERROR,
-		             "Unable to load key bindings",
-		             "The file keybindings.ini could not be found."
-		             "  TilEm may not have been installed correctly.");
+		             _("Unable to load key bindings"),
+		             _("The file keybindings.ini could not be found."
+		               "  TilEm may not have been installed correctly."));
 		return;
 	}
 
@@ -235,8 +235,8 @@ void tilem_keybindings_init(TilemCalcEmulator *emu, const char *model)
 	if (!g_key_file_load_from_file(gkf, kfname, 0, &err)) {
 		dname = g_filename_display_name(kfname);
 		messagebox02(NULL, GTK_MESSAGE_ERROR,
-		             "Unable to load key bindings",
-		             "An error occurred while reading %s: %s",
+		             _("Unable to load key bindings"),
+		             _("An error occurred while reading %s: %s"),
 		             dname, err->message);
 		g_error_free(err);
 		g_free(dname);

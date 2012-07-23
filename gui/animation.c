@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -565,7 +565,7 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 		dname = g_filename_display_name(fname);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Failed to open '%s' for writing: %s",
+		            _("Failed to open '%s' for writing: %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		return FALSE;
@@ -584,7 +584,7 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 		dname = g_filename_display_name(fname);
 		g_set_error(err, G_FILE_ERROR,
 		            g_file_error_from_errno(errnum),
-		            "Error while closing '%s': %s",
+		            _("Error while closing '%s': %s"),
 		            dname, g_strerror(errnum));
 		g_free(dname);
 		return FALSE;

@@ -1,7 +1,8 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2010-2012 Thibault Duponchelle
+ * Copyright (c) 2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -116,12 +117,12 @@ void tilem_macro_write_file(TilemCalcEmulator *emu) {
                  "directory/f", &dir,
                  NULL);
 
-	filename = prompt_save_file("Save macro", 
+	filename = prompt_save_file(_("Save macro"), 
 				    GTK_WINDOW(emu->ewin->window),
 				    NULL, 
 				    dir,
-				    "Macro files", "*.txt",
-                                    "All files", "*",
+	                            _("Macro files"), "*.txt",
+	                            _("All files"), "*",
 				    NULL);
 	if(filename) {
 		FILE * fp = g_fopen(filename, "w");
@@ -159,7 +160,7 @@ void tilem_macro_write_file(TilemCalcEmulator *emu) {
 static gboolean tilem_macro_play_main(TilemCalcEmulator *emu, G_GNUC_UNUSED gpointer data) {
 
 	if(!emu->macro) {	
-		printf("Nothing to play\n");
+		printf(_("Nothing to play\n"));
 		return FALSE;
 	}
 
@@ -260,11 +261,11 @@ void tilem_macro_load(TilemCalcEmulator *emu, char* filename) {
 		char *dir;
 		tilem_config_get("macro", "directory/f", &dir, NULL);
 
-		filename = prompt_open_file("Open macro", 
+		filename = prompt_open_file(_("Open macro"), 
 					    GTK_WINDOW(emu->ewin->window),
 					    dir,
-					    "Macro files", "*.txt",
-	                                    "All files", "*",
+		                            _("Macro files"), "*.txt",
+		                            _("All files"), "*",
 					    NULL);
 		if(dir)
 			g_free(dir);

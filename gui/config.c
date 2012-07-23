@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -125,8 +125,8 @@ static GKeyFile *load_config(gboolean writable)
 		if (!warned) {
 			dname = g_filename_display_name(cfname);
 			messagebox02(NULL, GTK_MESSAGE_ERROR,
-			             "Unable to read settings",
-			             "An error occurred while reading %s: %s",
+			             _("Unable to read settings"),
+			             _("An error occurred while reading %s: %s"),
 			             dname, err->message);
 			g_free(dname);
 			warned = TRUE;
@@ -156,8 +156,8 @@ static void save_config(GKeyFile *gkf)
 		if (!warned) {
 			dname = g_filename_display_name(cfname);
 			messagebox02(NULL, GTK_MESSAGE_ERROR,
-			             "Unable to save settings",
-			             "An error occurred while writing %s: %s",
+			             _("Unable to save settings"),
+			             _("An error occurred while writing %s: %s"),
 			             dname, err->message);
 			g_free(dname);
 			warned = TRUE;
@@ -192,7 +192,7 @@ void tilem_config_get(const char *group, const char *option, ...)
 		type = strrchr(option, '/');
 		if (type == NULL || type[1] == 0
 		    || (type[2] != 0 && type[2] != '=')) {
-			g_critical("invalid argument\n");
+			g_critical(_("invalid argument\n"));
 			break;
 		}
 
@@ -249,7 +249,7 @@ void tilem_config_get(const char *group, const char *option, ...)
 			g_free(p);
 		}
 		else {
-			g_critical("invalid argument\n");
+			g_critical(_("invalid argument\n"));
 			g_free(key);
 			break;
 		}
@@ -285,7 +285,7 @@ void tilem_config_set(const char *group, const char *option, ...)
 	while (option != NULL) {
 		type = strrchr(option, '/');
 		if (type == NULL || type[1] == 0 || type[2] != 0) {
-			g_critical("invalid argument\n");
+			g_critical(_("invalid argument\n"));
 			break;
 		}
 
@@ -321,7 +321,7 @@ void tilem_config_set(const char *group, const char *option, ...)
 			g_free(p);
 		}
 		else {
-			g_critical("invalid argument\n");
+			g_critical(_("invalid argument\n"));
 			g_free(key);
 			break;
 		}

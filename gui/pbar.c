@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -45,12 +45,12 @@ static void progress_bar_update_activity(TilemLinkProgress *linkpb)
 	g_free(s);
 
 	if (linkpb->emu->paused && linkpb->emu->pbar_status) {
-		s = g_strconcat(linkpb->emu->pbar_status, " (paused)", NULL);
+		s = g_strconcat(linkpb->emu->pbar_status, " ", _("(paused)"), NULL);
 		gtk_label_set_text(linkpb->status_lbl, s);
 		g_free(s);
 	}
 	else if (linkpb->emu->paused)
-		gtk_label_set_text(linkpb->status_lbl, "(paused)");
+		gtk_label_set_text(linkpb->status_lbl, _("(paused)"));
 	else
 		gtk_label_set_text(linkpb->status_lbl, linkpb->emu->pbar_status);
 
