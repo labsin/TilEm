@@ -7,4 +7,4 @@ MimeType=application/x-tigroup;application/x-ti73-variables;application/x-ti73-p
 StartupNotify=true
 Terminal=false
 Type=Application
-Categories=Education;Science;Math;Emulator;
+Categories=Education;Science;Math;System;Emulator;
