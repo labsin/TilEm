@@ -4,6 +4,7 @@ datarootdir = @datarootdir@
 bindir = @bindir@
 datadir = @datadir@
 pkgdatadir = @datadir@/tilem2
+localedir = @localedir@
 mandir = @mandir@
 
 top_builddir = @top_builddir@
@@ -37,7 +38,8 @@ TILEMDB_CFLAGS = -I$(top_srcdir)/db
 TILEMDB_LIBS = -L$(top_builddir)/db -ltilemdb
 
 DEF_SHARE_DIR = -DSHARE_DIR=\"$(pkgdatadir)\" \
-	-DUNINSTALLED_SHARE_DIR=\"$(top_srcdir)/data\"
+	-DUNINSTALLED_SHARE_DIR=\"$(top_srcdir)/data\" \
+	-DLOCALE_DIR=\"$(localedir)\"
 
 gui_extra_objects = @gui_extra_objects@
 

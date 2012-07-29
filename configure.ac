@@ -118,6 +118,12 @@ ticalcs2.pc to your PKG_CONFIG_PATH environment variable, or set the
 TICALCS_CFLAGS and TICALCS_LIBS environment variables by hand.])
 fi
 
+# Gettext
+
+GETTEXT_PACKAGE=tilem2
+AC_SUBST(GETTEXT_PACKAGE)
+AM_GLIB_GNU_GETTEXT
+
 # Tools used for building the Windows installer
 
 if test "x$gtk_target" = "xwin32" ; then
@@ -169,6 +175,7 @@ AC_CONFIG_FILES([Makefile
                  data/Makefile
                  gui/Makefile
                  gui/tilem2.rc
+                 po/Makefile.in
                  installer/win32/Makefile
                  installer/win32/installer.nsi])
 AC_OUTPUT

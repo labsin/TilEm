@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <ticalcs.h>
@@ -218,6 +219,15 @@ int main(int argc, char **argv)
 	int model = 0;
 
 	g_thread_init(NULL);
+
+#ifdef ENABLE_NLS
+	setlocale(LC_ALL, "");
+	bindtextdomain(GETTEXT_PACKAGE, get_locale_dir());
+# ifdef HAVE_BIND_TEXTDOMAIN_CODESET
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+# endif
+	textdomain(GETTEXT_PACKAGE);
+#endif
 	gtk_init(&argc, &argv);
 	set_program_path(argv[0]);
 	g_set_application_name("TilEm");

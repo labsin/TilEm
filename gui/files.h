@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -40,3 +40,5 @@ char * get_shared_dir_path(const char *name, ...)
 char * get_config_file_path(const char *name, ...)
 	G_GNUC_NULL_TERMINATED;
 
+/* Get the full path to locale data files */
+char * get_locale_dir(void);

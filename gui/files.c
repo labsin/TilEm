@@ -268,3 +268,36 @@ char * get_config_file_path(const char *name, ...)
 	return path;
 }
 
+/* Get the full path to locale data files */
+char * get_locale_dir(void)
+{
+#ifdef G_OS_WIN32
+	char *instdir, *path, *lpath;
+
+	instdir = g_win32_get_package_installation_directory(NULL, NULL);
+	if (!instdir)
+		return NULL;
+	path = g_build_filename(instdir, "share", "locale", NULL);
+	lpath = g_win32_locale_filename_from_utf8(path);
+	g_free(instdir);
+	g_free(path);
+	return lpath;
+#else
+	const char *userdir;
+	char *path;
+
+	userdir = g_get_user_data_dir();
+	if (userdir) {
+		path = g_build_filename(userdir, "tilem2", "locale", NULL);
+		if (g_file_test(path, G_FILE_TEST_IS_DIR))
+			return path;
+		g_free(path);
+	}
+
+# ifdef LOCALE_DIR
+	return g_strdup(LOCALE_DIR);
+# else
+	return NULL;
+# endif
+#endif
+}

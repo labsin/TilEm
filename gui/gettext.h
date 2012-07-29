@@ -17,7 +17,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Internationalization macros (FIXME) */
-#define _(str) (str)
-#define N_(str) (str)
-#define _n(sg, pl, ct) (((ct) == 1) ? (sg) : (pl))
+/* Internationalization macros */
+
+#define GETTEXT_PACKAGE "tilem2"
+
+#ifdef ENABLE_NLS
+# include <libintl.h>
+# define _(str) gettext((str))
+# define N_(str) (str)
+# define _n(sg, pl, ct) ngettext((sg), (pl), (ct))
+#else
+# define _(str) (str)
+# define N_(str) (str)
+# define _n(sg, pl, ct) (((ct) == 1) ? (sg) : (pl))
+#endif
