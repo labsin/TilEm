@@ -59,6 +59,13 @@ typedef struct _TilemCalcEmulator {
 	GTimer *timer;
 	gulong timevalue;
 
+	/* External link cable */
+	CableHandle *ext_cable;
+	CableOptions ext_cable_options;
+	gboolean ext_cable_changed;
+	char *ext_cable_error_title;
+	char *ext_cable_error_message;
+
 	/* Queue of tasks to be performed */
 	GQueue *task_queue;
 	gboolean task_busy;
@@ -168,6 +175,10 @@ void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
 /* Enable/disable grayscale */
 void tilem_calc_emulator_set_grayscale(TilemCalcEmulator *emu,
                                        gboolean grayscale);
+
+/* Select an external link cable (or change cable settings.) */
+void tilem_calc_emulator_set_link_cable(TilemCalcEmulator *emu,
+                                        const CableOptions *options);
 
 /* Press a single key. */
 void tilem_calc_emulator_press_key(TilemCalcEmulator *emu, int key);

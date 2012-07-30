@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TilEm 2.0\n"
 "Report-Msgid-Bugs-To: tilem-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2012-07-29 13:35-0400\n"
+"POT-Creation-Date: 2012-07-29 21:17-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -424,6 +424,19 @@ msgstr ""
 msgid "Disassembly"
 msgstr ""
 
+#: gui/emucore.c:182 gui/link.c:324
+#, c-format
+msgid "Unknown error (%d)"
+msgstr ""
+
+#: gui/emucore.c:229
+msgid "Unable to open link cable"
+msgstr ""
+
+#: gui/emucore.c:251
+msgid "Link cable I/O error"
+msgstr ""
+
 #: gui/emulator.c:260
 #, c-format
 msgid "No ROM file specified"
@@ -455,21 +468,21 @@ msgstr ""
 msgid "Error writing %s: %s"
 msgstr ""
 
-#: gui/emulator.c:866
+#: gui/emulator.c:878
 msgid "Open Calculator"
 msgstr ""
 
-#: gui/emulator.c:867
+#: gui/emulator.c:879
 msgid "ROM files"
 msgstr ""
 
-#: gui/emulator.c:868 gui/macro.c:125 gui/macro.c:268 gui/preferences.c:243
+#: gui/emulator.c:880 gui/macro.c:125 gui/macro.c:268 gui/preferences.c:243
 #: gui/rcvmenu.c:149 gui/rcvmenu.c:209 gui/screenshot.c:659
 #: gui/screenshot.c:676 gui/sendfile.c:339
 msgid "All files"
 msgstr ""
 
-#: gui/emulator.c:886 gui/menu.c:79 gui/tilem2.c:170 gui/tilem2.c:199
+#: gui/emulator.c:898 gui/menu.c:79 gui/tilem2.c:173 gui/tilem2.c:203
 msgid "Unable to load calculator state"
 msgstr ""
 
@@ -571,11 +584,6 @@ msgstr ""
 
 #: gui/link.c:293
 msgid "unsupported calc"
-msgstr ""
-
-#: gui/link.c:324
-#, c-format
-msgid "Unknown error (%d)"
 msgstr ""
 
 #: gui/link.c:331
@@ -1139,67 +1147,80 @@ msgstr ""
 msgid "Automatic"
 msgstr ""
 
-#: gui/tilem2.c:55
+#: gui/tilem2.c:57
 msgid "The rom file to run"
 msgstr ""
 
-#: gui/tilem2.c:55 gui/tilem2.c:56 gui/tilem2.c:58 gui/tilem2.c:61
-#: gui/tilem2.c:62 gui/tilem2.c:66
+#: gui/tilem2.c:57 gui/tilem2.c:58 gui/tilem2.c:60 gui/tilem2.c:63
+#: gui/tilem2.c:64 gui/tilem2.c:69
 msgid "FILE"
 msgstr ""
 
-#: gui/tilem2.c:56
+#: gui/tilem2.c:58
 msgid "The skin file to use"
 msgstr ""
 
-#: gui/tilem2.c:57
+#: gui/tilem2.c:59
 msgid "The model to use"
 msgstr ""
 
-#: gui/tilem2.c:57
+#: gui/tilem2.c:59
 msgid "NAME"
 msgstr ""
 
-#: gui/tilem2.c:58
+#: gui/tilem2.c:60
 msgid "The state-file to use"
 msgstr ""
 
-#: gui/tilem2.c:59
+#: gui/tilem2.c:61
 msgid "Start in skinless mode"
 msgstr ""
 
-#: gui/tilem2.c:60
+#: gui/tilem2.c:62
 msgid "Reset the calc at startup"
 msgstr ""
 
-#: gui/tilem2.c:61
+#: gui/tilem2.c:63
 msgid "Get a var at startup"
 msgstr ""
 
-#: gui/tilem2.c:62
+#: gui/tilem2.c:64
 msgid "Run this macro at startup"
 msgstr ""
 
-#: gui/tilem2.c:63
+#: gui/tilem2.c:65
 msgid "Launch debugger"
 msgstr ""
 
-#: gui/tilem2.c:64
+#: gui/tilem2.c:66
 msgid "Run at normal speed"
 msgstr ""
 
-#: gui/tilem2.c:65
+#: gui/tilem2.c:67
 msgid "Run at maximum speed"
 msgstr ""
 
-#: gui/tilem2.c:250
+#: gui/tilem2.c:68
+msgid "Connect to an external link cable"
+msgstr ""
+
+#: gui/tilem2.c:68
+msgid "TYPE[:PORT]"
+msgstr ""
+
+#: gui/tilem2.c:303
 #, c-format
 msgid "%s: %s\n"
 msgstr ""
 
-#: gui/tilem2.c:257
+#: gui/tilem2.c:310
 #, c-format
 msgid "%s: unknown model %s\n"
+msgstr ""
+
+#: gui/tilem2.c:318
+#, c-format
+msgid "%s: invalid link cable %s\n"
 msgstr ""
 
 #: gui/tool.c:280

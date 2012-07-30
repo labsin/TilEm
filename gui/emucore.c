@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -154,9 +154,164 @@ static gboolean show_debugger(gpointer data)
 	return FALSE;
 }
 
+struct error_info {
+	TilemCalcEmulator *emu;
+	char *title;
+	char *message;
+};
+
+static gboolean show_cable_error(gpointer data)
+{
+	struct error_info *info = data;
+
+	show_error(info->emu, info->title, info->message);
+	g_free(info->title);
+	g_free(info->message);
+	g_slice_free(struct error_info, info);
+	return FALSE;
+}
+
+static void cable_error(TilemCalcEmulator *emu,
+                        const char *title, int errcode)
+{
+	struct error_info *info;
+	char *message = NULL;
+
+	ticables_error_get(errcode, &message);
+	if (!message)
+		message = g_strdup_printf(_("Unknown error (%d)"), errcode);
+
+	info = g_slice_new0(struct error_info);
+	info->emu = emu;
+	info->title = g_strdup(title);
+	info->message = message;
+	g_idle_add(&show_cable_error, info);
+}
+
+static void init_ext_cable(TilemCalcEmulator *emu)
+{
+	CableModel cur_model;
+	CablePort cur_port;
+	CableOptions options;
+	int e;
+
+	options = emu->ext_cable_options;
+	emu->ext_cable_changed = FALSE;
+
+	if (emu->ext_cable) {
+		cur_model = emu->ext_cable->model;
+		cur_port = emu->ext_cable->port;
+	}
+	else {
+		cur_model = CABLE_NUL;
+		cur_port = 0;
+	}
+
+	/* If a different model and/or port is selected, close and re-open
+	   cable */
+
+	if (cur_model != options.model || cur_port != options.port) {
+		if (emu->ext_cable) {
+			ticables_cable_close(emu->ext_cable);
+			ticables_handle_del(emu->ext_cable);
+			emu->ext_cable = NULL;
+		}
+
+		if (options.model == CABLE_NUL)
+			return;
+
+		emu->ext_cable = ticables_handle_new(options.model, options.port);
+		g_return_if_fail(emu->ext_cable != NULL);
+
+		tilem_em_unlock(emu);
+		e = ticables_cable_open(emu->ext_cable);
+		if (e) {
+			cable_error(emu, _("Unable to open link cable"), e);
+			tilem_em_lock(emu);
+			ticables_handle_del(emu->ext_cable);
+			emu->ext_cable = NULL;
+			return;
+		}
+		tilem_em_lock(emu);
+	}
+
+	if (!emu->ext_cable)
+		return;
+
+	ticables_options_set_timeout(emu->ext_cable, options.timeout);
+	ticables_options_set_delay(emu->ext_cable, options.delay);
+}
+
+static void try_reset_ext_cable(TilemCalcEmulator *emu,
+                                CableHandle *cable)
+{
+	int e;
+	e = ticables_cable_reset(cable);
+	if (e) {
+		cable_error(emu, _("Link cable I/O error"), e);
+		ticables_cable_close(cable);
+		ticables_handle_del(cable);
+		emu->ext_cable = NULL;
+	}
+}
+
+static void update_ext_cable_cooked(TilemCalcEmulator *emu,
+                                    CableHandle *cable)
+{
+	CableStatus status = 0;
+	int e;
+	uint8_t value;
+	int svalue;
+
+	if (tilem_linkport_graylink_ready(emu->calc)) {
+		tilem_em_unlock(emu);
+		if (ticables_cable_check(cable, &status)) {
+			try_reset_ext_cable(emu, cable);
+			tilem_em_lock(emu);
+			return;
+		}
+
+		if (!(status & STATUS_RX)) {
+			tilem_em_lock(emu);
+			return;
+		}
+
+		e = ticables_cable_get(cable, &value);
+		if (e && e != ERROR_READ_TIMEOUT) {
+			try_reset_ext_cable(emu, cable);
+			tilem_em_lock(emu);
+			return;
+		}
+
+		tilem_em_lock(emu);
+		if (!e)
+			tilem_linkport_graylink_send_byte(emu->calc, value);
+	}
+	else {
+		svalue = tilem_linkport_graylink_get_byte(emu->calc);
+		if (svalue < 0)
+			return;
+
+		tilem_em_unlock(emu);
+		e = ticables_cable_put(cable, svalue);
+		if (e) {
+			try_reset_ext_cable(emu, cable);
+			tilem_em_lock(emu);
+			/* FIXME: should also freeze the link port to
+			   notify the calc of the error */
+			return;
+		}
+		tilem_em_lock(emu);
+	}
+}
+
 #define BREAK_MASK (TILEM_STOP_BREAKPOINT \
                     | TILEM_STOP_INVALID_INST \
                     | TILEM_STOP_UNDOCUMENTED_INST)
+
+#define GRAY_LINK_MASK (TILEM_STOP_LINK_READ_BYTE \
+                        | TILEM_STOP_LINK_WRITE_BYTE \
+                        | TILEM_STOP_LINK_ERROR)
 
 /* Run one iteration of the emulator. */
 dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
@@ -166,6 +321,7 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	dword all_events, ev_auto, ev_user;
 	int rem;
 	gulong tcur, delaytime;
+	CableHandle *cable = NULL;
 
 	if (emu->exiting || emu->task_abort) {
 		if (elapsed) *elapsed = 0;
@@ -193,6 +349,16 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 
 	all_events = events | BREAK_MASK;
 
+	if (!emu->ilp_active) {
+		if (emu->ext_cable_changed)
+			init_ext_cable(emu);
+		cable = emu->ext_cable;
+		if (cable) {
+			linkmode = TILEM_LINK_EMULATOR_GRAY;
+			all_events |= GRAY_LINK_MASK;
+		}
+	}
+
 	emu->calc->linkport.linkemu = linkmode;
 	emu->calc->z80.stop_mask = ~all_events;
 
@@ -207,6 +373,9 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		emu->paused = TRUE;
 		g_idle_add(&show_debugger, emu);
 	}
+
+	if (cable)
+		update_ext_cable_cooked(emu, cable);
 
 	if (emu->limit_speed
 	    && !(ff_events & ev_user)
@@ -300,6 +469,13 @@ gpointer tilem_em_main(gpointer data)
 			tilem_em_run(emu, 0, 0, 0, FALSE,
 			             MICROSEC_PER_TICK, NULL);
 		}
+	}
+
+	if (emu->ext_cable) {
+		ticables_cable_close(emu->ext_cable);
+		ticables_handle_del(emu->ext_cable);
+		emu->ext_cable = NULL;
+		emu->ext_cable_changed = TRUE;
 	}
 
 	tilem_em_unlock(emu);

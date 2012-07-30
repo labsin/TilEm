@@ -23,6 +23,7 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <gtk/gtk.h>
@@ -48,6 +49,7 @@ static gchar* cl_macro_to_run = NULL;
 static gboolean cl_debug_flag = FALSE;
 static gboolean cl_normalspeed_flag = FALSE;
 static gboolean cl_fullspeed_flag = FALSE;
+static gchar* cl_link_cable = NULL;
 
 
 static GOptionEntry entries[] =
@@ -63,6 +65,7 @@ static GOptionEntry entries[] =
 	{ "debug", 'd', 0, G_OPTION_ARG_NONE, &cl_debug_flag, N_("Launch debugger"), NULL },
 	{ "normal-speed", 0, 0, G_OPTION_ARG_NONE, &cl_normalspeed_flag, N_("Run at normal speed"), NULL },
 	{ "full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, N_("Run at maximum speed"), NULL },
+	{ "cable", 'c', 0, G_OPTION_ARG_STRING, &cl_link_cable, N_("Connect to an external link cable"), N_("TYPE[:PORT]") },
 	{ G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &cl_files_to_load, NULL, N_("FILE") },
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -184,6 +187,7 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 		tilem_config_get("recent", "last_model/s", &modelname, NULL);
 		if (modelname)
 			model = name_to_model(modelname);
+		g_free(modelname);
 	}
 
 	/* Try to load the most recently used ROM for chosen model */
@@ -210,6 +214,54 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 	}
 }
 
+static int parse_link_cable(CableOptions *options, const char *str)
+{
+	const char *portstr;
+	char *modelstr;
+	char *end;
+
+	if ((portstr = strchr(str, ':'))) {
+		modelstr = g_strndup(str, portstr - str);
+		str = modelstr;
+		portstr++;
+	}
+	else {
+		portstr = "0";
+	}
+
+	if (!g_ascii_strcasecmp(str, "gry"))
+		options->model = CABLE_GRY;
+	else if (!g_ascii_strcasecmp(str, "blk")
+	         || !g_ascii_strcasecmp(str, "ser"))
+		options->model = CABLE_BLK;
+	else if (!g_ascii_strcasecmp(str, "par"))
+		options->model = CABLE_PAR;
+	else if (!g_ascii_strcasecmp(str, "slv"))
+		options->model = CABLE_SLV;
+	else if (!g_ascii_strcasecmp(str, "tie"))
+		options->model = CABLE_TIE;
+	else if (!g_ascii_strcasecmp(str, "vti"))
+		options->model = CABLE_VTI;
+	else
+		options->model = ticables_string_to_model(str);
+
+	g_free(modelstr);
+
+	if (options->model == CABLE_NUL)
+		return 0;
+
+	options->port = strtol(portstr, &end, 10);
+	if (end == portstr || *end != 0)
+		return 0;
+
+	if (options->port == 0 && options->model != CABLE_TIE)
+		options->port = 1;
+
+	options->timeout = DFLT_TIMEOUT;
+	options->delay = DFLT_DELAY;
+	return 1;
+}
+
 int main(int argc, char **argv)
 {
 	TilemCalcEmulator* emu;
@@ -217,6 +269,7 @@ int main(int argc, char **argv)
 	GOptionContext *context;
 	GError *error = NULL;
 	int model = 0;
+	CableOptions cable_options;
 
 	g_thread_init(NULL);
 
@@ -260,6 +313,17 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (cl_link_cable) {
+		if (!parse_link_cable(&cable_options, cl_link_cable)) {
+			g_printerr(_("%s: invalid link cable %s\n"),
+			           g_get_prgname(), cl_link_cable);
+			return 1;
+		}
+	}
+	else {
+		cable_options.model = CABLE_NUL;
+	}
+
 	load_initial_rom(emu, cl_romfile, cl_statefile, cl_files_to_load, model);
 
 	emu->ewin = tilem_emulator_window_new(emu);
@@ -284,6 +348,8 @@ int main(int argc, char **argv)
 		tilem_calc_emulator_set_limit_speed(emu, FALSE);
 	else if (cl_normalspeed_flag)
 		tilem_calc_emulator_set_limit_speed(emu, TRUE);
+
+	tilem_calc_emulator_set_link_cable(emu, &cable_options);
 
 	if (cl_files_to_load)
 		load_files_cmdline(emu->ewin, cl_files_to_load);

@@ -620,6 +620,18 @@ void tilem_calc_emulator_set_grayscale(TilemCalcEmulator *emu,
 	}
 }
 
+void tilem_calc_emulator_set_link_cable(TilemCalcEmulator *emu,
+                                        const CableOptions *options)
+{
+	tilem_calc_emulator_lock(emu);
+	if (options)
+		emu->ext_cable_options = *options;
+	else
+		emu->ext_cable_options.model = CABLE_NUL;
+	emu->ext_cable_changed = TRUE;
+	tilem_calc_emulator_unlock(emu);
+}
+
 /* If currently recording a macro, record a keypress */
 static void record_key(TilemCalcEmulator* emu, int code)
 {
