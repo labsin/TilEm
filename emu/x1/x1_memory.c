@@ -33,7 +33,8 @@ void x1_z80_wrmem(TilemCalc* calc, dword A, byte v)
 	dword pa = 0x4000 * calc->mempagemap[(A)>>14] + (A & 0x3FFF);
 
 	if (pa >= 0x8000) {
-		*(calc->mem + 0x8000 + (pa & 0x1fff)) = v;
+		pa &= 0x9FFF;
+		*(calc->mem + pa) = v;
 
 		if ((((pa - 0x8000 - calc->lcd.addr) >> 6)
 		     < (unsigned) calc->lcd.rowstride)
