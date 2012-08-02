@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TilEm 2.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-23 13:22-0400\n"
+"Report-Msgid-Bugs-To: tilem-devel@lists.sourceforge.net\n"
+"POT-Creation-Date: 2012-07-29 21:17-0400\n"
 "PO-Revision-Date: 2012-07-23 13:37-0400\n"
 "Last-Translator:  <thibault.duponchelle@gmail.com>\n"
 "Language-Team: French\n"
@@ -17,803 +17,1254 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: rcvmenu.c:495
-#, c-format
-msgid "%'d"
-msgstr "%'d"
-
-#: debugger.c:1139
-#, c-format
-msgid "%04X:"
-msgstr "%04X:"
-
-#: rcvmenu.c:493
-#, c-format
-msgid "%d"
-msgstr "%d"
-
-#: screenshot.c:326
-#, c-format
-msgid "%d × %d"
-msgstr "%d × %d"
-
-#: link.c:697
-#, c-format
-msgid "%s %s"
-msgstr "%s %s"
-
-#: sendfile.c:166
-#, c-format
-msgid "%s (in use)"
-msgstr "%s (utilise)"
-
-#: sendfile.c:161
-#, c-format
-msgid "%s (in use: %s)"
-msgstr "%s (utilise: %s)"
-
-#: rcvmenu.c:203
-#, c-format
-msgid "%s group files"
-msgstr "%s fichier group"
-
-#: disasmview.c:113
-#, c-format
-msgid "%s:"
-msgstr "%s:"
-
-#: tilem2.c:240
-#, c-format
-msgid "%s: %s\n"
-msgstr "%s: %s\n"
-
-#: tilem2.c:247
-#, c-format
-msgid "%s: unknown model %s\n"
-msgstr "%s: modele inconnu %s\n"
-
-#: event.c:162
-msgid ""
-"(c) Benjamin Moody\n"
-"(c) Thibault Duponchelle\n"
-"(c) Luc Bruant\n"
-msgstr ""
-"(c) Benjamin Moody\n"
-"(c) Thibault Duponchelle\n"
-"(c) Luc Bruant\n"
-
-#: pbar.c:48 pbar.c:53
-msgid "(paused)"
-msgstr "(en pause)"
-
-#: keypaddlg.c:182
-msgid "<b>Keys</b>"
-msgstr "<b>Clavier virtuel</b>"
-
-#: keypaddlg.c:177
-msgid "<b>Scan Groups</b>"
-msgstr "<b>Groupe de touches</b>"
-
-#: filedlg.c:592
-#, c-format
-msgid "A file named \"%s\" already exists.  Do you want to replace it?"
-msgstr "Un fichier nomme \"%s\" existe deja.  Voulew-vous le remplacer?"
-
-#: breakpoints.c:715
-msgid "Add Breakpoint"
-msgstr "Ajouter un Breakpoint"
-
-#: disasmview.c:1061
-msgid "Addr"
-msgstr "Adr"
-
-#: breakpoints.c:532
-msgid "Address"
-msgstr "Adresse"
-
-#: debugger.c:436 disasmview.c:880
-msgid "Address:"
-msgstr "Adresse:"
-
-#: link.c:341
-msgid ""
-"All calculator program slots are in use.  You must delete an existing "
-"program before loading a new program."
-msgstr ""
-"Tous les emplacements pour les programmes sont utilises. Vous devez d'abord supprimer "
-"un programme existant avant de charger un nouveau programme"
-
-#: sendfile.c:341
-msgid "All compatible files"
-msgstr "Tous les fichiers compatibles"
-
-#: breakpoints.c:797
-msgid "All existing breakpoints will be deleted and cannot be restored."
-msgstr "Tous les breakpoints existants vont etre effaces sans possibilite de restauration ulterieure"
-
-#: emulator.c:868 macro.c:125 macro.c:268 preferences.c:243 rcvmenu.c:149
-#: rcvmenu.c:209 screenshot.c:659 screenshot.c:676 sendfile.c:339
-msgid "All files"
-msgstr "Tous les fichiers"
-
-#: config.c:129 debugger.c:123 keybindings.c:239
-#, c-format
-msgid "An error occurred while reading %s: %s"
-msgstr "Une erreur est survenue lors de la lecture de %s: %s"
-
-#: config.c:160
-#, c-format
-msgid "An error occurred while writing %s: %s"
-msgstr "Une erreur est survenue lors de l'ecriture de %s: %s"
-
-#: screenshot.c:483
-msgid "Animation s_peed:"
-msgstr "Vite_sse d'animation:"
-
-#: link.c:927
-msgid ""
-"Applications cannot be saved in an XXg group file.  Try using TIG format or "
-"saving apps individually."
-msgstr ""
-"Impossible de sauver en tant aue XXg group file. Essayez d'utiliser le format TIG ou"
-"sauvez les applications individuellement."
-
-#: preferences.c:202
-msgid "As _fast as possible"
-msgstr "Aussi _vite que possible"
-
-#: ti81prg.c:366
-msgid "Automatic"
-msgstr "Automatique"
-
-#: screenshot.c:674
-msgid "BMP images"
-msgstr "BMP images"
-
-#: skinops.c:77
-#, c-format
-msgid "Bad skin format\n"
-msgstr "Format de skin invalide\n"
-
-#: breakpoints.c:1026
-msgid "Break on _invalid instructions"
-msgstr "S'arreter sur les instructions _invalides"
-
-#: breakpoints.c:1028
-msgid "Break on _undocumented instructions"
-msgstr "S'arreter sur les instcurtions non doc_umentees"
-
-#: breakpoints.c:476
-msgid "Break when:"
-msgstr "S'arreter quand:"
-
-#: breakpoints.c:505
-msgid "Breakpoint Condition"
-msgstr "Condition du Breakpoint"
-
-#: breakpoints.c:458
-msgid "Breakpoint _type:"
-msgstr "_Type du Breakpoint:"
-
-#: breakpoints.c:887
-msgid "Breakpoints"
-msgstr "Breakpoints"
-
-#: filedlg.c:964
-msgid "Browse..."
-msgstr "Parcourir..."
-
-#: tool.c:314
-#, c-format
-msgid "Calculator type for %s:"
-msgstr "Type de calculatrice pour %s:"
-
-#: breakpoints.c:794
-msgid "Clear all breakpoints?"
-msgstr "Effacer tous les breakpoints?"
-
-#: screenshot.c:341
-msgid "Custom"
-msgstr "Personnalise"
-
-#: debugger.c:911
-msgid "Debugger"
-msgstr "Debugger"
-
-#: disasmview.c:1068
-msgid "Disassembly"
-msgstr "Desassembleur"
-
-#: preferences.c:261
-msgid "Display"
-msgstr "Affichage"
-
-#: debugger.c:795
-msgid "EI"
-msgstr "EI"
-
-#: breakpoints.c:491
-msgid "E_xecuting"
-msgstr "E_xecution"
-
-#: breakpoints.c:759
-msgid "Edit Breakpoint"
-msgstr "Editer un Breakpoint"
-
-#: preferences.c:218
-msgid "Emulate _grayscale"
-msgstr "Emuler les niveaux de _gris"
-
-#: preferences.c:211
-msgid "Emulation Speed"
-msgstr "Vitesse d'emulation"
-
-#: breakpoints.c:971
-msgid "End"
-msgstr "Fin"
-
-#: animation.c:587
-#, c-format
-msgid "Error while closing '%s': %s"
-msgstr "Erreur lors de la fermeture '%s': %s"
-
-#: emulator.c:535 emulator.c:554 link.c:1042
-#, c-format
-msgid "Error writing %s: %s"
-msgstr "Erreur lors de l'ecriture %s: %s"
-
-#: link.c:378
-#, c-format
-msgid "Failed to open %s for reading: %s"
-msgstr "Impossible d'ouvrir %s en lecture: %s"
-
-#: link.c:1030
-#, c-format
-msgid "Failed to open %s for writing: %s"
-msgstr "Impossible d'ouvrir %s en ecriture: %s"
-
-#: animation.c:568
+#: gui/animation.c:568
 #, c-format
 msgid "Failed to open '%s' for writing: %s"
 msgstr "Impossible d'ouvrir '%s' en ecriture: %s"
 
-#: sendfile.c:229
-msgid "File"
-msgstr "Fichier"
-
-#: link.c:331
-msgid "File I/O error"
-msgstr "Erreur d'entree/sortie"
-
-#: screenshot.c:695
-msgid "File name does not have a recognized suffix"
-msgstr "Le nom du fichier doit contenir une extension valide"
-
-#: screenshot.c:658 screenshot.c:673
-msgid "GIF images"
-msgstr "GIF images"
-
-#: debugger.c:436 disasmview.c:880
-msgid "Go to Address"
-msgstr "Aller a l'Adresse"
-
-#: disasmview.c:969
-msgid "Go to P_C"
-msgstr "Aller au P_C"
-
-#: screenshot.c:439
-msgid "Gra_yscale"
-msgstr "Gra_yscale"
-
-#: keypaddlg.c:155
+#: gui/animation.c:587
 #, c-format
-msgid "Group %d"
-msgstr "Groupe %d"
+msgid "Error while closing '%s': %s"
+msgstr "Erreur lors de la fermeture '%s': %s"
 
-#: link.c:71
-#, c-format
-msgid "INTERNAL ERROR: cable already closed\n"
-msgstr "ERREUR INTERNE: cable deja ferme\n"
+#: gui/breakpoints.c:70
+msgid "Memory address (logical)"
+msgstr "Adresse memoire (logique)"
 
-#: link.c:52
-#, c-format
-msgid "INTERNAL ERROR: cable already opened\n"
-msgstr "ERREUR INTERNE: cable deja ouvert\n"
+#: gui/breakpoints.c:70 gui/breakpoints.c:71 gui/breakpoints.c:532
+msgid "Address"
+msgstr "Adresse"
 
-#: screenshot.c:443
-msgid "Image si_ze:"
-msgstr "Taille de l'_image:"
+#: gui/breakpoints.c:71
+msgid "Memory address (absolute)"
+msgstr "Adresse memoire (absolue)"
 
-#: keypaddlg.c:186
-msgid "Input Value:"
-msgstr "Valeur d'entree:"
+#: gui/breakpoints.c:72
+msgid "I/O port"
+msgstr "Port d'entree/sortie"
 
-#: screenshot.c:675
-msgid "JPEG images"
-msgstr "JPEG images"
+#: gui/breakpoints.c:72
+msgid "Port Number"
+msgstr "Port numero"
 
-#: keypaddlg.c:117
-msgid "Keypad"
-msgstr "Clavier virtuel"
+#: gui/breakpoints.c:73
+msgid "Z80 instruction"
+msgstr "Instruction Z80"
 
-#: macro.c:124 macro.c:267
-msgid "Macro files"
-msgstr "Fichier macro"
+#: gui/breakpoints.c:73
+msgid "Opcode"
+msgstr "Opcode"
 
-#: rcvmenu.c:438
-msgid "Name"
-msgstr "Nom"
+#: gui/breakpoints.c:309
+msgid "_Start:"
+msgstr "_Debut:"
 
-#: emulator.c:260
-msgid "No ROM file specified"
-msgstr "Aucun fichier ROM specifie"
+#: gui/breakpoints.c:315
+msgid "_Value:"
+msgstr "_Valeur:"
 
-#: link.c:334
-msgid "Not a valid PRG file"
-msgstr "Ce n'est pas un fichier PRG valide"
-
-#: macro.c:163
-#, c-format
-msgid "Nothing to play\n"
-msgstr "Rien a executer\n"
-
-#: emulator.c:866
-msgid "Open Calculator"
-msgstr "Ouvrir une Calculatrice (ROM)"
-
-#: macro.c:264
-msgid "Open macro"
-msgstr "Ouvrir une macro"
-
-#: screenshot.c:433
-msgid "Options"
-msgstr "Options"
-
-#: screenshot.c:672
-msgid "PNG images"
-msgstr "PNG images"
-
-#: breakpoints.c:401
+#: gui/breakpoints.c:401
 msgid "Page:"
 msgstr "Page:"
 
-#: preferences.c:184
-msgid "Preferences"
-msgstr "Preferences"
+#: gui/breakpoints.c:458
+msgid "Breakpoint _type:"
+msgstr "_Type du Breakpoint:"
 
-#: screenshot.c:400
-msgid "Preview"
-msgstr "Preview"
+#: gui/breakpoints.c:476
+msgid "Break when:"
+msgstr "S'arreter quand:"
 
-#: emulator.c:867
-msgid "ROM files"
-msgstr "Fichiers ROM"
+#: gui/breakpoints.c:483
+msgid "_Reading"
+msgstr "_Lecture"
 
-#: breakpoints.c:519
-msgid "R_ange"
-msgstr "Ech_antillon de valeurs"
+#: gui/breakpoints.c:487
+msgid "_Writing"
+msgstr "_Ecriture"
 
-#: link.c:734
-msgid "Reading variable list"
-msgstr "Lecture de la liste de variables"
+#: gui/breakpoints.c:491
+msgid "E_xecuting"
+msgstr "E_xecution"
 
-#: rcvmenu.c:534
-msgid "Receive File"
-msgstr "Recevoir un fichier"
+#: gui/breakpoints.c:505
+msgid "Breakpoint Condition"
+msgstr "Condition du Breakpoint"
 
-#: link.c:770 link.c:963
-msgid "Receiving variables"
-msgstr "Reception des variables"
-
-#: rcvmenu.c:572
-msgid "S_eparate files"
-msgstr "Fichier s_epares"
-
-#: breakpoints.c:529
-msgid "S_tart:"
-msgstr "Debu_t:"
-
-#: rcvmenu.c:146 rcvmenu.c:205
-msgid "Save File"
-msgstr "Sauver le fichier"
-
-#: rcvmenu.c:258
-msgid "Save Files to Directory"
-msgstr "Sauver les fichier dans le repertoire"
-
-#: screenshot.c:655 screenshot.c:669
-msgid "Save Screenshot"
-msgstr "Prendre un screenshot"
-
-#: rcvmenu.c:569
-msgid "Save as:"
-msgstr "Sauvegarder en tant que:"
-
-#: macro.c:120
-msgid "Save macro"
-msgstr "Sauver macro"
-
-#: screenshot.c:370
-msgid "Screenshot"
-msgstr "Screenshot"
-
-#: tool.c:280
-msgid "Select Calculator Type"
-msgstr "Selectonnez le modele de calculatrice"
-
-#: sendfile.c:244
-msgid "Select Program Slots"
-msgstr "Selectionner un emplacement pour le programme "
-
-#: preferences.c:241
-msgid "Select Skin"
-msgstr "Choisir une Skin"
-
-#: filedlg.c:459
-msgid "Select a folder to save received files."
-msgstr "Choisir un repertoire pour sauver les fichiers recus."
-
-#: sendfile.c:268
-msgid ""
-"Select a slot where each program should be loaded.  If a program slot is "
-"already in use, its contents will be overwritten."
-msgstr ""
-"Choisir un emplacement ou les programmes doivent etre charges. Si un emplacement est "
-"deja utilise, son contenu sera ecrase."
-
-#: sendfile.c:508
-msgid "Send File"
-msgstr "Envoyer un Fichier"
-
-#: link.c:483
-#, c-format
-msgid "Sending %s"
-msgstr "Envoi de %s"
-
-#: breakpoints.c:515
+#: gui/breakpoints.c:515
 msgid "Si_ngle"
 msgstr "Si_ngle"
 
-#: rcvmenu.c:457
-msgid "Size"
-msgstr "Taille"
+#: gui/breakpoints.c:519
+msgid "R_ange"
+msgstr "Ech_antillon de valeurs"
 
-#: preferences.c:242
-msgid "Skin files"
-msgstr "Fichier skin"
+#: gui/breakpoints.c:529
+msgid "S_tart:"
+msgstr "Debu_t:"
 
-#: rcvmenu.c:430 sendfile.c:237
-msgid "Slot"
-msgstr "Emplacement"
+#: gui/breakpoints.c:530
+msgid "_End:"
+msgstr "_Fin:"
 
-#: breakpoints.c:961
+#: gui/breakpoints.c:715
+msgid "Add Breakpoint"
+msgstr "Ajouter un Breakpoint"
+
+#: gui/breakpoints.c:759
+msgid "Edit Breakpoint"
+msgstr "Editer un Breakpoint"
+
+#: gui/breakpoints.c:794
+msgid "Clear all breakpoints?"
+msgstr "Effacer tous les breakpoints?"
+
+#: gui/breakpoints.c:797
+msgid "All existing breakpoints will be deleted and cannot be restored."
+msgstr "Tous les breakpoints existants vont etre effaces sans possibilite de "
+"restauration ulterieure"
+
+#: gui/breakpoints.c:887
+msgid "Breakpoints"
+msgstr "Breakpoints"
+
+#: gui/breakpoints.c:937 gui/rcvmenu.c:447
+msgid "Type"
+msgstr "Type"
+
+#: gui/breakpoints.c:961
 msgid "Start"
 msgstr "Debut"
 
-#: sendfile.c:332
-msgid "TI-73 files"
-msgstr "Fichiers TI-73"
+#: gui/breakpoints.c:971
+msgid "End"
+msgstr "Fin"
 
-#: link.c:829 sendfile.c:331
-msgid "TI-81 programs"
-msgstr "Programmes TI-81"
+#: gui/breakpoints.c:1026
+msgid "Break on _invalid instructions"
+msgstr "S'arreter sur les instructions _invalides"
 
-#: link.c:1013
-msgid ""
-"TI-81 programs cannot be saved in a group file. Try saving programs "
-"individually."
-msgstr ""
-"Les programmes de TI-81 ne peuvent etre sauves en tant aue fichier groupes. Essayez de les sauver "
-"individuellement."
+#: gui/breakpoints.c:1028
+msgid "Break on _undocumented instructions"
+msgstr "S'arreter sur les instcurtions non doc_umentees"
 
-#: sendfile.c:333
-msgid "TI-82 files"
-msgstr "Fichiers TI-82"
+#: gui/config.c:128
+msgid "Unable to read settings"
+msgstr "Impossible de lire les preferences"
 
-#: sendfile.c:335
-msgid "TI-83 Plus files"
-msgstr "Fichiers TI-83 Plus"
+#: gui/config.c:129 gui/debugger.c:123 gui/keybindings.c:239
+#, c-format
+msgid "An error occurred while reading %s: %s"
+msgstr "Une erreur est survenue lors de la lecture de %s: %s"
 
-#: sendfile.c:334
-msgid "TI-83 files"
-msgstr "Fichiers TI-83"
+#: gui/config.c:159
+msgid "Unable to save settings"
+msgstr "Impossible de sauvegarder les preferences"
 
-#: sendfile.c:336
-msgid "TI-85 files"
-msgstr "Fichiers TI-85"
+#: gui/config.c:160
+#, c-format
+msgid "An error occurred while writing %s: %s"
+msgstr "Une erreur est survenue lors de l'ecriture de %s: %s"
 
-#: sendfile.c:337
-msgid "TI-86 files"
-msgstr "Fichiers TI-86"
+#: gui/config.c:195 gui/config.c:252 gui/config.c:288 gui/config.c:324
+msgid "invalid argument\n"
+msgstr "Argument invalide\n"
 
-#: rcvmenu.c:208 sendfile.c:338
-msgid "TIGroup files"
-msgstr "Fichiers TIGroup"
+#: gui/debugger.c:59
+msgid "A_F:"
+msgstr "A_F:"
 
-#: link.c:337
-msgid "The calculator does not have enough free memory to load the program."
-msgstr "La calculatrice ne possede pas assez de memoire libre pour charger le programme"
+#: gui/debugger.c:59
+msgid "B_C:"
+msgstr "B_C:"
 
-#: link.c:346
-msgid ""
-"The calculator is currently busy.  Please exit to the home screen before "
-"loading programs."
-msgstr ""
-"La calculatrice est actuellement occupee.  Veuillew quitter l'ecran home avant "
-"de charger un programme."
+#: gui/debugger.c:59
+msgid "D_E:"
+msgstr "D_E:"
 
-#: emulator.c:320
+#: gui/debugger.c:59
+msgid "H_L:"
+msgstr "H_L:"
+
+#: gui/debugger.c:59
+msgid "I_X:"
+msgstr "I_X:"
+
+#: gui/debugger.c:59
+msgid "SP:"
+msgstr "SP:"
+
+#: gui/debugger.c:60
+msgid "AF':"
+msgstr "AF':"
+
+#: gui/debugger.c:60
+msgid "BC':"
+msgstr "BC':"
+
+#: gui/debugger.c:60
+msgid "DE':"
+msgstr "DE':"
+
+#: gui/debugger.c:60
+msgid "HL':"
+msgstr "HL':"
+
+#: gui/debugger.c:60
+msgid "I_Y:"
+msgstr "I_Y:"
+
+#: gui/debugger.c:60
+msgid "PC:"
+msgstr "PC:"
+
+#: gui/debugger.c:61
+msgid "IM:"
+msgstr "IM:"
+
+#: gui/debugger.c:61
+msgid "I:"
+msgstr "I:"
+
+#: gui/debugger.c:122
+msgid "Unable to read symbols"
+msgstr "Impossible de lire les symboles"
+
+#: gui/debugger.c:436 gui/disasmview.c:880
+msgid "Go to Address"
+msgstr "Aller a l'Adresse"
+
+#: gui/debugger.c:436 gui/disasmview.c:880
+msgid "Address:"
+msgstr "Adresse:"
+
+#: gui/debugger.c:527
+msgid "_Pause"
+msgstr "_Pause"
+
+#: gui/debugger.c:528
+msgid "Pause emulation"
+msgstr "Emulation en pause"
+
+#: gui/debugger.c:531
+msgid "_Run"
+msgstr "_Run"
+
+#: gui/debugger.c:532
+msgid "Resume emulation"
+msgstr "Relancer l'emulation"
+
+#: gui/debugger.c:533
+msgid "_Step"
+msgstr "_Step"
+
+#: gui/debugger.c:534
+msgid "Execute one instruction"
+msgstr "Executer une instruction"
+
+#: gui/debugger.c:535
+msgid "Step _Over"
+msgstr "Step _Over"
+
+#: gui/debugger.c:536
+msgid "Run to the next line (skipping over subroutines)"
+msgstr "Aller a la prochaine ligne (sans entrer dans les sous-routines"
+
+#: gui/debugger.c:538
+msgid "_Finish Subroutine"
+msgstr "_Finir la sous-routine"
+
+#: gui/debugger.c:539
+msgid "Run to end of the current subroutine"
+msgstr "Executer jusqu'a la fin de la sous routine actuelle"
+
+#: gui/debugger.c:540
+msgid "Toggle Breakpoint"
+msgstr "Activer/Desactiver Breakpoint"
+
+#: gui/debugger.c:541
+msgid "Enable or disable breakpoint at the selected address"
+msgstr "Activer ou desactiver le breakpoint a l'adresse selectionnee"
+
+#: gui/debugger.c:543
+msgid "_Breakpoints"
+msgstr "_Breakpoints"
+
+#: gui/debugger.c:544
+msgid "Add, remove, or modify breakpoints"
+msgstr "Ajouter, supprimer ou modifier les breakpoints"
+
+#: gui/debugger.c:546
+msgid "_Address..."
+msgstr "_Adresse..."
+
+#: gui/debugger.c:547
+msgid "Jump to an address"
+msgstr "Sauter a l'Adresse"
+
+#: gui/debugger.c:549
+msgid "Current P_C"
+msgstr "P_C actuel"
+
+#: gui/debugger.c:550
+msgid "Jump to the current program counter"
+msgstr "Sauter a la valeur de PC"
+
+#: gui/debugger.c:552
+msgid "_Previous Stack Entry"
+msgstr "_Precedente valeur de la pile"
+
+#: gui/debugger.c:553
+msgid "Jump to the previous address in the stack"
+msgstr "Sauter a la precedente adresse de le pile"
+
+#: gui/debugger.c:555
+msgid "_Next Stack Entry"
+msgstr "Valeur _suivante de la pile"
+
+#: gui/debugger.c:556
+msgid "Jump to the next address in the stack"
+msgstr "Sauter a la prochaine adresse de la pile"
+
+#: gui/debugger.c:558
+msgid "One Byte _Backward"
+msgstr "Un octet _Avant"
+
+#: gui/debugger.c:559
+msgid "Scroll backward by one byte"
+msgstr "Aller un octet en arriere"
+
+#: gui/debugger.c:561
+msgid "One Byte _Forward"
+msgstr "Un octet plus _loin"
+
+#: gui/debugger.c:562
+msgid "Scroll forward by one byte"
+msgstr "Aller un octet plus loin"
+
+#: gui/debugger.c:566
+msgid "_Logical Addresses"
+msgstr "Adre_sse logique"
+
+#: gui/debugger.c:567
+msgid "Show contents of the current Z80 address space"
+msgstr "Montrer le contenu de l'adresse courante"
+
+#: gui/debugger.c:568
+msgid "_Absolute Addresses"
+msgstr "Adresse _Absolue"
+
+#: gui/debugger.c:569
+msgid "Show all memory contents"
+msgstr "Afficher tout le contenu de la memoire"
+
+#: gui/debugger.c:572
+msgid "_Debug"
+msgstr "_Debug"
+
+#: gui/debugger.c:573
+msgid "_View"
+msgstr "_View"
+
+#: gui/debugger.c:574
+msgid "_Go"
+msgstr "_Go"
+
+#: gui/debugger.c:576
+msgid "Close the debugger"
+msgstr "Fermer le debugger"
+
+#: gui/debugger.c:579
+msgid "_Keypad"
+msgstr "Clavier _virtuel"
+
+#: gui/debugger.c:580
+msgid "Show the calculator keypad state"
+msgstr "Afficher l'etat du clavier"
+
+#: gui/debugger.c:795
+msgid "EI"
+msgstr "EI"
+
+#: gui/debugger.c:910
+msgid "TilEm Debugger"
+msgstr "TilEm Debugger"
+
+#: gui/debugger.c:911
+msgid "Debugger"
+msgstr "Debugger"
+
+#: gui/debugger.c:1139
+#, c-format
+msgid "%04X:"
+msgstr "%04X:"
+
+#: gui/disasmview.c:113
+#, c-format
+msgid "%s:"
+msgstr "%s:"
+
+#: gui/disasmview.c:944
+msgid "_Breakpoint Here"
+msgstr "_Breakpoint Ici"
+
+#: gui/disasmview.c:964
+msgid "_Go to Address..."
+msgstr "Aller a l'a_dresse..."
+
+#: gui/disasmview.c:969
+msgid "Go to P_C"
+msgstr "Aller au P_C"
+
+#: gui/disasmview.c:1061
+msgid "Addr"
+msgstr "Adr"
+
+#: gui/disasmview.c:1068
+msgid "Disassembly"
+msgstr "Desassembleur"
+
+#: gui/emucore.c:182 gui/link.c:324
+#, c-format
+msgid "Unknown error (%d)"
+msgstr "Erreur inconnue (%d)"
+
+#: gui/emucore.c:229
+msgid "Unable to open link cable"
+msgstr "Impossible d'envoyer le fichier"
+
+#: gui/emucore.c:251
+msgid "Link cable I/O error"
+msgstr "Erreur d'entree/sortie"
+
+#: gui/emulator.c:260
+#, c-format
+msgid "No ROM file specified"
+msgstr "Aucun fichier ROM specifie"
+
+#: gui/emulator.c:274 gui/emulator.c:294 gui/emulator.c:430 gui/emulator.c:448
+#: gui/skinops.c:258
+#, c-format
+msgid "Unable to open %s for reading: %s"
+msgstr "Impossible d'ouvrir %s en lecture: %s"
+
+#: gui/emulator.c:320
 #, c-format
 msgid "The file %s is not a recognized calculator ROM file."
 msgstr "Le fichier %s n'est pas reconnu en tant que fichier ROM."
 
-#: link.c:385
+#: gui/emulator.c:341 gui/emulator.c:462
 #, c-format
-msgid "The file %s is not a valid TI-81 program file."
-msgstr "Le fichier %s n'est pas un programme TI-81 valide."
-
-#: link.c:553
-#, c-format
-msgid "The file %s is not a valid program or variable file."
-msgstr "Le fichier %s n'est pas un programme valide ou un fichier variable valide."
-
-#: skinops.c:269
-#, c-format
-msgid "The file %s is not a valid skin."
-msgstr "Le fichier %s n'est pas une skin."
-
-#: filedlg.c:601
-#, c-format
-msgid ""
-"The file already exists in \"%s\".  Replacing it will overwrite its contents."
-msgstr ""
-"Le fichier existe deja dans \"%s\".  Le remplacer va effacer son contenu."
-
-#: keybindings.c:229
-msgid ""
-"The file keybindings.ini could not be found.  TilEm may not have been "
-"installed correctly."
-msgstr ""
-"Le fichier keybindings.ini est introuvable. TilEm n'a pas ete "
-"installe correctement."
-
-#: emulator.c:341 emulator.c:462
 msgid "The specified ROM or state file is invalid."
 msgstr "Le fichier ROM ou le fichier de sauvegarde est invalide."
 
-#: debugger.c:910
-msgid "TilEm Debugger"
-msgstr "TilEm Debugger"
+#: gui/emulator.c:497 gui/emulator.c:515
+#, c-format
+msgid "Unable to open %s for writing: %s"
+msgstr "Impossible d'ourvrir %s en ecriture: %s"
 
-#: event.c:163
+#: gui/emulator.c:535 gui/emulator.c:554 gui/link.c:1042
+#, c-format
+msgid "Error writing %s: %s"
+msgstr "Erreur lors de l'ecriture %s: %s"
+
+#: gui/emulator.c:878
+msgid "Open Calculator"
+msgstr "Ouvrir une Calculatrice (ROM)"
+
+#: gui/emulator.c:879
+msgid "ROM files"
+msgstr "Fichiers ROM"
+
+#: gui/emulator.c:880 gui/macro.c:125 gui/macro.c:268 gui/preferences.c:243
+#: gui/rcvmenu.c:149 gui/rcvmenu.c:209 gui/screenshot.c:659
+#: gui/screenshot.c:676 gui/sendfile.c:339
+msgid "All files"
+msgstr "Tous les fichiers"
+
+#: gui/emulator.c:898 gui/menu.c:79 gui/tilem2.c:173 gui/tilem2.c:203
+msgid "Unable to load calculator state"
+msgstr "Impossible de charger le fichier de sauvegarde de la calculatrice"
+
+#: gui/emuwin.c:398
+msgid "Unable to load skin"
+msgstr "Impossible de charger la skin"
+
+#: gui/event.c:162
+msgid ""
+"(c) Benjamin Moody\n"
+"(c) Thibault Duponchelle\n"
+"(c) Luc Bruant\n"
+msgstr ""
+"(c) Benjamin Moody\n"
+"(c) Thibault Duponchelle\n"
+"(c) Luc Bruant\n"
+
+#: gui/event.c:163
 msgid ""
 "TilEm is a TI Linux Emulator.\n"
 " It emulates all current z80 models.\n"
 " TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 and TI86 ;D"
 msgstr ""
 "TilEm est emulateur de calculatrices TI pour Linux.\n"
-" Il emule tous les modeles actuels de calculatrices TI a base de processeur z80.\n"
+" Il emule tous les modeles actuels de calculatrices TI a base de processeur "
+"z80.\n"
 " TI73, TI76, TI81, TI82, TI83(+)(SE), TI84+(SE), TI85 et TI86 ;D"
 
-#: breakpoints.c:937 rcvmenu.c:447
-msgid "Type"
-msgstr "Type"
+#: gui/filedlg.c:459
+msgid "Select a folder to save received files."
+msgstr "Choisir un repertoire pour sauver les fichiers recus."
 
-#: skinops.c:226
-msgid "Unable to load background image"
-msgstr "Impossible de charger l'image de fond"
-
-#: emulator.c:886 menu.c:79 tilem2.c:169 tilem2.c:198
-msgid "Unable to load calculator state"
-msgstr "Impossible de charger le fichier de sauvegarde de la calculatrice"
-
-#: keybindings.c:228 keybindings.c:238
-msgid "Unable to load key bindings"
-msgstr "Impossible de charger les raccourcis clavier"
-
-#: emuwin.c:398
-msgid "Unable to load skin"
-msgstr "Impossible de charger la skin"
-
-#: emulator.c:274 emulator.c:294 emulator.c:430 emulator.c:448 skinops.c:258
+#: gui/filedlg.c:592
 #, c-format
-msgid "Unable to open %s for reading: %s"
-msgstr "Impossible d'ouvrir %s en lecture: %s"
+msgid "A file named \"%s\" already exists.  Do you want to replace it?"
+msgstr "Un fichier nomme \"%s\" existe deja.  Voulew-vous le remplacer?"
 
-#: emulator.c:497 emulator.c:515
+#: gui/filedlg.c:601
 #, c-format
-msgid "Unable to open %s for writing: %s"
-msgstr "Impossible d'ourvrir %s en ecriture: %s"
+msgid ""
+"The file already exists in \"%s\".  Replacing it will overwrite its contents."
+msgstr ""
+"Le fichier existe deja dans \"%s\".  Le remplacer va effacer son contenu."
 
-#: skinops.c:61
-#, c-format
-msgid "Unable to open this file: <%s>\n"
-msgstr "Impossible d'ourvir cd fichier: <%s>\n"
-
-#: config.c:128
-msgid "Unable to read settings"
-msgstr "Impossible de lire les preferences"
-
-#: debugger.c:122
-msgid "Unable to read symbols"
-msgstr "Impossible de lire les symboles"
-
-#: link.c:866
-msgid "Unable to receive variable list"
-msgstr "Impossible de recevoir la liste de variables"
-
-#: link.c:1119
-msgid "Unable to save file"
-msgstr "Impossible de sauvegarder le fichier"
-
-#: screenshot.c:137 screenshot.c:694 screenshot.c:712
-msgid "Unable to save screenshot"
-msgstr "Impossible de sauvegarder le screenshot"
-
-#: config.c:159
-msgid "Unable to save settings"
-msgstr "Impossible de sauvegarder les preferences"
-
-#: link.c:582
-msgid "Unable to send file"
-msgstr "Impossible d'envoyer le fichier"
-
-#: link.c:324
-#, c-format
-msgid "Unknown error (%d)"
-msgstr "Erreur inconnue (%d)"
-
-#: link.c:351
-#, c-format
-msgid "Unknown error code (%d)"
-msgstr "Code d'erreur inconnu (%d)"
-
-#: preferences.c:227
-msgid "Use _smooth scaling"
-msgstr "Utili_ser calibrage doux"
-
-#: preferences.c:238
-msgid "Use s_kin:"
-msgstr "Utiliser la s_kin:"
-
-#: link.c:1232
-#, c-format
-msgid "Variable %s not found"
-msgstr "Variable %s non trouvee"
-
-#: screenshot.c:509
-msgid "_Background:"
-msgstr "_Arriere plan:"
-
-#: disasmview.c:944
-msgid "_Breakpoint Here"
-msgstr "_Breakpoint Ici"
-
-#: breakpoints.c:530
-msgid "_End:"
-msgstr "_Fin:"
-
-#: screenshot.c:497
-msgid "_Foreground:"
-msgstr "_Premier plan:"
-
-#: disasmview.c:964
-msgid "_Go to Address..."
-msgstr "Aller a l'a_dresse..."
-
-#: screenshot.c:418
-msgid "_Grab"
-msgstr "_Shot"
-
-#: rcvmenu.c:577
-msgid "_Group file"
-msgstr "Fichiers _Groupes"
-
-#: screenshot.c:470
-msgid "_Height:"
-msgstr "_Hauteur:"
-
-#: preferences.c:198
-msgid "_Limit to actual calculator speed"
-msgstr "_Limiter la vitesse a la vitesse de la calculatrice"
-
-#: menu.c:301
-msgid "_Macro"
-msgstr "_Macro"
-
-#: breakpoints.c:483
-msgid "_Reading"
-msgstr "_Lecture"
-
-#: screenshot.c:421
-msgid "_Record"
-msgstr "En_registrer"
-
-#: filedlg.c:610 rcvmenu.c:112
+#: gui/filedlg.c:610 gui/rcvmenu.c:112
 msgid "_Replace"
 msgstr "_Remplacer"
 
-#: breakpoints.c:309
-msgid "_Start:"
-msgstr "_Debut:"
+#: gui/filedlg.c:964
+msgid "Browse..."
+msgstr "Parcourir..."
 
-#: screenshot.c:424
-msgid "_Stop"
-msgstr "_Stop"
-
-#: breakpoints.c:315
-msgid "_Value:"
-msgstr "_Valeur:"
-
-#: screenshot.c:458
-msgid "_Width:"
-msgstr "Lar_geur:"
-
-#: breakpoints.c:487
-msgid "_Writing"
-msgstr "_Ecriture"
-
-#: config.c:195 config.c:252 config.c:288 config.c:324
-msgid "invalid argument\n"
-msgstr "Argument invalide\n"
-
-#: fixedtreeview.c:139
+#: gui/fixedtreeview.c:139
 msgid "missing sentinel"
-msgstr "Sentinel manquante"
+msgstr "sentinelle manquante"
 
-#: keybindings.c:170
+#: gui/keybindings.c:170
 #, c-format
 msgid "no bindings for %s\n"
-msgstr "Pas de raccourci pour %s\n"
+msgstr "pas de raccourci pour %s\n"
 
-#: screenshot.c:133
-#, c-format
-msgid "screenshot saved : %s\n"
-msgstr "screenshot sauve : %s\n"
-
-#: keybindings.c:192
+#: gui/keybindings.c:192
 #, c-format
 msgid "syntax error in key bindings: '%s=%s'\n"
 msgstr "erreur de syntaxe dans le fichier des raccourcis clavier: '%s=%s'\n"
 
-#: link.c:293
+#: gui/keybindings.c:228 gui/keybindings.c:238
+msgid "Unable to load key bindings"
+msgstr "Impossible de charger les raccourcis clavier"
+
+#: gui/keybindings.c:229
+msgid ""
+"The file keybindings.ini could not be found.  TilEm may not have been "
+"installed correctly."
+msgstr ""
+"Le fichier keybindings.ini est introuvable. TilEm n'a pas ete installe "
+"correctement."
+
+#: gui/keypaddlg.c:117
+msgid "Keypad"
+msgstr "Clavier virtuel"
+
+#: gui/keypaddlg.c:155
+#, c-format
+msgid "Group %d"
+msgstr "Groupe %d"
+
+#: gui/keypaddlg.c:177
+msgid "<b>Scan Groups</b>"
+msgstr "<b>Groupe de touches</b>"
+
+#: gui/keypaddlg.c:182
+msgid "<b>Keys</b>"
+msgstr "<b>Clavier virtuel</b>"
+
+#: gui/keypaddlg.c:186
+msgid "Input Value:"
+msgstr "Valeur d'entree:"
+
+#: gui/link.c:52
+#, c-format
+msgid "INTERNAL ERROR: cable already opened\n"
+msgstr "ERREUR INTERNE: cable deja ouvert\n"
+
+#: gui/link.c:71
+#, c-format
+msgid "INTERNAL ERROR: cable already closed\n"
+msgstr "ERREUR INTERNE: cable deja ferme\n"
+
+#: gui/link.c:293
 msgid "unsupported calc"
 msgstr "calc non supportee"
 
-#: tool.c:428
-msgid "untitled"
-msgstr "sanstitre"
+#: gui/link.c:331
+msgid "File I/O error"
+msgstr "Erreur d'entree/sortie"
 
-#: rcvmenu.c:198
+#: gui/link.c:334
+msgid "Not a valid PRG file"
+msgstr "Ce n'est pas un fichier PRG valide"
+
+#: gui/link.c:337
+msgid "The calculator does not have enough free memory to load the program."
+msgstr ""
+"La calculatrice ne possede pas assez de memoire libre pour charger le "
+"programme"
+
+#: gui/link.c:341
+msgid ""
+"All calculator program slots are in use.  You must delete an existing "
+"program before loading a new program."
+msgstr ""
+"Tous les emplacements pour les programmes sont utilises. Vous devez d'abord "
+"supprimer un programme existant avant de charger un nouveau programme"
+
+#: gui/link.c:346
+msgid ""
+"The calculator is currently busy.  Please exit to the home screen before "
+"loading programs."
+msgstr ""
+"La calculatrice est actuellement occupee.  Veuillez quitter l'ecran home "
+"avant de charger un programme."
+
+#: gui/link.c:351
 #, c-format
-msgid "untitled.%s"
-msgstr "sanstitre.%s"
+msgid "Unknown error code (%d)"
+msgstr "Code d'erreur inconnu (%d)"
 
-#: tool.c:374
-msgid "utf8_to_filename: error in conversion"
-msgstr "utf8_to_filename: erreur de conversion"
-
-#: tool.c:362
+#: gui/link.c:378
 #, c-format
-msgid "utf8_to_filename: charset non supporte %s"
-msgstr "utf8_to_filename: unsupported charset %s"
+msgid "Failed to open %s for reading: %s"
+msgstr "Impossible d'ouvrir %s en lecture: %s"
 
-#: ti81prg.c:321
+#: gui/link.c:385
 #, c-format
-msgid "warning: checksum incorrect\n"
-msgstr "attention: checksum incorrect\n"
+msgid "The file %s is not a valid TI-81 program file."
+msgstr "Le fichier %s n'est pas un programme TI-81 valide."
 
-#: memory.c:79
+#: gui/link.c:483
+#, c-format
+msgid "Sending %s"
+msgstr "Envoi de %s"
+
+#: gui/link.c:553
+#, c-format
+msgid "The file %s is not a valid program or variable file."
+msgstr "Le fichier %s n'est pas un programme valide ou un fichier variable valide."
+
+#: gui/link.c:582
+msgid "Unable to send file"
+msgstr "Impossible d'envoyer le fichier"
+
+#: gui/link.c:697
+#, c-format
+msgid "%s %s"
+msgstr "%s %s"
+
+#: gui/link.c:734
+msgid "Reading variable list"
+msgstr "Lecture de la liste de variables"
+
+#: gui/link.c:770 gui/link.c:963
+msgid "Receiving variables"
+msgstr "Reception des variables"
+
+#: gui/link.c:829 gui/sendfile.c:331
+msgid "TI-81 programs"
+msgstr "Programmes TI-81"
+
+#: gui/link.c:866
+msgid "Unable to receive variable list"
+msgstr "Impossible de recevoir la liste de variables"
+
+#: gui/link.c:927
+msgid ""
+"Applications cannot be saved in an XXg group file.  Try using TIG format or "
+"saving apps individually."
+msgstr ""
+"Impossible de sauver en tant aue XXg group file. Essayez d'utiliser le "
+"format TIG ousauvez les applications individuellement."
+
+#: gui/link.c:1013
+msgid ""
+"TI-81 programs cannot be saved in a group file. Try saving programs "
+"individually."
+msgstr ""
+"Les programmes de TI-81 ne peuvent etre sauves en tant aue fichier groupes. "
+"Essayez de les sauver individuellement."
+
+#: gui/link.c:1030
+#, c-format
+msgid "Failed to open %s for writing: %s"
+msgstr "Impossible d'ouvrir %s en ecriture: %s"
+
+#: gui/link.c:1119
+msgid "Unable to save file"
+msgstr "Impossible de sauvegarder le fichier"
+
+#: gui/link.c:1232
+#, c-format
+msgid "Variable %s not found"
+msgstr "Variable %s non trouvee"
+
+#: gui/macro.c:120
+msgid "Save macro"
+msgstr "Sauver macro"
+
+#: gui/macro.c:124 gui/macro.c:267
+msgid "Macro files"
+msgstr "Fichier macro"
+
+#: gui/macro.c:163
+#, c-format
+msgid "Nothing to play\n"
+msgstr "Rien a executer\n"
+
+#: gui/macro.c:264
+msgid "Open macro"
+msgstr "Ouvrir une macro"
+
+#: gui/memory.c:79
 #, c-format
 msgid "x%c: "
 msgstr "x%c: "
 
-#: memory.c:99
+#: gui/memory.c:89
+#, c-format
+msgid "x%c: WARNING: "
+msgstr "x%c: ATTENTION: "
+
+#: gui/memory.c:99
 #, c-format
 msgid "x%c: INTERNAL ERROR: "
 msgstr "x%c: ERREUR INTERNE: "
 
-#: memory.c:89
+#: gui/menu.c:160
+msgid "Send _File..."
+msgstr "Envoyer un _Fichier"
+
+#: gui/menu.c:161
+msgid "Send a program or variable file to the calculator"
+msgstr "Envoyer un programme ou une variable vers la calculatrice"
+
+#: gui/menu.c:165
+msgid "Re_ceive File..."
+msgstr "Re_cevoir un fichier"
+
+#: gui/menu.c:166
+msgid "Receive a program or variable from the calculator"
+msgstr "Recevoir un programme ou une variable depuis la calulatrice"
+
+#: gui/menu.c:170
+msgid "_Open Calculator..."
+msgstr "_Ouvrir une Calculatrice (ROM)"
+
+#: gui/menu.c:171
+msgid "Open a calculator ROM file"
+msgstr "Ouvrir une Calculatrice (ROM)"
+
+#: gui/menu.c:174
+msgid "_Save Calculator"
+msgstr "_Sauver la calculatrice"
+
+#: gui/menu.c:175
+msgid "Save current calculator state"
+msgstr "Sauver l'etat courant"
+
+#: gui/menu.c:178
+msgid "Re_vert Calculator State"
+msgstr "Annuler la sau_vegarde"
+
+#: gui/menu.c:179
+msgid "Revert to saved calculator state"
+msgstr "Revenir a la sauvegarde"
+
+#: gui/menu.c:182
+msgid "_Reset Calculator"
+msgstr "_Reset calc"
+
+#: gui/menu.c:183
+msgid "Reset the calculator"
+msgstr "Reset calc"
+
+#: gui/menu.c:187
+msgid "_Debugger"
+msgstr "_Debugger"
+
+#: gui/menu.c:188
+msgid "Pause emulation and start the debugger"
+msgstr "Mettre en pause et demarrer le debugger"
+
+#: gui/menu.c:192 gui/screenshot.c:421
+msgid "_Record"
+msgstr "En_registrer"
+
+#: gui/menu.c:193 gui/menu.c:197
+msgid "Begin recording a macro"
+msgstr "Commencer a enregistrer une macro"
+
+#: gui/menu.c:196
+msgid "S_top"
+msgstr "S_top"
+
+#: gui/menu.c:200
+msgid "_Play"
+msgstr "_Play"
+
+#: gui/menu.c:201
+msgid "Play back the current macro"
+msgstr "Jouer encore la macro"
+
+#: gui/menu.c:204
+msgid "_Open Macro File..."
+msgstr "_Ouvrir une macro"
+
+#: gui/menu.c:205
+msgid "Load a macro from a file"
+msgstr "Charger une macro depuis un fichier"
+
+#: gui/menu.c:208
+msgid "_Save Macro File..."
+msgstr "_Sauver le fichier Macro"
+
+#: gui/menu.c:209
+msgid "Save current macro to a file"
+msgstr "Sauver la macro courante dans un fichier"
+
+#: gui/menu.c:213
+msgid "S_creenshot..."
+msgstr "S_creenshot"
+
+#: gui/menu.c:214
+msgid "Save a screenshot"
+msgstr "Prendre un screenshot"
+
+#: gui/menu.c:217
+msgid "_Quick Screenshot"
+msgstr "Screenshot _rapide"
+
+#: gui/menu.c:218
+msgid "Save a screenshot using default settings"
+msgstr "Sauver un screenshot en utilisant les preferences par defaut"
+
+#: gui/menu.c:223
+msgid "Edit emulator settings"
+msgstr "Editer les preferences de l'emulateur"
+
+#: gui/menu.c:227
+msgid "_About"
+msgstr "_A propos"
+
+#: gui/menu.c:228
+msgid "Print some informations about TilEm 2 and its authors"
+msgstr "Affiche des informations a propos de TilEm 2 et ses auteurs"
+
+#: gui/menu.c:232
+msgid "_Quit"
+msgstr "_Quitter"
+
+#: gui/menu.c:233
+msgid "Quit the application"
+msgstr "Quitter l'application"
+
+#: gui/menu.c:301
+msgid "_Macro"
+msgstr "_Macro"
+
+#: gui/pbar.c:48 gui/pbar.c:53
+msgid "(paused)"
+msgstr "(en pause)"
+
+#: gui/preferences.c:184
+msgid "Preferences"
+msgstr "Preferences"
+
+#: gui/preferences.c:198
+msgid "_Limit to actual calculator speed"
+msgstr "_Limiter la vitesse a la vitesse de la calculatrice"
+
+#: gui/preferences.c:202
+msgid "As _fast as possible"
+msgstr "Aussi _vite que possible"
+
+#: gui/preferences.c:211
+msgid "Emulation Speed"
+msgstr "Vitesse d'emulation"
+
+#: gui/preferences.c:218
+msgid "Emulate _grayscale"
+msgstr "Emuler les niveaux de _gris"
+
+#: gui/preferences.c:227
+msgid "Use _smooth scaling"
+msgstr "Utili_ser calibrage doux"
+
+#: gui/preferences.c:238
+msgid "Use s_kin:"
+msgstr "Utiliser la s_kin:"
+
+#: gui/preferences.c:241
+msgid "Select Skin"
+msgstr "Choisir une Skin"
+
+#: gui/preferences.c:242
+msgid "Skin files"
+msgstr "Fichier skin"
+
+#: gui/preferences.c:261
+msgid "Display"
+msgstr "Affichage"
+
+#: gui/rcvmenu.c:93
+msgid "Replace existing file?"
+msgid_plural "Replace existing files?"
+msgstr[0] "Remplacer un fichier existant"
+msgstr[1] "Remplacer des fichiers existants "
+
+#: gui/rcvmenu.c:99
 #, c-format
-msgid "x%c: WARNING: "
-msgstr "x%c: ATTENTION: "
+msgid ""
+"The file \"%2$s\" already exists in \"%1$s\".  Replacing it will overwrite "
+"its contents."
+msgid_plural ""
+"The following files already exist in \"%s\".  Replacing them will overwrite "
+"their contents:\n"
+"%s"
+msgstr[0] ""
+"Le fichier existe deja dans \"%s\".  Le remplacer va effacer son contenu."
+msgstr[1] ""
+"Les fichiers existent deja dans \"%s\".  Les remplacer va effacer leurs contenu."
+
+#: gui/rcvmenu.c:146 gui/rcvmenu.c:205
+msgid "Save File"
+msgstr "Sauver le fichier"
+
+#: gui/rcvmenu.c:198
+#, c-format
+msgid "untitled.%s"
+msgstr "sanstitre.%s"
+
+#: gui/rcvmenu.c:203
+#, c-format
+msgid "%s group files"
+msgstr "%s fichier group"
+
+#: gui/rcvmenu.c:208 gui/sendfile.c:338
+msgid "TIGroup files"
+msgstr "Fichiers TIGroup"
+
+#: gui/rcvmenu.c:258
+msgid "Save Files to Directory"
+msgstr "Sauver les fichier dans le repertoire"
+
+#: gui/rcvmenu.c:430 gui/sendfile.c:237
+msgid "Slot"
+msgstr "Emplacement"
+
+#: gui/rcvmenu.c:438
+msgid "Name"
+msgstr "Nom"
+
+#: gui/rcvmenu.c:457
+msgid "Size"
+msgstr "Taille"
+
+#: gui/rcvmenu.c:493
+#, c-format
+msgid "%d"
+msgstr "%d"
+
+#: gui/rcvmenu.c:495
+#, c-format
+msgid "%'d"
+msgstr "%'d"
+
+#: gui/rcvmenu.c:534
+msgid "Receive File"
+msgstr "Recevoir un fichier"
+
+#: gui/rcvmenu.c:569
+msgid "Save as:"
+msgstr "Sauvegarder en tant que:"
+
+#: gui/rcvmenu.c:572
+msgid "S_eparate files"
+msgstr "Fichier s_epares"
+
+#: gui/rcvmenu.c:577
+msgid "_Group file"
+msgstr "Fichiers _Groupes"
+
+#: gui/screenshot.c:133
+#, c-format
+msgid "screenshot saved : %s\n"
+msgstr "screenshot sauve : %s\n"
+
+#: gui/screenshot.c:137 gui/screenshot.c:694 gui/screenshot.c:712
+msgid "Unable to save screenshot"
+msgstr "Impossible de sauvegarder le screenshot"
+
+#: gui/screenshot.c:326
+#, c-format
+msgid "%d × %d"
+msgstr "%d × %d"
+
+#: gui/screenshot.c:341
+msgid "Custom"
+msgstr "Personnalise"
+
+#: gui/screenshot.c:370
+msgid "Screenshot"
+msgstr "Screenshot"
+
+#: gui/screenshot.c:400
+msgid "Preview"
+msgstr "Preview"
+
+#: gui/screenshot.c:418
+msgid "_Grab"
+msgstr "_Shot"
+
+#: gui/screenshot.c:424
+msgid "_Stop"
+msgstr "_Stop"
+
+#: gui/screenshot.c:433
+msgid "Options"
+msgstr "Options"
+
+#: gui/screenshot.c:439
+msgid "Gra_yscale"
+msgstr "Gra_yscale"
+
+#: gui/screenshot.c:443
+msgid "Image si_ze:"
+msgstr "Taille de l'_image:"
+
+#: gui/screenshot.c:458
+msgid "_Width:"
+msgstr "Lar_geur:"
+
+#: gui/screenshot.c:470
+msgid "_Height:"
+msgstr "_Hauteur:"
+
+#: gui/screenshot.c:483
+msgid "Animation s_peed:"
+msgstr "Vite_sse d'animation:"
+
+#: gui/screenshot.c:497
+msgid "_Foreground:"
+msgstr "_Premier plan:"
+
+#: gui/screenshot.c:509
+msgid "_Background:"
+msgstr "_Arriere plan:"
+
+#: gui/screenshot.c:655 gui/screenshot.c:669
+msgid "Save Screenshot"
+msgstr "Prendre un screenshot"
+
+#: gui/screenshot.c:658 gui/screenshot.c:673
+msgid "GIF images"
+msgstr "GIF images"
+
+#: gui/screenshot.c:672
+msgid "PNG images"
+msgstr "PNG images"
+
+#: gui/screenshot.c:674
+msgid "BMP images"
+msgstr "BMP images"
+
+#: gui/screenshot.c:675
+msgid "JPEG images"
+msgstr "JPEG images"
+
+#: gui/screenshot.c:695
+msgid "File name does not have a recognized suffix"
+msgstr "Le nom du fichier doit contenir une extension valide"
+
+#: gui/sendfile.c:161
+#, c-format
+msgid "%s (in use: %s)"
+msgstr "%s (utilise: %s)"
+
+#: gui/sendfile.c:166
+#, c-format
+msgid "%s (in use)"
+msgstr "%s (utilise)"
+
+#: gui/sendfile.c:229
+msgid "File"
+msgstr "Fichier"
+
+#: gui/sendfile.c:244
+msgid "Select Program Slots"
+msgstr "Selectionner un emplacement pour le programme "
+
+#: gui/sendfile.c:268
+msgid ""
+"Select a slot where each program should be loaded.  If a program slot is "
+"already in use, its contents will be overwritten."
+msgstr ""
+"Choisir un emplacement ou les programmes doivent etre charges. Si un "
+"emplacement est deja utilise, son contenu sera ecrase."
+
+#: gui/sendfile.c:332
+msgid "TI-73 files"
+msgstr "Fichiers TI-73"
+
+#: gui/sendfile.c:333
+msgid "TI-82 files"
+msgstr "Fichiers TI-82"
+
+#: gui/sendfile.c:334
+msgid "TI-83 files"
+msgstr "Fichiers TI-83"
+
+#: gui/sendfile.c:335
+msgid "TI-83 Plus files"
+msgstr "Fichiers TI-83 Plus"
+
+#: gui/sendfile.c:336
+msgid "TI-85 files"
+msgstr "Fichiers TI-85"
+
+#: gui/sendfile.c:337
+msgid "TI-86 files"
+msgstr "Fichiers TI-86"
+
+#: gui/sendfile.c:341
+msgid "All compatible files"
+msgstr "Tous les fichiers compatibles"
+
+#: gui/sendfile.c:508
+msgid "Send File"
+msgstr "Envoyer un Fichier"
+
+#: gui/skinops.c:61
+#, c-format
+msgid "Unable to open this file: <%s>\n"
+msgstr "Impossible d'ourvir cd fichier: <%s>\n"
+
+#: gui/skinops.c:77
+#, c-format
+msgid "Bad skin format\n"
+msgstr "Format de skin invalide\n"
+
+#: gui/skinops.c:226
+#, c-format
+msgid "Unable to load background image"
+msgstr "Impossible de charger l'image de fond"
+
+#: gui/skinops.c:269
+#, c-format
+msgid "The file %s is not a valid skin."
+msgstr "Le fichier %s n'est pas une skin."
+
+#: gui/ti81prg.c:321
+#, c-format
+msgid "warning: checksum incorrect\n"
+msgstr "attention: checksum incorrect\n"
+
+#: gui/ti81prg.c:366
+msgid "Automatic"
+msgstr "Automatique"
+
+#: gui/tilem2.c:57
+msgid "The rom file to run"
+msgstr "Le fichier rom a executer"
+
+#: gui/tilem2.c:57 gui/tilem2.c:58 gui/tilem2.c:60 gui/tilem2.c:63
+#: gui/tilem2.c:64 gui/tilem2.c:69
+msgid "FILE"
+msgstr "FICHIER"
+
+#: gui/tilem2.c:58
+msgid "The skin file to use"
+msgstr "Fichier skin"
+
+#: gui/tilem2.c:59
+msgid "The model to use"
+msgstr "Le modele a utiliser"
+
+#: gui/tilem2.c:59
+msgid "NAME"
+msgstr "NOM"
+
+#: gui/tilem2.c:60
+msgid "The state-file to use"
+msgstr "Le fichier de sauvegarde a utiliser"
+
+#: gui/tilem2.c:61
+msgid "Start in skinless mode"
+msgstr "Debuter sans skin"
+
+#: gui/tilem2.c:62
+msgid "Reset the calc at startup"
+msgstr "Reset la calculatrice au demarrage"
+
+#: gui/tilem2.c:63
+msgid "Get a var at startup"
+msgstr "Recuperer une variable au demarrage"
+
+#: gui/tilem2.c:64
+msgid "Run this macro at startup"
+msgstr "Executer cette macro au demarrage"
+
+#: gui/tilem2.c:65
+msgid "Launch debugger"
+msgstr "Denarrer le debugger"
+
+#: gui/tilem2.c:66
+msgid "Run at normal speed"
+msgstr "Executer a la vitesse normale"
+
+#: gui/tilem2.c:67
+msgid "Run at maximum speed"
+msgstr "Executer a la vitesse maximum"
+
+#: gui/tilem2.c:68
+msgid "Connect to an external link cable"
+msgstr "Connecter a un cable externe"
+
+#: gui/tilem2.c:68
+msgid "TYPE[:PORT]"
+msgstr "TYPE{:PORT]"
+
+#: gui/tilem2.c:303
+#, c-format
+msgid "%s: %s\n"
+msgstr "%s: %s\n"
+
+#: gui/tilem2.c:310
+#, c-format
+msgid "%s: unknown model %s\n"
+msgstr "%s: modele inconnu %s\n"
+
+#: gui/tilem2.c:318
+#, c-format
+msgid "%s: invalid link cable %s\n"
+msgstr ""
+
+#: gui/tool.c:280
+msgid "Select Calculator Type"
+msgstr "Selectonnez le modele de calculatrice"
+
+#: gui/tool.c:314
+#, c-format
+msgid "Calculator type for %s:"
+msgstr "Type de calculatrice pour %s:"
+
+#: gui/tool.c:362
+#, c-format
+msgid "utf8_to_filename: unsupported charset %s"
+msgstr "utf8_to_filename: charset non supporte %s"
+
+#: gui/tool.c:374
+msgid "utf8_to_filename: error in conversion"
+msgstr "utf8_to_filename: erreur de conversion"
+
+#: gui/tool.c:428
+msgid "untitled"
+msgstr "sanstitre"
