@@ -48,20 +48,24 @@ clean:
 install: all
 	cd gui && $(MAKE) install
 	cd data && $(MAKE) install
+	cd po && $(MAKE) install
 
 uninstall:
 	cd gui && $(MAKE) uninstall
 	cd data && $(MAKE) uninstall
+	cd po && $(MAKE) uninstall
 
 install-home: all
 	$(MAKE) install \
 	  bindir=$(HOME)/bin \
-	  datarootdir=$${XDG_DATA_HOME:-$(HOME)/.local/share}
+	  datarootdir=$${XDG_DATA_HOME:-$(HOME)/.local/share} \
+	  gnulocaledir=$${XDG_DATA_HOME:-$(HOME)/.local/share}/tilem2/locale
 
 uninstall-home:
 	$(MAKE) uninstall \
 	  bindir=$(HOME)/bin \
-	  datarootdir=$${XDG_DATA_HOME:-$(HOME)/.local/share}
+	  datarootdir=$${XDG_DATA_HOME:-$(HOME)/.local/share} \
+	  gnulocaledir=$${XDG_DATA_HOME:-$(HOME)/.local/share}/tilem2/locale
 
 distclean: clean
 	rm -f config.status config.log config.h configure.lineno

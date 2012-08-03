@@ -4020,6 +4020,9 @@ fi
 
 # Gettext
 
+# List of all available languages
+ALL_LINGUAS='fr'
+
 GETTEXT_PACKAGE=tilem2
 
 
