@@ -340,6 +340,8 @@ int main(int argc, char **argv)
 	ticables_library_init();
 	tifiles_library_init();
 	ticalcs_library_init();
+	/* the above functions modify textdomain */
+	textdomain(GETTEXT_PACKAGE);
 
 	if (cl_reset_flag)
 		tilem_calc_emulator_reset(emu);
