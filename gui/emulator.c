@@ -158,6 +158,9 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 	update->label = &link_update_nop;
 	emu->link_update = update;
 
+	emu->ext_cable_in = -1;
+	emu->ext_cable_out = -1;
+
 	return emu;
 }
 

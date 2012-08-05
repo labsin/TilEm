@@ -261,47 +261,33 @@ static void update_ext_cable_cooked(TilemCalcEmulator *emu,
 	CableStatus status = 0;
 	int e;
 	uint8_t value;
-	int svalue;
 
-	if (tilem_linkport_graylink_ready(emu->calc)) {
-		tilem_em_unlock(emu);
-		if (ticables_cable_check(cable, &status)) {
-			try_reset_ext_cable(emu, cable);
-			tilem_em_lock(emu);
-			return;
-		}
-
-		if (!(status & STATUS_RX)) {
-			tilem_em_lock(emu);
-			return;
-		}
-
-		e = ticables_cable_get(cable, &value);
-		if (e && e != ERROR_READ_TIMEOUT) {
-			try_reset_ext_cable(emu, cable);
-			tilem_em_lock(emu);
-			return;
-		}
-
-		tilem_em_lock(emu);
-		if (!e)
-			tilem_linkport_graylink_send_byte(emu->calc, value);
-	}
-	else {
-		svalue = tilem_linkport_graylink_get_byte(emu->calc);
-		if (svalue < 0)
-			return;
-
-		tilem_em_unlock(emu);
-		e = ticables_cable_put(cable, svalue);
+	if (emu->ext_cable_out >= 0) {
+		e = ticables_cable_put(cable, emu->ext_cable_out);
+		emu->ext_cable_out = -1;
 		if (e) {
 			try_reset_ext_cable(emu, cable);
-			tilem_em_lock(emu);
 			/* FIXME: should also freeze the link port to
 			   notify the calc of the error */
 			return;
 		}
-		tilem_em_lock(emu);
+	}
+	else if (emu->ext_cable_in < 0) {
+		if (ticables_cable_check(cable, &status)) {
+			try_reset_ext_cable(emu, cable);
+			return;
+		}
+
+		if (!(status & STATUS_RX))
+			return;
+
+		e = ticables_cable_get(cable, &value);
+		if (e && e != ERROR_READ_TIMEOUT) {
+			try_reset_ext_cable(emu, cable);
+			return;
+		}
+
+		emu->ext_cable_in = value;
 	}
 }
 
@@ -322,6 +308,18 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	int rem;
 	gulong tcur, delaytime;
 	CableHandle *cable = NULL;
+
+	all_events = events | BREAK_MASK;
+
+	if (!emu->ilp_active) {
+		if (emu->ext_cable_changed)
+			init_ext_cable(emu);
+		cable = emu->ext_cable;
+		if (cable) {
+			linkmode = TILEM_LINK_EMULATOR_GRAY;
+			all_events |= GRAY_LINK_MASK;
+		}
+	}
 
 	if (emu->exiting || emu->task_abort) {
 		if (elapsed) *elapsed = 0;
@@ -347,20 +345,13 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 
 	update_progress(emu, FALSE);
 
-	all_events = events | BREAK_MASK;
-
-	if (!emu->ilp_active) {
-		if (emu->ext_cable_changed)
-			init_ext_cable(emu);
-		cable = emu->ext_cable;
-		if (cable) {
-			linkmode = TILEM_LINK_EMULATOR_GRAY;
-			all_events |= GRAY_LINK_MASK;
-		}
-	}
-
 	emu->calc->linkport.linkemu = linkmode;
 	emu->calc->z80.stop_mask = ~all_events;
+
+	if (cable && emu->ext_cable_in >= 0
+	    && !tilem_linkport_graylink_send_byte(emu->calc,
+	                                          emu->ext_cable_in))
+		emu->ext_cable_in = -1;
 
 	tilem_z80_run_time(emu->calc, timeout, &rem);
 
@@ -374,12 +365,17 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		g_idle_add(&show_debugger, emu);
 	}
 
-	if (cable)
-		update_ext_cable_cooked(emu, cable);
+	if (cable && emu->ext_cable_out < 0)
+		emu->ext_cable_out = tilem_linkport_graylink_get_byte(emu->calc);
 
 	if (emu->limit_speed
 	    && !(ff_events & ev_user)
 	    && ff_events != TILEM_EM_ALWAYS_FF) {
+		tilem_em_unlock(emu);
+
+		if (cable)
+			update_ext_cable_cooked(emu, cable);
+
 		emu->timevalue += timeout - rem;
 		g_timer_elapsed(emu->timer, &tcur);
 
@@ -397,17 +393,20 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		   second in either direction), re-synchronize. */
 
 		delaytime = emu->timevalue - tcur;
-
 		if (delaytime <= (gulong) 100000 + timeout) {
-			tilem_em_unlock(emu);
 			g_usleep(delaytime);
-			tilem_em_lock(emu);
 		}
 		else {
-			tilem_em_check_yield(emu);
 			if (delaytime < (gulong) -100000)
 				emu->timevalue = tcur;
 		}
+
+		tilem_em_lock(emu);
+	}
+	else if (cable) {
+		tilem_em_unlock(emu);
+		update_ext_cable_cooked(emu, cable);
+		tilem_em_lock(emu);
 	}
 	else {
 		tilem_em_check_yield(emu);

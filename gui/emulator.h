@@ -62,9 +62,9 @@ typedef struct _TilemCalcEmulator {
 	/* External link cable */
 	CableHandle *ext_cable;
 	CableOptions ext_cable_options;
+	int ext_cable_in;
+	int ext_cable_out;
 	gboolean ext_cable_changed;
-	char *ext_cable_error_title;
-	char *ext_cable_error_message;
 
 	/* Queue of tasks to be performed */
 	GQueue *task_queue;
