@@ -516,6 +516,7 @@ void tilem_emulator_window_calc_changed(TilemEmulatorWindow *ewin)
 {
 	const char *model;
 	char *name = NULL, *path;
+	GtkAction *action;
 
 	g_return_if_fail(ewin != NULL);
 	g_return_if_fail(ewin->emu != NULL);
@@ -545,6 +546,17 @@ void tilem_emulator_window_calc_changed(TilemEmulatorWindow *ewin)
 	}
 
 	g_free(name);
+
+	/* if calc does not have a link port, disable the link-setup
+	   action and disconnect external cable (if any)*/
+	action = gtk_action_group_get_action(ewin->actions, "link-setup");
+	if (ewin->emu->calc->hw.flags & TILEM_CALC_HAS_LINK) {
+		gtk_action_set_sensitive(action, TRUE);
+	}
+	else {
+		gtk_action_set_sensitive(action, FALSE);
+		tilem_calc_emulator_set_link_cable(ewin->emu, NULL);
+	}
 }
 
 void tilem_emulator_window_refresh_lcd(TilemEmulatorWindow *ewin)
