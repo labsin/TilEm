@@ -153,6 +153,12 @@ void redraw_screen(TilemEmulatorWindow *ewin);
 void tilem_preferences_dialog(TilemEmulatorWindow *ewin);
 
 
+/* #### linksetup.c #### */
+
+/* Run link setup dialog. */
+void tilem_link_setup_dialog(TilemEmulatorWindow *ewin);
+
+
 /* ##### address.c ##### */
 
 /* Convert address to a displayable string. */

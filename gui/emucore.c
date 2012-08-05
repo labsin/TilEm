@@ -188,6 +188,11 @@ static void cable_error(TilemCalcEmulator *emu,
 	g_idle_add(&show_cable_error, info);
 }
 
+/* Global lock used for external ticables operations - note that an
+   open cable should only ever be used by the core thread, but we want
+   to be able to probe for USB devices in the GUI thread */
+G_LOCK_DEFINE(tilem_ticables_io);
+
 static void init_ext_cable(TilemCalcEmulator *emu)
 {
 	CableModel cur_model;
@@ -212,9 +217,11 @@ static void init_ext_cable(TilemCalcEmulator *emu)
 
 	if (cur_model != options.model || cur_port != options.port) {
 		if (emu->ext_cable) {
+			G_LOCK(tilem_ticables_io);
 			ticables_cable_close(emu->ext_cable);
 			ticables_handle_del(emu->ext_cable);
 			emu->ext_cable = NULL;
+			G_UNLOCK(tilem_ticables_io);
 		}
 
 		if (options.model == CABLE_NUL)
@@ -224,14 +231,17 @@ static void init_ext_cable(TilemCalcEmulator *emu)
 		g_return_if_fail(emu->ext_cable != NULL);
 
 		tilem_em_unlock(emu);
+		G_LOCK(tilem_ticables_io);
 		e = ticables_cable_open(emu->ext_cable);
 		if (e) {
 			cable_error(emu, _("Unable to open link cable"), e);
+			G_UNLOCK(tilem_ticables_io);
 			tilem_em_lock(emu);
 			ticables_handle_del(emu->ext_cable);
 			emu->ext_cable = NULL;
 			return;
 		}
+		G_UNLOCK(tilem_ticables_io);
 		tilem_em_lock(emu);
 	}
 
@@ -263,31 +273,40 @@ static void update_ext_cable_cooked(TilemCalcEmulator *emu,
 	uint8_t value;
 
 	if (emu->ext_cable_out >= 0) {
+		G_LOCK(tilem_ticables_io);
 		e = ticables_cable_put(cable, emu->ext_cable_out);
 		emu->ext_cable_out = -1;
 		if (e) {
 			try_reset_ext_cable(emu, cable);
 			/* FIXME: should also freeze the link port to
 			   notify the calc of the error */
+			G_UNLOCK(tilem_ticables_io);
 			return;
 		}
+		G_UNLOCK(tilem_ticables_io);
 	}
 	else if (emu->ext_cable_in < 0) {
+		G_LOCK(tilem_ticables_io);
 		if (ticables_cable_check(cable, &status)) {
 			try_reset_ext_cable(emu, cable);
+			G_UNLOCK(tilem_ticables_io);
 			return;
 		}
 
-		if (!(status & STATUS_RX))
+		if (!(status & STATUS_RX)) {
+			G_UNLOCK(tilem_ticables_io);
 			return;
+		}
 
 		e = ticables_cable_get(cable, &value);
 		if (e && e != ERROR_READ_TIMEOUT) {
 			try_reset_ext_cable(emu, cable);
+			G_UNLOCK(tilem_ticables_io);
 			return;
 		}
 
 		emu->ext_cable_in = value;
+		G_UNLOCK(tilem_ticables_io);
 	}
 }
 

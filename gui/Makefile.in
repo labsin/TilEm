@@ -70,6 +70,7 @@ objects = tilem2.o \
 	memory.o \
 	pbar.o \
 	preferences.o \
+	linksetup.o \
 	sendfile.o \
 	screenshot.o \
 	skinops.o \
@@ -151,6 +152,10 @@ event.o: event.c $(common_headers)
 # Preferences dialog
 preferences.o: preferences.c $(common_headers)
 	$(compile) -c $(srcdir)/preferences.c 
+
+# External link setup dialog
+linksetup.o: linksetup.c $(common_headers)
+	$(compile) -c $(srcdir)/linksetup.c
 
 # Open skin (skn format file) originally created by Julien Blache and Romain Lievins
 skinops.o: skinops.c skinops.h gettext.h

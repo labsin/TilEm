@@ -44,6 +44,12 @@ static void action_receive_file(G_GNUC_UNUSED GtkAction *act, gpointer data)
 	popup_receive_menu(ewin);
 }
 
+static void action_link_setup(G_GNUC_UNUSED GtkAction *act, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	tilem_link_setup_dialog(ewin);
+}
+
 static void action_start_debugger(G_GNUC_UNUSED GtkAction *act, gpointer data)
 {
 	TilemEmulatorWindow *ewin = data;
@@ -160,12 +166,15 @@ static const GtkActionEntry main_action_ents[] =
 	   GTK_STOCK_OPEN, N_("Send _File..."), "<ctrl>O",
 	   N_("Send a program or variable file to the calculator"),
 	   G_CALLBACK(action_send_file) },
-
 	 { "receive-file",
 	   GTK_STOCK_SAVE_AS, N_("Re_ceive File..."), "<ctrl>S",
 	   N_("Receive a program or variable from the calculator"),
 	   G_CALLBACK(action_receive_file) },
- 
+	 { "link-setup",
+	   GTK_STOCK_CONNECT, N_("_Link Cable..."), "<ctrl>L",
+	   N_("Connect to an external link cable"),
+	   G_CALLBACK(action_link_setup) },
+
 	 { "open-calc",
 	   GTK_STOCK_OPEN, N_("_Open Calculator..."), "<shift><ctrl>O",
 	   N_("Open a calculator ROM file"),
@@ -289,6 +298,7 @@ void build_menu(TilemEmulatorWindow* ewin)
 
 	add_item(menu, ag, acts, "send-file");
 	add_item(menu, ag, acts, "receive-file");
+	add_item(menu, ag, acts, "link-setup");
 	add_separator(menu);
 
 	add_item(menu, ag, acts, "open-calc");
