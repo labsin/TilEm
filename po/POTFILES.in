@@ -18,6 +18,7 @@ gui/icons.c
 gui/keybindings.c
 gui/keypaddlg.c
 gui/link.c
+gui/linksetup.c
 gui/macro.c
 gui/memmodel.c
 gui/memory.c

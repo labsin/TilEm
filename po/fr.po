@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TilEm 2.0\n"
 "Report-Msgid-Bugs-To: tilem-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2012-07-29 21:17-0400\n"
+"POT-Creation-Date: 2012-08-05 18:10-0400\n"
 "PO-Revision-Date: 2012-07-23 13:37-0400\n"
 "Last-Translator:  <thibault.duponchelle@gmail.com>\n"
 "Language-Team: French\n"
@@ -121,7 +121,8 @@ msgstr "Effacer tous les breakpoints?"
 
 #: gui/breakpoints.c:797
 msgid "All existing breakpoints will be deleted and cannot be restored."
-msgstr "Tous les breakpoints existants vont etre effaces sans possibilite de "
+msgstr ""
+"Tous les breakpoints existants vont etre effaces sans possibilite de "
 "restauration ulterieure"
 
 #: gui/breakpoints.c:887
@@ -394,7 +395,7 @@ msgstr "TilEm Debugger"
 msgid "Debugger"
 msgstr "Debugger"
 
-#: gui/debugger.c:1139
+#: gui/debugger.c:1142
 #, c-format
 msgid "%04X:"
 msgstr "%04X:"
@@ -429,60 +430,60 @@ msgstr "Desassembleur"
 msgid "Unknown error (%d)"
 msgstr "Erreur inconnue (%d)"
 
-#: gui/emucore.c:229
+#: gui/emucore.c:237
 msgid "Unable to open link cable"
 msgstr "Impossible d'envoyer le fichier"
 
-#: gui/emucore.c:251
+#: gui/emucore.c:261
 msgid "Link cable I/O error"
 msgstr "Erreur d'entree/sortie"
 
-#: gui/emulator.c:260
+#: gui/emulator.c:263
 #, c-format
 msgid "No ROM file specified"
 msgstr "Aucun fichier ROM specifie"
 
-#: gui/emulator.c:274 gui/emulator.c:294 gui/emulator.c:430 gui/emulator.c:448
+#: gui/emulator.c:277 gui/emulator.c:297 gui/emulator.c:433 gui/emulator.c:451
 #: gui/skinops.c:258
 #, c-format
 msgid "Unable to open %s for reading: %s"
 msgstr "Impossible d'ouvrir %s en lecture: %s"
 
-#: gui/emulator.c:320
+#: gui/emulator.c:323
 #, c-format
 msgid "The file %s is not a recognized calculator ROM file."
 msgstr "Le fichier %s n'est pas reconnu en tant que fichier ROM."
 
-#: gui/emulator.c:341 gui/emulator.c:462
+#: gui/emulator.c:344 gui/emulator.c:465
 #, c-format
 msgid "The specified ROM or state file is invalid."
 msgstr "Le fichier ROM ou le fichier de sauvegarde est invalide."
 
-#: gui/emulator.c:497 gui/emulator.c:515
+#: gui/emulator.c:500 gui/emulator.c:518
 #, c-format
 msgid "Unable to open %s for writing: %s"
 msgstr "Impossible d'ourvrir %s en ecriture: %s"
 
-#: gui/emulator.c:535 gui/emulator.c:554 gui/link.c:1042
+#: gui/emulator.c:538 gui/emulator.c:557 gui/link.c:1042
 #, c-format
 msgid "Error writing %s: %s"
 msgstr "Erreur lors de l'ecriture %s: %s"
 
-#: gui/emulator.c:878
+#: gui/emulator.c:881
 msgid "Open Calculator"
 msgstr "Ouvrir une Calculatrice (ROM)"
 
-#: gui/emulator.c:879
+#: gui/emulator.c:882
 msgid "ROM files"
 msgstr "Fichiers ROM"
 
-#: gui/emulator.c:880 gui/macro.c:125 gui/macro.c:268 gui/preferences.c:243
+#: gui/emulator.c:883 gui/macro.c:125 gui/macro.c:268 gui/preferences.c:243
 #: gui/rcvmenu.c:149 gui/rcvmenu.c:209 gui/screenshot.c:659
 #: gui/screenshot.c:676 gui/sendfile.c:339
 msgid "All files"
 msgstr "Tous les fichiers"
 
-#: gui/emulator.c:898 gui/menu.c:79 gui/tilem2.c:173 gui/tilem2.c:203
+#: gui/emulator.c:901 gui/menu.c:85 gui/tilem2.c:173 gui/tilem2.c:203
 msgid "Unable to load calculator state"
 msgstr "Impossible de charger le fichier de sauvegarde de la calculatrice"
 
@@ -649,7 +650,8 @@ msgstr "Envoi de %s"
 #: gui/link.c:553
 #, c-format
 msgid "The file %s is not a valid program or variable file."
-msgstr "Le fichier %s n'est pas un programme valide ou un fichier variable valide."
+msgstr ""
+"Le fichier %s n'est pas un programme valide ou un fichier variable valide."
 
 #: gui/link.c:582
 msgid "Unable to send file"
@@ -706,6 +708,52 @@ msgstr "Impossible de sauvegarder le fichier"
 msgid "Variable %s not found"
 msgstr "Variable %s non trouvee"
 
+#: gui/linksetup.c:37
+msgid "Gray TI Graph Link"
+msgstr ""
+
+#: gui/linksetup.c:38
+msgid "Black TI Graph Link"
+msgstr ""
+
+#: gui/linksetup.c:39
+msgid "Silver TI Graph Link (USB)"
+msgstr ""
+
+#: gui/linksetup.c:40
+msgid "Parallel Link"
+msgstr ""
+
+#: gui/linksetup.c:164 gui/linksetup.c:249
+msgid "Link Port"
+msgstr ""
+
+#: gui/linksetup.c:180
+msgid "_Disconnected"
+msgstr ""
+
+#: gui/linksetup.c:185
+#, fuzzy
+msgid "Connected to another _emulator (virtual cable)"
+msgstr "Connecter a un cable externe"
+
+#: gui/linksetup.c:192
+#, fuzzy
+msgid "Connected to an e_xternal link cable"
+msgstr "Connecter a un cable externe"
+
+#: gui/linksetup.c:199
+msgid "Cable _type:"
+msgstr ""
+
+#: gui/linksetup.c:221
+msgid "_Port:"
+msgstr ""
+
+#: gui/linksetup.c:232
+msgid "Ti_meout (sec):"
+msgstr ""
+
 #: gui/macro.c:120
 msgid "Save macro"
 msgstr "Sauver macro"
@@ -738,135 +786,143 @@ msgstr "x%c: ATTENTION: "
 msgid "x%c: INTERNAL ERROR: "
 msgstr "x%c: ERREUR INTERNE: "
 
-#: gui/menu.c:160
+#: gui/menu.c:166
 msgid "Send _File..."
 msgstr "Envoyer un _Fichier"
 
-#: gui/menu.c:161
+#: gui/menu.c:167
 msgid "Send a program or variable file to the calculator"
 msgstr "Envoyer un programme ou une variable vers la calculatrice"
 
-#: gui/menu.c:165
+#: gui/menu.c:170
 msgid "Re_ceive File..."
 msgstr "Re_cevoir un fichier"
 
-#: gui/menu.c:166
+#: gui/menu.c:171
 msgid "Receive a program or variable from the calculator"
 msgstr "Recevoir un programme ou une variable depuis la calulatrice"
 
-#: gui/menu.c:170
+#: gui/menu.c:174
+msgid "_Link Cable..."
+msgstr ""
+
+#: gui/menu.c:175 gui/tilem2.c:68
+msgid "Connect to an external link cable"
+msgstr "Connecter a un cable externe"
+
+#: gui/menu.c:179
 msgid "_Open Calculator..."
 msgstr "_Ouvrir une Calculatrice (ROM)"
 
-#: gui/menu.c:171
+#: gui/menu.c:180
 msgid "Open a calculator ROM file"
 msgstr "Ouvrir une Calculatrice (ROM)"
 
-#: gui/menu.c:174
+#: gui/menu.c:183
 msgid "_Save Calculator"
 msgstr "_Sauver la calculatrice"
 
-#: gui/menu.c:175
+#: gui/menu.c:184
 msgid "Save current calculator state"
 msgstr "Sauver l'etat courant"
 
-#: gui/menu.c:178
+#: gui/menu.c:187
 msgid "Re_vert Calculator State"
 msgstr "Annuler la sau_vegarde"
 
-#: gui/menu.c:179
+#: gui/menu.c:188
 msgid "Revert to saved calculator state"
 msgstr "Revenir a la sauvegarde"
 
-#: gui/menu.c:182
+#: gui/menu.c:191
 msgid "_Reset Calculator"
 msgstr "_Reset calc"
 
-#: gui/menu.c:183
+#: gui/menu.c:192
 msgid "Reset the calculator"
 msgstr "Reset calc"
 
-#: gui/menu.c:187
+#: gui/menu.c:196
 msgid "_Debugger"
 msgstr "_Debugger"
 
-#: gui/menu.c:188
+#: gui/menu.c:197
 msgid "Pause emulation and start the debugger"
 msgstr "Mettre en pause et demarrer le debugger"
 
-#: gui/menu.c:192 gui/screenshot.c:421
+#: gui/menu.c:201 gui/screenshot.c:421
 msgid "_Record"
 msgstr "En_registrer"
 
-#: gui/menu.c:193 gui/menu.c:197
+#: gui/menu.c:202 gui/menu.c:206
 msgid "Begin recording a macro"
 msgstr "Commencer a enregistrer une macro"
 
-#: gui/menu.c:196
+#: gui/menu.c:205
 msgid "S_top"
 msgstr "S_top"
 
-#: gui/menu.c:200
+#: gui/menu.c:209
 msgid "_Play"
 msgstr "_Play"
 
-#: gui/menu.c:201
+#: gui/menu.c:210
 msgid "Play back the current macro"
 msgstr "Jouer encore la macro"
 
-#: gui/menu.c:204
+#: gui/menu.c:213
 msgid "_Open Macro File..."
 msgstr "_Ouvrir une macro"
 
-#: gui/menu.c:205
+#: gui/menu.c:214
 msgid "Load a macro from a file"
 msgstr "Charger une macro depuis un fichier"
 
-#: gui/menu.c:208
+#: gui/menu.c:217
 msgid "_Save Macro File..."
 msgstr "_Sauver le fichier Macro"
 
-#: gui/menu.c:209
+#: gui/menu.c:218
 msgid "Save current macro to a file"
 msgstr "Sauver la macro courante dans un fichier"
 
-#: gui/menu.c:213
+#: gui/menu.c:222
 msgid "S_creenshot..."
 msgstr "S_creenshot"
 
-#: gui/menu.c:214
+#: gui/menu.c:223
 msgid "Save a screenshot"
 msgstr "Prendre un screenshot"
 
-#: gui/menu.c:217
+#: gui/menu.c:226
 msgid "_Quick Screenshot"
 msgstr "Screenshot _rapide"
 
-#: gui/menu.c:218
+#: gui/menu.c:227
 msgid "Save a screenshot using default settings"
 msgstr "Sauver un screenshot en utilisant les preferences par defaut"
 
-#: gui/menu.c:223
+#: gui/menu.c:232
 msgid "Edit emulator settings"
 msgstr "Editer les preferences de l'emulateur"
 
-#: gui/menu.c:227
+#: gui/menu.c:236
 msgid "_About"
 msgstr "_A propos"
 
-#: gui/menu.c:228
+#: gui/menu.c:237
 msgid "Print some informations about TilEm 2 and its authors"
 msgstr "Affiche des informations a propos de TilEm 2 et ses auteurs"
 
-#: gui/menu.c:232
+#: gui/menu.c:241
 msgid "_Quit"
 msgstr "_Quitter"
 
-#: gui/menu.c:233
+#: gui/menu.c:242
 msgid "Quit the application"
 msgstr "Quitter l'application"
 
-#: gui/menu.c:301
+#: gui/menu.c:312
 msgid "_Macro"
 msgstr "_Macro"
 
@@ -921,13 +977,20 @@ msgstr[0] "Remplacer un fichier existant"
 msgstr[1] "Remplacer des fichiers existants "
 
 #: gui/rcvmenu.c:99
-#, c-format
-msgid "The file \"%2$s\" already exists in \"%1$s\".  Replacing it will overwrite "
-"its contents.\n"
-msgid_plural "The following files \"%s\" already exist in \"%s\".  Replacing them will overwrite "
+#, fuzzy, c-format
+msgid ""
+"The file \"%2$s\" already exists in \"%1$s\".  Replacing it will overwrite "
+"its contents."
+msgid_plural ""
+"The following files already exist in \"%s\".  Replacing them will overwrite "
 "their contents:\n"
-msgstr[0] "Le fichier \"%s\" existe deja dans \"%s\".  Le remplacer va effacer son contenu.\n"
-msgstr[1] "Les fichiers \"%s\" existent deja dans \"%s\".  Les remplacer va effacer leurs contenu.\n"
+"%s"
+msgstr[0] ""
+"Le fichier \"%s\" existe deja dans \"%s\".  Le remplacer va effacer son "
+"contenu.\n"
+msgstr[1] ""
+"Les fichiers \"%s\" existent deja dans \"%s\".  Les remplacer va effacer "
+"leurs contenu.\n"
 
 #: gui/rcvmenu.c:146 gui/rcvmenu.c:205
 msgid "Save File"
@@ -1218,10 +1281,6 @@ msgstr "Executer a la vitesse normale"
 #: gui/tilem2.c:67
 msgid "Run at maximum speed"
 msgstr "Executer a la vitesse maximum"
-
-#: gui/tilem2.c:68
-msgid "Connect to an external link cable"
-msgstr "Connecter a un cable externe"
 
 #: gui/tilem2.c:68
 msgid "TYPE[:PORT]"
