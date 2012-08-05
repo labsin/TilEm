@@ -84,6 +84,8 @@ static void ext_type_changed(GtkComboBox *combo, gpointer data)
 	if (m == CABLE_SLV && lsdlg->usb_port_count < 2) {
 		gtk_widget_set_sensitive(lsdlg->port_lbl, FALSE);
 		gtk_widget_set_sensitive(lsdlg->port_sb, FALSE);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(lsdlg->port_sb),
+		                          lsdlg->usb_port_num);
 	}
 	else {
 		gtk_widget_set_sensitive(lsdlg->port_lbl, TRUE);
@@ -122,7 +124,7 @@ void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 	if (!ticables_get_usb_devices(&usbpids, &nusbpids)) {
 		for (i = 0; i < nusbpids; i++) {
 			if (usbpids[i] == PID_TIGLUSB) {
-				lsdlg.usb_port_num = i;
+				lsdlg.usb_port_num = i + 1;
 				lsdlg.usb_port_count++;
 			}
 		}
