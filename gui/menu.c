@@ -278,6 +278,7 @@ void build_menu(TilemEmulatorWindow* ewin)
 	GtkWidget *menu, *submenu;
 
 	ewin->actions = acts = gtk_action_group_new("Emulator");
+	gtk_action_group_set_translation_domain(acts, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(ewin->actions, main_action_ents,
 	                             G_N_ELEMENTS(main_action_ents), ewin);
 

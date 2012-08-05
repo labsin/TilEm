@@ -942,11 +942,13 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 
 	uimgr = gtk_ui_manager_new();
 	dbg->run_actions = gtk_action_group_new("Debug");
+	gtk_action_group_set_translation_domain(dbg->run_actions, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(dbg->run_actions, run_action_ents,
 	                             G_N_ELEMENTS(run_action_ents), dbg);
 	gtk_ui_manager_insert_action_group(uimgr, dbg->run_actions, 0);
 
 	dbg->paused_actions = gtk_action_group_new("Debug");
+	gtk_action_group_set_translation_domain(dbg->paused_actions, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(dbg->paused_actions, paused_action_ents,
 	                             G_N_ELEMENTS(paused_action_ents), dbg);
 	gtk_action_group_add_radio_actions(dbg->paused_actions, mem_mode_ents,
@@ -956,6 +958,7 @@ TilemDebugger *tilem_debugger_new(TilemCalcEmulator *emu)
 	gtk_ui_manager_insert_action_group(uimgr, dbg->paused_actions, 0);
 
 	dbg->misc_actions = gtk_action_group_new("Debug");
+	gtk_action_group_set_translation_domain(dbg->misc_actions, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(dbg->misc_actions, misc_action_ents,
 	                             G_N_ELEMENTS(misc_action_ents), dbg);
 	gtk_action_group_add_toggle_actions(dbg->misc_actions, misc_toggle_ents,
