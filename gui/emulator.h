@@ -58,10 +58,14 @@ typedef struct _TilemCalcEmulator {
 	/* Timer used for speed limiting */
 	GTimer *timer;
 	gulong timevalue;
+	int high_res_time;
 
 	/* External link cable */
 	CableHandle *ext_cable;
 	CableOptions ext_cable_options;
+	gboolean ext_cable_raw_mode;
+	byte ext_cable_raw_in;
+	byte ext_cable_raw_out;
 	int ext_cable_in;
 	int ext_cable_out;
 	gboolean ext_cable_changed;

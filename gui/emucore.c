@@ -193,6 +193,19 @@ static void cable_error(TilemCalcEmulator *emu,
    to be able to probe for USB devices in the GUI thread */
 G_LOCK_DEFINE(tilem_ticables_io);
 
+static void try_reset_ext_cable(TilemCalcEmulator *emu,
+                                CableHandle *cable)
+{
+	int e;
+	e = ticables_cable_reset(cable);
+	if (e) {
+		cable_error(emu, _("Link cable I/O error"), e);
+		ticables_cable_close(cable);
+		ticables_handle_del(cable);
+		emu->ext_cable = NULL;
+	}
+}
+
 static void init_ext_cable(TilemCalcEmulator *emu)
 {
 	CableModel cur_model;
@@ -224,6 +237,10 @@ static void init_ext_cable(TilemCalcEmulator *emu)
 			G_UNLOCK(tilem_ticables_io);
 		}
 
+		tilem_linkport_graylink_reset(emu->calc);
+		emu->ext_cable_raw_in = 3;
+		emu->ext_cable_raw_out = 3;
+
 		if (options.model == CABLE_NUL)
 			return;
 
@@ -241,6 +258,7 @@ static void init_ext_cable(TilemCalcEmulator *emu)
 			emu->ext_cable = NULL;
 			return;
 		}
+		try_reset_ext_cable(emu, emu->ext_cable);
 		G_UNLOCK(tilem_ticables_io);
 		tilem_em_lock(emu);
 	}
@@ -248,23 +266,67 @@ static void init_ext_cable(TilemCalcEmulator *emu)
 	if (!emu->ext_cable)
 		return;
 
+	if (options.model == CABLE_BLK || options.model == CABLE_PAR)
+		emu->ext_cable_raw_mode = TRUE;
+	else
+		emu->ext_cable_raw_mode = FALSE;
+
 	ticables_options_set_timeout(emu->ext_cable, options.timeout);
 	ticables_options_set_delay(emu->ext_cable, options.delay);
 }
 
-static void try_reset_ext_cable(TilemCalcEmulator *emu,
-                                CableHandle *cable)
+/* To properly handle raw I/O, we need to poll the cable more
+   frequently than the typical precision of usleep().  To avoid
+   hogging the CPU and wasting power, we only do so for a short period
+   following link activity. */
+#define HIGH_RES_INTERVAL 5000  /* length of time (microseconds) to
+                                   enable HR mode following a link
+                                   state change */
+#define HIGH_RES_TICK 10	/* maximum polling interval during HR
+                                   timing */
+
+/* Update for raw I/O.  Call while calc is locked. */
+static void update_ext_cable_raw(TilemCalcEmulator *emu,
+                                 CableHandle *cable)
 {
-	int e;
-	e = ticables_cable_reset(cable);
-	if (e) {
-		cable_error(emu, _("Link cable I/O error"), e);
-		ticables_cable_close(cable);
-		ticables_handle_del(cable);
-		emu->ext_cable = NULL;
-	}
+	/* No need to lock tilem_ticables_io here because raw cables
+	   are only ever used by core thread and don't interfere with
+	   USB probing. */
+
+	int in_state = 3, out_state, bstate;
+
+#if 0
+	ticables_cable_get_raw(cable, &in_state);
+#else
+	in_state = ((ticables_cable_get_d0(cable) ? 1 : 0)
+	            | (ticables_cable_get_d1(cable) ? 2 : 0));
+#endif
+
+	/* assume lines being held low by calc are not also being held
+	   low by external device (only matters if link assist is
+	   enabled) */
+	bstate = in_state | emu->calc->linkport.lines;
+	tilem_linkport_blacklink_set_lines(emu->calc, bstate ^ 3);
+
+	out_state = emu->calc->linkport.lines ^ 3;
+
+#if 0
+	ticables_cable_set_raw(cable, out_state);
+#else
+	ticables_cable_set_d0(cable, out_state & 1);
+	ticables_cable_set_d1(cable, (out_state & 2) >> 1);
+#endif
+
+	if (in_state != emu->ext_cable_raw_in
+	    || out_state != emu->ext_cable_raw_out)
+		emu->high_res_time = HIGH_RES_INTERVAL;
+
+	emu->ext_cable_raw_in = in_state;
+	emu->ext_cable_raw_out = out_state;
 }
 
+/* Update for cooked (byte-at-a-time) I/O.  Call while calc is *not*
+   locked. */
 static void update_ext_cable_cooked(TilemCalcEmulator *emu,
                                     CableHandle *cable)
 {
@@ -318,6 +380,19 @@ static void update_ext_cable_cooked(TilemCalcEmulator *emu,
                         | TILEM_STOP_LINK_WRITE_BYTE \
                         | TILEM_STOP_LINK_ERROR)
 
+/* Add numbers mod 1000000 */
+static int add_us(int x, int y)
+{
+	return (x + y) % 1000000;
+}
+
+/* Subtract numbers mod 1000000; return a signed result between
+   -500000 and 499999 */
+static int sub_us(int x, int y)
+{
+	return (x - y + 1500000) % 1000000 - 500000;
+}
+
 /* Run one iteration of the emulator. */
 dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
                    dword events, dword ff_events, gboolean keep_awake,
@@ -325,8 +400,10 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 {
 	dword all_events, ev_auto, ev_user;
 	int rem;
-	gulong tcur, delaytime;
+	gulong tcur;
+	int delaytime;
 	CableHandle *cable = NULL;
+	gboolean raw_mode = FALSE;
 
 	all_events = events | BREAK_MASK;
 
@@ -334,7 +411,12 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		if (emu->ext_cable_changed)
 			init_ext_cable(emu);
 		cable = emu->ext_cable;
-		if (cable) {
+		raw_mode = emu->ext_cable_raw_mode;
+		if (cable && raw_mode) {
+			linkmode = TILEM_LINK_EMULATOR_BLACK;
+			all_events |= TILEM_STOP_LINK_STATE;
+		}
+		else if (cable) {
 			linkmode = TILEM_LINK_EMULATOR_GRAY;
 			all_events |= GRAY_LINK_MASK;
 		}
@@ -371,6 +453,11 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	    && !tilem_linkport_graylink_send_byte(emu->calc,
 	                                          emu->ext_cable_in))
 		emu->ext_cable_in = -1;
+	else if (cable && raw_mode)
+		update_ext_cable_raw(emu, cable);
+
+	if (emu->high_res_time > 0 && timeout > HIGH_RES_TICK)
+		timeout = HIGH_RES_TICK;
 
 	tilem_z80_run_time(emu->calc, timeout, &rem);
 
@@ -384,7 +471,7 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		g_idle_add(&show_debugger, emu);
 	}
 
-	if (cable && emu->ext_cable_out < 0)
+	if (cable && !raw_mode && emu->ext_cable_out < 0)
 		emu->ext_cable_out = tilem_linkport_graylink_get_byte(emu->calc);
 
 	if (emu->limit_speed
@@ -392,10 +479,13 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	    && ff_events != TILEM_EM_ALWAYS_FF) {
 		tilem_em_unlock(emu);
 
-		if (cable)
+		if (cable && !raw_mode)
 			update_ext_cable_cooked(emu, cable);
 
-		emu->timevalue += timeout - rem;
+		/* note: values output by g_timer_elapsed are
+		   microseconds, modulo one million (why the value is
+		   a gulong, I have no idea) */
+		emu->timevalue = add_us(emu->timevalue, timeout - rem);
 		g_timer_elapsed(emu->timer, &tcur);
 
 		/* emu->timevalue is the "ideal" time when the
@@ -411,18 +501,28 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		   If the difference is substantial (more than 1/10
 		   second in either direction), re-synchronize. */
 
-		delaytime = emu->timevalue - tcur;
-		if (delaytime <= (gulong) 100000 + timeout) {
-			g_usleep(delaytime);
+		delaytime = sub_us(emu->timevalue, tcur);
+
+		if (emu->high_res_time >= 0) {
+			if (delaytime > 0) {
+				do {
+					g_timer_elapsed(emu->timer, &tcur);
+					delaytime = sub_us(emu->timevalue, tcur);
+				} while (delaytime > 0);
+			}
+			else if (delaytime < -HIGH_RES_TICK)
+				emu->timevalue = tcur;
 		}
 		else {
-			if (delaytime < (gulong) -100000)
+			if (delaytime > 0)
+				g_usleep(delaytime);
+			else if (delaytime < -100000)
 				emu->timevalue = tcur;
 		}
 
 		tilem_em_lock(emu);
 	}
-	else if (cable) {
+	else if (cable && !raw_mode) {
 		tilem_em_unlock(emu);
 		update_ext_cable_cooked(emu, cable);
 		tilem_em_lock(emu);
@@ -430,6 +530,9 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	else {
 		tilem_em_check_yield(emu);
 	}
+
+	if (emu->high_res_time >= 0)
+		emu->high_res_time -= timeout - rem;
 
 	return ev_user;
 }

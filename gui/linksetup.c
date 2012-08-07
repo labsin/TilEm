@@ -91,6 +91,17 @@ static void ext_type_changed(GtkComboBox *combo, gpointer data)
 		gtk_widget_set_sensitive(lsdlg->port_lbl, TRUE);
 		gtk_widget_set_sensitive(lsdlg->port_sb, TRUE);
 	}
+
+	/* set timeout option insensitive for "raw" cables */
+
+	if (m == CABLE_BLK || m == CABLE_PAR) {
+		gtk_widget_set_sensitive(lsdlg->timeout_lbl, FALSE);
+		gtk_widget_set_sensitive(lsdlg->timeout_sb, FALSE);
+	}
+	else {
+		gtk_widget_set_sensitive(lsdlg->timeout_lbl, TRUE);
+		gtk_widget_set_sensitive(lsdlg->timeout_sb, TRUE);
+	}
 }
 
 /* Check if a given cable type is supported by the ticables library. */
