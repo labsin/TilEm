@@ -710,49 +710,47 @@ msgstr "Variable %s non trouvee"
 
 #: gui/linksetup.c:37
 msgid "Gray TI Graph Link"
-msgstr ""
+msgstr "TI Graph link (gris)"
 
 #: gui/linksetup.c:38
 msgid "Black TI Graph Link"
-msgstr ""
+msgstr "TI Graph link (noir)"
 
 #: gui/linksetup.c:39
 msgid "Silver TI Graph Link (USB)"
-msgstr ""
+msgstr "TI Graph link silver (USB)"
 
 #: gui/linksetup.c:40
 msgid "Parallel Link"
-msgstr ""
+msgstr "Cable parallele"
 
 #: gui/linksetup.c:164 gui/linksetup.c:249
 msgid "Link Port"
-msgstr ""
+msgstr "Cable port"
 
 #: gui/linksetup.c:180
 msgid "_Disconnected"
-msgstr ""
+msgstr "_Deconnecte"
 
 #: gui/linksetup.c:185
-#, fuzzy
 msgid "Connected to another _emulator (virtual cable)"
-msgstr "Connecter a un cable externe"
+msgstr "Connecter a un autre _emulateur (cable virtuel)"
 
 #: gui/linksetup.c:192
-#, fuzzy
 msgid "Connected to an e_xternal link cable"
 msgstr "Connecter a un cable externe"
 
 #: gui/linksetup.c:199
 msgid "Cable _type:"
-msgstr ""
+msgstr "_Type de cable:"
 
 #: gui/linksetup.c:221
 msgid "_Port:"
-msgstr ""
+msgstr "_Port"
 
 #: gui/linksetup.c:232
 msgid "Ti_meout (sec):"
-msgstr ""
+msgstr "Ti_meout (sec):"
 
 #: gui/macro.c:120
 msgid "Save macro"
@@ -804,7 +802,7 @@ msgstr "Recevoir un programme ou une variable depuis la calulatrice"
 
 #: gui/menu.c:174
 msgid "_Link Cable..."
-msgstr ""
+msgstr "Cable _Link..."
 
 #: gui/menu.c:175 gui/tilem2.c:68
 msgid "Connect to an external link cable"
@@ -977,20 +975,20 @@ msgstr[0] "Remplacer un fichier existant"
 msgstr[1] "Remplacer des fichiers existants "
 
 #: gui/rcvmenu.c:99
-#, fuzzy, c-format
+#, c-format
 msgid ""
-"The file \"%2$s\" already exists in \"%1$s\".  Replacing it will overwrite "
-"its contents."
+"The file \"%s\" already exists in \"%s\".  Replacing it will overwrite "
+"its contents.\n"
 msgid_plural ""
 "The following files already exist in \"%s\".  Replacing them will overwrite "
-"their contents:\n"
-"%s"
+"their contents: %s\n"
 msgstr[0] ""
 "Le fichier \"%s\" existe deja dans \"%s\".  Le remplacer va effacer son "
 "contenu.\n"
 msgstr[1] ""
 "Les fichiers \"%s\" existent deja dans \"%s\".  Les remplacer va effacer "
 "leurs contenu.\n"
+
 
 #: gui/rcvmenu.c:146 gui/rcvmenu.c:205
 msgid "Save File"
