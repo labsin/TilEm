@@ -126,6 +126,7 @@ ALL_LINGUAS='fr'
 GETTEXT_PACKAGE=tilem2
 AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
+AC_SUBST(LINGUAS)
 
 # Tools used for building the Windows installer
 

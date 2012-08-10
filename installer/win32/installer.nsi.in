@@ -44,7 +44,7 @@ FunctionEnd
 
 Function desktopicon
 	SetShellVarContext current
-	CreateShortCut "$DESKTOP\TilEm.lnk" "$INSTDIR\tilem2.exe"
+	CreateShortCut "$DESKTOP\TilEm.lnk" "$INSTDIR\bin\tilem2.exe"
 FunctionEnd
 
 Section
@@ -53,7 +53,7 @@ Section
 
 	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
 		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\TilEm.lnk" "$INSTDIR\tilem2.exe"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\TilEm.lnk" "$INSTDIR\bin\tilem2.exe"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall TilEm.lnk" "$INSTDIR\uninstall.exe"
 		WriteINIStr "$INSTDIR\uninstall.ini" "Uninstall" "StartMenuFolder" $StartMenuFolder
 	!insertmacro MUI_STARTMENU_WRITE_END

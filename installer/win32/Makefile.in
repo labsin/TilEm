@@ -18,11 +18,14 @@ main_program = tilem2.exe
 docs = README KEYS NEWS COPYING CHANGELOG THANKS
 extra_docs = COPYING-PIXMAN COPYING-ZLIB
 
-install_files = $(main_program) *.dll *.txt
-install_subdirs = etc lib share
+install_files = *.txt
+install_subdirs = bin etc lib share
 
 extra_gtk_files = lib/gtk-2.0/2.10.0/engines/libwimp.dll
 extra_dlls =
+
+LINGUAS = @LINGUAS@
+extra_gettext_packages = glib20 gtk20 gdk-pixbuf libticalcs2 libticables2 libtifiles2
 
 GTK_BINDIR = @GTK_BINDIR@
 TICALCS_BINDIR = @TICALCS_BINDIR@
@@ -70,14 +73,17 @@ install: install-bin install-data install-config install-extra install-libs
 
 # Install the program itself and data files
 
-install-bin: $(main_program)
+install-bin: bin/$(main_program)
 
-$(main_program): $(top_builddir)/gui/$(main_program)
-	cd $(top_builddir)/gui && $(MAKE) install bindir=$(abs_builddir)
-	$(STRIP) $(main_program)
+bin/$(main_program): $(top_builddir)/gui/$(main_program)
+	cd $(top_builddir)/gui && $(MAKE) install prefix=$(abs_builddir)
+	$(STRIP) bin/$(main_program)
 
 install-data:
 	cd $(top_builddir)/data && $(MAKE) install prefix=$(abs_builddir)
+	cd $(top_builddir)/po && $(MAKE) install prefix=$(abs_builddir) \
+	 localedir=$(abs_builddir)/share/locale \
+	 gnulocaledir=$(abs_builddir)/share/locale
 	rm -rf share/mime
 	rm -rf share/applications
 	rm -rf share/icons
@@ -116,15 +122,39 @@ install-extra-stamp:
 	    exit 1 ; \
 	  fi ; \
 	done
+	set -e ; for lang in $(LINGUAS) ; do \
+	  subdir=locale/$$lang/LC_MESSAGES ; \
+	  for pkg in $(extra_gettext_packages) ; do \
+	    rm -f */$$subdir/$$pkg.mo ; \
+	    for dir in `echo $(DLLPATH) | tr $(PATH_SEPARATOR) ' '` ; do \
+	      if [ -f $$dir/../share/$$subdir/$$pkg.mo ] ; then \
+	        $(INSTALL) -d -m 755 share/$$subdir ; \
+	        $(LN_S) $$dir/../share/$$subdir/$$pkg.mo \
+	                share/$$subdir/$$pkg.mo ; \
+	        break ; \
+	      elif [ -f $$dir/../lib/$$subdir/$$pkg.mo ] ; then \
+	        $(INSTALL) -d -m 755 lib/$$subdir ; \
+	        $(LN_S) $$dir/../lib/$$subdir/$$pkg.mo \
+	                lib/$$subdir/$$pkg.mo ; \
+	        break ; \
+	      fi ; \
+	    done ; \
+	    if ! [ -f share/$$subdir/$$pkg.mo ] && ! [ -f lib/$$subdir/$$pkg.mo ] ; then \
+	      echo ; \
+	      echo "** Warning: cannot find message catalog for $$lang/$$pkg **" ; \
+	      echo ; \
+	    fi ; \
+	  done ; \
+	done
 	touch install-extra-stamp
 
 # Install required libraries
 
 install-libs: install-libs-stamp
 
-install-libs-stamp: $(main_program) install-extra-stamp
+install-libs-stamp: bin/$(main_program) install-extra-stamp
 	rm -f dlls missing-dlls
-	echo $(main_program) > binfiles
+	echo bin/$(main_program) > binfiles
 	ls $(extra_gtk_files) | grep 'dll$$' >> binfiles
 	echo $(extra_dlls) > dlls
 	set -e ; LC_ALL=C ; export LC_ALL ; \
@@ -136,15 +166,15 @@ install-libs-stamp: $(main_program) install-extra-stamp
 	  done ; \
 	  rm -f binfiles ; \
 	  for lib in `cat dlls` ; do \
-	    if ! [ -f ./$$lib ] && ! echo $(system_dlls) | grep -q $$lib ; then \
+	    if ! [ -f bin/$$lib ] && ! echo $(system_dlls) | grep -q $$lib ; then \
 	      for dir in `echo $(DLLPATH) | tr $(PATH_SEPARATOR) ' '` ; do \
 	        if [ -d $$dir ] && [ -f $$dir/$$lib ] ; then \
-	          $(LN_S) $$dir/$$lib . ; \
-	          echo $$lib >> binfiles ; \
+	          $(LN_S) $$dir/$$lib bin/$$lib ; \
+	          echo bin/$$lib >> binfiles ; \
 	          break ; \
 	        fi ; \
 	      done ; \
-	      if ! [ -f $$lib ] ; then \
+	      if ! [ -f bin/$$lib ] ; then \
 	        echo $$lib >> missing-dlls ; \
 	      fi ; \
 	    fi ; \

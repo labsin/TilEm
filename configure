@@ -632,6 +632,7 @@ MAKENSIS
 WINDRES
 OBJDUMP
 STRIP
+LINGUAS
 MKINSTALLDIRS
 POSUB
 POFILES
@@ -4988,6 +4989,7 @@ $as_echo "$LINGUAS" >&6; }
    rm -f po/POTFILES
    sed -e "/^#/d" -e "/^\$/d" -e "s,.*,	$posrcprefix& \\\\," -e "\$s/\(.*\) \\\\/\1/" \
 	< $srcdir/po/POTFILES.in > po/POTFILES
+
 
 
 # Tools used for building the Windows installer
