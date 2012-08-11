@@ -94,7 +94,7 @@ all: all-@USE_NLS@
 all-yes: $(CATALOGS)
 all-no:
 
-$(srcdir)/$(GETTEXT_PACKAGE).pot: $(POTFILES)
+$(srcdir)/$(GETTEXT_PACKAGE).pot: $(POTFILES) POTFILES.in
 	$(XGETTEXT) --default-domain=$(GETTEXT_PACKAGE) --directory=$(top_srcdir) \
 	  --from-code=UTF-8 \
 	  --add-comments=TRANSLATORS \
@@ -127,6 +127,9 @@ $(srcdir)/$(GETTEXT_PACKAGE).pot: $(POTFILES)
           --flag=g_snprintf:3:c-format \
           --flag=g_scanner_error:2:c-format \
           --flag=g_scanner_warn:2:c-format \
+	  --flag=tilem_message:2:c-format \
+	  --flag=tilem_warning:2:c-format \
+	  --flag=tilem_internal:2:c-format \
 	  --files-from=$(srcdir)/POTFILES.in \
 	&& test ! -f $(GETTEXT_PACKAGE).po \
 	   || ( rm -f $(srcdir)/$(GETTEXT_PACKAGE).pot \
@@ -280,7 +283,7 @@ POTFILES: POTFILES.in
 
 Makefile: Makefile.in.in ../config.status POTFILES
 	cd .. \
-	  && $(SHELL) ./config.status $(subdir)/$@.in
+	  && $(SHELL) ./config.status
 
 # Tell versions [3.59,3.63) of GNU make not to export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

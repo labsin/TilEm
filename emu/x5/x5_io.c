@@ -27,6 +27,7 @@
 #include <tilem.h>
 
 #include "x5.h"
+#include "../gettext.h"
 
 byte x5_z80_in(TilemCalc* calc, dword port)
 {
@@ -61,7 +62,7 @@ byte x5_z80_in(TilemCalc* calc, dword port)
 		return ((calc->hwregs[PORT7] & b) | (v & ~b));
 	}
 
-	tilem_warning(calc, "Input from port %x", port);
+	tilem_warning(calc, _("Input from port %x"), port);
 	return(0x00);
 }
 

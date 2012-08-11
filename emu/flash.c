@@ -24,7 +24,9 @@
 #endif
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "tilem.h"
+#include "gettext.h"
 
 #define FLASH_READ 0
 #define FLASH_AA   1
@@ -49,10 +51,15 @@
    - CFI
  */
 
-#define WARN(xxx) \
-	tilem_warning(calc, "Flash error (" xxx ")")
-#define WARN2(xxx, yyy, zzz) \
-	tilem_warning(calc, "Flash error (" xxx ")", (yyy), (zzz))
+static void warn(TilemCalc *calc, const char *desc, ...)
+{
+	va_list ap;
+	char buf[1024];
+	va_start(ap, desc);
+	vsprintf(buf, desc, ap);
+	va_end(ap);
+	tilem_warning(calc, _("Flash error (%s)"), buf);
+}
 
 void tilem_flash_reset(TilemCalc* calc)
 {
@@ -94,7 +101,8 @@ static inline void program_byte(TilemCalc* calc, dword a, byte v)
 	calc->flash.progbyte = v;
 
 	if (calc->mem[a] != v) {
-		WARN2("bad program %02x over %02x", v, calc->mem[a]);
+		warn(calc, _("bad program %02x over %02x"),
+		     v, calc->mem[a]);
 		calc->flash.state = FLASH_ERROR;
 	}
 	else {
@@ -141,7 +149,7 @@ byte tilem_flash_read_byte(TilemCalc* calc, dword pa)
 
 	if (calc->flash.busy == FLASH_BUSY_PROGRAM) {
 		if (pa != calc->flash.progaddr)
-			WARN("reading from Flash while programming");
+			warn(calc, _("reading from Flash while programming"));
 		value = (~calc->flash.progbyte & 0x80);
 		value |= calc->flash.toggles;
 		calc->flash.toggles ^= 0x40;
@@ -149,14 +157,14 @@ byte tilem_flash_read_byte(TilemCalc* calc, dword pa)
 	}
 	else if (calc->flash.busy == FLASH_BUSY_ERASE) {
 		if ((pa >> 16) != (calc->flash.progaddr >> 16))
-			WARN("reading from Flash while erasing");
+			warn(calc, _("reading from Flash while erasing"));
 		value = calc->flash.toggles | 0x08;
 		calc->flash.toggles ^= 0x44;
 		return (value);
 	}
 	else if (calc->flash.busy == FLASH_BUSY_ERASE_WAIT) {
 		if ((pa >> 16) != (calc->flash.progaddr >> 16))
-			WARN("reading from Flash while erasing");
+			warn(calc, _("reading from Flash while erasing"));
 		value = calc->flash.toggles;
 		calc->flash.toggles ^= 0x44;
 		return (value);
@@ -175,7 +183,7 @@ byte tilem_flash_read_byte(TilemCalc* calc, dword pa)
 		return (calc->mem[pa]);
 	}
 	else {
-		WARN("reading during program/erase sequence");
+		warn(calc, _("reading during program/erase sequence"));
 		calc->flash.state = FLASH_READ;
 		return (calc->mem[pa]);
 	}
@@ -190,7 +198,7 @@ void tilem_flash_erase_address(TilemCalc* calc, dword pa)
 		erase_sector(calc, sec->start, sec->size);
 	}
 	else {
-		WARN("erasing protected sector");
+		warn(calc, _("erasing protected sector"));
 	}
 }
 
@@ -222,7 +230,8 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 		if (((pa&0xFFF) == 0x555) && (v == 0x55))
 			calc->flash.state = FLASH_55;
 		else if (v != 0xF0) {
-			WARN2("undefined command %02x->%06x after AA", v, pa);
+			warn(calc, _("undefined command %02x->%06x after AA"),
+			     v, pa);
 		}
 		return;
 
@@ -231,17 +240,16 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 			switch (v) {
 			case 0x10:
 			case 0x30:
-				WARN("attempt to erase without pre-erase");
+				warn(calc, _("attempt to erase without pre-erase"));
 				return;
 			case 0x20:
-				//WARN("entering fast mode");
 				calc->flash.state = FLASH_FASTMODE;
 				return;
 			case 0x80:
 				calc->flash.state = FLASH_ERASE;
 				return;
 			case 0x90:
-				WARN("autoselect is not implemented");
+				warn(calc, _("autoselect is not implemented"));
 				return;
 			case 0xA0:
 				calc->flash.state = FLASH_PROG;
@@ -249,43 +257,40 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 			}
 		}
 		if (v != 0xF0)
-			WARN2("undefined command %02x->%06x after AA,55", v, pa);
+			warn(calc, _("undefined command %02x->%06x after AA,55"), v, pa);
 		return;
 
 	case FLASH_PROG:
 		sec = get_sector(calc, pa);
 		if (!sector_writable(calc, sec))
-			WARN("programming protected sector");
+			warn(calc, _("programming protected sector"));
 		else
 			program_byte(calc, pa, v);
 		return;
 
 	case FLASH_FASTMODE:
-		//WARN2("fast mode cmd %02x->%06x", v, pa);
 		if ( v == 0x90 )
 			calc->flash.state = FLASH_FASTEXIT;
 		else if ( v == 0xA0 )
 			calc->flash.state = FLASH_FASTPROG;
 		else
 			// TODO : figure out whether mixing is allowed on real HW
-			WARN2("mixing fast programming with regular programming : %02x->%06x", v, pa);
+			warn(calc, _("mixing fast programming with regular programming: %02x->%06x"), v, pa);
 		return;
 
 	case FLASH_FASTPROG:
-		//WARN2("fast prog %02x->%06x", v, pa);
 		sec = get_sector(calc, pa);
 		if (!sector_writable(calc, sec))
-			WARN("programming protected sector");
+			warn(calc, _("programming protected sector"));
 		else
 			program_byte(calc, pa, v);
 		calc->flash.state = FLASH_FASTMODE;
 		return;
 
 	case FLASH_FASTEXIT:
-		//WARN("leaving fast mode");
 		if ( v != 0xF0 )
 		{
-			WARN2("undefined command %02x->%06x after fast mode pre-exit 90", v, pa);
+			warn(calc, _("undefined command %02x->%06x after fast mode pre-exit 90"), v, pa);
 			// TODO : figure out whether fast mode remains in such a case
 			calc->flash.state = FLASH_FASTMODE;
 		}
@@ -295,19 +300,19 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 		if (((pa&0xFFF) == 0xAAA) && (v == 0xAA))
 			calc->flash.state = FLASH_ERAA;
 		else if (v != 0xF0)
-			WARN2("undefined command %02x->%06x after pre-erase", v, pa);
+			warn(calc, _("undefined command %02x->%06x after pre-erase"), v, pa);
 		return;
 
 	case FLASH_ERAA:
 		if (((pa&0xFFF) == 0x555) && (v == 0x55))
 			calc->flash.state = FLASH_ER55;
 		else if (v != 0xF0)
-			WARN2("undefined command %02x->%06x after pre-erase AA", v, pa);
+			warn(calc, _("undefined command %02x->%06x after pre-erase AA"), v, pa);
 		return;
 
 	case FLASH_ER55:
 		if (((pa&0xFFF) == 0xAAA) && v==0x10) {
-			tilem_message(calc, "Erasing entire Flash chip");
+			tilem_message(calc, _("Erasing entire Flash chip"));
 
 			for (i = 0; i < calc->hw.nflashsectors; i++) {
 				sec = &calc->hw.flashsectors[i];
@@ -320,7 +325,7 @@ void tilem_flash_write_byte(TilemCalc* calc, dword pa, byte v)
 			tilem_flash_erase_address(calc, pa);
 		}
 		else if (v != 0xF0)
-			WARN2("undefined command %02x->%06x after pre-erase AA,55", v, pa);
+			warn(calc, _("undefined command %02x->%06x after pre-erase AA,55"), v, pa);
 		return;
 	}
 }

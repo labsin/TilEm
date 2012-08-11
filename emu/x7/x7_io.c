@@ -27,6 +27,7 @@
 #include <tilem.h>
 
 #include "x7.h"
+#include "../gettext.h"
 
 byte x7_z80_in(TilemCalc* calc, dword port)
 {
@@ -211,9 +212,9 @@ void x7_z80_out(TilemCalc* calc, dword port, byte value)
 	case 0x15:
 		if (calc->hwregs[PROTECTSTATE] == 7) {
 			if (value & 1)
-				tilem_message(calc, "Flash unlocked");
+				tilem_message(calc, _("Flash unlocked"));
 			else
-				tilem_message(calc, "Flash locked");
+				tilem_message(calc, _("Flash locked"));
 			calc->flash.unlock = value&1;
 		}
 		break;
@@ -221,7 +222,7 @@ void x7_z80_out(TilemCalc* calc, dword port, byte value)
 	case 0x16:
 	case 0x17:
 		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
-			tilem_message(calc, "No-exec mask set to %x", value);
+			tilem_message(calc, _("No-exec mask set to %x"), value);
 			calc->hwregs[NOEXEC] = ((value & 0x0f) << 2);
 		}
 		break;

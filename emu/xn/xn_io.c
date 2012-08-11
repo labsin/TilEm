@@ -28,6 +28,7 @@
 #include <tilem.h>
 
 #include "xn.h"
+#include "../gettext.h"
 
 static void set_lcd_wait_timer(TilemCalc* calc)
 {
@@ -314,7 +315,7 @@ byte xn_z80_in(TilemCalc* calc, dword port)
 		return(0);
 	}
 
-	tilem_warning(calc, "Input from port %x", port);
+	tilem_warning(calc, _("Input from port %x"), port);
 	return(0x00);
 }
 
@@ -766,12 +767,12 @@ void xn_z80_instr(TilemCalc* calc, dword opcode)
 
 		case 0x1003:
 			/* Disable Nspire keypad */
-			tilem_message(calc, "Keypad locked");
+			tilem_message(calc, _("Keypad locked"));
 			break;
 
 		case 0x1004:
 			/* Enable Nspire keypad */
-			tilem_message(calc, "Keypad unlocked");
+			tilem_message(calc, _("Keypad unlocked"));
 			break;
 
 		case 0x1005:
@@ -831,7 +832,7 @@ void xn_z80_instr(TilemCalc* calc, dword opcode)
 			break;
 
 		default:
-			tilem_warning(calc, "Unknown control instruction %x",
+			tilem_warning(calc, _("Unknown control instruction %x"),
 				      opcode);
 		}
 		break;
@@ -854,7 +855,7 @@ void xn_z80_instr(TilemCalc* calc, dword opcode)
 		break;
 
 	default:
-		tilem_warning(calc, "Invalid opcode %x", opcode);
+		tilem_warning(calc, _("Invalid opcode %x"), opcode);
 		tilem_z80_exception(calc, TILEM_EXC_INSTRUCTION);
 		break;
 	}

@@ -43,6 +43,7 @@ typedef struct _TilemCalc TilemCalc;
 # define TILEM_ATTR_UNUSED __attribute__((__unused__))
 # define TILEM_ATTR_MALLOC __attribute__((__malloc__))
 # define TILEM_ATTR_PRINTF(x,y) __attribute__((__format__(__printf__,x,y)))
+# define TILEM_ATTR_FMT_ARG(x) __attribute__((__format_arg__(x)))
 # define TILEM_LIKELY(xxx) (__builtin_expect((xxx), 1))
 # define TILEM_UNLIKELY(xxx) (__builtin_expect((xxx), 0))
 #else
@@ -76,6 +77,9 @@ void tilem_free(void* ptr);
 #define tilem_renew(ttt, ppp, nnn) ((ttt*) tilem_realloc((ppp), (nnn) * sizeof(ttt)))
 
 /* Message/error logging */
+
+/* Translate message */
+const char *tilem_gettext(const char *msg) TILEM_ATTR_FMT_ARG(1);
 
 /* Write an informative message.  This can be used to notify the user
    of major occurences, such as changes in the Flash protection.

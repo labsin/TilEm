@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tilem.h"
+#include "gettext.h"
 
 static int certificate_valid(byte* cert)
 {
@@ -98,7 +99,7 @@ void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert,
 		return;
 	}
 
-	tilem_message(calc, "Repairing certificate area...");
+	tilem_message(calc, _("Repairing certificate area..."));
 
 	memset(cert, 0xff, 16384);
 
@@ -125,7 +126,7 @@ void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert,
 		    || calc->mem[(page << 14) + 1] != 0x0f)
 			continue;
 
-		tilem_message(calc, "Found application at page %02x (index %d)",
+		tilem_message(calc, _("Found application at page %02x (index %d)"),
 		              page, i);
 
 		cert[insttab_offset + ((i + 1) / 8)] &= ~(1 << ((i + 1) % 8));

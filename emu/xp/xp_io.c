@@ -27,6 +27,7 @@
 #include <tilem.h>
 
 #include "xp.h"
+#include "../gettext.h"
 
 byte xp_z80_in(TilemCalc* calc, dword port)
 {
@@ -232,9 +233,9 @@ void xp_z80_out(TilemCalc* calc, dword port, byte value)
 	case 0x15:
 		if (calc->hwregs[PROTECTSTATE] == 7) {
 			if (value & 1)
-				tilem_message(calc, "Flash unlocked");
+				tilem_message(calc, _("Flash unlocked"));
 			else
-				tilem_message(calc, "Flash locked");
+				tilem_message(calc, _("Flash locked"));
 			calc->flash.unlock = value&1;
 		}
 		break;
@@ -244,19 +245,19 @@ void xp_z80_out(TilemCalc* calc, dword port, byte value)
 		if (calc->flash.unlock && calc->hwregs[PROTECTSTATE] == 7) {
 			switch(calc->hwregs[PORT5]) {
 			case 0:
-				tilem_message(calc, "No-exec mask for 08-0F set to %x", value);
+				tilem_message(calc, _("No-exec mask for 08-0F set to %x"), value);
 				calc->hwregs[NOEXEC1] = value;
 				break;
 			case 1:
-				tilem_message(calc, "No-exec mask for 10-17 set to %x", value);
+				tilem_message(calc, _("No-exec mask for 10-17 set to %x"), value);
 				calc->hwregs[NOEXEC2] = value;
 				break;
 			case 2:
-				tilem_message(calc, "No-exec mask for 18-1B set to %x", value);
+				tilem_message(calc, _("No-exec mask for 18-1B set to %x"), value);
 				calc->hwregs[NOEXEC3] = value & 0x0f;
 				break;
 			case 7:
-				tilem_message(calc, "No-exec mask for RAM set to %x", value);
+				tilem_message(calc, _("No-exec mask for RAM set to %x"), value);
 				calc->hwregs[NOEXEC4] = (value & 1) | ((value>>4) & 2);
 				break;
 			}

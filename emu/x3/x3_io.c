@@ -27,6 +27,7 @@
 #include <tilem.h>
 
 #include "x3.h"
+#include "../gettext.h"
 
 byte x3_z80_in(TilemCalc* calc, dword port)
 {
@@ -94,7 +95,7 @@ byte x3_z80_in(TilemCalc* calc, dword port)
 		return(tilem_keypad_read_keys(calc) & ~1);
 	}
 
-	tilem_warning(calc, "Input from port %x", port);
+	tilem_warning(calc, _("Input from port %x"), port);
 	return(0x00);
 }
 

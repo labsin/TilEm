@@ -27,6 +27,7 @@
 #include <tilem.h>
 
 #include "x7.h"
+#include "../gettext.h"
 
 void x7_z80_wrmem(TilemCalc* calc, dword A, byte v)
 {
@@ -74,7 +75,7 @@ byte x7_z80_rdmem(TilemCalc* calc, dword A)
 	pa = 0x4000 * page + (A & 0x3FFF);
  
 	if (TILEM_UNLIKELY(page == 0x1E && !calc->flash.unlock)) {
-		tilem_warning(calc, "Reading from read-protected sector");
+		tilem_warning(calc, _("Reading from read-protected sector"));
 		return (0xff);
 	}
 
@@ -92,19 +93,19 @@ byte x7_z80_rdmem_m1(TilemCalc* calc, dword A)
 	pa = 0x4000 * page + (A & 0x3FFF);
 
 	if (TILEM_UNLIKELY(calc->hwregs[NOEXEC] & (1 << (page % 4)))) {
-		tilem_warning(calc, "Executing in restricted Flash area");
+		tilem_warning(calc, _("Executing in restricted Flash area"));
 		tilem_z80_exception(calc, TILEM_EXC_FLASH_EXEC);
 	}
 
 	if (TILEM_UNLIKELY(page == 0x1E && !calc->flash.unlock)) {
-		tilem_warning(calc, "Reading from read-protected sector");
+		tilem_warning(calc, _("Reading from read-protected sector"));
 		tilem_z80_exception(calc, TILEM_EXC_RAM_EXEC);
 	}
 
 	value = readbyte(calc, pa);
 
 	if (TILEM_UNLIKELY(value == 0xff && A == 0x0038)) {
-		tilem_warning(calc, "No OS installed");
+		tilem_warning(calc, _("No OS installed"));
 		tilem_z80_exception(calc, TILEM_EXC_FLASH_EXEC);
 	}
 

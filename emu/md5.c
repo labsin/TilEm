@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include "tilem.h"
+#include "gettext.h"
 
 void tilem_md5_assist_reset(TilemCalc* calc)
 {
@@ -73,7 +74,7 @@ dword tilem_md5_assist_get_value(TilemCalc* calc)
 		break;
 
 	default:
-		tilem_internal(calc, "Invalid MD5 mode %d", mode);
+		tilem_internal(calc, _("Invalid MD5 mode %d"), mode);
 		return 0;
 	}
 

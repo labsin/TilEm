@@ -72,6 +72,11 @@ void* tilem_try_malloc_atomic(size_t s)
 
 /* Logging */
 
+const char * tilem_gettext(const char *msg)
+{
+	return _(msg);
+}
+
 void tilem_message(TilemCalc* calc, const char* msg, ...)
 {
 	va_list ap;
