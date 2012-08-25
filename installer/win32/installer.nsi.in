@@ -51,6 +51,18 @@ Section
 	SetOutPath "$INSTDIR"
 	!include "files.nsi"
 
+	${if} $MultiUser.InstallMode == "CurrentUser"
+	${andifnot} ${FileExists} "$INSTDIR\etc\tilem2\config.ini"
+		CreateDirectory "$INSTDIR\etc\tilem2"
+		${if} ${FileExists} "$LOCALAPPDATA\tilem2\config.ini"
+			CopyFiles "$LOCALAPPDATA\tilem2\*" "$INSTDIR\etc\tilem2"
+                ${else}
+			FileOpen $0 "$INSTDIR\etc\tilem2\config.ini" w
+			FileWrite $0 "$\n"
+			FileClose $0
+		${endif}
+	${endif}
+
 	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
 		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\TilEm.lnk" "$INSTDIR\bin\tilem2.exe"
