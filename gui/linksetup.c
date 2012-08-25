@@ -238,6 +238,7 @@ void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 	                 GTK_FILL, GTK_FILL, 0, 0);
 
 	lsdlg.port_sb = gtk_spin_button_new_with_range(1.0, 4.0, 1.0);
+	gtk_entry_set_activates_default(GTK_ENTRY(lsdlg.port_sb), TRUE);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), lsdlg.port_sb);
 	gtk_table_attach(GTK_TABLE(lsdlg.tbl), lsdlg.port_sb, 1, 2, 1, 2,
 	                 GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
@@ -249,6 +250,7 @@ void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 	                 GTK_FILL, GTK_FILL, 0, 0);
 
 	lsdlg.timeout_sb = gtk_spin_button_new_with_range(0.1, 60.0, 0.1);
+	gtk_entry_set_activates_default(GTK_ENTRY(lsdlg.timeout_sb), TRUE);
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), lsdlg.timeout_sb);
 	gtk_table_attach(GTK_TABLE(lsdlg.tbl), lsdlg.timeout_sb, 1, 2, 2, 3,
 	                 GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
