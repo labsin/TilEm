@@ -4019,6 +4019,26 @@ ticalcs2.pc to your PKG_CONFIG_PATH environment variable, or set the
 TICALCS_CFLAGS and TICALCS_LIBS environment variables by hand." "$LINENO" 5
 fi
 
+
+  save_cflags="$CFLAGS"
+  save_libs="$LIBS"
+  CFLAGS="$CFLAGS $TICALCS_CFLAGS"
+  LIBS="$LIBS $TICALCS_LIBS"
+   for ac_func in ticables_cable_set_raw
+do :
+  ac_fn_c_check_func "$LINENO" "ticables_cable_set_raw" "ac_cv_func_ticables_cable_set_raw"
+if test "x$ac_cv_func_ticables_cable_set_raw" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_TICABLES_CABLE_SET_RAW 1
+_ACEOF
+
+fi
+done
+
+  CFLAGS="$save_cflags"
+  LIBS="$save_libs"
+
+
 # Gettext
 
 # List of all available languages

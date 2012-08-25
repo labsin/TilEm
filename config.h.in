@@ -45,6 +45,9 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the `ticables_cable_set_raw' function. */
+#undef HAVE_TICABLES_CABLE_SET_RAW
+
 /* Define to 1 if the system has the type `uintptr_t'. */
 #undef HAVE_UINTPTR_T
 

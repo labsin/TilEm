@@ -118,6 +118,9 @@ ticalcs2.pc to your PKG_CONFIG_PATH environment variable, or set the
 TICALCS_CFLAGS and TICALCS_LIBS environment variables by hand.])
 fi
 
+with_flags(TICALCS,
+  [ AC_CHECK_FUNCS([ticables_cable_set_raw]) ])
+
 # Gettext
 
 # List of all available languages

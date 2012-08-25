@@ -108,6 +108,13 @@ static void ext_type_changed(GtkComboBox *combo, gpointer data)
 static gboolean cable_supported(CableModel model)
 {
 	CableHandle *h;
+
+#ifndef HAVE_TICABLES_CABLE_SET_RAW
+	/* Disable black/parallel cables if raw API is not available */
+	if (model == CABLE_BLK || model == CABLE_PAR)
+		return FALSE;
+#endif
+
 	h = ticables_handle_new(model, 1);
 	if (!h)
 		return FALSE;

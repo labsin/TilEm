@@ -295,7 +295,7 @@ static void update_ext_cable_raw(TilemCalcEmulator *emu,
 
 	int in_state = 3, out_state, bstate;
 
-#if 0
+#ifdef HAVE_TICABLES_CABLE_SET_RAW
 	ticables_cable_get_raw(cable, &in_state);
 #else
 	in_state = ((ticables_cable_get_d0(cable) ? 1 : 0)
@@ -310,7 +310,7 @@ static void update_ext_cable_raw(TilemCalcEmulator *emu,
 
 	out_state = emu->calc->linkport.lines ^ 3;
 
-#if 0
+#ifdef HAVE_TICABLES_CABLE_SET_RAW
 	ticables_cable_set_raw(cable, out_state);
 #else
 	ticables_cable_set_d0(cable, out_state & 1);
