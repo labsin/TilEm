@@ -116,6 +116,44 @@ static char * get_default_config_dir()
 	return result;
 }
 
+/* Return the path to the user's configuration directory, where any
+   new or modified config files should be written.  Result is cached
+   and should not be freed. */
+static char * get_config_dir()
+{
+#ifndef G_OS_WIN32
+	return get_default_config_dir();
+#else
+	static char *result;
+	char *dname, *fname;
+	FILE *f;
+
+	if (result)
+		return result;
+
+	/* If config.ini already exists in etc/tilem2, and is
+	   writable, use the directory containing it.  This will allow
+	   building the package as a relocatable bundle. */
+	if ((dname = g_win32_get_package_installation_directory(NULL, NULL))) {
+		fname = g_build_filename(dname, "etc", "tilem2",
+		                         "config.ini", NULL);
+		f = g_fopen(fname, "r+");
+		if (f) {
+			result = g_path_get_dirname(fname);
+			fclose(f);
+		}
+		g_free(fname);
+		g_free(dname);
+	}
+
+	/* Otherwise use default config directory */
+	if (!result)
+		result = g_strdup(get_default_config_dir());
+
+	return result;
+#endif
+}
+
 /* Search for an existing file.
 
    The default package configuration directory (defined above) is
@@ -131,7 +169,7 @@ static char * find_filev(GFileTest test, const char *name, va_list rest)
 
 	fullname = build_filenamev(name, rest);
 
-	dname = get_default_config_dir();
+	dname = get_config_dir();
 	path = g_build_filename(dname, fullname, NULL);
 	if (g_file_test(path, test)) {
 		g_free(fullname);
@@ -215,39 +253,6 @@ char * get_shared_dir_path(const char *name, ...)
 	path = find_filev(G_FILE_TEST_IS_DIR, name, ap);
 	va_end(ap);
 	return path;
-}
-
-/* Return the path to the user's configuration directory, where any
-   new or modified config files should be written.  Result is cached
-   and should not be freed. */
-static char * get_config_dir()
-{
-	static char *result;
-	char *fname;
-	FILE *f;
-
-	if (result)
-		return result;
-
-	/* If config.ini already exists, in any of the standard
-	   locations, and is writable, use the directory containing
-	   it.  This will allow building the package as a relocatable
-	   bundle. */
-	fname = get_shared_file_path("config.ini", NULL);
-	if (fname) {
-		f = g_fopen(fname, "r+");
-		if (f) {
-			result = g_path_get_dirname(fname);
-			fclose(f);
-		}
-		g_free(fname);
-	}
-
-	/* Otherwise use default config directory */
-	if (!result)
-		result = g_strdup(get_default_config_dir());
-
-	return result;
 }
 
 /* Get path for writing a new or modified configuration file */
