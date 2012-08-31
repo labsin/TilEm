@@ -268,6 +268,42 @@ void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 	gtk_box_pack_start(GTK_BOX(vbox2), align, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), vbox2, FALSE, FALSE, 0);
 
+#ifdef G_OS_WIN32
+	if (!ticables_is_usb_enabled()) {
+		GtkWidget *hbox, *icon;
+		const char *url = "http://lpg.ticalc.org/prj_tilp/";
+		char *link, *msg;
+
+		if (!gtk_check_version(2, 18, 0))
+			link = g_strdup_printf("<a href=\"%s\">%s</a>",
+			                       url, url);
+		else
+			link = g_strdup(url);
+		msg = g_strdup_printf
+			(_("USB drivers not found. You must install TiLP\n"
+			   "(%s) in order to use\n"
+			   "an external link cable."), link);
+
+		hbox = gtk_hbox_new(FALSE, 0);
+		icon = gtk_image_new_from_stock(GTK_STOCK_DIALOG_WARNING,
+		                                GTK_ICON_SIZE_LARGE_TOOLBAR);
+		gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, 6);
+
+		lbl = gtk_label_new(msg);
+		gtk_label_set_use_markup(GTK_LABEL(lbl), TRUE);
+		gtk_label_set_selectable(GTK_LABEL(lbl), TRUE);
+		gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+		gtk_box_pack_start(GTK_BOX(hbox), lbl, FALSE, FALSE, 0);
+		g_free(link);
+		g_free(msg);
+
+		gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, FALSE, 0);
+
+		gtk_widget_set_no_show_all(align, TRUE);
+		gtk_widget_set_sensitive(external_rb, FALSE);
+	}
+#endif
+
 	frame = new_frame(_("Link Port"), vbox);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 6);
 	gtk_widget_show_all(frame);
