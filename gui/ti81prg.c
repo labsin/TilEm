@@ -120,7 +120,7 @@ static int check_busy(const TilemCalc *calc)
 	int cur, old;
 
 	cur = read_byte(calc, cxCurApp);
-	old = read_byte(calc, cxCurApp);
+	old = read_byte(calc, cxOldApp);
 
 	if (cur == cxPrgmEdit || cur == cxPrgmExec)
 		return 1;
