@@ -662,11 +662,11 @@ struct dirlistinfo {
 };
 
 /* Convert tifiles VarEntry into a TilemVarEntry */
-static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
-                                 gboolean is_flash)
+static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, CalcHandle *ch,
+                                 VarEntry *ve, gboolean is_flash)
 {
 	TilemVarEntry *tve = g_slice_new0(TilemVarEntry);
-	CalcModel tfmodel = get_calc_model(emu->calc);
+	CalcModel tfmodel = ch->model;
 	const char *model_str;
 	const char *type_str;
 	const char *fext;
@@ -688,13 +688,9 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 	fext = tifiles_vartype2fext(tfmodel, ve->type);
 	tve->file_ext = g_ascii_strdown(fext, -1);
 
-	/* FIXME: the filetype_desc string is used as a description in
-	   the file chooser.  It should be written in the same style
-	   as other such strings (e.g., "TI-83 Plus programs" rather
-	   than "TI83+ Program".)  But this is better than nothing. */
-	model_str = tifiles_model_to_string(tfmodel);
+	model_str = ch->calc->fullname;
 	type_str = tifiles_vartype2type(tfmodel, ve->type);
-	tve->filetype_desc = g_strdup_printf(_("%s %s"), model_str, type_str);
+	tve->filetype_desc = g_strdup_printf(_("%s %s files"), model_str, type_str);
 
 	tve->can_group = !is_flash;
 
@@ -702,8 +698,8 @@ static TilemVarEntry *convert_ve(TilemCalcEmulator *emu, VarEntry *ve,
 }
 
 /* Convert a complete directory listing */
-static void convert_dir_list(TilemCalcEmulator *emu, GNode *root,
-                             gboolean is_flash, GSList **list)
+static void convert_dir_list(TilemCalcEmulator *emu, CalcHandle *ch,
+                             GNode *root, gboolean is_flash, GSList **list)
 {
 	GNode *dir, *var;
 	VarEntry *ve;
@@ -715,7 +711,7 @@ static void convert_dir_list(TilemCalcEmulator *emu, GNode *root,
 	for (dir = root->children; dir; dir = dir->next) {
 		for (var = dir->children; var; var = var->next) {
 			ve = var->data;
-			tve = convert_ve(emu, ve, is_flash);
+			tve = convert_ve(emu, ch, ve, is_flash);
 			*list = g_slist_prepend(*list, tve);
 		}
 	}
@@ -737,8 +733,8 @@ static gboolean get_dirlist_silent(TilemCalcEmulator *emu,
 	if (ticalcs_calc_features(ch) & OPS_DIRLIST) {
 		e = ticalcs_calc_get_dirlist(ch, &vars, &apps);
 		if (!e) {
-			convert_dir_list(emu, vars, FALSE, &list);
-			convert_dir_list(emu, apps, TRUE, &list);
+			convert_dir_list(emu, ch, vars, FALSE, &list);
+			convert_dir_list(emu, ch, apps, TRUE, &list);
 		}
 		ticalcs_dirlist_destroy(&vars);
 		ticalcs_dirlist_destroy(&apps);
@@ -774,7 +770,7 @@ static gboolean get_dirlist_nonsilent(TilemCalcEmulator *emu,
 	e = ticalcs_calc_recv_var_ns(ch, MODE_BACKUP, fc, &head_entry);
 	if (!e) {
 		for (i = 0; i < fc->num_entries; i++) {
-			tve = convert_ve(emu, fc->entries[i], FALSE);
+			tve = convert_ve(emu, ch, fc->entries[i], FALSE);
 			list = g_slist_prepend(list, tve);
 		}
 	}
