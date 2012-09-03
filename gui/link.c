@@ -758,7 +758,7 @@ static gboolean get_dirlist_nonsilent(TilemCalcEmulator *emu,
 	CableHandle *cbl;
 	CalcHandle *ch;
 	FileContent *fc;
-	VarEntry *head_entry;
+	VarEntry *head_entry = NULL;
 	TilemVarEntry *tve;
 	GSList *list = NULL;
 	int e, i;
