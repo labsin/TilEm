@@ -1,6 +1,37 @@
                            Version History
                           -----------------
 
+2012-xx-xx -- version 2.1
+
+  * French translation added.  We would be happy to support other
+    languages as well - please contact us if you can help with
+    translating TilEm into your native language.
+
+  * TilEm can be connected to a real calculator (or other compatible
+    device) via an external link cable, or two emulators can be
+    connected together by a "virtual" cable.  Libticables2 version
+    1.3.4 or later is required for external BlackLink/ParallelLink
+    support.  On Windows, you must also install TiLP in order to use
+    an external link cable.  Please note that there is no support yet
+    for direct USB cables.
+
+  * When you scroll up in the disassembler, it will try to find the
+    start of the previous instruction.  Because Z80 instructions have
+    variable length, this is heuristic and will not work correctly in
+    some cases (when a section of non-executable data precedes the
+    code.)  For those cases where the default scrolling behavior does
+    not work correctly, you can use the "One Byte Backward" and "One
+    Byte Forward" menu items to make adjustments.
+
+  * On Windows, configuration files are stored within the TilEm
+    installation directory if installed in "single user" mode (or if
+    installed as a non-admin user.)
+
+  * New skins for TI-83 Plus.fr and TI-85 (images by Olivier Jeulin.)
+
+  * Miscellaneous bugfixes and performance improvements.
+
+
 2012-06-07 -- version 2.0
 
   This is the first official release of the "new" TilEm.  Much of the
