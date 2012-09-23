@@ -61,7 +61,7 @@ TilemHardware hardware_ti83p = {
 	'p', "ti83p", "TI-83 Plus",
 	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_LINK_ASSIST
 	 | TILEM_CALC_HAS_T6A04 | TILEM_CALC_HAS_FLASH),
-	96, 64, 32 * 0x4000, 2 * 0x4000, 15 * 64, 0x40,
+	96, 64, 32 * 0x4000, 2 * 0x4000, 15 * 64, 0x40, 0x00, 0x17,
 	NUM_FLASH_SECTORS, flashsectors, 0,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,

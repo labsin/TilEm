@@ -179,7 +179,8 @@ enum {
 	TILEM_STOP_LINK_STATE = 16,        /* blacklink state change */
 	TILEM_STOP_LINK_READ_BYTE = 32,    /* graylink finished reading byte */
 	TILEM_STOP_LINK_WRITE_BYTE = 64,   /* graylink finished writing byte */
-	TILEM_STOP_LINK_ERROR = 128        /* graylink encountered error */
+	TILEM_STOP_LINK_ERROR = 128,       /* graylink encountered error */
+	TILEM_STOP_AUDIO_BUFFER = 256	   /* audio filter filled buffer */
 };
 
 /* Types of interrupt */
@@ -735,6 +736,8 @@ struct _TilemHardware {
 	dword romsize, ramsize;	 /* Size of ROM and RAM */
 	dword lcdmemsize;	 /* Size of external LCD memory */
 	byte rampagemask;	 /* Bit mask used for RAM page */
+	byte linkportaddr;	 /* Port used for raw link I/O */
+	byte portmask;		 /* Mask of significant bits in I/O ports */
 
 	int nflashsectors;
 	const TilemFlashSector* flashsectors;
@@ -932,6 +935,100 @@ void tilem_gray_lcd_free(TilemGrayLCD *glcd);
    to be called at regular intervals. */
 void tilem_gray_lcd_get_frame(TilemGrayLCD * restrict glcd,
                               TilemLCDBuffer * restrict frm);
+
+
+/* Audio filtering */
+
+typedef struct _TilemAudioFilter TilemAudioFilter;
+
+typedef void (*TilemAudioCallbackFunc)
+	(TilemCalc* calc, TilemAudioFilter* af,
+	 void* buffer, int length, void* user_data);
+
+#define TILEM_AUDIO_UNSIGNED    0
+#define TILEM_AUDIO_SIGNED      1
+#define TILEM_AUDIO_8_BIT       0
+#define TILEM_AUDIO_16_BIT      2
+#define TILEM_AUDIO_BYTE_SWAP   4
+
+enum {
+	TILEM_AUDIO_U8       = TILEM_AUDIO_8_BIT | TILEM_AUDIO_UNSIGNED,
+	TILEM_AUDIO_S8       = TILEM_AUDIO_8_BIT | TILEM_AUDIO_SIGNED,
+	TILEM_AUDIO_U16      = TILEM_AUDIO_16_BIT | TILEM_AUDIO_UNSIGNED,
+	TILEM_AUDIO_S16      = TILEM_AUDIO_16_BIT | TILEM_AUDIO_SIGNED,
+	TILEM_AUDIO_U16_SWAP = TILEM_AUDIO_U16 | TILEM_AUDIO_BYTE_SWAP,
+	TILEM_AUDIO_S16_SWAP = TILEM_AUDIO_S16 | TILEM_AUDIO_BYTE_SWAP,
+#ifdef WORDS_BIGENDIAN
+	TILEM_AUDIO_U16_LE   = TILEM_AUDIO_U16_SWAP,
+	TILEM_AUDIO_S16_LE   = TILEM_AUDIO_S16_SWAP,
+	TILEM_AUDIO_U16_BE   = TILEM_AUDIO_U16,
+	TILEM_AUDIO_S16_BE   = TILEM_AUDIO_S16
+#else
+	TILEM_AUDIO_U16_LE   = TILEM_AUDIO_U16,
+	TILEM_AUDIO_S16_LE   = TILEM_AUDIO_S16,
+	TILEM_AUDIO_U16_BE   = TILEM_AUDIO_U16_SWAP,
+	TILEM_AUDIO_S16_BE   = TILEM_AUDIO_S16_SWAP
+#endif
+};
+
+/* Create a new audio filter and attach to a calculator. */
+TilemAudioFilter* tilem_audio_filter_new(TilemCalc *calc);
+
+/* Detach and free an audio filter. */
+void tilem_audio_filter_free(TilemAudioFilter *af);
+
+/* Set volume.  Input is linear, with 1.0 representing the maximum
+   volume that does not clip. */
+void tilem_audio_filter_set_volume(TilemAudioFilter *af, double v);
+
+/* Set a callback function that will be called when the buffer is
+   full. */
+void tilem_audio_filter_set_callback(TilemAudioFilter *af,
+                                     TilemAudioCallbackFunc func,
+                                     void *data);
+
+/* Set output sampling rate.  This resets the filter and flushes the
+   current output buffer. */
+void tilem_audio_filter_set_rate(TilemAudioFilter *af, int rate);
+
+/* Set number of output channels (must be 1 or 2).  This flushes the
+   output buffer, but does not reset the filter. */
+void tilem_audio_filter_set_channels(TilemAudioFilter *af, int channels);
+
+/* Set output sample format (must be one of the constants above.)
+   This flushes the output buffer, but does not reset the filter. */
+void tilem_audio_filter_set_format(TilemAudioFilter *af, int format);
+
+/* Set an audio buffer.  set_rate(), set_channels(), and set_format()
+   must be called beforehand.  If another buffer was set previously,
+   it will be discarded - call tilem_audio_filter_flush() if you want
+   to flush it instead.  LENGTH must be a multiple of the frame size,
+   and (for 16-bit formats) BUFFER must be correctly aligned for word
+   access. */
+void tilem_audio_filter_set_buffer(TilemAudioFilter *af,
+                                   void *buffer, int length);
+
+/* Begin writing audio samples to the output buffer. */
+void tilem_audio_filter_on(TilemAudioFilter *af);
+
+/* Stop writing audio samples.  Note that stopping and restarting will
+   reset the filter. */
+void tilem_audio_filter_off(TilemAudioFilter *af);
+
+/* Reset audio filter (i.e., ignore link port history and restart from
+   the current point in time.) */
+void tilem_audio_filter_reset(TilemAudioFilter *af);
+
+/* Flush current output buffer (if any), filling the remainder of the
+   buffer with a constant value; when finished, the callback function
+   will be called. */
+void tilem_audio_filter_flush(TilemAudioFilter *af);
+
+/* Get number of bytes written to output buffer */
+int tilem_audio_filter_buffer_count(TilemAudioFilter *af);
+
+/* Get number of bytes remaining in output buffer */
+int tilem_audio_filter_buffer_remaining(TilemAudioFilter *af);
 
 
 /* Miscellaneous functions */

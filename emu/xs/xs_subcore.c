@@ -61,7 +61,7 @@ TilemHardware hardware_ti83pse = {
 	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_LINK_ASSIST
 	 | TILEM_CALC_HAS_T6A04 | TILEM_CALC_HAS_FLASH
 	 | TILEM_CALC_HAS_MD5_ASSIST),
-	96, 64, 128 * 0x4000, 8 * 0x4000, 16 * 64, 0x80,
+	96, 64, 128 * 0x4000, 8 * 0x4000, 16 * 64, 0x80, 0x00, 0xff,
 	NUM_FLASH_SECTORS, flashsectors, 3,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,

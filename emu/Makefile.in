@@ -22,7 +22,8 @@ RANLIB = @RANLIB@
 SHELL = @SHELL@
 
 core_objects = calcs.o z80.o state.o rom.o flash.o link.o keypad.o lcd.o \
-	cert.o md5.o timers.o monolcd.o graylcd.o grayimage.o graycolor.o
+	cert.o md5.o timers.o monolcd.o graylcd.o grayimage.o graycolor.o \
+	audio.o
 
 x7_objects = x7_init.o x7_io.o x7_memory.o x7_subcore.o
 x1_objects = x1_init.o x1_io.o x1_memory.o x1_subcore.o
@@ -80,6 +81,8 @@ grayimage.o: grayimage.c tilem.h graylcd.h ../config.h
 	$(compile) -c $(srcdir)/grayimage.c
 graycolor.o: graycolor.c tilem.h ../config.h
 	$(compile) -c $(srcdir)/graycolor.c
+audio.o: audio.c tilem.h ../config.h
+	$(compile) -c $(srcdir)/audio.c
 
 # TI-73
 

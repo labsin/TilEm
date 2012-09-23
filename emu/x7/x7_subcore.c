@@ -60,7 +60,7 @@ static const char* keynames[64] = {
 TilemHardware hardware_ti73 = {
 	'7', "ti73", "TI-73",
 	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_T6A04 | TILEM_CALC_HAS_FLASH),
-	96, 64, 32 * 0x4000, 2 * 0x4000, 15 * 64, 0x40,
+	96, 64, 32 * 0x4000, 2 * 0x4000, 15 * 64, 0x40, 0x00, 0x17,
 	NUM_FLASH_SECTORS, flashsectors, 0,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,

@@ -45,7 +45,7 @@ static const char* keynames[64] = {
 const TilemHardware hardware_ti83 = {
 	'3', "ti83", "TI-83 / TI-82 STATS",
 	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_T6A04),
-	96, 64, 16 * 0x4000, 0x8000, 15 * 64, 0x40,
+	96, 64, 16 * 0x4000, 0x8000, 15 * 64, 0x40, 0x00, 0x17,
 	0, NULL, 0,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,
@@ -59,7 +59,7 @@ const TilemHardware hardware_ti83 = {
 const TilemHardware hardware_ti76 = {
 	'f', "ti76", "TI-76.fr",
 	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_T6A04),
-	96, 64, 16 * 0x4000, 0x8000, 15 * 64, 0x40,
+	96, 64, 16 * 0x4000, 0x8000, 15 * 64, 0x40, 0x00, 0x17,
 	0, NULL, 0,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,
