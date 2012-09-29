@@ -29,7 +29,7 @@
 #include "tilem.h"
 #include "gettext.h"
 
-/* 
+/*
 
  OVERVIEW
 
@@ -522,7 +522,7 @@ static void timer_callback(TilemCalc *calc, void *data)
 		t = af->sample_period_c;
 		af->sample_err += af->sample_err_c;
 	}
-	
+
 	accum[cur].t_offset = accum[prev].t_offset + t;
 
 	t = accum[cur].t_offset + (af->timer_period_c * SUBTICKS_PER_US);

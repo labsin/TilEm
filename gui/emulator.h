@@ -70,6 +70,12 @@ typedef struct _TilemCalcEmulator {
 	int ext_cable_out;
 	gboolean ext_cable_changed;
 
+	gboolean enable_audio;
+	TilemAudioOptions audio_options;
+	gboolean audio_options_changed;
+	TilemAudioFilter *audio_filter;
+	TilemAudioDevice *audio_device;
+
 	/* Queue of tasks to be performed */
 	GQueue *task_queue;
 	gboolean task_busy;

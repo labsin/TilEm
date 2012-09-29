@@ -161,6 +161,12 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 	emu->ext_cable_in = -1;
 	emu->ext_cable_out = -1;
 
+	emu->audio_options.rate     = DEFAULT_AUDIO_RATE;
+	emu->audio_options.channels = DEFAULT_AUDIO_CHANNELS;
+	emu->audio_options.format   = DEFAULT_AUDIO_FORMAT;
+	emu->audio_options.latency  = DEFAULT_AUDIO_LATENCY;
+	/* emu->enable_audio = TRUE; */
+
 	return emu;
 }
 
@@ -199,6 +205,8 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 		tilem_lcd_buffer_free(emu->lcd_buffer);
 	if (emu->tmp_lcd_buffer)
 		tilem_lcd_buffer_free(emu->tmp_lcd_buffer);
+	if (emu->audio_filter)
+		tilem_audio_filter_free(emu->audio_filter);
 	if (emu->glcd)
 		tilem_gray_lcd_free(emu->glcd);
 	if (emu->calc)
@@ -365,7 +373,9 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 
 	cancel_animation(emu);
 
-	if (emu->glcd)
+	if (emu->audio_filter)
+		tilem_audio_filter_free(emu->audio_filter);
+ 	if (emu->glcd)
 		tilem_gray_lcd_free(emu->glcd);
 	if (emu->calc)
 		tilem_calc_free(emu->calc);
@@ -379,6 +389,8 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 		                               GRAY_SAMPLE_INT);
 	else
 		emu->glcd = NULL;
+
+	emu->audio_filter = NULL;
 
 	tilem_z80_add_timer(calc, MICROSEC_PER_FRAME,
 	                    MICROSEC_PER_FRAME, 1,

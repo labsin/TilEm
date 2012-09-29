@@ -47,6 +47,7 @@ objects = tilem2.o \
 	address.o \
 	animatedgif.o \
 	animation.o \
+	audiodev.o \
 	breakpoints.o \
 	config.o \
 	charmap.o \
@@ -90,7 +91,7 @@ link = $(CC) $(CFLAGS) $(LDFLAGS) $(GUI_LDFLAGS)
 
 common_headers = ../config.h ../emu/tilem.h ../db/tilemdb.h \
 	gui.h emulator.h debugger.h emuwin.h skinops.h animation.h \
-	gtk-compat.h gettext.h msgbox.h fixedtreeview.h
+	audiodev.h gtk-compat.h gettext.h msgbox.h fixedtreeview.h
 
 all: tilem2@EXEEXT@
 
@@ -197,6 +198,9 @@ pbar.o: pbar.c $(common_headers)
 animation.o: animation.c $(common_headers)
 	$(compile) -c $(srcdir)/animation.c
 
+# Audio output
+audiodev.o: audiodev.c $(common_headers)
+	$(compile) -c $(srcdir)/audiodev.c
 
 # Shared/configuration files
 files.o: files.c files.h

@@ -19,6 +19,7 @@
  */
 
 #include "animation.h"
+#include "audiodev.h"
 #include "emulator.h"
 #include "skinops.h"
 #include "emuwin.h"

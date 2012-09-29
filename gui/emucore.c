@@ -160,7 +160,7 @@ struct error_info {
 	char *message;
 };
 
-static gboolean show_cable_error(gpointer data)
+static gboolean show_error_message_callback(gpointer data)
 {
 	struct error_info *info = data;
 
@@ -171,21 +171,27 @@ static gboolean show_cable_error(gpointer data)
 	return FALSE;
 }
 
+static void show_error_message(TilemCalcEmulator *emu,
+                               const char *title, const char *message)
+{
+	struct error_info *info;
+	info = g_slice_new0(struct error_info);
+	info->emu = emu;
+	info->title = g_strdup(title);
+	info->message = g_strdup(message);
+	g_idle_add(&show_error_message_callback, info);
+}
+
 static void cable_error(TilemCalcEmulator *emu,
                         const char *title, int errcode)
 {
-	struct error_info *info;
 	char *message = NULL;
 
 	ticables_error_get(errcode, &message);
 	if (!message)
 		message = g_strdup_printf(_("Unknown error (%d)"), errcode);
-
-	info = g_slice_new0(struct error_info);
-	info->emu = emu;
-	info->title = g_strdup(title);
-	info->message = message;
-	g_idle_add(&show_cable_error, info);
+	show_error_message(emu, title, message);
+	g_free(message);
 }
 
 /* Global lock used for external ticables operations - note that an
@@ -367,8 +373,125 @@ static void update_ext_cable_cooked(TilemCalcEmulator *emu,
 			return;
 		}
 
-		emu->ext_cable_in = value;
+		if (!e)
+			emu->ext_cable_in = value;
 		G_UNLOCK(tilem_ticables_io);
+	}
+}
+
+/* Close audio output device.  This is called when pausing the
+   emulator as well as when audio is disabled */
+static void audio_close(TilemCalcEmulator *emu)
+{
+	if (!emu->audio_device)
+		return;
+	tilem_audio_device_close(emu->audio_device);
+	emu->audio_device = NULL;
+}
+
+/* Set buffer and options for audio filter, and start filling the buffer */
+static void audio_set_buffer(TilemCalcEmulator *emu, void *buffer, int size,
+                             gboolean options_changed)
+{
+	TilemAudioOptions opts;
+	TilemAudioFilter *af = emu->audio_filter;
+
+	g_return_if_fail(buffer != NULL);
+
+	if (!af) {
+		emu->audio_filter = af = tilem_audio_filter_new(emu->calc);
+		options_changed = TRUE;
+	}
+
+	if (options_changed) {
+		tilem_audio_device_get_options(emu->audio_device, &opts);
+		tilem_audio_filter_set_rate(af, opts.rate);
+		tilem_audio_filter_set_channels(af, opts.channels);
+		tilem_audio_filter_set_format(af, opts.format);
+	}
+
+	tilem_audio_filter_set_buffer(af, buffer, size);
+	tilem_audio_filter_on(af);
+}
+
+/* Open audio output device if not already open.  Get an initial
+   buffer for output, and start filling it */
+static void audio_open(TilemCalcEmulator *emu)
+{
+	TilemAudioOptions opts;
+	TilemAudioDevice *adev;
+	GError *err = NULL;
+	void *buffer;
+	int size;
+
+	if (emu->audio_options_changed)
+		audio_close(emu);
+
+	if (emu->audio_device)
+		return;
+
+	opts = emu->audio_options;
+	emu->audio_options_changed = FALSE;
+
+	tilem_em_unlock(emu);
+	if ((adev = tilem_audio_device_open(&opts, &err)))
+		buffer = tilem_audio_device_get_buffer(adev, &size, &err);
+	tilem_em_lock(emu);
+
+	if (err) {
+		show_error_message(emu, _("Unable to open sound device"),
+		                   err->message);
+		g_clear_error(&err);
+		if (adev) tilem_audio_device_close(adev);
+		emu->enable_audio = FALSE;
+		return;
+	}
+
+	emu->audio_device = adev;
+	audio_set_buffer(emu, buffer, size, TRUE);
+}
+
+/* Update audio device and filter */
+static void update_audio(TilemCalcEmulator *emu)
+{
+	GError *err = NULL;
+	void *buffer;
+	int size;
+
+	if (!emu->enable_audio || emu->ext_cable || emu->ilp_active) {
+		/* audio explicitly or implicitly disabled */
+		audio_close(emu);
+	}
+	else {
+		/* enabled; open device if necessary */
+		audio_open(emu);
+	}
+
+	if (!emu->audio_device) {
+		if (emu->audio_filter)
+			tilem_audio_filter_off(emu->audio_filter);
+		return;
+	}
+
+	/* if output buffer is full, play it and request a new buffer */
+	g_return_if_fail(emu->audio_filter != NULL);
+	if (!tilem_audio_filter_buffer_remaining(emu->audio_filter)) {
+		tilem_em_unlock(emu);
+		if (tilem_audio_device_play_buffer(emu->audio_device, &err))
+			buffer = tilem_audio_device_get_buffer(emu->audio_device,
+			                                       &size, &err);
+		tilem_em_lock(emu);
+
+		if (err) {
+			show_error_message(emu, _("Unable to play sound"),
+			                   err->message);
+			g_clear_error(&err);
+			tilem_audio_device_close(emu->audio_device);
+			emu->enable_audio = FALSE;
+			return;
+		}
+
+		audio_set_buffer(emu, buffer, size, FALSE);
 	}
 }
 
@@ -422,6 +545,10 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		}
 	}
 
+	update_audio(emu);
+	if (emu->audio_device)
+		all_events |= TILEM_STOP_AUDIO_BUFFER;
+
 	if (emu->exiting || emu->task_abort) {
 		if (elapsed) *elapsed = 0;
 		return 0;
@@ -429,6 +556,7 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	else if (emu->paused) {
 		update_screen_mono(emu);
 		update_progress(emu, TRUE);
+		audio_close(emu);
 		g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
 		update_progress(emu, TRUE);
 		g_timer_elapsed(emu->timer, &emu->timevalue);
@@ -438,6 +566,7 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 	else if (!keep_awake && calc_asleep(emu)) {
 		update_progress(emu, FALSE);
 		update_screen_mono(emu);
+		audio_close(emu);
 		g_cond_wait(emu->calc_wakeup_cond, emu->calc_mutex);
 		g_timer_elapsed(emu->timer, &emu->timevalue);
 		if (elapsed) *elapsed = timeout;
@@ -475,6 +604,7 @@ dword tilem_em_run(TilemCalcEmulator *emu, int linkmode,
 		emu->ext_cable_out = tilem_linkport_graylink_get_byte(emu->calc);
 
 	if (emu->limit_speed
+	    && !emu->audio_device
 	    && !(ff_events & ev_user)
 	    && ff_events != TILEM_EM_ALWAYS_FF) {
 		tilem_em_unlock(emu);

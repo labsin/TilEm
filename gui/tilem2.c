@@ -343,6 +343,8 @@ int main(int argc, char **argv)
 	/* the above functions modify textdomain */
 	textdomain(GETTEXT_PACKAGE);
 
+	tilem_audio_device_init();
+
 	if (cl_reset_flag)
 		tilem_calc_emulator_reset(emu);
 
@@ -382,6 +384,7 @@ int main(int argc, char **argv)
 	ticables_library_exit();
 	tifiles_library_exit();
 	ticalcs_library_exit();
+	tilem_audio_device_exit();
 
 	return 0;
 }
