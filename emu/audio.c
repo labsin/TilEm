@@ -348,7 +348,7 @@ static inline int dither(int step)
 
 static inline byte conv8(dword samp)
 {
-	samp += dither(1 << (VSHIFT + 8));
+	samp += 0x80000000 + dither(1 << (VSHIFT + 8));
 	samp >>= VSHIFT + 8;
 
 	if (TILEM_UNLIKELY(samp < 0x180))
@@ -361,7 +361,7 @@ static inline byte conv8(dword samp)
 
 static inline word conv16(dword samp)
 {
-	samp += dither(1 << VSHIFT);
+	samp += 0x80000000 + dither(1 << VSHIFT);
 	samp >>= VSHIFT;
 
 	if (TILEM_UNLIKELY(samp < 0x18000))
@@ -419,8 +419,8 @@ static void put_frame(TilemAudioFilter *af, word raw_l, word raw_r)
 		return;
 	}
 
-	l = 0x80000000 + ((int16_t) raw_l * af->vscale);
-	r = 0x80000000 + ((int16_t) raw_r * af->vscale);
+	l = ((int16_t) raw_l * af->vscale);
+	r = ((int16_t) raw_r * af->vscale);
 
 	if (af->output_channels == 1) {
 		put_sample(af->buffer_pos, fmt, l + r);
