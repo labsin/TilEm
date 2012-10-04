@@ -549,7 +549,7 @@ static void timer_callback(TilemCalc *calc, void *data)
 /* Compute filter coefficients (sinc filter with Blackman window) */
 static void gen_filter(double *coeff, int length, int cutoff)
 {
-	int hsize = (length - 1) / 2;
+	int hsize = (length + 1) / 2;
 	int i;
 	double x, f, w;
 
@@ -565,7 +565,7 @@ static void gen_filter(double *coeff, int length, int cutoff)
 		w = (0.42 + 0.5 * cos(i * M_PI / hsize)
 		     + 0.08 * cos(i * M_PI * 2 / hsize));
 
-		coeff[hsize - i] = coeff[hsize + i] = f * w;
+		coeff[hsize - 1 - i] = coeff[hsize - 1 + i] = f * w;
 	}
 
 	if (!(length % 2)) coeff[length - 1] = 0.0;
