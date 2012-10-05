@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TilEm 2.0\n"
 "Report-Msgid-Bugs-To: tilem-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2012-08-11 17:23-0400\n"
+"POT-Creation-Date: 2012-10-05 16:54-0400\n"
 "PO-Revision-Date: 2012-07-23 13:37-0400\n"
 "Last-Translator:  <thibault.duponchelle@gmail.com>\n"
 "Language-Team: French\n"
@@ -26,6 +26,84 @@ msgstr "Impossible d'ouvrir '%s' en ecriture: %s"
 #, c-format
 msgid "Error while closing '%s': %s"
 msgstr "Erreur lors de la fermeture '%s': %s"
+
+#: gui/audiodev.c:71
+#, c-format
+msgid "audiodev-sdl: %s\n"
+msgstr ""
+
+#: gui/audiodev.c:154
+#, c-format
+msgid "Playback stopped unexpectedly"
+msgstr ""
+
+#: gui/audiodev.c:184
+#, c-format
+msgid "WARNING: Audio buffer underrun by %d bytes"
+msgstr ""
+
+#: gui/audiodev.c:262
+#, c-format
+msgid "Initialized \"%s\" driver"
+msgstr ""
+
+#: gui/audiodev.c:267
+#, c-format
+msgid "AUDIODEV = \"%s\""
+msgstr ""
+
+#: gui/audiodev.c:304
+#, c-format
+msgid "Unknown sample format"
+msgstr ""
+
+#: gui/audiodev.c:336
+#, c-format
+msgid "Cannot create semaphore: %s"
+msgstr ""
+
+#: gui/audiodev.c:344
+#, c-format
+msgid "buffer size = %d, latency = %.3g"
+msgstr ""
+
+#: gui/audiodev.c:401
+#, c-format
+msgid "TilEm has not been compiled with sound support."
+msgstr ""
+
+#: gui/audiosetup.c:64
+#, c-format
+msgid "%+.2g dB"
+msgstr ""
+
+#: gui/audiosetup.c:195 gui/audiosetup.c:271
+msgid "Audio Properties"
+msgstr ""
+
+#: gui/audiosetup.c:205
+msgid "_Volume:"
+msgstr ""
+
+#: gui/audiosetup.c:215
+msgid "C_hannels:"
+msgstr ""
+
+#: gui/audiosetup.c:225
+msgid "_Driver:"
+msgstr ""
+
+#: gui/audiosetup.c:232 gui/ti81prg.c:366
+msgid "Automatic"
+msgstr "Automatique"
+
+#: gui/audiosetup.c:250
+msgid "Sampling _rate (kHz):"
+msgstr ""
+
+#: gui/audiosetup.c:261
+msgid "_Latency (ms):"
+msgstr ""
 
 #: gui/breakpoints.c:70
 msgid "Memory address (logical)"
@@ -425,65 +503,75 @@ msgstr "Adr"
 msgid "Disassembly"
 msgstr "Desassembleur"
 
-#: gui/emucore.c:182 gui/link.c:324
+#: gui/emucore.c:192 gui/link.c:324
 #, c-format
 msgid "Unknown error (%d)"
 msgstr "Erreur inconnue (%d)"
 
-#: gui/emucore.c:202
+#: gui/emucore.c:208
 msgid "Link cable I/O error"
 msgstr "Erreur d'entree/sortie"
 
-#: gui/emucore.c:254
+#: gui/emucore.c:260
 msgid "Unable to open link cable"
 msgstr "Impossible d'envoyer le fichier"
 
-#: gui/emulator.c:263
+#: gui/emucore.c:443
+#, fuzzy
+msgid "Unable to open sound device"
+msgstr "Impossible d'envoyer le fichier"
+
+#: gui/emucore.c:488
+#, fuzzy
+msgid "Unable to play sound"
+msgstr "Impossible de charger la skin"
+
+#: gui/emulator.c:290
 #, c-format
 msgid "No ROM file specified"
 msgstr "Aucun fichier ROM specifie"
 
-#: gui/emulator.c:277 gui/emulator.c:297 gui/emulator.c:433 gui/emulator.c:451
+#: gui/emulator.c:304 gui/emulator.c:324 gui/emulator.c:464 gui/emulator.c:482
 #: gui/skinops.c:258
 #, c-format
 msgid "Unable to open %s for reading: %s"
 msgstr "Impossible d'ouvrir %s en lecture: %s"
 
-#: gui/emulator.c:323
+#: gui/emulator.c:350
 #, c-format
 msgid "The file %s is not a recognized calculator ROM file."
 msgstr "Le fichier %s n'est pas reconnu en tant que fichier ROM."
 
-#: gui/emulator.c:344 gui/emulator.c:465
+#: gui/emulator.c:371 gui/emulator.c:496
 #, c-format
 msgid "The specified ROM or state file is invalid."
 msgstr "Le fichier ROM ou le fichier de sauvegarde est invalide."
 
-#: gui/emulator.c:500 gui/emulator.c:518
+#: gui/emulator.c:531 gui/emulator.c:549
 #, c-format
 msgid "Unable to open %s for writing: %s"
 msgstr "Impossible d'ourvrir %s en ecriture: %s"
 
-#: gui/emulator.c:538 gui/emulator.c:557 gui/link.c:1042
+#: gui/emulator.c:569 gui/emulator.c:588 gui/link.c:1038
 #, c-format
 msgid "Error writing %s: %s"
 msgstr "Erreur lors de l'ecriture %s: %s"
 
-#: gui/emulator.c:881
+#: gui/emulator.c:946
 msgid "Open Calculator"
 msgstr "Ouvrir une Calculatrice (ROM)"
 
-#: gui/emulator.c:882
+#: gui/emulator.c:947
 msgid "ROM files"
 msgstr "Fichiers ROM"
 
-#: gui/emulator.c:883 gui/macro.c:125 gui/macro.c:268 gui/preferences.c:243
+#: gui/emulator.c:948 gui/macro.c:125 gui/macro.c:268 gui/preferences.c:243
 #: gui/rcvmenu.c:149 gui/rcvmenu.c:209 gui/screenshot.c:659
 #: gui/screenshot.c:676 gui/sendfile.c:339
 msgid "All files"
 msgstr "Tous les fichiers"
 
-#: gui/emulator.c:901 gui/menu.c:85 gui/tilem2.c:173 gui/tilem2.c:203
+#: gui/emulator.c:966 gui/menu.c:85 gui/tilem2.c:173 gui/tilem2.c:203
 msgid "Unable to load calculator state"
 msgstr "Impossible de charger le fichier de sauvegarde de la calculatrice"
 
@@ -657,28 +745,28 @@ msgstr ""
 msgid "Unable to send file"
 msgstr "Impossible d'envoyer le fichier"
 
-#: gui/link.c:697
-#, c-format
-msgid "%s %s"
-msgstr "%s %s"
+#: gui/link.c:693
+#, fuzzy, c-format
+msgid "%s %s files"
+msgstr "%s fichier group"
 
-#: gui/link.c:734
+#: gui/link.c:730
 msgid "Reading variable list"
 msgstr "Lecture de la liste de variables"
 
-#: gui/link.c:770 gui/link.c:963
+#: gui/link.c:766 gui/link.c:959
 msgid "Receiving variables"
 msgstr "Reception des variables"
 
-#: gui/link.c:829 gui/sendfile.c:331
+#: gui/link.c:825 gui/sendfile.c:331
 msgid "TI-81 programs"
 msgstr "Programmes TI-81"
 
-#: gui/link.c:866
+#: gui/link.c:862
 msgid "Unable to receive variable list"
 msgstr "Impossible de recevoir la liste de variables"
 
-#: gui/link.c:927
+#: gui/link.c:923
 msgid ""
 "Applications cannot be saved in an XXg group file.  Try using TIG format or "
 "saving apps individually."
@@ -686,7 +774,7 @@ msgstr ""
 "Impossible de sauver en tant aue XXg group file. Essayez d'utiliser le "
 "format TIG ousauvez les applications individuellement."
 
-#: gui/link.c:1013
+#: gui/link.c:1009
 msgid ""
 "TI-81 programs cannot be saved in a group file. Try saving programs "
 "individually."
@@ -694,16 +782,16 @@ msgstr ""
 "Les programmes de TI-81 ne peuvent etre sauves en tant aue fichier groupes. "
 "Essayez de les sauver individuellement."
 
-#: gui/link.c:1030
+#: gui/link.c:1026
 #, c-format
 msgid "Failed to open %s for writing: %s"
 msgstr "Impossible d'ouvrir %s en ecriture: %s"
 
-#: gui/link.c:1119
+#: gui/link.c:1115
 msgid "Unable to save file"
 msgstr "Impossible de sauvegarder le fichier"
 
-#: gui/link.c:1232
+#: gui/link.c:1228
 #, c-format
 msgid "Variable %s not found"
 msgstr "Variable %s non trouvee"
@@ -724,33 +812,50 @@ msgstr "TI Graph link silver (USB)"
 msgid "Parallel Link"
 msgstr "Cable parallele"
 
-#: gui/linksetup.c:177 gui/linksetup.c:262
+#: gui/linksetup.c:205 gui/linksetup.c:344
 msgid "Link Port"
 msgstr "Cable port"
 
-#: gui/linksetup.c:193
+#: gui/linksetup.c:221
 msgid "_Disconnected"
 msgstr "_Deconnecte"
 
-#: gui/linksetup.c:198
+#: gui/linksetup.c:226
+#, fuzzy
+msgid "Connected to _speakers"
+msgstr "Connecter a un cable externe"
+
+#: gui/linksetup.c:229
+msgid "Ad_vanced..."
+msgstr ""
+
+#: gui/linksetup.c:242
 msgid "Connected to another _emulator (virtual cable)"
 msgstr "Connecter a un autre _emulateur (cable virtuel)"
 
-#: gui/linksetup.c:205
+#: gui/linksetup.c:249
 msgid "Connected to an e_xternal link cable"
 msgstr "Connecter a un cable externe"
 
-#: gui/linksetup.c:212
+#: gui/linksetup.c:256
 msgid "Cable _type:"
 msgstr "_Type de cable:"
 
-#: gui/linksetup.c:234
+#: gui/linksetup.c:278
 msgid "_Port:"
 msgstr "_Port"
 
-#: gui/linksetup.c:245
+#: gui/linksetup.c:290
 msgid "Ti_meout (sec):"
 msgstr "Ti_meout (sec):"
+
+#: gui/linksetup.c:320
+#, c-format
+msgid ""
+"USB drivers not found. You must install TiLP\n"
+"(%s) in order to use\n"
+"an external link cable."
+msgstr ""
 
 #: gui/macro.c:120
 msgid "Save macro"
@@ -1223,10 +1328,6 @@ msgstr "Le fichier %s n'est pas une skin."
 msgid "warning: checksum incorrect\n"
 msgstr "attention: checksum incorrect\n"
 
-#: gui/ti81prg.c:366
-msgid "Automatic"
-msgstr "Automatique"
-
 #: gui/tilem2.c:57
 msgid "The rom file to run"
 msgstr "Le fichier rom a executer"
@@ -1320,6 +1421,95 @@ msgstr "utf8_to_filename: erreur de conversion"
 #: gui/tool.c:428
 msgid "untitled"
 msgstr "sanstitre"
+
+#: emu/audio.c:232
+msgid "8-bit, unsigned"
+msgstr ""
+
+#: emu/audio.c:233
+msgid "8-bit, signed"
+msgstr ""
+
+#: emu/audio.c:234
+msgid "16-bit, unsigned, little-endian"
+msgstr ""
+
+#: emu/audio.c:235
+msgid "16-bit, signed, little-endian"
+msgstr ""
+
+#: emu/audio.c:236
+msgid "16-bit, unsigned, big-endian"
+msgstr ""
+
+#: emu/audio.c:237
+msgid "16-bit, signed, big-endian"
+msgstr ""
+
+#: emu/audio.c:249 emu/audio.c:259
+#, c-format
+msgid "audio: %s"
+msgstr ""
+
+#: emu/audio.c:417
+msgid "buffer overrun"
+msgstr ""
+
+#: emu/audio.c:673 emu/audio.c:823
+msgid "output sampling rate undefined"
+msgstr ""
+
+#: emu/audio.c:677 emu/audio.c:827
+msgid "number of output channels undefined"
+msgstr ""
+
+#: emu/audio.c:681 emu/audio.c:831
+msgid "output sample format undefined"
+msgstr ""
+
+#: emu/audio.c:685
+msgid "Starting playback:"
+msgstr ""
+
+#: emu/audio.c:686
+#, c-format
+msgid " rate        = %d"
+msgstr ""
+
+#: emu/audio.c:687
+#, c-format
+msgid " channels    = %d"
+msgstr ""
+
+#: emu/audio.c:688
+#, c-format
+msgid " format      = %s"
+msgstr ""
+
+#: emu/audio.c:690
+#, c-format
+msgid " buffer size = %d"
+msgstr ""
+
+#: emu/audio.c:776
+#, fuzzy, c-format
+msgid "invalid sampling rate (%d)"
+msgstr "%s: cable ivalide %s\n"
+
+#: emu/audio.c:791
+#, c-format
+msgid "invalid number of channels (%d)"
+msgstr ""
+
+#: emu/audio.c:806
+#, c-format
+msgid "invalid sample format (%d)"
+msgstr ""
+
+#: emu/audio.c:841
+#, c-format
+msgid "invalid buffer size (%d)"
+msgstr ""
 
 #: emu/cert.c:102
 #, c-format
@@ -1561,3 +1751,6 @@ msgstr ""
 #, c-format
 msgid "No-exec mask for RAM set to %x"
 msgstr ""
+
+#~ msgid "%s %s"
+#~ msgstr "%s %s"

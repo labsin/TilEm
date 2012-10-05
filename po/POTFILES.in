@@ -2,6 +2,8 @@ gui/address.c
 gui/animatedgif.c
 gui/animation.c
 gui/animation.h
+gui/audiodev.c
+gui/audiosetup.c
 gui/breakpoints.c
 gui/charmap.c
 gui/charmap.h
@@ -52,6 +54,7 @@ gui/ti81prg.c
 gui/ti81prg.h
 gui/tilem2.c
 gui/tool.c
+emu/audio.c
 emu/calcs.c
 emu/cert.c
 emu/flash.c
