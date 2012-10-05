@@ -71,6 +71,8 @@ typedef struct _TilemCalcEmulator {
 	gboolean ext_cable_changed;
 
 	gboolean enable_audio;
+	gboolean audio_error;
+	double audio_volume;
 	TilemAudioOptions audio_options;
 	gboolean audio_options_changed;
 	TilemAudioFilter *audio_filter;
@@ -185,6 +187,18 @@ void tilem_calc_emulator_set_limit_speed(TilemCalcEmulator *emu,
 /* Enable/disable grayscale */
 void tilem_calc_emulator_set_grayscale(TilemCalcEmulator *emu,
                                        gboolean grayscale);
+
+/* Enable/disable audio output */
+void tilem_calc_emulator_set_audio(TilemCalcEmulator *emu,
+                                   gboolean enable);
+
+/* Set audio volume */
+void tilem_calc_emulator_set_audio_volume(TilemCalcEmulator *emu,
+                                          double volume);
+
+/* Set audio options */
+void tilem_calc_emulator_set_audio_options(TilemCalcEmulator *emu,
+                                           const TilemAudioOptions *options);
 
 /* Select an external link cable (or change cable settings.) */
 void tilem_calc_emulator_set_link_cable(TilemCalcEmulator *emu,

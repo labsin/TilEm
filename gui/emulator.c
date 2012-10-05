@@ -133,6 +133,9 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 {
 	TilemCalcEmulator *emu = g_new0(TilemCalcEmulator, 1);
 	CalcUpdate *update;
+	int rate, channels;
+	double latency, volume;
+	char *driver;
 
 	emu->calc_mutex = g_mutex_new();
 	emu->calc_wakeup_cond = g_cond_new();
@@ -161,11 +164,25 @@ TilemCalcEmulator *tilem_calc_emulator_new()
 	emu->ext_cable_in = -1;
 	emu->ext_cable_out = -1;
 
-	emu->audio_options.rate     = DEFAULT_AUDIO_RATE;
-	emu->audio_options.channels = DEFAULT_AUDIO_CHANNELS;
-	emu->audio_options.format   = DEFAULT_AUDIO_FORMAT;
-	emu->audio_options.latency  = DEFAULT_AUDIO_LATENCY;
-	/* emu->enable_audio = TRUE; */
+	tilem_config_get("audio",
+	                 "driver/s", &driver,
+	                 "channels/i", &channels,
+	                 "rate/i", &rate,
+	                 "latency/r", &latency,
+	                 "volume/r", &volume,
+	                 NULL);
+
+	if (rate <= 0) rate = DEFAULT_AUDIO_RATE;
+	if (channels < 1 || channels > 2) channels = DEFAULT_AUDIO_CHANNELS;
+	if (latency <= 0.0) latency = DEFAULT_AUDIO_LATENCY;
+	if (volume <= 0.0) volume = DEFAULT_AUDIO_VOLUME;
+
+	emu->audio_options.driver = ((driver && driver[0]) ? driver : NULL);
+	emu->audio_options.rate = rate;
+	emu->audio_options.channels = channels;
+	emu->audio_options.latency = latency;
+	emu->audio_options.format = DEFAULT_AUDIO_FORMAT;
+	emu->audio_volume = volume;
 
 	return emu;
 }
@@ -200,6 +217,8 @@ void tilem_calc_emulator_free(TilemCalcEmulator *emu)
 
 	g_mutex_free(emu->pbar_mutex);
 	g_free(emu->link_update);
+
+	g_free(emu->audio_options.driver);
 
 	if (emu->lcd_buffer)
 		tilem_lcd_buffer_free(emu->lcd_buffer);
@@ -633,6 +652,40 @@ void tilem_calc_emulator_set_grayscale(TilemCalcEmulator *emu,
 		emu->glcd = NULL;
 		tilem_calc_emulator_unlock(emu);
 	}
+}
+
+void tilem_calc_emulator_set_audio(TilemCalcEmulator *emu,
+                                   gboolean enable)
+{
+	tilem_calc_emulator_lock(emu);
+	emu->enable_audio = enable;
+	emu->audio_error = FALSE;
+	tilem_calc_emulator_unlock(emu);
+}
+
+void tilem_calc_emulator_set_audio_volume(TilemCalcEmulator *emu,
+                                          double volume)
+{
+	tilem_calc_emulator_lock(emu);
+	emu->audio_volume = volume;
+	if (emu->audio_filter)
+		tilem_audio_filter_set_volume(emu->audio_filter, volume);
+	tilem_calc_emulator_unlock(emu);
+}
+
+void tilem_calc_emulator_set_audio_options(TilemCalcEmulator *emu,
+                                           const TilemAudioOptions *options)
+{
+	TilemAudioOptions opts = *options;
+	tilem_calc_emulator_lock(emu);
+	if (opts.driver != emu->audio_options.driver) {
+		g_free(emu->audio_options.driver);
+		opts.driver = (opts.driver ? g_strdup(opts.driver) : NULL);
+	}
+	emu->audio_options = opts;
+	emu->audio_options_changed = TRUE;
+	emu->audio_error = FALSE;
+	tilem_calc_emulator_unlock(emu);
 }
 
 void tilem_calc_emulator_set_link_cable(TilemCalcEmulator *emu,

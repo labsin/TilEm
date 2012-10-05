@@ -28,6 +28,9 @@ WINDRES = @WINDRES@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 
+SDL_CFLAGS = @SDL_CFLAGS@
+SDL_LIBS = @SDL_LIBS@
+
 TICALCS_CFLAGS = @TICALCS_CFLAGS@
 TICALCS_LIBS = @TICALCS_LIBS@
 
@@ -48,6 +51,7 @@ objects = tilem2.o \
 	animatedgif.o \
 	animation.o \
 	audiodev.o \
+	audiosetup.o \
 	breakpoints.o \
 	config.o \
 	charmap.o \
@@ -81,7 +85,8 @@ objects = tilem2.o \
 	tool.o \
 	$(gui_extra_objects)
 
-libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) $(LIBS)
+libs = $(TILEMDB_LIBS) $(TILEMCORE_LIBS) $(GTK_LIBS) $(TICALCS_LIBS) \
+	$(SDL_LIBS) $(LIBS)
 
 compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS) \
 	$(TILEMCORE_CFLAGS) $(TILEMDB_CFLAGS) \
@@ -158,6 +163,10 @@ preferences.o: preferences.c $(common_headers)
 linksetup.o: linksetup.c $(common_headers)
 	$(compile) -c $(srcdir)/linksetup.c
 
+# Audio setup dialog
+audiosetup.o: audiosetup.c $(common_headers)
+	$(compile) -c $(srcdir)/audiosetup.c
+
 # Open skin (skn format file) originally created by Julien Blache and Romain Lievins
 skinops.o: skinops.c skinops.h gettext.h
 	$(compile) -c $(srcdir)/skinops.c
@@ -200,7 +209,7 @@ animation.o: animation.c $(common_headers)
 
 # Audio output
 audiodev.o: audiodev.c $(common_headers)
-	$(compile) -c $(srcdir)/audiodev.c
+	$(compile) $(SDL_CFLAGS) -c $(srcdir)/audiodev.c
 
 # Shared/configuration files
 files.o: files.c files.h

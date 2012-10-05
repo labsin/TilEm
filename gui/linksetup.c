@@ -49,6 +49,9 @@ struct link_setup_dlg {
 
 	CableModel models[4];
 
+	/* button to open audio settings */
+	GtkWidget *audio_setup_btn;
+
 	/* table containing settings for external cable */
 	GtkWidget *tbl;
 
@@ -58,6 +61,23 @@ struct link_setup_dlg {
 	GtkWidget *timeout_lbl;
 	GtkWidget *timeout_sb;
 };
+
+static void audio_toggled(GtkToggleButton *tb, gpointer data)
+{
+	struct link_setup_dlg *lsdlg = data;
+
+	/* set audio options insensitive unless 'audio' is selected */
+	if (gtk_toggle_button_get_active(tb))
+		gtk_widget_set_sensitive(lsdlg->audio_setup_btn, TRUE);
+	else
+		gtk_widget_set_sensitive(lsdlg->audio_setup_btn, FALSE);
+}
+
+static void audio_setup_clicked(G_GNUC_UNUSED GtkButton *btn, void *data)
+{
+	TilemEmulatorWindow *ewin = data;
+	tilem_audio_setup_dialog(ewin);
+}
 
 static void ext_toggled(GtkToggleButton *tb, gpointer data)
 {
@@ -124,10 +144,11 @@ static gboolean cable_supported(CableModel model)
 
 void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 {
-	GtkWidget *dlg, *lbl, *vbox, *vbox2, *frame, *align;
-	GtkWidget *none_rb, *virtual_rb, *external_rb, *type_combo;
+	GtkWidget *dlg, *lbl, *vbox, *vbox2, *hbox, *frame, *align;
+	GtkWidget *none_rb, *virtual_rb, *external_rb, *audio_rb, *type_combo;
 	struct link_setup_dlg lsdlg;
 	CableOptions cur_opts;
+	gboolean audio = FALSE;
 	char *modelstr;
 	int *usbpids = NULL, nusbpids;
 	int portnum, timeout, i, j;
@@ -199,6 +220,22 @@ void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 	none_rb = gtk_radio_button_new_with_mnemonic
 		(NULL, _("_Disconnected"));
 	gtk_box_pack_start(GTK_BOX(vbox), none_rb, FALSE, FALSE, 0);
+
+	hbox = gtk_hbox_new(FALSE, 12);
+	audio_rb = gtk_radio_button_new_with_mnemonic_from_widget
+		(GTK_RADIO_BUTTON(none_rb), _("Connected to _speakers"));
+	gtk_box_pack_start(GTK_BOX(hbox), audio_rb, TRUE, TRUE, 0);
+
+	lsdlg.audio_setup_btn = gtk_button_new_with_mnemonic(_("Ad_vanced..."));
+	g_signal_connect(lsdlg.audio_setup_btn, "clicked",
+	                 G_CALLBACK(audio_setup_clicked), ewin);
+
+	gtk_box_pack_start(GTK_BOX(hbox), lsdlg.audio_setup_btn,
+	                   FALSE, FALSE, 0);
+#ifndef ENABLE_AUDIO
+	gtk_widget_set_no_show_all(hbox, TRUE);
+#endif
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
 	virtual_rb = gtk_radio_button_new_with_mnemonic_from_widget
 		(GTK_RADIO_BUTTON(none_rb),
@@ -316,18 +353,23 @@ void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(lsdlg.timeout_sb),
 	                          cur_opts.timeout * 0.1);
 
-	if (ewin->emu->ext_cable_options.model == CABLE_NUL)
+	if (ewin->emu->enable_audio)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(audio_rb), TRUE);
+	else if (ewin->emu->ext_cable_options.model == CABLE_NUL)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(none_rb), TRUE);
 	else if (ewin->emu->ext_cable_options.model == CABLE_TIE)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(virtual_rb), TRUE);
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(external_rb), TRUE);
 
+	g_signal_connect(audio_rb, "toggled",
+	                 G_CALLBACK(audio_toggled), &lsdlg);
 	g_signal_connect(external_rb, "toggled",
 	                 G_CALLBACK(ext_toggled), &lsdlg);
 	g_signal_connect(type_combo, "changed",
 	                 G_CALLBACK(ext_type_changed), &lsdlg);
 
+	audio_toggled(GTK_TOGGLE_BUTTON(audio_rb), &lsdlg);
 	ext_toggled(GTK_TOGGLE_BUTTON(external_rb), &lsdlg);
 	ext_type_changed(GTK_COMBO_BOX(type_combo), &lsdlg);
 
@@ -362,10 +404,15 @@ void tilem_link_setup_dialog(TilemEmulatorWindow *ewin)
 			                 NULL);
 		}
 	}
+	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(audio_rb))) {
+		cur_opts.model = CABLE_NUL;
+		audio = TRUE;
+	}
 	else {
 		cur_opts.model = CABLE_NUL;
 	}
 
+	tilem_calc_emulator_set_audio(ewin->emu, audio);
 	tilem_calc_emulator_set_link_cable(ewin->emu, &cur_opts);
 	gtk_widget_destroy(dlg);
 	return;

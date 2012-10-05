@@ -400,6 +400,7 @@ static void audio_set_buffer(TilemCalcEmulator *emu, void *buffer, int size,
 
 	if (!af) {
 		emu->audio_filter = af = tilem_audio_filter_new(emu->calc);
+		tilem_audio_filter_set_volume(af, emu->audio_volume);
 		options_changed = TRUE;
 	}
 
@@ -443,7 +444,7 @@ static void audio_open(TilemCalcEmulator *emu)
 		                   err->message);
 		g_clear_error(&err);
 		if (adev) tilem_audio_device_close(adev);
-		emu->enable_audio = FALSE;
+		emu->audio_error = TRUE;
 		return;
 	}
 
@@ -458,7 +459,8 @@ static void update_audio(TilemCalcEmulator *emu)
 	void *buffer;
 	int size;
 
-	if (!emu->enable_audio || emu->ext_cable || emu->ilp_active) {
+	if (!emu->enable_audio || emu->ext_cable || emu->ilp_active
+	    || emu->audio_error) {
 		/* audio explicitly or implicitly disabled */
 		audio_close(emu);
 	}
@@ -487,7 +489,7 @@ static void update_audio(TilemCalcEmulator *emu)
 			                   err->message);
 			g_clear_error(&err);
 			tilem_audio_device_close(emu->audio_device);
-			emu->enable_audio = FALSE;
+			emu->audio_error = TRUE;
 			return;
 		}
 

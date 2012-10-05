@@ -21,9 +21,10 @@
 #define DEFAULT_AUDIO_CHANNELS  2
 #define DEFAULT_AUDIO_FORMAT    TILEM_AUDIO_S16
 #define DEFAULT_AUDIO_LATENCY   0.02
+#define DEFAULT_AUDIO_VOLUME    0.5
 
 typedef struct {
-	const char *driver;
+	char *driver;
 	int rate;		/* Sampling rate (Hz) */
 	int channels;		/* Number of channels */
 	int format;		/* Sample format (TILEM_AUDIO_xx) */
@@ -46,6 +47,9 @@ void tilem_audio_device_init();
 /* Shut down audio support */
 void tilem_audio_device_exit();
 
+/* Get a list of available audio drivers */
+const char * const * tilem_audio_device_list_drivers();
+
 /* Open an audio device.  OPTIONS is a suggested configuration; the
    actual configuration used will, of course, depend on the driver and
    hardware. */
@@ -56,7 +60,7 @@ TilemAudioDevice * tilem_audio_device_open(const TilemAudioOptions *options,
 void tilem_audio_device_close(TilemAudioDevice *dev);
 
 /* Get actual configuration of an audio device */
-void tilem_audio_device_get_options(TilemAudioDevice *dev,
+void tilem_audio_device_get_options(const TilemAudioDevice *dev,
                                     TilemAudioOptions *options);
 
 /* Get next output buffer. */

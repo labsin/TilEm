@@ -3,6 +3,9 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
+/* Define to 1 to enable audio support. */
+#undef ENABLE_AUDIO
+
 /* always defined to indicate that i18n is enabled */
 #undef ENABLE_NLS
 
@@ -20,6 +23,9 @@
 
 /* Define if your <locale.h> file defines LC_MESSAGES. */
 #undef HAVE_LC_MESSAGES
+
+/* Define to 1 if you have the SDL library. */
+#undef HAVE_LIBSDL
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
@@ -53,6 +59,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the the `__sync_synchronize' function. */
+#undef HAVE___SYNC_SYNCHRONIZE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

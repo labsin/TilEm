@@ -26,7 +26,7 @@
 #include <gtk/gtk.h>
 #include <ticalcs.h>
 #include <tilem.h>
-#ifdef HAVE_SDL
+#ifdef HAVE_LIBSDL
 # include <SDL_audio.h>
 #endif
 
@@ -40,7 +40,7 @@
 #define READ_BARRIER()  BARRIER()
 #define WRITE_BARRIER() BARRIER()
 
-#ifdef HAVE_SDL
+#ifdef HAVE_LIBSDL
 
 #define FRAMES_PER_CHUNK 256
 
@@ -72,12 +72,66 @@ static void message(const char *s, ...)
 	va_end(ap);
 }
 
+/* All known SDL audio drivers */
+static const char * const known_drivers[] = {
+	"AL", "alsa", "arts", "audio", "coreaudio", "dart", "dcaudio",
+	/*"disk",*/ "dma", "dsound", "dsp", /*"dummy",*/ "esd",
+	"mint_dma8", "mint_gsxb", "mint_mcsn", "mint_stfa", "mint_xbios",
+	"nas", "nds", "netbsd", "openbsd", "paud", "pulse", "qsa-nto",
+	"sndmgr", "ums", "waveout" };
+
+static const char **driver_list;
+
+static gboolean check_driver(const char *name)
+{
+	char buf[256];
+
+	/* NAS driver takes several seconds to decide that it's not
+	   working - so simply assume it's available iff it was
+	   present at compile time */
+	if (!strcmp(name, "nas")) {
+#ifdef SDL_AUDIO_DRIVER_NAS
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+
+	if (!SDL_AudioInit(name)
+	    && SDL_AudioDriverName(buf, sizeof(buf))
+	    && !g_ascii_strcasecmp(buf, name)) {
+		SDL_AudioQuit();
+		return TRUE;
+	}
+	else {
+		SDL_AudioQuit();
+		return FALSE;
+	}
+}
+
 void tilem_audio_device_init()
 {
+	int i, j;
+
+	driver_list = g_new(const char *, G_N_ELEMENTS(known_drivers) + 1);
+	for (i = j = 0; i < (int) G_N_ELEMENTS(known_drivers); i++) {
+		if (check_driver(known_drivers[i])) {
+			driver_list[j] = known_drivers[i];
+			j++;
+		}
+	}
+	driver_list[j] = NULL;
+}
+
+const char * const * tilem_audio_device_list_drivers()
+{
+	return driver_list;
 }
 
 void tilem_audio_device_exit()
 {
+	g_free(driver_list);
+	driver_list = NULL;
 }
 
 void * tilem_audio_device_get_buffer(TilemAudioDevice *dev, int *size,
@@ -293,7 +347,7 @@ TilemAudioDevice * tilem_audio_device_open(const TilemAudioOptions *options,
 	return dev;
 }
 
-void tilem_audio_device_get_options(TilemAudioDevice *dev,
+void tilem_audio_device_get_options(const TilemAudioDevice *dev,
                                     TilemAudioOptions *options)
 {
 	g_return_if_fail(dev != NULL);
@@ -320,14 +374,19 @@ void tilem_audio_device_close(TilemAudioDevice *dev)
 	if (dev->buffer_count)
 		SDL_DestroySemaphore(dev->buffer_count);
 
-	g_free((char *) dev->options.driver);
+	g_free(dev->options.driver);
 	g_slice_free(TilemAudioDevice, dev);
 }
 
-#else /* !HAVE_SDL */
+#else /* !HAVE_LIBSDL */
 
 void tilem_audio_device_init()
 {
+}
+
+const char * const * tilem_audio_device_list_drivers()
+{
+	return NULL;
 }
 
 void tilem_audio_device_exit()
@@ -347,7 +406,7 @@ void tilem_audio_device_close(G_GNUC_UNUSED TilemAudioDevice *dev)
 {
 }
 
-void tilem_audio_device_get_options(G_GNUC_UNUSED TilemAudioDevice *dev,
+void tilem_audio_device_get_options(G_GNUC_UNUSED const TilemAudioDevice *dev,
                                     G_GNUC_UNUSED TilemAudioOptions *options)
 {
 }

@@ -121,6 +121,30 @@ fi
 with_flags(TICALCS,
   [ AC_CHECK_FUNCS([ticables_cable_set_raw]) ])
 
+# SDL
+
+AC_ARG_WITH([sdl],
+  AS_HELP_STRING([--with-sdl], [Use SDL for audio output]),
+  [], [ with_sdl=auto ])
+
+if test "x$with_sdl" != "xno" ; then
+  PKG_CHECK_MODULES(SDL, sdl, [ have_sdl=maybe ], [ have_sdl=no ])
+  if test "x$have_sdl" = "xmaybe" ; then
+    with_flags(SDL,
+      [ AC_CHECK_FUNC(SDL_AudioInit, [ have_sdl=yes ], [ have_sdl=no ]) ])
+  fi
+fi
+if test "x$have_sdl" = "xyes" ; then
+  AC_DEFINE(HAVE_LIBSDL, 1, [Define to 1 if you have the SDL library.])
+  AC_DEFINE(ENABLE_AUDIO, 1, [Define to 1 to enable audio support.])
+else
+  if test "x$with_sdl" = "xyes" ; then
+    AC_MSG_ERROR([SDL not found or not usable.])
+  fi
+  SDL_CFLAGS=
+  SDL_LIBS=
+fi
+
 # Gettext
 
 # List of all available languages
@@ -172,6 +196,13 @@ AC_C_BIGENDIAN
 AC_C_INLINE
 AC_C_RESTRICT
 AC_TYPE_UINTPTR_T
+
+AC_MSG_CHECKING([for __sync_synchronize])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([], [__sync_synchronize();])],
+  [AC_MSG_RESULT([yes])
+   AC_DEFINE(HAVE___SYNC_SYNCHRONIZE, 1,
+     [Define to 1 if you have the the `__sync_synchronize' function.])],
+  [AC_MSG_RESULT([no])])
 
 # Output
 

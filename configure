@@ -652,6 +652,8 @@ USE_NLS
 EGREP
 GREP
 GETTEXT_PACKAGE
+SDL_LIBS
+SDL_CFLAGS
 TICALCS_LIBS
 TICALCS_CFLAGS
 gui_extra_objects
@@ -721,6 +723,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_gtk_deprecated
+with_sdl
 '
       ac_precious_vars='build_alias
 host_alias
@@ -741,7 +744,9 @@ PKG_CONFIG_LIBDIR
 GTK_CFLAGS
 GTK_LIBS
 TICALCS_CFLAGS
-TICALCS_LIBS'
+TICALCS_LIBS
+SDL_CFLAGS
+SDL_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1354,6 +1359,11 @@ Optional Features:
   --disable-gtk-deprecated
                           Disable deprecated GTK+ API
 
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-sdl              Use SDL for audio output
+
 Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
@@ -1379,6 +1389,8 @@ Some influential environment variables:
               C compiler flags for TICALCS, overriding pkg-config
   TICALCS_LIBS
               linker flags for TICALCS, overriding pkg-config
+  SDL_CFLAGS  C compiler flags for SDL, overriding pkg-config
+  SDL_LIBS    linker flags for SDL, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -4039,6 +4051,123 @@ done
   LIBS="$save_libs"
 
 
+# SDL
+
+
+# Check whether --with-sdl was given.
+if test "${with_sdl+set}" = set; then :
+  withval=$with_sdl;
+else
+   with_sdl=auto
+fi
+
+
+if test "x$with_sdl" != "xno" ; then
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL" >&5
+$as_echo_n "checking for SDL... " >&6; }
+
+if test -n "$SDL_CFLAGS"; then
+    pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SDL_CFLAGS=`$PKG_CONFIG --cflags "sdl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$SDL_LIBS"; then
+    pkg_cv_SDL_LIBS="$SDL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SDL_LIBS=`$PKG_CONFIG --libs "sdl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sdl" 2>&1`
+        else
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sdl" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$SDL_PKG_ERRORS" >&5
+
+	 have_sdl=no
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	 have_sdl=no
+else
+	SDL_CFLAGS=$pkg_cv_SDL_CFLAGS
+	SDL_LIBS=$pkg_cv_SDL_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	 have_sdl=maybe
+fi
+  if test "x$have_sdl" = "xmaybe" ; then
+
+  save_cflags="$CFLAGS"
+  save_libs="$LIBS"
+  CFLAGS="$CFLAGS $SDL_CFLAGS"
+  LIBS="$LIBS $SDL_LIBS"
+   ac_fn_c_check_func "$LINENO" "SDL_AudioInit" "ac_cv_func_SDL_AudioInit"
+if test "x$ac_cv_func_SDL_AudioInit" = xyes; then :
+   have_sdl=yes
+else
+   have_sdl=no
+fi
+
+  CFLAGS="$save_cflags"
+  LIBS="$save_libs"
+
+  fi
+fi
+
+if test "x$have_sdl" = "xyes" ; then
+
+$as_echo "#define HAVE_LIBSDL 1" >>confdefs.h
+
+
+$as_echo "#define ENABLE_AUDIO 1" >>confdefs.h
+
+else
+  if test "x$with_sdl" = "xyes" ; then
+    as_fn_error $? "SDL not found or not usable." "$LINENO" 5
+  fi
+  SDL_CFLAGS=
+  SDL_LIBS=
+fi
+
 # Gettext
 
 # List of all available languages
@@ -5832,6 +5961,32 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_synchronize" >&5
+$as_echo_n "checking for __sync_synchronize... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+__sync_synchronize();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+$as_echo "#define HAVE___SYNC_SYNCHRONIZE 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
 
 # Output
 

@@ -160,6 +160,12 @@ void tilem_preferences_dialog(TilemEmulatorWindow *ewin);
 void tilem_link_setup_dialog(TilemEmulatorWindow *ewin);
 
 
+/* #### audiosetup.c #### */
+
+/* Run audio setup dialog. */
+void tilem_audio_setup_dialog(TilemEmulatorWindow *ewin);
+
+
 /* ##### address.c ##### */
 
 /* Convert address to a displayable string. */
