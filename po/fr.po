@@ -30,68 +30,68 @@ msgstr "Erreur lors de la fermeture '%s': %s"
 #: gui/audiodev.c:71
 #, c-format
 msgid "audiodev-sdl: %s\n"
-msgstr ""
+msgstr "audiodev-sdl: %s\n"
 
 #: gui/audiodev.c:154
 #, c-format
 msgid "Playback stopped unexpectedly"
-msgstr ""
+msgstr "Lecture arrêtée inopinément"
 
 #: gui/audiodev.c:184
 #, c-format
 msgid "WARNING: Audio buffer underrun by %d bytes"
-msgstr ""
+msgstr "ATTENTION : Débordement de buffer audio de %d bytes"
 
 #: gui/audiodev.c:262
 #, c-format
 msgid "Initialized \"%s\" driver"
-msgstr ""
+msgstr "Driver \"%s\" initialisé"
 
 #: gui/audiodev.c:267
 #, c-format
 msgid "AUDIODEV = \"%s\""
-msgstr ""
+msgstr "AUDIODEV = \"%s\" "
 
 #: gui/audiodev.c:304
 #, c-format
 msgid "Unknown sample format"
-msgstr ""
+msgstr "Format de l'échantillon inconnu"
 
 #: gui/audiodev.c:336
 #, c-format
 msgid "Cannot create semaphore: %s"
-msgstr ""
+msgstr "Impossible de créer le sémaphore: %s"
 
 #: gui/audiodev.c:344
 #, c-format
 msgid "buffer size = %d, latency = %.3g"
-msgstr ""
+msgstr "Taille buffer = %d, latence = %.3g"
 
 #: gui/audiodev.c:401
 #, c-format
 msgid "TilEm has not been compiled with sound support."
-msgstr ""
+msgstr "TilEm n'a pas été compilé avec le support du son."
 
 #: gui/audiosetup.c:64
 #, c-format
 msgid "%+.2g dB"
-msgstr ""
+msgstr "%+.2g dB"
 
 #: gui/audiosetup.c:195 gui/audiosetup.c:271
 msgid "Audio Properties"
-msgstr ""
+msgstr "Propriétés audios"
 
 #: gui/audiosetup.c:205
 msgid "_Volume:"
-msgstr ""
+msgstr "_Volume:"
 
 #: gui/audiosetup.c:215
 msgid "C_hannels:"
-msgstr ""
+msgstr "_Canal:"
 
 #: gui/audiosetup.c:225
 msgid "_Driver:"
-msgstr ""
+msgstr "_Pilote:"
 
 #: gui/audiosetup.c:232 gui/ti81prg.c:366
 msgid "Automatic"
@@ -99,11 +99,11 @@ msgstr "Automatique"
 
 #: gui/audiosetup.c:250
 msgid "Sampling _rate (kHz):"
-msgstr ""
+msgstr "Fréquence d'échantillonnage (kHz):"
 
 #: gui/audiosetup.c:261
 msgid "_Latency (ms):"
-msgstr ""
+msgstr "_Latence (ms):"
 
 #: gui/breakpoints.c:70
 msgid "Memory address (logical)"
@@ -1015,7 +1015,7 @@ msgstr "_A propos"
 
 #: gui/menu.c:237
 msgid "Print some informations about TilEm 2 and its authors"
-msgstr "Affiche des informations a propos de TilEm 2 et ses auteurs"
+msgstr "Affiche des informations a propos de TilEm 2 et de ses auteurs"
 
 #: gui/menu.c:241
 msgid "_Quit"
@@ -1383,7 +1383,7 @@ msgstr "Executer a la vitesse maximum"
 
 #: gui/tilem2.c:68
 msgid "TYPE[:PORT]"
-msgstr "TYPE{:PORT]"
+msgstr "TYPE[:PORT]"
 
 #: gui/tilem2.c:303
 #, c-format
@@ -1424,258 +1424,258 @@ msgstr "sanstitre"
 
 #: emu/audio.c:232
 msgid "8-bit, unsigned"
-msgstr ""
+msgstr "8-bits, non signé"
 
 #: emu/audio.c:233
 msgid "8-bit, signed"
-msgstr ""
+msgstr "8-bits, signé"
 
 #: emu/audio.c:234
 msgid "16-bit, unsigned, little-endian"
-msgstr ""
+msgstr "16-bit, non signé, little-endian"
 
 #: emu/audio.c:235
 msgid "16-bit, signed, little-endian"
-msgstr ""
+msgstr "16-bit, signé, little-endian"
 
 #: emu/audio.c:236
 msgid "16-bit, unsigned, big-endian"
-msgstr ""
+msgstr "16-bit, non signé, big-endian"
 
 #: emu/audio.c:237
 msgid "16-bit, signed, big-endian"
-msgstr ""
+msgstr "16-bit, signé, big-endian"
 
 #: emu/audio.c:249 emu/audio.c:259
 #, c-format
 msgid "audio: %s"
-msgstr ""
+msgstr "audio: %s"
 
 #: emu/audio.c:417
 msgid "buffer overrun"
-msgstr ""
+msgstr "debordement de buffer"
 
 #: emu/audio.c:673 emu/audio.c:823
 msgid "output sampling rate undefined"
-msgstr ""
+msgstr "fréquence d'echantillonnage de sortie non défini"
 
 #: emu/audio.c:677 emu/audio.c:827
 msgid "number of output channels undefined"
-msgstr ""
+msgstr "nombre de canaux de sortie indéfini"
 
 #: emu/audio.c:681 emu/audio.c:831
 msgid "output sample format undefined"
-msgstr ""
+msgstr "format d'échantillon de sortie indéfini"
 
 #: emu/audio.c:685
 msgid "Starting playback:"
-msgstr ""
+msgstr "Démarrer la lecture:"
 
 #: emu/audio.c:686
 #, c-format
 msgid " rate        = %d"
-msgstr ""
+msgstr "fréquence        = %d"
 
 #: emu/audio.c:687
 #, c-format
 msgid " channels    = %d"
-msgstr ""
+msgstr "  canaux    = %d"
 
 #: emu/audio.c:688
 #, c-format
 msgid " format      = %s"
-msgstr ""
+msgstr " format      = %s"
 
 #: emu/audio.c:690
 #, c-format
 msgid " buffer size = %d"
-msgstr ""
+msgstr " taille du buffer = %d"
 
 #: emu/audio.c:776
 #, fuzzy, c-format
 msgid "invalid sampling rate (%d)"
-msgstr "%s: cable ivalide %s\n"
+msgstr "%s: frequence d'échantillonnage invalide %s\n"
 
 #: emu/audio.c:791
 #, c-format
 msgid "invalid number of channels (%d)"
-msgstr ""
+msgstr "nombre de canaux invalide (%d)"
 
 #: emu/audio.c:806
 #, c-format
 msgid "invalid sample format (%d)"
-msgstr ""
+msgstr "format d'échantillon invalide (%d)"
 
 #: emu/audio.c:841
 #, c-format
 msgid "invalid buffer size (%d)"
-msgstr ""
+msgstr "taille du buffer invalide (%d)"
 
 #: emu/cert.c:102
 #, c-format
 msgid "Repairing certificate area..."
-msgstr ""
+msgstr "Réparation de la zone du certificat..."
 
 #: emu/cert.c:129
 #, c-format
 msgid "Found application at page %02x (index %d)"
-msgstr ""
+msgstr "Application trouvée à la page %02x (index %d)"
 
 #: emu/flash.c:61
 #, c-format
 msgid "Flash error (%s)"
-msgstr ""
+msgstr "Erreur de flash (%s)"
 
 #: emu/flash.c:104
 #, c-format
 msgid "bad program %02x over %02x"
-msgstr ""
+msgstr "mauvais programme %02x sur %02x"
 
 #: emu/flash.c:152
 msgid "reading from Flash while programming"
-msgstr ""
+msgstr "lecture de la Flash pendant la programmation"
 
 #: emu/flash.c:160 emu/flash.c:167
 msgid "reading from Flash while erasing"
-msgstr ""
+msgstr "lecture de la Flash pendant l'écrasement"
 
 #: emu/flash.c:186
 msgid "reading during program/erase sequence"
-msgstr ""
+msgstr "lecture pendant une sequence d'écrasement ou un programme"
 
 #: emu/flash.c:201
 msgid "erasing protected sector"
-msgstr ""
+msgstr "ecrasement du secteur protégé"
 
 #: emu/flash.c:233
 #, c-format
 msgid "undefined command %02x->%06x after AA"
-msgstr ""
+msgstr "commande indéfinie %02x->%06x après AA "
 
 #: emu/flash.c:243
 msgid "attempt to erase without pre-erase"
-msgstr ""
+msgstr "tentative d'écrasement sans pré-écrasement"
 
 #: emu/flash.c:252
 msgid "autoselect is not implemented"
-msgstr ""
+msgstr "auto select non implémenté"
 
 #: emu/flash.c:260
 #, c-format
 msgid "undefined command %02x->%06x after AA,55"
-msgstr ""
+msgstr "commande indéfinie %02x->%06x après AA,55"
 
 #: emu/flash.c:266 emu/flash.c:284
 msgid "programming protected sector"
-msgstr ""
+msgstr "programmation du secteur protégé"
 
 #: emu/flash.c:278
 #, c-format
 msgid "mixing fast programming with regular programming: %02x->%06x"
-msgstr ""
+msgstr "mélange programmation rapide avec programmation lente: %02x->%06x"
 
 #: emu/flash.c:293
 #, c-format
 msgid "undefined command %02x->%06x after fast mode pre-exit 90"
-msgstr ""
+msgstr "commande non définie %02x->%06x après mode pré-exit rapide 90 "
 
 #: emu/flash.c:303
 #, c-format
 msgid "undefined command %02x->%06x after pre-erase"
-msgstr ""
+msgstr "commande indéfinie %02x->%06x après pré-écrasement"
 
 #: emu/flash.c:310
 #, c-format
 msgid "undefined command %02x->%06x after pre-erase AA"
-msgstr ""
+msgstr "commande indéfinie %02x->%06x après pré-écrasement AA"
 
 #: emu/flash.c:315
 #, c-format
 msgid "Erasing entire Flash chip"
-msgstr ""
+msgstr "Ecrasement entier de la puce Flash"
 
 #: emu/flash.c:328
 #, c-format
 msgid "undefined command %02x->%06x after pre-erase AA,55"
-msgstr ""
+msgstr "commande indéfinie %02x->%06x après pré-écrasement AA,55"
 
 #: emu/md5.c:77
 #, c-format
 msgid "Invalid MD5 mode %d"
-msgstr ""
+msgstr "Mode MD5 invalide %d"
 
 #: emu/state.c:43
 #, fuzzy, c-format
 msgid "Unknown hwreg %s"
-msgstr "Erreur inconnue (%d)"
+msgstr "hwreg inconnue %s"
 
 #: emu/state.c:84
 #, fuzzy, c-format
 msgid "Unknown timer %s"
-msgstr "Erreur inconnue (%d)"
+msgstr "Timer inconnue %s"
 
 #: emu/z80.c:239
 #, c-format
 msgid "invalid bp type"
-msgstr ""
+msgstr "invalide bp type"
 
 #: emu/z80.c:377 emu/z80.c:388
 #, c-format
 msgid "setting invalid timer %d"
-msgstr ""
+msgstr "mise en place d'un timer invalide %"
 
 #: emu/z80.c:399
 #, c-format
 msgid "removing invalid timer %d"
-msgstr ""
+msgstr "suppression du timer invalide %d"
 
 #: emu/z80.c:410 emu/z80.c:425
 #, c-format
 msgid "querying invalid timer %d"
-msgstr ""
+msgstr "demande de timer invalide %d"
 
 #: emu/z80.c:472
 #, c-format
 msgid "attempt to remove invalid breakpoint %d"
-msgstr ""
+msgstr "Tentative de supprimer le breakpoint invalide %d"
 
 #: emu/z80.c:504 emu/z80.c:516 emu/z80.c:528 emu/z80.c:540 emu/z80.c:552
 #: emu/z80.c:564
 #, c-format
 msgid "attempt to access invalid breakpoint %d"
-msgstr ""
+msgstr "Tentative d'accès au breakpoint invalide %d"
 
 #: emu/z80.c:576 emu/z80.c:595 emu/z80.c:607 emu/z80.c:619 emu/z80.c:632
 #: emu/z80.c:644
 #, fuzzy, c-format
 msgid "attempt to modify invalid breakpoint %d"
-msgstr "Ajouter, supprimer ou modifier les breakpoints"
+msgstr "tentative de modifier un breakpoint invalide %d"
 
 #: emu/z80.c:866 emu/z80.c:950
 #, c-format
 msgid "No timers set"
-msgstr ""
+msgstr "Pas de timer mis en place"
 
 #: emu/z80cmds.h:82 emu/xn/xn_io.c:858
 #, c-format
 msgid "Invalid opcode %x"
-msgstr ""
+msgstr "Code opérande invalide %x"
 
 #: emu/x1/x1_io.c:69 emu/x3/x3_io.c:98 emu/x4/x4_io.c:315 emu/x5/x5_io.c:65
 #: emu/x6/x6_io.c:65 emu/xn/xn_io.c:318 emu/xz/xz_io.c:315
 #, c-format
 msgid "Input from port %x"
-msgstr ""
+msgstr "Entrée dans le port %x"
 
 #: emu/x4/x4_io.c:525 emu/x7/x7_io.c:215 emu/xp/xp_io.c:236 emu/xz/xz_io.c:525
 #, c-format
 msgid "Flash unlocked"
-msgstr ""
+msgstr "Flash déverrouillée"
 
 #: emu/x4/x4_io.c:527 emu/x7/x7_io.c:217 emu/xp/xp_io.c:238 emu/xz/xz_io.c:527
 #, c-format
 msgid "Flash locked"
-msgstr ""
+msgstr "Flash vérouillée"
 
 #: emu/x4/x4_io.c:531 emu/x4/x4_io.c:576 emu/x4/x4_io.c:586 emu/x4/x4_io.c:596
 #: emu/x4/x4_io.c:607 emu/x4/x4_io.c:618 emu/xs/xs_io.c:479 emu/xs/xs_io.c:524
@@ -1684,7 +1684,7 @@ msgstr ""
 #: emu/xz/xz_io.c:607 emu/xz/xz_io.c:618
 #, c-format
 msgid "Writing to protected port %02x"
-msgstr ""
+msgstr "Ecriture sur le port protégé %02x"
 
 #: emu/x4/x4_memory.c:98 emu/x4/x4_memory.c:129 emu/x7/x7_memory.c:78
 #: emu/x7/x7_memory.c:101 emu/xn/xn_memory.c:98 emu/xn/xn_memory.c:141
@@ -1692,30 +1692,30 @@ msgstr ""
 #: emu/xs/xs_memory.c:131 emu/xz/xz_memory.c:98 emu/xz/xz_memory.c:129
 #, c-format
 msgid "Reading from read-protected sector"
-msgstr ""
+msgstr "Lecture d'un secteur protégé"
 
 #: emu/x4/x4_memory.c:140 emu/x7/x7_memory.c:96 emu/xn/xn_memory.c:136
 #: emu/xp/xp_memory.c:98 emu/xs/xs_memory.c:142 emu/xz/xz_memory.c:140
 #, c-format
 msgid "Executing in restricted Flash area"
-msgstr ""
+msgstr "Execution dans la zone Flash restreinte"
 
 #: emu/x4/x4_memory.c:150 emu/xn/xn_memory.c:130 emu/xp/xp_memory.c:97
 #: emu/xs/xs_memory.c:156 emu/xz/xz_memory.c:150
 #, c-format
 msgid "Executing in restricted RAM area"
-msgstr ""
+msgstr "Execution dans la RAM restreinte"
 
 #: emu/x4/x4_memory.c:158 emu/x7/x7_memory.c:108 emu/xn/xn_memory.c:155
 #: emu/xp/xp_memory.c:112 emu/xs/xs_memory.c:164 emu/xz/xz_memory.c:158
 #, c-format
 msgid "No OS installed"
-msgstr ""
+msgstr "Pas d'OS installé"
 
 #: emu/x7/x7_io.c:225
 #, c-format
 msgid "No-exec mask set to %x"
-msgstr ""
+msgstr "Masque de non execution affecté à %x"
 
 #: emu/xn/xn_io.c:770
 #, fuzzy, c-format
@@ -1725,7 +1725,7 @@ msgstr "Clavier virtuel"
 #: emu/xn/xn_io.c:775
 #, c-format
 msgid "Keypad unlocked"
-msgstr ""
+msgstr "Clavier déverrouillé"
 
 #: emu/xn/xn_io.c:835
 #, fuzzy, c-format
@@ -1735,22 +1735,22 @@ msgstr "S'arreter sur les instructions _invalides"
 #: emu/xp/xp_io.c:248
 #, c-format
 msgid "No-exec mask for 08-0F set to %x"
-msgstr ""
+msgstr "Masque de non execution pour 08-0F affecté à %x"
 
 #: emu/xp/xp_io.c:252
 #, c-format
 msgid "No-exec mask for 10-17 set to %x"
-msgstr ""
+msgstr "Masque de non executionpour 10-17 affecté à %x"
 
 #: emu/xp/xp_io.c:256
 #, c-format
 msgid "No-exec mask for 18-1B set to %x"
-msgstr ""
+msgstr "Masque de non execution pour 18-1B affecté à %x"
 
 #: emu/xp/xp_io.c:260
 #, c-format
 msgid "No-exec mask for RAM set to %x"
-msgstr ""
+msgstr "Masque de non execution affecté pour RAM à %x"
 
 #~ msgid "%s %s"
 #~ msgstr "%s %s"
