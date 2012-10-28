@@ -29,6 +29,10 @@
 #include "tilem.h"
 #include "gettext.h"
 
+#ifndef HAVE_LROUND
+# define lround(x) ((long) floor((x) + 0.5))
+#endif
+
 /*
 
  OVERVIEW
@@ -652,13 +656,13 @@ static void filter_setup(TilemAudioFilter *af, int rate)
 	}
 	for (i = 0; i < length; i++) {
 		x += coeff[i];
-		af->filter_sum[i + padnear] = x * scale;
+		af->filter_sum[i + padnear] = lround(x * scale);
 	}
 	for (i = 0; i < padfar; i++) {
-		af->filter_sum[i + padnear + length] = x * scale;
+		af->filter_sum[i + padnear + length] = lround(x * scale);
 	}
 
-	af->init_low = af->init_high + x * scale;
+	af->init_low = af->init_high + lround(x * scale);
 
 	tilem_free(coeff);
 }

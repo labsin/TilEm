@@ -37,8 +37,6 @@ AC_CHECK_PROG([UPDATE_MIME_DATABASE],
 
 # Checks for libraries
 
-AC_CHECK_LIB(m, pow, [ LIBS="-lm $LIBS" ])
-
 m4_define(with_flags, [
   save_cflags="$CFLAGS"
   save_libs="$LIBS"
@@ -196,6 +194,11 @@ AC_C_BIGENDIAN
 AC_C_INLINE
 AC_C_RESTRICT
 AC_TYPE_UINTPTR_T
+
+# Checks for standard library functions
+
+AC_SEARCH_LIBS([pow], [m])
+AC_CHECK_FUNCS([lround])
 
 AC_MSG_CHECKING([for __sync_synchronize])
 AC_LINK_IFELSE([AC_LANG_PROGRAM([], [__sync_synchronize();])],
