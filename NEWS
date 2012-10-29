@@ -15,6 +15,9 @@
     an external link cable.  Please note that there is no support yet
     for direct USB cables.
 
+  * TilEm can also simulate audio output, for assembly programs that
+    play sound through the link port.  The SDL library is required.
+
   * When you scroll up in the disassembler, it will try to find the
     start of the previous instruction.  Because Z80 instructions have
     variable length, this is heuristic and will not work correctly in
