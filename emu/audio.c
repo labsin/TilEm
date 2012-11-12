@@ -470,8 +470,8 @@ static void timer_callback(TilemCalc *calc, void *data)
 	cur = af->cur_accum;
 	prev = (cur ? cur - 1 : af->num_accum - 1);
 
-	t = accum[cur].t_offset;
 	/*
+	t = accum[cur].t_offset;
 	if (TILEM_UNLIKELY(t < 0))
 		warn(af, "final t_offset too small (%d)", t);
 	else if (TILEM_UNLIKELY(t > af->filter_padnear))
@@ -529,8 +529,8 @@ static void timer_callback(TilemCalc *calc, void *data)
 
 	accum[cur].t_offset = accum[prev].t_offset + t;
 
-	t = accum[cur].t_offset + (af->timer_period_c * SUBTICKS_PER_US);
 	/*
+	t = accum[cur].t_offset + (af->timer_period_c * SUBTICKS_PER_US);
 	if (TILEM_UNLIKELY(t >= af->filter_size))
 		warn(af, "initial t_offset too large (%d)", t);
 	else if (TILEM_UNLIKELY(t < af->filter_size - af->filter_padfar - 1))
