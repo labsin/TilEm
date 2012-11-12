@@ -322,6 +322,7 @@ int main(int argc, char **argv)
 	}
 	else {
 		cable_options.model = CABLE_NUL;
+		cable_options.port = 0;
 	}
 
 	load_initial_rom(emu, cl_romfile, cl_statefile, cl_files_to_load, model);
