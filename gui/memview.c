@@ -43,7 +43,7 @@ static int get_column_index(GtkWidget *view, GtkTreeViewColumn *col)
 	cols = gtk_tree_view_get_columns(GTK_TREE_VIEW(view));
 	i = g_list_index(cols, col);
 	g_list_free(cols);
-	return -1;
+	return i;
 }
 
 /* Determine current position in the memory view. */
