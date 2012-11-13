@@ -517,12 +517,10 @@ msgid "Unable to open link cable"
 msgstr "Impossible d'envoyer le fichier"
 
 #: gui/emucore.c:443
-#, fuzzy
 msgid "Unable to open sound device"
 msgstr "Impossible d'envoyer le fichier"
 
 #: gui/emucore.c:488
-#, fuzzy
 msgid "Unable to play sound"
 msgstr "Impossible de charger la skin"
 
@@ -746,9 +744,9 @@ msgid "Unable to send file"
 msgstr "Impossible d'envoyer le fichier"
 
 #: gui/link.c:693
-#, fuzzy, c-format
+#c-format
 msgid "%s %s files"
-msgstr "%s fichier group"
+msgstr "%s %s fichier group"
 
 #: gui/link.c:730
 msgid "Reading variable list"
@@ -821,13 +819,12 @@ msgid "_Disconnected"
 msgstr "_Deconnecte"
 
 #: gui/linksetup.c:226
-#, fuzzy
 msgid "Connected to _speakers"
-msgstr "Connecter a un cable externe"
+msgstr "Connecter a un cable _externe"
 
 #: gui/linksetup.c:229
 msgid "Ad_vanced..."
-msgstr ""
+msgstr "A_vancé..."
 
 #: gui/linksetup.c:242
 msgid "Connected to another _emulator (virtual cable)"
@@ -856,6 +853,9 @@ msgid ""
 "(%s) in order to use\n"
 "an external link cable."
 msgstr ""
+"Pilotes USB introuvables. Vous devez installer TiLP\n"
+"(%s) pour pouvoir être en mesure d'utiliser\n"
+"le cable externe."
 
 #: gui/macro.c:120
 msgid "Save macro"
@@ -1080,20 +1080,21 @@ msgstr[0] "Remplacer un fichier existant"
 msgstr[1] "Remplacer des fichiers existants "
 
 #: gui/rcvmenu.c:99
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The file \"%2$s\" already exists in \"%1$s\".  Replacing it will overwrite "
-"its contents."
+"its contents.\n"
 msgid_plural ""
 "The following files already exist in \"%s\".  Replacing them will overwrite "
-"their contents:\n"
-"%s"
+"their contents:"
+"%s\n"
 msgstr[0] ""
-"Le fichier \"%s\" existe deja dans \"%s\".  Le remplacer va effacer son "
+"Le fichier \"%2$s\" existe deja dans \"%1$s\".  Le remplacer va effacer son "
 "contenu.\n"
 msgstr[1] ""
-"Les fichiers \"%s\" existent deja dans \"%s\".  Les remplacer va effacer "
-"leurs contenu.\n"
+"Les fichiers existent deja dans \"%s\".  Les remplacer va effacer "
+"leurs contenu:"
+"%s\n"
 
 #: gui/rcvmenu.c:146 gui/rcvmenu.c:205
 msgid "Save File"
@@ -1492,9 +1493,9 @@ msgid " buffer size = %d"
 msgstr " taille du buffer = %d"
 
 #: emu/audio.c:776
-#, fuzzy, c-format
+#, c-format
 msgid "invalid sampling rate (%d)"
-msgstr "%s: frequence d'échantillonnage invalide %s\n"
+msgstr "frequence d'échantillonnage invalide (%d)"
 
 #: emu/audio.c:791
 #, c-format
@@ -1605,14 +1606,14 @@ msgid "Invalid MD5 mode %d"
 msgstr "Mode MD5 invalide %d"
 
 #: emu/state.c:43
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown hwreg %s"
-msgstr "hwreg inconnue %s"
+msgstr "Hwreg inconnue %s"
 
 #: emu/state.c:84
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown timer %s"
-msgstr "Timer inconnue %s"
+msgstr "Timer inconnu %s"
 
 #: emu/z80.c:239
 #, c-format
@@ -1622,7 +1623,7 @@ msgstr "invalide bp type"
 #: emu/z80.c:377 emu/z80.c:388
 #, c-format
 msgid "setting invalid timer %d"
-msgstr "mise en place d'un timer invalide %"
+msgstr "Mise en place d'un timer invalide %d"
 
 #: emu/z80.c:399
 #, c-format
@@ -1647,7 +1648,7 @@ msgstr "Tentative d'accès au breakpoint invalide %d"
 
 #: emu/z80.c:576 emu/z80.c:595 emu/z80.c:607 emu/z80.c:619 emu/z80.c:632
 #: emu/z80.c:644
-#, fuzzy, c-format
+#, c-format
 msgid "attempt to modify invalid breakpoint %d"
 msgstr "tentative de modifier un breakpoint invalide %d"
 
@@ -1718,7 +1719,7 @@ msgid "No-exec mask set to %x"
 msgstr "Masque de non execution affecté à %x"
 
 #: emu/xn/xn_io.c:770
-#, fuzzy, c-format
+#, c-format
 msgid "Keypad locked"
 msgstr "Clavier virtuel"
 
@@ -1728,9 +1729,9 @@ msgid "Keypad unlocked"
 msgstr "Clavier déverrouillé"
 
 #: emu/xn/xn_io.c:835
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown control instruction %x"
-msgstr "S'arreter sur les instructions _invalides"
+msgstr "S'arreter sur les instructions invalides %x"
 
 #: emu/xp/xp_io.c:248
 #, c-format
