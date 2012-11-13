@@ -1731,7 +1731,7 @@ msgstr "Clavier déverrouillé"
 #: emu/xn/xn_io.c:835
 #, c-format
 msgid "Unknown control instruction %x"
-msgstr "S'arreter sur les instructions invalides %x"
+msgstr "Instruction invalides %x"
 
 #: emu/xp/xp_io.c:248
 #, c-format
