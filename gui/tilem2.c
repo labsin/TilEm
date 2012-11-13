@@ -50,6 +50,7 @@ static gboolean cl_debug_flag = FALSE;
 static gboolean cl_normalspeed_flag = FALSE;
 static gboolean cl_fullspeed_flag = FALSE;
 static gchar* cl_link_cable = NULL;
+static gboolean cl_audio_flag = FALSE;
 
 
 static GOptionEntry entries[] =
@@ -66,6 +67,7 @@ static GOptionEntry entries[] =
 	{ "normal-speed", 0, 0, G_OPTION_ARG_NONE, &cl_normalspeed_flag, N_("Run at normal speed"), NULL },
 	{ "full-speed", 0, 0, G_OPTION_ARG_NONE, &cl_fullspeed_flag, N_("Run at maximum speed"), NULL },
 	{ "cable", 'c', 0, G_OPTION_ARG_STRING, &cl_link_cable, N_("Connect to an external link cable"), N_("TYPE[:PORT]") },
+	{ "audio", 'a', 0, G_OPTION_ARG_NONE, &cl_audio_flag, N_("Enable audio output"), NULL },
 	{ G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &cl_files_to_load, NULL, N_("FILE") },
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -354,6 +356,7 @@ int main(int argc, char **argv)
 	else if (cl_normalspeed_flag)
 		tilem_calc_emulator_set_limit_speed(emu, TRUE);
 
+	tilem_calc_emulator_set_audio(emu, cl_audio_flag);
 	tilem_calc_emulator_set_link_cable(emu, &cable_options);
 
 	if (cl_files_to_load)
