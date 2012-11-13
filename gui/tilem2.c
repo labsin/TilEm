@@ -217,7 +217,7 @@ static void load_initial_rom(TilemCalcEmulator *emu,
 static int parse_link_cable(CableOptions *options, const char *str)
 {
 	const char *portstr;
-	char *modelstr;
+	char *modelstr = NULL;
 	char *end;
 
 	if ((portstr = strchr(str, ':'))) {

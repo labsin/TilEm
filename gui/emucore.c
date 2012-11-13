@@ -422,8 +422,8 @@ static void audio_open(TilemCalcEmulator *emu)
 	TilemAudioOptions opts;
 	TilemAudioDevice *adev;
 	GError *err = NULL;
-	void *buffer;
-	int size;
+	void *buffer = NULL;
+	int size = 0;
 
 	if (emu->audio_options_changed)
 		audio_close(emu);
@@ -456,8 +456,8 @@ static void audio_open(TilemCalcEmulator *emu)
 static void update_audio(TilemCalcEmulator *emu)
 {
 	GError *err = NULL;
-	void *buffer;
-	int size;
+	void *buffer = NULL;
+	int size = 0;
 
 	if (!emu->enable_audio || emu->ext_cable || emu->ilp_active
 	    || emu->audio_error) {

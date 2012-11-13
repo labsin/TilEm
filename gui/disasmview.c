@@ -363,9 +363,9 @@ static TilemDebugBreakpoint *find_line_bp(TilemDisasmView *dv, dword pos)
 /* Enable breakpoint on the given line */
 static void enable_line_bp(TilemDisasmView *dv, dword pos)
 {
-	TilemDebugBreakpoint *bp, tmpbp;
+	TilemDebugBreakpoint tmpbp;
 
-	if ((bp = find_line_bp(dv, pos)))
+	if (find_line_bp(dv, pos))
 		return;
 
 	tmpbp.type = (dv->use_logical
