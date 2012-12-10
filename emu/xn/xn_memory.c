@@ -116,6 +116,10 @@ byte xn_z80_rdmem_m1(TilemCalc* calc, dword A)
 	unsigned long pa;
 	byte value;
 
+	/* only increment R once per instruction */
+	if (A != calc->z80.r.pc.d)
+		calc->z80.r.ir.b.l--;
+
 	page = calc->mempagemap[A>>14];
 
 	if (A & 0x8000) {
