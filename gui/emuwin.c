@@ -448,6 +448,8 @@ TilemEmulatorWindow *tilem_emulator_window_new(TilemCalcEmulator *emu)
 	                 G_CALLBACK(key_press_event), ewin);
 	g_signal_connect(ewin->window, "key-release-event",
 	                 G_CALLBACK(key_release_event), ewin);
+	g_signal_connect(ewin->window, "focus-out-event",
+	                 G_CALLBACK(focus_out_event), ewin);
 
 	build_menu(ewin);
 

@@ -130,6 +130,9 @@ gboolean key_press_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 /* Key-release event */
 gboolean key_release_event(GtkWidget* w, GdkEventKey *event, gpointer data);
 
+/* Focus-out event */
+gboolean focus_out_event(GtkWidget* w, GdkEventFocus *event, gpointer data);
+
 /* Pop up menu on main window */
 gboolean popup_menu_event(GtkWidget* w, gpointer data);
 

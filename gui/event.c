@@ -349,11 +349,9 @@ gboolean key_press_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	return TRUE;
 }
 
-/* Key-release event */
-gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
-                           gpointer data)
+/* Keyboard key released (keycode 0 = all keys) */
+static void release_keycode(TilemEmulatorWindow *ewin, int keycode)
 {
-	TilemEmulatorWindow *ewin = data;
 	int i;
 
 	/* Check if the key that was just released was one that
@@ -361,17 +359,37 @@ gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
 	   event->keyval; modifiers may have changed since the key was
 	   pressed.) */
 	for (i = 0; i < 64; i++) {
-		if (ewin->keypress_keycodes[i] == event->hardware_keycode) {
+		if (keycode == 0
+		    ? ewin->keypress_keycodes[i] != 0
+		    : ewin->keypress_keycodes[i] == keycode) {
 			tilem_calc_emulator_release_key(ewin->emu, i);
 			ewin->keypress_keycodes[i] = 0;
 		}
 	}
 
-	if (ewin->sequence_keycode == event->hardware_keycode) {
+	if (keycode == 0
+	    ? ewin->sequence_keycode != 0
+	    : ewin->sequence_keycode == keycode) {
 		tilem_calc_emulator_release_queued_key(ewin->emu);
 		ewin->sequence_keycode = 0;
 	}
+}
 
+/* Key-release event */
+gboolean key_release_event(G_GNUC_UNUSED GtkWidget* w, GdkEventKey* event,
+                           gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	release_keycode(ewin, event->hardware_keycode);
+	return FALSE;
+}
+
+/* Keyboard focus lost */
+gboolean focus_out_event(G_GNUC_UNUSED GtkWidget* w,
+                         G_GNUC_UNUSED GdkEventFocus *event, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	release_keycode(ewin, 0);
 	return FALSE;
 }
 
