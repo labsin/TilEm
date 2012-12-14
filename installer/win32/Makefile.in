@@ -35,7 +35,7 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 system_dlls = advapi32.dll cfgmgr32.dll comctl32.dll comdlg32.dll dnsapi.dll \
 	      gdi32.dll gdiplus.dll imm32.dll kernel32.dll msimg32.dll \
 	      msvcrt.dll ole32.dll setupapi.dll shell32.dll shlwapi.dll \
-	      user32.dll usp10.dll winspool.drv ws2_32.dll wsock32.dll
+	      user32.dll usp10.dll winmm.dll winspool.drv ws2_32.dll wsock32.dll
 
 all: install
 
