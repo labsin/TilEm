@@ -42,7 +42,7 @@
 
 #ifdef HAVE_LIBSDL
 
-#define FRAMES_PER_CHUNK 256
+#define MIN_FRAMES_PER_CHUNK 64
 
 struct _TilemAudioDevice {
 	TilemAudioOptions options;
@@ -238,7 +238,7 @@ TilemAudioDevice * tilem_audio_device_open(const TilemAudioOptions *options,
 {
 	TilemAudioDevice *dev;
 	SDL_AudioSpec aspec, real_aspec;
-	guint framesize, latency, latency_chunks;
+	guint framesize, frames_per_chunk, latency, latency_chunks;
 	char name[256];
 	const char *devname;
 	int fmt;
@@ -268,12 +268,16 @@ TilemAudioDevice * tilem_audio_device_open(const TilemAudioOptions *options,
 
 	/* open output device */
 
+	frames_per_chunk = MIN_FRAMES_PER_CHUNK;
+	while (frames_per_chunk * 4 < options->latency * options->rate)
+		frames_per_chunk *= 2;
+
 	dev = g_slice_new0(TilemAudioDevice);
 
 	aspec.freq = options->rate;
 	aspec.channels = options->channels;
 	aspec.format = AUDIO_S16SYS;
-	aspec.samples = FRAMES_PER_CHUNK;
+	aspec.samples = frames_per_chunk;
 	aspec.callback = &io_callback;
 	aspec.userdata = dev;
 
@@ -308,15 +312,15 @@ TilemAudioDevice * tilem_audio_device_open(const TilemAudioOptions *options,
 	dev->options.format = fmt;
 
 	framesize = (fmt & TILEM_AUDIO_16_BIT ? 2 : 1) * dev->options.channels;
-	dev->chunk_size = framesize * FRAMES_PER_CHUNK;
+	dev->chunk_size = framesize * frames_per_chunk;
 
 	/* compute latency and allocate sample buffers */
 
-	latency = MAX(real_aspec.samples + FRAMES_PER_CHUNK,
+	latency = MAX(real_aspec.samples + frames_per_chunk,
 	              options->latency * real_aspec.freq);
 
-	latency_chunks = ((latency + FRAMES_PER_CHUNK - 1) / FRAMES_PER_CHUNK);
-	latency = latency_chunks * FRAMES_PER_CHUNK;
+	latency_chunks = ((latency + frames_per_chunk / 2) / frames_per_chunk);
+	latency = latency_chunks * frames_per_chunk;
 	dev->options.latency = (double) latency / real_aspec.freq;
 
 	dev->nchunks = 2;
