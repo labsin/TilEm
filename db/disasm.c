@@ -730,7 +730,7 @@ static void get_instruction_info(const TilemDisasm* dasm,
 	int i;
 
 	mvalue = 0;
-	for (i = 0; i < 4; i++) {
+	for (i = 0; instr[0] && i < 4; i++) {
 		mvalue = (mvalue << 8) | instr[i];
 		if ((sym = find_symbol(&dasm->macros, mvalue))) {
 			*pattern = sym->name;
