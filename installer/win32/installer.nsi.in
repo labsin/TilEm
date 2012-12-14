@@ -16,6 +16,7 @@ Var StartMenuFolder
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MULTIUSER_PAGE_INSTALLMODE
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE checkinstalldir
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 !insertmacro MUI_PAGE_INSTFILES
@@ -42,6 +43,19 @@ Function un.onInit
 	${endif}
 FunctionEnd
 
+Function checkinstalldir
+	${if} ${FileExists} "$INSTDIR\uninstall.exe"
+	${andif} ${FileExists} "$INSTDIR\uninstall.ini"
+		MessageBox MB_OKCANCEL|MB_ICONINFORMATION \
+			"TilEm is already installed in this directory, \
+			and will be upgraded.  Please ensure that \
+			TilEm is not running before continuing." \
+			IDOK installdirok
+		Abort
+		installdirok:
+	${endif}
+FunctionEnd
+
 Function desktopicon
 	SetShellVarContext current
 	CreateShortCut "$DESKTOP\TilEm.lnk" "$INSTDIR\bin\tilem2.exe"
@@ -49,6 +63,12 @@ FunctionEnd
 
 Section
 	SetOutPath "$INSTDIR"
+
+	${if} ${FileExists} "$INSTDIR\uninstall.exe"
+	${andif} ${FileExists} "$INSTDIR\uninstall.ini"
+		ExecWait '"$INSTDIR\uninstall.exe" /S _?=$INSTDIR'
+	${endif}
+
 	!include "files.nsi"
 
 	${if} $MultiUser.InstallMode == "CurrentUser"
