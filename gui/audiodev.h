@@ -20,7 +20,11 @@
 #define DEFAULT_AUDIO_RATE      48000
 #define DEFAULT_AUDIO_CHANNELS  2
 #define DEFAULT_AUDIO_FORMAT    TILEM_AUDIO_S16
-#define DEFAULT_AUDIO_LATENCY   0.02
+#ifdef G_OS_WIN32
+# define DEFAULT_AUDIO_LATENCY   0.1
+#else
+# define DEFAULT_AUDIO_LATENCY   0.03
+#endif
 #define DEFAULT_AUDIO_VOLUME    0.5
 
 typedef struct {
