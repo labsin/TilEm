@@ -269,7 +269,7 @@ TilemAudioDevice * tilem_audio_device_open(const TilemAudioOptions *options,
 	/* open output device */
 
 	frames_per_chunk = MIN_FRAMES_PER_CHUNK;
-	while (frames_per_chunk * 4 < options->latency * options->rate)
+	while (frames_per_chunk * 7 < options->latency * options->rate * 2)
 		frames_per_chunk *= 2;
 
 	dev = g_slice_new0(TilemAudioDevice);
