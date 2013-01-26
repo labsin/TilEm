@@ -165,6 +165,7 @@ struct _TilemAudioFilter {
 	int output_format;
 	double volume;
 	int vscale;
+	dword dc_offset;
 
 	int sample_tmr;         /* Timer ID */
 	int link_bp;            /* Breakpoint ID */
@@ -352,7 +353,7 @@ static inline int dither(int step)
 
 static inline byte conv8(dword samp)
 {
-	samp += 0x80000000 + dither(1 << (VSHIFT + 8));
+	samp += dither(1 << (VSHIFT + 8));
 	samp >>= VSHIFT + 8;
 
 	if (TILEM_UNLIKELY(samp < 0x180))
@@ -365,7 +366,7 @@ static inline byte conv8(dword samp)
 
 static inline word conv16(dword samp)
 {
-	samp += 0x80000000 + dither(1 << VSHIFT);
+	samp += dither(1 << VSHIFT);
 	samp >>= VSHIFT;
 
 	if (TILEM_UNLIKELY(samp < 0x18000))
@@ -427,13 +428,13 @@ static void put_frame(TilemAudioFilter *af, word raw_l, word raw_r)
 	r = ((int16_t) raw_r * af->vscale);
 
 	if (af->output_channels == 1) {
-		put_sample(af->buffer_pos, fmt, l + r);
+		put_sample(af->buffer_pos, fmt, l + r + af->dc_offset);
 		af->buffer_pos += bps;
 		af->buffer_remaining -= bps;
 	}
 	else {
-		put_sample(af->buffer_pos, fmt, l);
-		put_sample(af->buffer_pos + bps, fmt, r);
+		put_sample(af->buffer_pos, fmt, l + af->dc_offset);
+		put_sample(af->buffer_pos + bps, fmt, r + af->dc_offset);
 		af->buffer_pos += 2 * bps;
 		af->buffer_remaining -= 2 * bps;
 	}
@@ -760,10 +761,31 @@ void tilem_audio_filter_free(TilemAudioFilter *af)
 
 void tilem_audio_filter_set_volume(TilemAudioFilter *af, double v)
 {
+	int cscale, max_scaled, null_scaled;
+
 	af->volume = v;
 	af->vscale = (af->volume
 	              * (1 << VSHIFT)
 	              * af->output_channels / 2);
+
+	if (!af->output_channels)
+		return;
+
+	cscale = af->vscale * (2 / af->output_channels);
+	max_scaled = 32767 * cscale;
+	null_scaled = (int16_t) af->init_high * cscale;
+
+	/* if possible, set DC offset so that the inactive state
+	   (init_high) is translated to zero output */
+	if (max_scaled - null_scaled <= 32767 << VSHIFT)
+		af->dc_offset = 0x80000000 - null_scaled;
+	/* otherwise, get as close as we can without clipping */
+	else if (cscale <= 1 << VSHIFT)
+		af->dc_offset = 0x80000000 + (32767 << VSHIFT) - max_scaled;
+	/* if clipping is unavoidable, clip peaks and troughs
+	   symmetrically */
+	else
+		af->dc_offset = 0x80000000;
 }
 
 void tilem_audio_filter_set_callback(TilemAudioFilter *af,
@@ -786,6 +808,7 @@ void tilem_audio_filter_set_rate(TilemAudioFilter *af, int rate)
 
 	flush_buffer(af);
 	filter_setup(af, rate);
+	tilem_audio_filter_set_volume(af, af->volume);
 	tilem_audio_filter_reset(af);
 }
 
