@@ -489,6 +489,7 @@ static void update_audio(TilemCalcEmulator *emu)
 			                   err->message);
 			g_clear_error(&err);
 			tilem_audio_device_close(emu->audio_device);
+			emu->audio_device = NULL;
 			emu->audio_error = TRUE;
 			return;
 		}
