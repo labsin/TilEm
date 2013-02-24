@@ -419,7 +419,8 @@ static gboolean edit_breakpoint(TilemDebugger *dbg,
                                 GtkWindow *parent_window,
                                 const char *title,
                                 TilemDebugBreakpoint *bp,
-                                gboolean edit_existing)
+                                gboolean edit_existing,
+                                gboolean edit_endaddr)
 {
 	GtkWidget *dlg, *vbox, *frame, *tbl, *hbox, *lbl, *combo, *cb, *rb;
 	struct breakpoint_dlg bpdlg;
@@ -555,7 +556,10 @@ static gboolean edit_breakpoint(TilemDebugger *dbg,
 
 	addr_type_changed(NULL, &bpdlg);
 
-	gtk_widget_grab_focus(bpdlg.start.addr_entry);
+	if (edit_existing && edit_endaddr && bp->end != bp->start)
+		gtk_widget_grab_focus(bpdlg.end.addr_entry);
+	else
+		gtk_widget_grab_focus(bpdlg.start.addr_entry);
 
 	do {
 		if (gtk_dialog_run(GTK_DIALOG(dlg)) != GTK_RESPONSE_OK) {
@@ -712,7 +716,7 @@ static void add_clicked(G_GNUC_UNUSED GtkButton *btn, gpointer data)
 	tmpbp.mode = dbg->last_bp_mode;
 
 	if (!edit_breakpoint(dbg, GTK_WINDOW(bpldlg->dlg),
-	                     _("Add Breakpoint"), &tmpbp, FALSE))
+	                     _("Add Breakpoint"), &tmpbp, FALSE, FALSE))
 		return;
 
 	dbg->last_bp_type = tmpbp.type;
@@ -747,7 +751,8 @@ static void remove_clicked(G_GNUC_UNUSED GtkButton *btn, gpointer data)
 }
 
 /* Edit an existing breakpoint */
-static void edit_row(struct bplist_dlg *bpldlg, GtkTreeIter *iter)
+static void edit_row(struct bplist_dlg *bpldlg, GtkTreeIter *iter,
+                     gboolean edit_endaddr)
 {
 	TilemDebugBreakpoint *bp, tmpbp;
 
@@ -756,7 +761,8 @@ static void edit_row(struct bplist_dlg *bpldlg, GtkTreeIter *iter)
 	tmpbp = *bp;
 
 	if (!edit_breakpoint(bpldlg->dbg, GTK_WINDOW(bpldlg->dlg),
-	                     _("Edit Breakpoint"), &tmpbp, TRUE))
+	                     _("Edit Breakpoint"), &tmpbp,
+	                     TRUE, edit_endaddr))
 		return;
 
 	tmpbp.disabled = 0;
@@ -778,7 +784,7 @@ static void edit_clicked(G_GNUC_UNUSED GtkButton *btn, gpointer data)
 	if (!gtk_tree_selection_get_selected(sel, NULL, &iter))
 		return;
 
-	edit_row(bpldlg, &iter);
+	edit_row(bpldlg, &iter, FALSE);
 }
 
 /* "Clear breakpoints" button clicked */
@@ -820,15 +826,16 @@ static void clear_clicked(G_GNUC_UNUSED GtkButton *btn, gpointer data)
 /* Row activated (double-clicked, usually) */
 static void row_activated(G_GNUC_UNUSED GtkTreeView *treeview,
                           GtkTreePath *path,
-                          G_GNUC_UNUSED GtkTreeViewColumn *col,
+                          GtkTreeViewColumn *col,
                           gpointer data)
 {
 	struct bplist_dlg *bpldlg = data;
 	GtkTreeIter iter;
+	int cnum = gtk_tree_view_column_get_sort_column_id(col);
 
 	if (gtk_tree_model_get_iter(GTK_TREE_MODEL(bpldlg->store),
 	                            &iter, path))
-		edit_row(bpldlg, &iter);
+		edit_row(bpldlg, &iter, (cnum == COL_END));
 }
 
 /* Toggle button clicked for a breakpoint */
