@@ -128,6 +128,7 @@ static void grayscale_changed(GtkToggleButton *btn, gpointer data)
 	TilemEmulatorWindow *ewin = data;
 	gboolean setting = gtk_toggle_button_get_active(btn);
 	tilem_calc_emulator_set_grayscale(ewin->emu, setting);
+	tilem_emulator_window_refresh_lcd(ewin);
 	tilem_config_set("emulation",
 	                 "grayscale/b", setting,
 	                 NULL);
@@ -138,6 +139,7 @@ static void smooth_changed(GtkToggleButton *btn, gpointer data)
 	TilemEmulatorWindow *ewin = data;
 	gboolean setting = gtk_toggle_button_get_active(btn);
 	ewin->lcd_smooth_scale = setting;
+	tilem_emulator_window_refresh_lcd(ewin);
 	tilem_config_set("settings",
 	                 "smooth_scaling/b", setting,
 	                 NULL);
