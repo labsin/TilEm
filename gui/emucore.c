@@ -383,6 +383,8 @@ static void update_ext_cable_cooked(TilemCalcEmulator *emu,
    emulator as well as when audio is disabled */
 static void audio_close(TilemCalcEmulator *emu)
 {
+	if (emu->audio_filter)
+		tilem_audio_filter_set_buffer(emu->audio_filter, NULL, 0);
 	if (!emu->audio_device)
 		return;
 	tilem_audio_device_close(emu->audio_device);
@@ -488,8 +490,7 @@ static void update_audio(TilemCalcEmulator *emu)
 			show_error_message(emu, _("Unable to play sound"),
 			                   err->message);
 			g_clear_error(&err);
-			tilem_audio_device_close(emu->audio_device);
-			emu->audio_device = NULL;
+			audio_close(emu);
 			emu->audio_error = TRUE;
 			return;
 		}
