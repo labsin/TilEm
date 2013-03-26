@@ -1,5 +1,5 @@
 AC_PREREQ(2.67)
-AC_INIT([TilEm], [2.0], [tilem-devel@lists.sourceforge.net],
+AC_INIT([TilEm], [2.1], [tilem-devel@lists.sourceforge.net],
   [tilem], [http://tilem.sourceforge.net/])
 AC_CONFIG_SRCDIR([emu/tilem.h])
 
