@@ -23,6 +23,7 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <ticalcs.h>
@@ -518,6 +519,7 @@ void tilem_emulator_window_calc_changed(TilemEmulatorWindow *ewin)
 {
 	const char *model;
 	char *name = NULL, *path;
+	const char *fallback = NULL;
 	GtkAction *action;
 
 	g_return_if_fail(ewin != NULL);
@@ -535,11 +537,21 @@ void tilem_emulator_window_calc_changed(TilemEmulatorWindow *ewin)
 	                 "skin/f", &name,
 	                 NULL);
 
-	if (!name)
+	if (!name) {
 		name = g_strdup_printf("%s.skn", model);
+
+		/* workaround for the fact that certain skins aren't
+		   included with tilem */
+		if (!strncmp(model, "ti83p", 5))
+			fallback = "ti83p.skn";
+		else if (!strncmp(model, "ti84p", 5))
+			fallback = "ti84p.skn";
+	}
 
 	if (!g_path_is_absolute(name)) {
 		path = get_shared_file_path("skins", name, NULL);
+		if (!path && fallback)
+			path = get_shared_file_path("skins", fallback, NULL);
 		tilem_emulator_window_set_skin(ewin, path);
 		g_free(path);
 	}
