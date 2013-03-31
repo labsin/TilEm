@@ -439,6 +439,8 @@ static gboolean get_app_name(const FlashContent *flashc, char *name)
 			memcpy(name, data + i, length > 8 ? 8 : length);
 			return TRUE;
 		}
+
+		i += length;
 	}
 	return FALSE;
 }
