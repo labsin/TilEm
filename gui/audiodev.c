@@ -223,8 +223,8 @@ static void io_callback(void *data, Uint8 *buffer, int len)
 			SDL_SemPost(dev->buffer_count);
 		}
 		else {
-			rpos += len;
 			memcpy(buf, chunks[rchunk] + rpos, len);
+			rpos += len;
 			break;
 		}
 	}
