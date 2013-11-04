@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2010-2011 Thibault Duponchelle
+ * Copyright (c) 2010-2013 Thibault Duponchelle
  * Copyright (c) 2011-2012 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or

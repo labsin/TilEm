@@ -312,5 +312,7 @@
 * ---15/05/12---
 * - Benjamin add README, THANKS and COPYING file.
 * - Update screenshot doc.
+* ---04/11/13---
+* - Add a popup when exit to ask user if he want to save.
 */
 
