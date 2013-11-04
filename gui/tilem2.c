@@ -264,6 +264,48 @@ static int parse_link_cable(CableOptions *options, const char *str)
 	return 1;
 }
 
+void popup_ask_save(TilemEmulatorWindow* ewin) {
+  /* Ask the user if he wants to save the state */
+  GtkWidget *dlg, *vbox, *lbl;
+  dlg = gtk_dialog_new_with_buttons("Save before quit", GTK_WINDOW(ewin->window), 
+                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_STOCK_YES, GTK_RESPONSE_ACCEPT,
+                                    GTK_STOCK_NO, GTK_RESPONSE_REJECT, NULL);
+  lbl = gtk_label_new("Save calculator state?");
+  vbox = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+  gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0); 
+  gtk_widget_show_all(vbox);
+ 
+
+  if(gtk_dialog_run(GTK_DIALOG(dlg)) != GTK_RESPONSE_ACCEPT) {
+    /* User doesn't want to save... */
+    gtk_widget_destroy(dlg);
+    return;
+  }
+
+  gtk_widget_destroy(dlg);
+  /* User say "Yes" so try to save */
+  GError *err = NULL;
+
+  if (!tilem_calc_emulator_save_state(ewin->emu, &err)) {
+    messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
+                 "Unable to save calculator state",
+                 "%s", err->message);
+    g_error_free(err);
+  }
+  
+  return;
+}
+
+static gboolean delete_event( G_GNUC_UNUSED GtkWidget *widget,
+                              G_GNUC_UNUSED GdkEvent  *event,
+                              gpointer   data )
+{
+    TilemEmulatorWindow *ewin = data;
+    popup_ask_save(ewin);
+    return FALSE;
+}
+
 int main(int argc, char **argv)
 {
 	TilemCalcEmulator* emu;
@@ -371,8 +413,11 @@ int main(int argc, char **argv)
 	else
 		tilem_calc_emulator_run(emu);
 
+  g_signal_connect(emu->ewin->window, "delete_event",
+                        G_CALLBACK(delete_event), emu->ewin);
+    
 	g_signal_connect(emu->ewin->window, "destroy",
-	                 G_CALLBACK(gtk_main_quit), NULL);
+	                 G_CALLBACK(gtk_main_quit), emu->ewin);
 
 	gtk_main();
 

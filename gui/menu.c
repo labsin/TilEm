@@ -156,8 +156,8 @@ static void action_about(G_GNUC_UNUSED GtkAction *act,
 static void action_quit(G_GNUC_UNUSED GtkAction *act,
                         G_GNUC_UNUSED gpointer data)
 {
-	
 	TilemEmulatorWindow *ewin = data;
+  popup_ask_save(ewin);
 	gtk_widget_destroy(ewin->window);
 }
 

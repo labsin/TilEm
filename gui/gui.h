@@ -106,6 +106,9 @@ typedef struct _TilemLinkProgress {
 
 #define LABEL_X_ALIGN 0.0
 
+/* ###### main.c ##### */
+
+void popup_ask_save(TilemEmulatorWindow *ewin);
 
 /* ###### event.c ##### */
 
