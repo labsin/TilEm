@@ -314,5 +314,7 @@
 * - Update screenshot doc.
 * ---04/11/13---
 * - Add a popup when exit to ask user if he want to save.
+* ---12/11/13---
+* - Add a checkbutton "do not ask again" in the save popup
 */
 

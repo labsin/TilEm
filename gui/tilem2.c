@@ -264,34 +264,96 @@ static int parse_link_cable(CableOptions *options, const char *str)
 	return 1;
 }
 
+static void autosave_changed(GtkToggleButton *btn, gpointer data)
+{
+	TilemEmulatorWindow *ewin = data;
+	gboolean enable = gtk_toggle_button_get_active(btn);
+
+	tilem_config_set("settings",
+	                 "autosave_enabled/b", enable,
+	                 NULL);
+}
+
 void popup_ask_save(TilemEmulatorWindow* ewin) {
-  /* Ask the user if he wants to save the state */
-  GtkWidget *dlg, *vbox, *lbl;
-  dlg = gtk_dialog_new_with_buttons("Save before quit", GTK_WINDOW(ewin->window), 
-                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_STOCK_YES, GTK_RESPONSE_ACCEPT,
-                                    GTK_STOCK_NO, GTK_RESPONSE_REJECT, NULL);
-  lbl = gtk_label_new("Save calculator state?");
-  vbox = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
-  gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0); 
-  gtk_widget_show_all(vbox);
- 
 
-  if(gtk_dialog_run(GTK_DIALOG(dlg)) != GTK_RESPONSE_ACCEPT) {
-    /* User doesn't want to save... */
-    gtk_widget_destroy(dlg);
-    return;
-  }
+  /* 1. Read the config.ini to know if we need to print the popup
+  ** 2. If autosave is not enabled then print the popup
+  ** 2.1. If user say no, do not save and eventually save settings (if user check the button)
+  ** 2.2. If user say yes, save and eventually save settings (if user check the button)
+  ** 3. If autosave is enabled in the settings and autosave value is TRUE, save settings
+  */
 
-  gtk_widget_destroy(dlg);
-  /* User say "Yes" so try to save */
-  GError *err = NULL;
+  /* STEP 1 */
+  gboolean autosave = FALSE;
+  gboolean autosave_yesorno = FALSE;
+  tilem_config_get("settings", "autosave_enabled/b", &autosave, NULL);
 
-  if (!tilem_calc_emulator_save_state(ewin->emu, &err)) {
-    messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
+  /* STEP 2 */
+  if(!autosave) {
+    /* Ask the user if he wants to save the state */
+    GtkWidget *dlg, *vbox, *lbl, *hbox, *chkbtn, *chklbl;
+    dlg = gtk_dialog_new_with_buttons("Save before quit", GTK_WINDOW(ewin->window), 
+                                      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                      GTK_STOCK_YES, GTK_RESPONSE_ACCEPT,
+                                      GTK_STOCK_NO, GTK_RESPONSE_REJECT, NULL);
+    lbl = gtk_label_new("Save calculator state?");
+    vbox = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+    hbox = gtk_hbox_new(FALSE, 20);
+    chkbtn = gtk_check_button_new();
+    g_signal_connect(chkbtn, "toggled",
+                     G_CALLBACK(autosave_changed), ewin);
+
+    chklbl = gtk_label_new("Do not ask again");
+    gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 20); 
+    gtk_box_pack_start(GTK_BOX(hbox), chkbtn, FALSE, FALSE, 0); 
+    gtk_box_pack_start(GTK_BOX(hbox), chklbl, FALSE, FALSE, 0); 
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0); 
+    gtk_widget_show_all(vbox);
+   
+    if(gtk_dialog_run(GTK_DIALOG(dlg)) != GTK_RESPONSE_ACCEPT) {
+      /* User doesn't want to save... */
+      gtk_widget_destroy(dlg);
+      
+      /* STEP 2.1 */
+      /* This setting could have been modified, so read it one more time */
+      tilem_config_get("settings", "autosave_enabled/b",  &autosave, NULL);
+      if(autosave)
+        tilem_config_set("settings", "autosave_yesorno/b",  FALSE, NULL);
+      return;
+    } else { 
+      /* User wants to save */ 
+      gtk_widget_destroy(dlg);
+
+      /* STEP 2.2 */
+      tilem_config_get("settings", "autosave_enabled/b",  &autosave, NULL);
+      if(autosave)
+        tilem_config_set("settings", "autosave_yesorno/b",  TRUE, NULL);
+      GError *err = NULL;
+
+      if (!tilem_calc_emulator_save_state(ewin->emu, &err)) {
+        messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
                  "Unable to save calculator state",
                  "%s", err->message);
-    g_error_free(err);
+        g_error_free(err);
+      }
+
+    }
+  }
+
+  /* STEP 3 */
+  tilem_config_get("settings", "autosave_enabled/b",  &autosave, NULL);
+  if(autosave) {
+    tilem_config_get("settings", "autosave_yesorno/b",  &autosave_yesorno, NULL);
+    if(autosave_yesorno) {
+      GError *err = NULL;
+
+      if (!tilem_calc_emulator_save_state(ewin->emu, &err)) {
+        messagebox01(GTK_WINDOW(ewin->window), GTK_MESSAGE_ERROR,
+                 "Unable to save calculator state",
+                 "%s", err->message);
+        g_error_free(err);
+      }
+    }
   }
   
   return;
