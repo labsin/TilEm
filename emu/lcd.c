@@ -202,6 +202,15 @@ void tilem_lcd_t6a04_write(TilemCalc* calc, byte sprite)
 	if (calc->lcd.mode) {
 		*(lcdbuf + calc->lcd.x + stride * calc->lcd.y) = sprite;
 
+		/*****/
+		if (calc->lcd.x == 12 && calc->lcd.inc == 5) {
+			if (calc->lcd.y == 1)
+				fprintf(stderr, "\n[ORION]  ");
+			fprintf(stderr, "%02X  ", sprite);
+			fflush(stderr);
+		}
+		/*****/
+
 	} else {
 		int col = 0x06 * calc->lcd.x;
 		int ofs = calc->lcd.y * stride + (col >> 3);

@@ -74,6 +74,7 @@ static gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 	GtkAllocation alloc;
 	GdkWindow *win;
 	GtkStyle *style;
+	gboolean drawrgb;
 
 	gtk_widget_get_allocation(w, &alloc);
 
@@ -85,29 +86,53 @@ static gboolean screen_repaint(GtkWidget *w, GdkEventExpose *ev G_GNUC_UNUSED,
 		ewin->lcd_image_width = alloc.width;
 		ewin->lcd_image_height = alloc.height;
 		g_free(ewin->lcd_image_buf);
-		ewin->lcd_image_buf = g_new(byte, alloc.width * alloc.height);
+		ewin->lcd_image_buf = g_new(byte, alloc.width * alloc.height * 3);
 	}
 
 	/* Draw LCD contents into the image buffer */
 
 	g_mutex_lock(ewin->emu->lcd_mutex);
 	ewin->emu->lcd_update_pending = FALSE;
-	tilem_draw_lcd_image_indexed(ewin->emu->lcd_buffer,
-	                             ewin->lcd_image_buf,
-	                             alloc.width, alloc.height, alloc.width,
-	                             (ewin->lcd_smooth_scale
-	                              ? TILEM_SCALE_SMOOTH
-	                              : TILEM_SCALE_FAST));
+
+        if (ewin->emu->lcd_buffer->format == TILEM_LCD_BUF_SRGB_63) {
+	        tilem_draw_lcd_image_rgb(ewin->emu->lcd_buffer,
+	                                 ewin->lcd_image_buf,
+	                                 alloc.width, alloc.height,
+	                                 alloc.width * 3, 3, NULL,
+	                                 (ewin->lcd_smooth_scale
+	                                  ? TILEM_SCALE_SMOOTH
+	                                  : TILEM_SCALE_FAST));
+	        drawrgb = TRUE;
+        }
+        else {
+	        tilem_draw_lcd_image_indexed(ewin->emu->lcd_buffer,
+	                                     ewin->lcd_image_buf,
+	                                     alloc.width, alloc.height,
+	                                     alloc.width,
+	                                     (ewin->lcd_smooth_scale
+	                                      ? TILEM_SCALE_SMOOTH
+	                                      : TILEM_SCALE_FAST));
+	        drawrgb = FALSE;
+        }
 	g_mutex_unlock(ewin->emu->lcd_mutex);
 
 	/* Render buffer to the screen */
 
 	win = gtk_widget_get_window(w);
 	style = gtk_widget_get_style(w);
-	gdk_draw_indexed_image(win, style->fg_gc[GTK_STATE_NORMAL], 0, 0,
-	                       alloc.width, alloc.height, GDK_RGB_DITHER_NONE,
-	                       ewin->lcd_image_buf, alloc.width,
-	                       ewin->lcd_cmap);
+
+	if (drawrgb)
+		gdk_draw_rgb_image(win, style->fg_gc[GTK_STATE_NORMAL], 0, 0,
+		                   alloc.width, alloc.height,
+		                   GDK_RGB_DITHER_NORMAL,
+		                   ewin->lcd_image_buf, alloc.width * 3);
+	else
+		gdk_draw_indexed_image(win, style->fg_gc[GTK_STATE_NORMAL],
+		                       0, 0, alloc.width, alloc.height,
+		                       GDK_RGB_DITHER_NONE,
+		                       ewin->lcd_image_buf, alloc.width,
+		                       ewin->lcd_cmap);
+
 	return TRUE;
 }
 

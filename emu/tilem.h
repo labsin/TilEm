@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009-2012 Benjamin Moody
+ * Copyright (C) 2009-2013 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -36,6 +36,7 @@ typedef uint64_t qword;
 /* Structure types */
 typedef struct _TilemHardware TilemHardware;
 typedef struct _TilemCalc TilemCalc;
+typedef struct _TilemLCDBuffer TilemLCDBuffer;
 
 /* Useful macros */
 #if __GNUC__ >= 3
@@ -710,6 +711,7 @@ enum {
 	TILEM_CALC_TI84P = '4',	       /* TI-84 Plus */
 	TILEM_CALC_TI84P_SE = 'z',     /* TI-84 Plus Silver Edition */
 	TILEM_CALC_TI84P_NSPIRE = 'n', /* TI-Nspire 84 Plus emulator */
+	TILEM_CALC_TI84PC_SE = 'c',    /* TI-84 Plus C SE */
 	TILEM_CALC_TI85 = '5',	       /* TI-85 */
 	TILEM_CALC_TI86 = '6'	       /* TI-86 */
 };
@@ -721,7 +723,8 @@ enum {
 	TILEM_CALC_HAS_USB         = 4,  /* Has USB controller */
 	TILEM_CALC_HAS_FLASH       = 8,  /* Has (writable) Flash */
 	TILEM_CALC_HAS_T6A04       = 16, /* Has separate LCD driver */
-	TILEM_CALC_HAS_MD5_ASSIST  = 32  /* Has hardware MD5 assist */
+	TILEM_CALC_HAS_MD5_ASSIST  = 32, /* Has hardware MD5 assist */
+	TILEM_CALC_HAS_COLOR       = 64	 /* Has color screen */
 };
 
 /* Calculator hardware description */
@@ -773,6 +776,7 @@ struct _TilemHardware {
 
 	/* Retrieve LCD contents */
 	void    (*get_lcd)      (TilemCalc*, byte*);
+	void    (*get_frame)    (TilemCalc*, TilemLCDBuffer*);
 
 	/* Convert physical <-> logical addresses */
 	dword	(*mem_ltop)	(TilemCalc*, dword);
@@ -787,7 +791,7 @@ struct _TilemCalc {
 	byte* mem;
 	byte* ram;
 	byte* lcdmem;
-	byte mempagemap[4];
+	word mempagemap[4];
 
 	TilemLCD lcd;
 	TilemLinkport linkport;
@@ -847,17 +851,24 @@ enum {
 				   an integer factor */
 };
 
+/* LCD buffer formats */
+enum {
+	TILEM_LCD_BUF_BLACK_128, /* Linear black 0-128 */
+	TILEM_LCD_BUF_SRGB_63    /* sRGB 0-63 */
+};
+
 /* Buffer representing a snapshot of the LCD state */
-typedef struct _TilemLCDBuffer {
-	byte width;             /* Width of LCD */
-	byte height;            /* Height of LCD */
-	byte rowstride;         /* Offset between rows in buffer */
+struct _TilemLCDBuffer {
+	word width;             /* Width of LCD */
+	word height;            /* Height of LCD */
+	word rowstride;         /* Offset between rows in buffer */
 	byte contrast;          /* Contrast value (0-63) */
+	byte format;            /* Data format */
 	dword stamp;            /* Timestamp */
 	dword tmpbufsize;       /* Size of temporary buffer */
 	byte *data;             /* Image data (rowstride*height bytes) */
 	void *tmpbuf;           /* Temporary buffer used for scaling */
-} TilemLCDBuffer;
+};
 
 /* Create new TilemLCDBuffer. */
 TilemLCDBuffer* tilem_lcd_buffer_new(void)
@@ -1042,6 +1053,7 @@ char tilem_get_sav_type(FILE* savfile);
 /* Check validity of calculator certificate; repair if necessary */
 void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert,
                                 int app_start, int app_end,
+                                unsigned insttab_offset,
                                 unsigned exptab_offset);
 
 #ifdef __cplusplus

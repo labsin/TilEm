@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011-2012 Benjamin Moody
+ * Copyright (c) 2011-2013 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -32,6 +32,7 @@
 #include <tilem.h>
 
 #include "gui.h"
+#include "colorquant.h"
 
 #define GAMMA 2.2
 
@@ -57,6 +58,7 @@ struct _TilemAnimation {
 	int base_contrast;
 	int display_width;
 	int display_height;
+	int lcdbuf_format;
 	int frame_rowstride;
 	int frame_size;
 	int image_width;
@@ -64,6 +66,15 @@ struct _TilemAnimation {
 	dword *palette;
 	gdouble speed;
 	gdouble time_stretch;
+
+	gboolean quantize_preview;
+	ColorHistogram *cq_hist;
+	ColorPalette *cq_pal;
+	gboolean cq_grayscale;
+	gboolean cq_rgb_fixed;
+	int cq_color_cube_size;
+	guint8 *cq_image_buf;
+	int cq_image_buf_size;
 
 	gboolean out_of_memory;
 };
@@ -140,28 +151,83 @@ static void set_lcdbuf_from_frame(TilemAnimation *anim,
 {
 	buf->width = anim->display_width;
 	buf->height = anim->display_height;
+	buf->format = anim->lcdbuf_format;
 	buf->rowstride = anim->frame_rowstride;
 	buf->contrast = adjust_contrast(anim, frm->contrast);
 	buf->data = (byte *) frm->data;
 }
 
+static void generate_cq_palette(TilemAnimation *anim)
+{
+	int csize = anim->cq_color_cube_size;
+
+	if (anim->cq_pal || !anim->cq_hist)
+		return;
+
+	if (anim->cq_grayscale)
+		anim->cq_pal = color_palette_new_gray(256);
+	else if (anim->cq_rgb_fixed)
+		anim->cq_pal = color_palette_new_rgb(256, NULL,
+		                                     csize, csize, csize);
+	else if (color_histogram_num_colors(anim->cq_hist) <= 256)
+		anim->cq_pal = color_palette_new_rgb(256, anim->cq_hist,
+		                                     0, 0, 0);
+	else
+		anim->cq_pal = color_palette_new_rgb(256, anim->cq_hist,
+		                                     csize, csize, csize);
+}
+
+static void alloc_cq_image_buf(TilemAnimation *anim, int width, int height)
+{
+	if (anim->cq_image_buf_size >= width * height * 3)
+		return;
+
+	anim->cq_image_buf_size = width * height * 3;
+	g_free(anim->cq_image_buf);
+	anim->cq_image_buf = g_new(byte, anim->cq_image_buf_size);
+}
+
 static GdkPixbuf * frame_to_pixbuf(TilemAnimation *anim,
-                                   const TilemAnimFrame *frm)
+                                   const TilemAnimFrame *frm,
+                                   gboolean preview)
 {
 	GdkPixbuf *pb;
+	int width = anim->image_width, height = anim->image_height;
+	byte * restrict bp;
+	byte * restrict pix;
+	const dword * restrict palcolors;
+	int i, j, stride;
 
-	pb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8,
-	                    anim->image_width, anim->image_height);
+	pb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, width, height);
+	pix = gdk_pixbuf_get_pixels(pb);
+	stride = gdk_pixbuf_get_rowstride(pb);
 
 	set_lcdbuf_from_frame(anim, anim->temp_buffer, frm);
 	tilem_draw_lcd_image_rgb(anim->temp_buffer,
-	                         gdk_pixbuf_get_pixels(pb),
-	                         anim->image_width,
-	                         anim->image_height,
-	                         gdk_pixbuf_get_rowstride(pb),
+	                         pix, width, height, stride,
 	                         3, anim->palette,
 	                         TILEM_SCALE_SMOOTH);
 	anim->temp_buffer->data = NULL;
+
+	if (preview && anim->quantize_preview && anim->cq_hist) {
+		generate_cq_palette(anim);
+		alloc_cq_image_buf(anim, width, height);
+
+		color_palette_quantize_image(anim->cq_pal, anim->cq_image_buf,
+		                             pix, width, height, stride);
+
+		bp = anim->cq_image_buf;
+		palcolors = anim->cq_pal->colors;
+		for (i = 0; i < height; i++) {
+			for (j = 0; j < width; j++) {
+				pix[3 * j] = palcolors[bp[j]] >> 16;
+				pix[3 * j + 1] = palcolors[bp[j]] >> 8;
+				pix[3 * j + 2] = palcolors[bp[j]];
+			}
+			bp += width;
+			pix += stride;
+		}
+	}
 
 	return pb;
 }
@@ -186,7 +252,7 @@ static GdkPixbuf * tilem_animation_get_static_image(GdkPixbufAnimation *ganim)
 	g_return_val_if_fail(anim->start != NULL, NULL);
 
 	if (!anim->static_pixbuf)
-		anim->static_pixbuf = frame_to_pixbuf(anim, anim->start);
+		anim->static_pixbuf = frame_to_pixbuf(anim, anim->start, TRUE);
 
 	return anim->static_pixbuf;
 }
@@ -252,6 +318,18 @@ static void tilem_animation_finalize(GObject *obj)
 		g_object_unref(anim->static_pixbuf);
 	anim->static_pixbuf = NULL;
 
+	g_free(anim->cq_image_buf);
+	anim->cq_image_buf = NULL;
+	anim->cq_image_buf_size = 0;
+
+	if (anim->cq_hist)
+		color_histogram_free(anim->cq_hist);
+	anim->cq_hist = NULL;
+
+	if (anim->cq_pal)
+		color_palette_free(anim->cq_pal);
+	anim->cq_pal = NULL;
+
 	if (G_OBJECT_CLASS(tilem_animation_parent_class)->finalize)
 		(*G_OBJECT_CLASS(tilem_animation_parent_class)->finalize)(obj);
 }
@@ -293,7 +371,7 @@ static GdkPixbuf * tilem_anim_iter_get_pixbuf(GdkPixbufAnimationIter *giter)
 	g_return_val_if_fail(iter->frame != NULL, NULL);
 
 	if (!iter->pixbuf)
-		iter->pixbuf = frame_to_pixbuf(iter->anim, iter->frame);
+		iter->pixbuf = frame_to_pixbuf(iter->anim, iter->frame, TRUE);
 
 	return iter->pixbuf;
 }
@@ -378,24 +456,68 @@ static void tilem_anim_iter_class_init(TilemAnimIterClass *klass)
 	oclass->finalize = tilem_anim_iter_finalize;
 }
 
-TilemAnimation * tilem_animation_new(int display_width, int display_height)
+/* Colors used by the system; these colors will be treated as "fixed"
+   for palette generation */
+static const dword ti84pc_system_colors[] = {
+	0x0000FF, /* 001F */
+	0xFF0000, /* F800 */
+	0x000000, /* 0000 */
+	0xFF00FF, /* F81F */
+	0x009E00, /* 04E0 */
+	0xFF8E20, /* FC64 */
+	0xB62000, /* B100 */
+	0x000086, /* 0010 */
+	0x0092FF, /* 049F */
+	0xFFFF00, /* FFE0 */
+	0xFFFFFF, /* FFFF */
+	0xE7E3E7, /* E71C */
+	0xC7C3C7, /* C618 */
+	0x8E8A8E, /* 8C51 */
+	0x515551, /* 52AA */
+	0xBEEBCF, /* BF59 */
+	0x69E3FF, /* 6F1F */
+	0x00FF00, /* 07E0 */
+	0x00FFFF, /* 07FF */
+	0x79FFF7  /* 7FFE */
+};
+
+TilemAnimation * tilem_animation_new(int display_width, int display_height,
+                                     int lcdbuf_format)
 {
 	TilemAnimation *anim;
 	TilemAnimFrame *dummy_frame;
 
 	g_return_val_if_fail(display_width > 0, NULL);
 	g_return_val_if_fail(display_height > 0, NULL);
+	g_return_val_if_fail(lcdbuf_format == TILEM_LCD_BUF_BLACK_128
+	                     || lcdbuf_format == TILEM_LCD_BUF_SRGB_63,
+	                     NULL);
 
 	anim = g_object_new(TILEM_TYPE_ANIMATION, NULL);
 	anim->display_width = display_width;
 	anim->display_height = display_height;
-	anim->frame_rowstride = (display_width + 7) & ~7;
+	anim->lcdbuf_format = lcdbuf_format;
+	if (lcdbuf_format == TILEM_LCD_BUF_BLACK_128)
+		anim->frame_rowstride = (display_width + 7) & ~7;
+	else
+		anim->frame_rowstride = (display_width * 3);
 	anim->frame_size = anim->frame_rowstride * display_height;
 
 	anim->image_width = display_width;
 	anim->image_height = display_height;
 	anim->speed = 1.0;
 	anim->time_stretch = 1.0;
+
+	if (lcdbuf_format != TILEM_LCD_BUF_BLACK_128) {
+		anim->cq_grayscale = FALSE;
+		anim->cq_rgb_fixed = FALSE;
+		anim->cq_color_cube_size = 6;
+
+		anim->cq_hist = color_histogram_new();
+		color_histogram_add_fixed_colors
+			(anim->cq_hist, ti84pc_system_colors,
+			 G_N_ELEMENTS(ti84pc_system_colors));
+	}
 
 	anim->temp_buffer = tilem_lcd_buffer_new();
 	anim->palette = tilem_color_palette_new(255, 255, 255, 0, 0, 0, GAMMA);
@@ -420,6 +542,7 @@ gboolean tilem_animation_append_frame(TilemAnimation *anim,
 	g_return_val_if_fail(buf->data != NULL, FALSE);
 	g_return_val_if_fail(buf->height == anim->display_height, FALSE);
 	g_return_val_if_fail(buf->rowstride == anim->frame_rowstride, FALSE);
+	g_return_val_if_fail(buf->format == anim->lcdbuf_format, FALSE);
 
 	if (anim->out_of_memory)
 		return FALSE;
@@ -446,6 +569,25 @@ gboolean tilem_animation_append_frame(TilemAnimation *anim,
 		frm->contrast = buf->contrast;
 		frm->duration = duration;
 		memcpy(frm->data, buf->data, anim->frame_size);
+
+		if (buf->format != TILEM_LCD_BUF_BLACK_128) {
+			alloc_cq_image_buf(anim, anim->display_width,
+			                   anim->display_height);
+
+			set_lcdbuf_from_frame(anim, anim->temp_buffer, frm);
+			tilem_draw_lcd_image_rgb(anim->temp_buffer,
+			                         anim->cq_image_buf,
+			                         anim->display_width,
+			                         anim->display_height,
+			                         3 * anim->display_width,
+			                         3, anim->palette,
+			                         TILEM_SCALE_FAST);
+			anim->temp_buffer->data = NULL;
+
+			color_histogram_add_pixels(anim->cq_hist,
+			                           anim->cq_image_buf,
+			                           anim->frame_size / 3);
+		}
 	}
 
 	anim->last_stamp = buf->stamp;
@@ -457,6 +599,10 @@ void tilem_animation_set_size(TilemAnimation *anim, int width, int height)
 	g_return_if_fail(TILEM_IS_ANIMATION(anim));
 	anim->image_width = width;
 	anim->image_height = height;
+
+	g_free(anim->cq_image_buf);
+	anim->cq_image_buf = NULL;
+	anim->cq_image_buf_size = 0;
 }
 
 void tilem_animation_set_colors(TilemAnimation *anim,
@@ -477,6 +623,32 @@ void tilem_animation_set_colors(TilemAnimation *anim,
 	                                        foreground->green >> 8,
 	                                        foreground->blue >> 8,
 	                                        GAMMA);
+}
+
+void tilem_animation_set_quantization(TilemAnimation *anim,
+                                      gboolean grayscale,
+                                      gboolean rgb_fixed,
+                                      int color_cube_size)
+{
+	g_return_if_fail(TILEM_IS_ANIMATION(anim));
+	g_return_if_fail(color_cube_size >= 0);
+	g_return_if_fail(color_cube_size <= 6);
+
+	if (anim->cq_pal) {
+		color_palette_free(anim->cq_pal);
+		anim->cq_pal = NULL;
+	}
+
+	anim->cq_grayscale = grayscale;
+	anim->cq_rgb_fixed = rgb_fixed;
+	anim->cq_color_cube_size = color_cube_size;
+}
+
+void tilem_animation_set_quantize_preview(TilemAnimation *anim,
+                                          gboolean enabled)
+{
+	g_return_if_fail(TILEM_IS_ANIMATION(anim));
+	anim->quantize_preview = enabled;
 }
 
 void tilem_animation_set_speed(TilemAnimation *anim, gdouble factor)
@@ -514,21 +686,35 @@ void tilem_animation_get_indexed_image(TilemAnimation *anim,
                                        byte **buffer,
                                        int *width, int *height)
 {
+	int w, h;
+
 	g_return_if_fail(TILEM_IS_ANIMATION(anim));
 	g_return_if_fail(frm != NULL);
 	g_return_if_fail(buffer != NULL);
 	g_return_if_fail(width != NULL);
 	g_return_if_fail(height != NULL);
 
-	*width = anim->image_width;
-	*height = anim->image_height;
+	*width = w = anim->image_width;
+	*height = h = anim->image_height;
 	*buffer = g_new(byte, anim->image_width * anim->image_height);
 
 	set_lcdbuf_from_frame(anim, anim->temp_buffer, frm);
-	tilem_draw_lcd_image_indexed(anim->temp_buffer, *buffer,
-	                             anim->image_width, anim->image_height,
-	                             anim->image_width,
-	                             TILEM_SCALE_SMOOTH);
+
+	if (anim->lcdbuf_format == TILEM_LCD_BUF_BLACK_128) {
+		tilem_draw_lcd_image_indexed(anim->temp_buffer, *buffer,
+		                             w, h, w, TILEM_SCALE_SMOOTH);
+	}
+	else {
+		generate_cq_palette(anim);
+		alloc_cq_image_buf(anim, w, h);
+		tilem_draw_lcd_image_rgb(anim->temp_buffer,
+		                         anim->cq_image_buf,
+		                         w, h, w * 3, 3, anim->palette,
+		                         TILEM_SCALE_SMOOTH);
+		color_palette_quantize_image(anim->cq_pal, *buffer,
+		                             anim->cq_image_buf, w, h, w * 3);
+	}
+
 	anim->temp_buffer->data = NULL;
 }
 
@@ -542,8 +728,9 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 	int errnum;
 	GdkPixbuf *pb;
 	gboolean status;
+	const dword *palcolors;
 	byte palette[768];
-	int i;
+	int i, palsize;
 
 	g_return_val_if_fail(TILEM_IS_ANIMATION(anim), FALSE);
 	g_return_val_if_fail(fname != NULL, FALSE);
@@ -551,11 +738,11 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
 	if (strcmp(type, "gif") != 0) {
-		pb = gdk_pixbuf_animation_get_static_image
-			(GDK_PIXBUF_ANIMATION(anim));
+		pb = frame_to_pixbuf(anim, anim->start, FALSE);
 		status = gdk_pixbuf_savev(pb, fname, type,
 		                          option_keys, option_values,
 		                          err);
+		g_object_unref(pb);
 		return status;
 	}
 
@@ -571,13 +758,23 @@ gboolean tilem_animation_save(TilemAnimation *anim,
 		return FALSE;
 	}
 
-	for (i = 0; i < 256; i++) {
-		palette[3 * i] = anim->palette[i] >> 16;
-		palette[3 * i + 1] = anim->palette[i] >> 8;
-		palette[3 * i + 2] = anim->palette[i];
+	generate_cq_palette(anim);
+	if (anim->cq_pal) {
+		palcolors = anim->cq_pal->colors;
+		palsize = 256;	/* FIXME (write_gif doesn't handle other sizes) */
+	}
+	else {
+		palcolors = anim->palette;
+		palsize = 256;
 	}
 
-	tilem_animation_write_gif(anim, palette, 256, fp);
+	for (i = 0; i < palsize; i++) {
+		palette[3 * i] = palcolors[i] >> 16;
+		palette[3 * i + 1] = palcolors[i] >> 8;
+		palette[3 * i + 2] = palcolors[i];
+	}
+
+	tilem_animation_write_gif(anim, palette, palsize, fp);
 
 	if (fclose(fp)) {
 		errnum = errno;

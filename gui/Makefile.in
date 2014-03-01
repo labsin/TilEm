@@ -55,6 +55,7 @@ objects = tilem2.o \
 	breakpoints.o \
 	config.o \
 	charmap.o \
+	colorquant.o \
 	debugger.o \
 	disasmview.o \
 	emulator.o \
@@ -204,8 +205,12 @@ pbar.o: pbar.c $(common_headers)
 	$(compile) -c $(srcdir)/pbar.c
 
 # Screenshot/animation recording
-animation.o: animation.c $(common_headers)
+animation.o: animation.c colorquant.h $(common_headers)
 	$(compile) -c $(srcdir)/animation.c
+
+# Color quantization
+colorquant.o: colorquant.c colorquant.h $(common_headers)
+	$(compile) -c $(srcdir)/colorquant.c
 
 # Audio output
 audiodev.o: audiodev.c $(common_headers)

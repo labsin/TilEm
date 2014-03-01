@@ -53,7 +53,7 @@ const TilemHardware hardware_ti83 = {
 	x3_reset, NULL,
 	x3_z80_in, x3_z80_out,
 	x3_z80_wrmem, x3_z80_rdmem, x3_z80_rdmem, NULL,
-	x3_z80_ptimer, tilem_lcd_t6a04_get_data,
+	x3_z80_ptimer, tilem_lcd_t6a04_get_data, NULL,
 	x3_mem_ltop, x3_mem_ptol };
 
 const TilemHardware hardware_ti76 = {
@@ -67,5 +67,5 @@ const TilemHardware hardware_ti76 = {
 	x3_reset, NULL,
 	x3_z80_in, x3_z80_out,
 	x3_z80_wrmem, x3_z80_rdmem, x3_z80_rdmem, NULL,
-	x3_z80_ptimer, tilem_lcd_t6a04_get_data,
+	x3_z80_ptimer, tilem_lcd_t6a04_get_data, NULL,
 	x3_mem_ltop, x3_mem_ptol };

@@ -250,7 +250,7 @@ static void append_dummy_line(TilemDisasmView *dv, GtkTreeModel *model,
 
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter1,
 	                   COL_ICON, icon,
-	                   COL_ADDRESS, "DD:DDDD",
+	                   COL_ADDRESS, "RAMD:DDDD",
 	                   COL_MNEMONIC, "ROM_CALL",
 	                   COL_ARGUMENTS, "_fnord",
 	                   COL_SHOW_MNEMONIC, TRUE,

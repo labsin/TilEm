@@ -869,7 +869,7 @@ static void z80_execute(TilemCalc* calc)
 
 	while (!z80->stopping) {
 		z80->exception = 0;
-		op = (*calc->hw.z80_rdmem_m1)(calc, PC);
+		op = (*calc->hw.z80_rdmem_m1)(calc, calc->z80.r.pc.w.l);
 		PC++;
 		Rl++;
 		op = z80_execute_opcode(calc, op);

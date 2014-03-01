@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009-2011 Benjamin Moody
+ * Copyright (C) 2009-2013 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -79,10 +79,10 @@ static int certificate_valid(byte* cert)
 
 void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert,
                                 int app_start, int app_end,
+                                unsigned insttab_offset,
                                 unsigned exptab_offset)
 {
 	int i, base, max_apps, page;
-	unsigned insttab_offset = 0x1fe0;
 
 	/* If the ROM was dumped from an unpatched OS, the certificate
 	   needs to be patched for some calculator functions to
@@ -131,7 +131,9 @@ void tilem_calc_fix_certificate(TilemCalc* calc, byte* cert,
 
 		cert[insttab_offset + ((i + 1) / 8)] &= ~(1 << ((i + 1) % 8));
 
-		cert[exptab_offset + 2 * i] = 0x80;
-		cert[exptab_offset + 2 * i + 1] = 0x00;
+		if (exptab_offset) {
+			cert[exptab_offset + 2 * i] = 0x80;
+			cert[exptab_offset + 2 * i + 1] = 0x00;
+		}
 	}
 }

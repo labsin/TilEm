@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2013 Thibault Duponchelle
- * Copyright (c) 2010-2012 Benjamin Moody
+ * Copyright (c) 2010-2013 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -70,6 +70,10 @@ typedef struct _TilemScreenshotDialog {
 	GtkWidget* animation_speed;	/* A scale for the speed of the animation */
 	GtkWidget* background_color;	/* Color chooser : Color used for pixel-off */
 	GtkWidget* foreground_color;	/* Color chooser : Color used for pixel-on */
+	GtkWidget* dither_mode_combo;	/* Dithering mode for color GIFs */
+	GtkWidget* foreground_label;
+	GtkWidget* background_label;
+	GtkWidget* dither_mode_label;
 
 	TilemAnimation *current_anim;
 	gboolean current_anim_grayscale;

@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2012 Benjamin Moody
+ * Copyright (C) 2004-2013 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -27,7 +27,7 @@
 #include <time.h>
 #include <tilem.h>
 
-#include "xz.h"
+#include "xc.h"
 #include "../gettext.h"
 
 static void set_lcd_wait_timer(TilemCalc* calc)
@@ -54,7 +54,7 @@ static void set_lcd_wait_timer(TilemCalc* calc)
 	calc->hwregs[LCD_WAIT] = 1;
 }
 
-byte xz_z80_in(TilemCalc* calc, dword port)
+byte xc_z80_in(TilemCalc* calc, dword port)
 {
 	/* FIXME: measure actual levels */
 	static const byte battlevel[4] = { 33, 39, 36, 43 };
@@ -157,13 +157,13 @@ byte xz_z80_in(TilemCalc* calc, dword port)
 	case 0x12:
 		calc->z80.clock += calc->hwregs[LCD_PORT_DELAY];
 		set_lcd_wait_timer(calc);
-		return(tilem_lcd_t6a04_status(calc));
+		return(0x00);
 
 	case 0x11:
 	case 0x13:
 		calc->z80.clock += calc->hwregs[LCD_PORT_DELAY];
 		set_lcd_wait_timer(calc);
-		return(tilem_lcd_t6a04_read(calc));
+		return(xc_lcd_read(calc));
 
 	case 0x15:
 		return(0x45);	/* ??? */
@@ -191,6 +191,9 @@ byte xz_z80_in(TilemCalc* calc, dword port)
 
 	case 0x23:
 		return(calc->hwregs[PORT23]);
+
+	case 0x24:
+		return(calc->hwregs[PORT24]);
 
 	case 0x25:
 		return(calc->hwregs[PORT25]);
@@ -247,7 +250,9 @@ byte xz_z80_in(TilemCalc* calc, dword port)
 		return(tilem_user_timer_get_value(calc, 2));
 
 	case 0x39:
-		return(0xf0);	/* ??? */
+		return(calc->hwregs[PORT39]);	/* ??? */
+	case 0x3A:
+		return(calc->hwregs[PORT3A]);	/* ??? */
 
 	case 0x40:
 		return calc->hwregs[CLOCK_MODE];
@@ -322,16 +327,18 @@ static void setup_mapping(TilemCalc* calc)
 	unsigned int pageA, pageB, pageC;
 
 	if (calc->hwregs[PORT6] & 0x80)
-		pageA = (0x80 | (calc->hwregs[PORT6] & 7));
+		pageA = (0x100 | (calc->hwregs[PORT6] & 7));
 	else
-		pageA = (calc->hwregs[PORT6] & 0x7f);
+		pageA = ((calc->hwregs[PORT6] & 0x7f)
+		         | (calc->hwregs[PORTE] << 7 & 0x80));
 
 	if (calc->hwregs[PORT7] & 0x80)
-		pageB = (0x80 | (calc->hwregs[PORT7] & 7));
+		pageB = (0x100 | (calc->hwregs[PORT7] & 7));
 	else
-		pageB = (calc->hwregs[PORT7] & 0x7f);
+		pageB = ((calc->hwregs[PORT7] & 0x7f)
+		         | (calc->hwregs[PORTF] << 7 & 0x80));
 
-	pageC = (0x80 | (calc->hwregs[PORT5] & 7));
+	pageC = (0x100 | (calc->hwregs[PORT5] & 7));
 
 	if (calc->hwregs[PORT4] & 1) {
 		calc->mempagemap[1] = (pageA & ~1);
@@ -366,10 +373,10 @@ static void setup_clockdelays(TilemCalc* calc)
 	calc->hwregs[LCD_PORT_DELAY] = (lcdport >> 2);
 }
 
-void xz_z80_out(TilemCalc* calc, dword port, byte value)
+void xc_z80_out(TilemCalc* calc, dword port, byte value)
 {
 	static const int tmrvalues[4] = { 1953, 4395, 6836, 9277 };
-	int t, r;
+	int t, r, level;
 	unsigned int mode;
 	time_t curtime;
 
@@ -513,24 +520,26 @@ void xz_z80_out(TilemCalc* calc, dword port, byte value)
 
 	case 0x0E:
 		calc->hwregs[PORTE] = value;
+		setup_mapping(calc);
 		break;
 
 	case 0x0F:
 		calc->hwregs[PORTF] = value;
+		setup_mapping(calc);
 		break;
 
 	case 0x10:
 	case 0x12:
 		calc->z80.clock += calc->hwregs[LCD_PORT_DELAY];
 		set_lcd_wait_timer(calc);
-		tilem_lcd_t6a04_control(calc, value);
+		xc_lcd_control(calc, value);
 		break;
 
 	case 0x11:
 	case 0x13:
 		calc->z80.clock += calc->hwregs[LCD_PORT_DELAY];
 		set_lcd_wait_timer(calc);
-		tilem_lcd_t6a04_write(calc, value);
+		xc_lcd_write(calc, value);
 		break;
 
 	case 0x14:
@@ -605,6 +614,16 @@ void xz_z80_out(TilemCalc* calc, dword port, byte value)
 	case 0x23:
 		if (calc->flash.unlock) {
 			calc->hwregs[PORT23] = value;
+		}
+		else {
+			tilem_warning(calc, _("Writing to protected port %02x"),
+			              port & 0xff);
+		}
+		break;
+
+	case 0x24:
+		if (calc->flash.unlock) {
+			calc->hwregs[PORT24] = value;
 		}
 		else {
 			tilem_warning(calc, _("Writing to protected port %02x"),
@@ -705,6 +724,45 @@ void xz_z80_out(TilemCalc* calc, dword port, byte value)
 		tilem_user_timer_start(calc, 2, value);
 		break;
 
+	case 0x39:
+		calc->hwregs[PORT39] = value;
+		break;
+	case 0x3A:
+		if (value & ~calc->hwregs[PORT3A] & 0x20) {
+			if (!calc->hwregs[BACKLIGHT_ON]) {
+				tilem_message(calc, _("backlight on"));
+				calc->hwregs[BACKLIGHT_ON] = 1;
+				level = 0;
+			}
+			else {
+				level = calc->hwregs[BACKLIGHT_LEVEL] + 1;
+				level %= 32;
+				tilem_message(calc, _("backlight level %d"),
+				              level);
+			}
+			calc->hwregs[BACKLIGHT_LEVEL] = level;
+
+			/* Level 0 (power-on default) is the brightest
+			   Level 30 is dim but readable
+			   Level 31 is completely black */
+
+			if (level == 31)
+				calc->lcd.contrast = 0;
+			else
+				calc->lcd.contrast = 41 - level;
+
+			calc->z80.lastlcdwrite = calc->z80.clock;
+			tilem_z80_set_timer(calc, TIMER_BACKLIGHT_OFF,
+			                    0, 0, 0);
+		}
+		else if (~value & calc->hwregs[PORT3A] & 0x20) {
+			tilem_z80_set_timer(calc, TIMER_BACKLIGHT_OFF,
+			                    1000, 0, 1);
+		}
+
+		calc->hwregs[PORT3A] = value;
+		break;
+
 	case 0x40:
 		time(&curtime);
 
@@ -747,7 +805,7 @@ void xz_z80_out(TilemCalc* calc, dword port, byte value)
 	return;
 }
 
-void xz_z80_ptimer(TilemCalc* calc, int id)
+void xc_z80_ptimer(TilemCalc* calc, int id)
 {
 	switch (id) {
 	case TIMER_INT1:
@@ -763,6 +821,14 @@ void xz_z80_ptimer(TilemCalc* calc, int id)
 
 	case TIMER_LCD_WAIT:
 		calc->hwregs[LCD_WAIT] = 0;
+		break;
+
+	case TIMER_BACKLIGHT_OFF:
+		tilem_message(calc, _("backlight off"));
+		calc->hwregs[BACKLIGHT_ON] = 0;
+		calc->hwregs[BACKLIGHT_LEVEL] = 0;
+		calc->lcd.contrast = 0;
+		calc->z80.lastlcdwrite = calc->z80.clock;
 		break;
 	}
 }

@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011 Benjamin Moody
+ * Copyright (c) 2011-2013 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -36,7 +36,8 @@ GType tilem_animation_get_type(void) G_GNUC_CONST;
 
 /* Create a new TilemAnimation for the given display dimensions. */
 TilemAnimation * tilem_animation_new(int display_width,
-                                     int display_height);
+                                     int display_height,
+                                     int lcdbuf_format);
 
 /* Add a frame to the animation.  BUF holds the LCD contents, DURATION
    is the length of time this frame should be displayed (in
@@ -52,6 +53,20 @@ void tilem_animation_set_size(TilemAnimation *anim, int width, int height);
 void tilem_animation_set_colors(TilemAnimation *anim,
                                 const GdkColor *foreground,
                                 const GdkColor *background);
+
+/* Set color quantization options for GIF output.  If GRAYSCALE is
+   true, use only grayscale.  If RGB_FIXED is true, use only a color
+   cube (all colors are dithered.)  Otherwise generate an optimized
+   palette (possibly including a color cube.)  COLOR_CUBE_SIZE is the
+   size of the color cube (between 2 and 6.) */
+void tilem_animation_set_quantization(TilemAnimation *anim,
+                                      gboolean grayscale,
+                                      gboolean rgb_fixed,
+                                      int color_cube_size);
+
+/* Enable or disable quantization for image preview. */
+void tilem_animation_set_quantize_preview(TilemAnimation *anim,
+                                          gboolean enabled);
 
 /* Set animation speed factor */
 void tilem_animation_set_speed(TilemAnimation *anim, gdouble factor);

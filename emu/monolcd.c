@@ -49,6 +49,11 @@ void tilem_lcd_get_frame(TilemCalc * restrict calc,
 	int bwidth = ((calc->hw.lcdwidth + 7) / 8);
 	int i, j;
 
+	if (calc->hw.get_frame) {
+		(*calc->hw.get_frame)(calc, buf);
+		return;
+	}
+
 	if (TILEM_UNLIKELY(buf->height != dheight
 	                   || buf->rowstride != bwidth * 8)) {
 		/* reallocate data buffer */
@@ -66,6 +71,7 @@ void tilem_lcd_get_frame(TilemCalc * restrict calc,
 		buf->tmpbufsize = size;
 	}
 
+	buf->format = TILEM_LCD_BUF_BLACK_128;
 	buf->width = dwidth;
 
 	buf->stamp = calc->z80.lastlcdwrite;

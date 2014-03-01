@@ -34,12 +34,13 @@ xs_objects = xs_init.o xs_io.o xs_memory.o xs_subcore.o
 x4_objects = x4_init.o x4_io.o x4_memory.o x4_subcore.o
 xz_objects = xz_init.o xz_io.o xz_memory.o xz_subcore.o
 xn_objects = xn_init.o xn_io.o xn_memory.o xn_subcore.o
+xc_objects = xc_init.o xc_io.o xc_memory.o xc_lcd.o xc_subcore.o
 x5_objects = x5_init.o x5_io.o x5_memory.o x5_subcore.o
 x6_objects = x6_init.o x6_io.o x6_memory.o x6_subcore.o
 
 objects = $(core_objects) $(x7_objects) $(x1_objects) $(x2_objects) \
 	$(x3_objects) $(xp_objects) $(xs_objects) $(x4_objects) $(xz_objects) \
-	$(xn_objects) $(x5_objects) $(x6_objects)
+	$(xn_objects) $(xc_objects) $(x5_objects) $(x6_objects)
 
 compile = $(CC) -I$(top_builddir) -I$(srcdir) $(CFLAGS) $(CPPFLAGS) $(DEFS) $(OPT_CFLAGS)
 
@@ -182,6 +183,19 @@ xn_memory.o: xn/xn_memory.c xn/xn.h tilem.h ../config.h
 	$(compile) -c $(srcdir)/xn/xn_memory.c
 xn_subcore.o: xn/xn_subcore.c xn/xn.h tilem.h ../config.h
 	$(compile) -c $(srcdir)/xn/xn_subcore.c
+
+# TI-84 Plus C SE
+
+xc_init.o: xc/xc_init.c xc/xc.h tilem.h ../config.h
+	$(compile) -c $(srcdir)/xc/xc_init.c
+xc_io.o: xc/xc_io.c xc/xc.h tilem.h ../config.h
+	$(compile) -c $(srcdir)/xc/xc_io.c
+xc_lcd.o: xc/xc_lcd.c xc/xc.h tilem.h ../config.h
+	$(compile) -c $(srcdir)/xc/xc_lcd.c
+xc_memory.o: xc/xc_memory.c xc/xc.h tilem.h ../config.h
+	$(compile) -c $(srcdir)/xc/xc_memory.c
+xc_subcore.o: xc/xc_subcore.c xc/xc.h tilem.h ../config.h
+	$(compile) -c $(srcdir)/xc/xc_subcore.c
 
 # TI-85
 

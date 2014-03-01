@@ -63,5 +63,5 @@ void xp_reset(TilemCalc* calc)
 void xp_stateloaded(TilemCalc* calc, int savtype TILEM_ATTR_UNUSED)
 {
 	tilem_calc_fix_certificate(calc, calc->mem + (0x1E * 0x4000L),
-	                           0x15, 0x0c, 0x1f18);
+	                           0x15, 0x0c, 0x1fe0, 0x1f18);
 }

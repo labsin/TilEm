@@ -281,7 +281,7 @@ void tilem_debugger_mem_view_configure(GtkWidget *mem_view,
 		create_columns(mem_view, rowsize);
 
 	fixed_tree_view_init(mem_view, MM_COLUMNS_PER_BYTE,
-	                     MM_COL_ADDRESS_0, "DD:DDDD ",
+	                     MM_COL_ADDRESS_0, "RAMD:DDDD ",
 	                     MM_COL_HEX_0, "DD ",
 	                     MM_COL_CHAR_0, "M ",
 	                     MM_COL_EDITABLE_0, TRUE,

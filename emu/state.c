@@ -93,8 +93,13 @@ static int load_old_sav_file(TilemCalc* calc, FILE* savfile)
 
 	/* Read memory mapping */
 
-	if (fread(calc->mempagemap, 1, 4, savfile) < 4)
+	if (fread(b, 1, 4, savfile) < 4)
 		return 1;
+
+	calc->mempagemap[0] = b[0];
+	calc->mempagemap[1] = b[1];
+	calc->mempagemap[2] = b[2];
+	calc->mempagemap[3] = b[3];
 
 	/* Read CPU registers */
 

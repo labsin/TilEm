@@ -52,5 +52,5 @@ const TilemHardware hardware_ti81 = {
 	x1_reset, NULL,
 	x1_z80_in, x1_z80_out,
 	x1_z80_wrmem, x1_z80_rdmem, x1_z80_rdmem, NULL,
-	x1_z80_ptimer, x1_get_lcd,
+	x1_z80_ptimer, x1_get_lcd, NULL,
 	x1_mem_ltop, x1_mem_ptol };

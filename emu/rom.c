@@ -1,7 +1,7 @@
 /*
  * libtilemcore - Graphing calculator emulation library
  *
- * Copyright (C) 2009 Benjamin Moody
+ * Copyright (C) 2009-2013 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -108,6 +108,10 @@ char tilem_guess_rom_type(FILE* romfile)
 			result = TILEM_CALC_TI84P_SE;
 		else
 			result = TILEM_CALC_TI83P_SE;
+	}
+	else if (size >= 0x400000 && size < 0x424000) {
+		/* 4096k: TI-84 Plus C SE */
+		result = TILEM_CALC_TI84PC_SE;
 	}
 	else {
 		result = 0;

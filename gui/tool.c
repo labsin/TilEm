@@ -120,6 +120,7 @@ CalcModel model_to_calcmodel(int model)
 	case TILEM_CALC_TI84P:
 	case TILEM_CALC_TI84P_SE:
 	case TILEM_CALC_TI84P_NSPIRE:
+	case TILEM_CALC_TI84PC_SE:
 		return CALC_TI84P;
 
 	case TILEM_CALC_TI85:
