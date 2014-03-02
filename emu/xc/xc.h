@@ -74,7 +74,8 @@ enum {
 	BACKLIGHT_LEVEL,
 
 	LCD_READ_STATE,
-	LCD_READ_BUFFER,
+	LCD_READ_BUF1,
+	LCD_READ_BUF2,
 	LCD_WRITE_STATE,
 	LCD_WRITE_BUFFER,
 	LCD_REG_INDEX,
@@ -113,7 +114,7 @@ enum {
 	  "flash_read_delay", "flash_write_delay", "flash_exec_delay", \
 	  "lcd_port_delay", "no_exec_ram_mask", "no_exec_ram_lower", \
 	  "no_exec_ram_upper", "backlight_on", "backlight_level", \
-	  "lcd_read_state", "lcd_read_buffer", \
+	  "lcd_read_state", "lcd_read_buf1", "lcd_read_buf2", \
 	  "lcd_write_state", "lcd_write_buffer", "lcd_reg_index", \
 	  "lcd_r01", "lcd_r02", "lcd_r03", "lcd_r04", \
 	  "lcd_r05", "lcd_r06", "lcd_r07", "lcd_r08", \

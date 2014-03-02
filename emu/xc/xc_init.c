@@ -79,7 +79,8 @@ void xc_reset(TilemCalc* calc)
 	calc->hwregs[BACKLIGHT_LEVEL] = 0;
 
 	calc->hwregs[LCD_READ_STATE] = 0;
-	calc->hwregs[LCD_READ_BUFFER] = 0;
+	calc->hwregs[LCD_READ_BUF1] = 0;
+	calc->hwregs[LCD_READ_BUF2] = 0;
 	calc->hwregs[LCD_WRITE_STATE] = 0;
 	calc->hwregs[LCD_WRITE_BUFFER] = 0;
 	calc->hwregs[LCD_REG_INDEX] = 0;

@@ -406,7 +406,7 @@ static void write_reg(TilemCalc* calc, byte index, word value)
 	}
 }
 
-static dword get_pixel(TilemCalc* calc, dword mode)
+static dword get_pixel16(TilemCalc* calc)
 {
 	dword row = calc->hwregs[LCD_CUR_Y];
 	dword col = calc->hwregs[LCD_CUR_X];
@@ -426,10 +426,10 @@ static dword get_pixel(TilemCalc* calc, dword mode)
 		row = HEIGHT - 1 - row;
 
 	p = &calc->lcdmem[(row * WIDTH + col) * 3];
-	if (mode & R03_BGR)
-		pixel = (p[0] << 16 | p[1] << 8 | p[2]);
+	if (calc->hwregs[LCD_R03] & R03_BGR)
+		pixel = ((p[0] & 0x3e) << 10 | p[1] << 5 | p[2] >> 1);
 	else
-		pixel = (p[2] << 16 | p[1] << 8 | p[0]);
+		pixel = ((p[2] & 0x3e) << 10 | p[1] << 5 | p[0] >> 1);
 
 	/* Note: reading does not change CUR_X/CUR_Y. */
 
@@ -441,42 +441,34 @@ byte xc_lcd_read(TilemCalc* calc)
 {
 	byte index = calc->hwregs[LCD_REG_INDEX] & 0xff;
 	dword state = calc->hwregs[LCD_READ_STATE];
-	dword pixel;
 	word value;
-	word mode;
 
 	if (index == 0x22) {
-		pixel = calc->hwregs[LCD_READ_BUFFER];
-		value = (pixel >> 16);
-
-		mode = calc->hwregs[LCD_R03];
-
 		/* Note: TRI has no effect on reads.  There is
 		   (apparently) no way for the CPU to read the least
 		   significant bits of R and B channels. */
 
-		state = !state;
 		if (state == 0) {
-			pixel = get_pixel(calc, mode);
-			pixel = ((pixel & 0x3e0000) << 2
-			         | (pixel & 0x3f00) << 5
-			         | (pixel & 0x3e) << 7);
+			/* The new pixel is copied into the buffer as
+			   soon as the first byte of the old pixel is
+			   read. */
+			value = calc->hwregs[LCD_READ_BUF2];
+			calc->hwregs[LCD_READ_BUF2] = get_pixel16(calc);
+			calc->hwregs[LCD_READ_BUF1] = value;
 		}
 		else {
-			pixel <<= 8;
+			value = calc->hwregs[LCD_READ_BUF1];
 		}
-		calc->hwregs[LCD_READ_STATE] = state;
-		calc->hwregs[LCD_READ_BUFFER] = pixel;
-		return value;
 	}
 	else {
 		value = read_reg(calc, index);
-		calc->hwregs[LCD_READ_STATE] = !state;
-		if (state)
-			return (value & 0xff);
-		else
-			return (value >> 8);
 	}
+
+	calc->hwregs[LCD_READ_STATE] = !state;
+	if (state)
+		return (value & 0xff);
+	else
+		return (value >> 8);
 }
 
 static inline int update_col(TilemCalc *calc, dword mode)
@@ -637,6 +629,11 @@ void xc_lcd_write(TilemCalc* calc, byte val)
 	dword state = calc->hwregs[LCD_WRITE_STATE];
 	word mode;
 	dword value, r, g, b;
+
+	/* no warning about implicitly resetting LCD_READ_STATE here;
+	   the OS does so sometimes (when highlighting/unhighlighting
+	   history entries), and for huge blocks of pixels at a time */
+	calc->hwregs[LCD_READ_STATE] = 0;
 
 	value = (calc->hwregs[LCD_WRITE_BUFFER] << 8 | val);
 	calc->hwregs[LCD_WRITE_BUFFER] = value;
