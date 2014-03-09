@@ -74,16 +74,15 @@ add_library(${EMU_TARGET} STATIC
     ${TIMERS_SRCS} ${MONOLCD_SRCS} ${GRAYLCD_SRCS} ${GRAYIMAGE_SRCS}
     ${GRAYCOLOR_SRCS} ${AUDIO_SRCS}
     ${X7_SRCS} ${X1_SRCS} ${X2_SRCS} ${X3_SRCS} ${XP_SRCS} ${XS_SRCS}
-    ${X4_SRCS} ${XZ_SRCS} ${XN_SRCS} ${X5_SRCS} ${X6_SRCS}
-)
+    ${X4_SRCS} ${XZ_SRCS} ${XN_SRCS} ${X5_SRCS} ${X6_SRCS})
 
 target_link_libraries(${EMU_TARGET}
     m
     ${Glib_LIBRARIES} ${TiConv_LIBRARIES} ${TiCalcs2_LIBRARIES})
 
-set(CMAKE_C_FLAGS "-Wall -std=gnu99 -fPIC")
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=gnu99 -fPIC")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=gnu99 -fPIC")
+#set(CMAKE_C_FLAGS "-Wall -std=gnu99 -fPIC")
+#set(CMAKE_C_FLAGS_DEBUG "-Wall -std=gnu99 -fPIC")
+#set(CMAKE_C_FLAGS_RELEASE "-Wall -std=gnu99 -fPIC")
 
 file (GLOB HEADER_FILES *.h)
-install (FILES ${HEADER_FILES} DESTINATION include)
+install (FILES ${HEADER_FILES} DESTINATION ${INCLUDE_INSTALL_DIR})

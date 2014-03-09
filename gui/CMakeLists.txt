@@ -3,6 +3,11 @@ if(NOT DEFINED GUI_TARGET)
 endif()
 
 project(${GUI_TARGET})
+
+# Configure files
+configure_file(files.c.in files.c)
+configure_file(gettext.h.in gettext.h)
+
 set(SRC
     tilem2.c
     debugger.c
@@ -31,7 +36,7 @@ set(SRC
     pbar.c
     animation.c
     audiodev.c
-    files.c
+    ${CMAKE_CURRENT_BINARY_DIR}/files.c
     icons.c
     keybindings.c
     menu.c
@@ -50,13 +55,13 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}
     ${GTK2_INCLUDE_DIRS}
     ${TiCalcs2_INCLUDE_DIR})
+
 if(${HAVE_LIBSDL})
     include_directories(${SDL_INCLUDE_DIR})
 endif()
 
 add_executable(${GUI_TARGET}
-    ${SRC}
-)
+    ${SRC})
 
 set(LIBS
     Emu Db
@@ -72,6 +77,6 @@ message(LIBS: ${LIBS})
 target_link_libraries(${GUI_TARGET}
     ${LIBS}) 
 
-install (TARGETS ${GUI_TARGET} RUNTIME DESTINATION bin)
-file (GLOB HEADER_FILES *.h)
-install (FILES ${HEADER_FILES} DESTINATION include)
+install(TARGETS ${GUI_TARGET} RUNTIME DESTINATION ${BIN_INSTALL_DIR})
+file(GLOB HEADER_FILES *.h)
+#install(FILES ${HEADER_FILES} DESTINATION ${INCLUDE_INSTALL_DIR})
