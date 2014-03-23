@@ -1,7 +1,7 @@
 /*
  * TilEm II
  *
- * Copyright (c) 2011-2012 Benjamin Moody
+ * Copyright (c) 2011-2013 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -85,8 +85,7 @@ static void hex_entry_set_value(struct hex_entry *he, TilemDebugger *dbg,
                                 int type, dword value)
 {
 	const TilemCalc *calc;
-	char buf[20];
-	unsigned int page;
+	char buf[20], *str, *sep;
 
 	g_return_if_fail(dbg->emu != NULL);
 	g_return_if_fail(dbg->emu->calc != NULL);
@@ -99,18 +98,18 @@ static void hex_entry_set_value(struct hex_entry *he, TilemDebugger *dbg,
 		break;
 
 	case TILEM_DB_BREAK_PHYSICAL:
-		if (value >= calc->hw.romsize) {
-			value -= calc->hw.romsize;
-			page = (value >> 14) + calc->hw.rampagemask;
+		str = tilem_format_addr(dbg, value, TRUE);
+		sep = strrchr(str, ':');
+		if (sep) {
+			*sep = 0;
+			g_strlcpy(buf, sep + 1, sizeof(buf));
+			gtk_entry_set_text(GTK_ENTRY(he->page_entry), str);
 		}
 		else {
-			page = (value >> 14);
+			g_strlcpy(buf, str, sizeof(buf));
+			gtk_entry_set_text(GTK_ENTRY(he->page_entry), "");
 		}
-
-		g_snprintf(buf, sizeof(buf), "%02X", page);
-		gtk_entry_set_text(GTK_ENTRY(he->page_entry), buf);
-
-		g_snprintf(buf, sizeof(buf), "%04X", value & 0x3fff);
+		g_free(str);
 		break;
 
 	case TILEM_DB_BREAK_PORT:
@@ -169,34 +168,19 @@ static gboolean hex_entry_parse_value(struct hex_entry *he, TilemDebugger *dbg,
                                       int type, dword *value)
 {
 	const TilemCalc *calc = dbg->emu->calc;
-	dword page;
-	const char *s;
+	const char *s, *s2;
 
 	g_return_val_if_fail(calc != NULL, 0);
+
+	if (type == TILEM_DB_BREAK_PHYSICAL) {
+		s = gtk_entry_get_text(GTK_ENTRY(he->addr_entry));
+		s2 = gtk_entry_get_text(GTK_ENTRY(he->page_entry));
+		return tilem_parse_paged_addr(dbg, s2, s, value);
+	}
 
 	s = gtk_entry_get_text(GTK_ENTRY(he->addr_entry));
 	if (!parse_num(dbg, s, value))
 		return FALSE;
-
-	if (type != TILEM_DB_BREAK_PHYSICAL)
-		return TRUE;
-
-	s = gtk_entry_get_text(GTK_ENTRY(he->page_entry));
-	if (!parse_num(dbg, s, &page))
-		return FALSE;
-
-	*value &= 0x3fff;
-
-	if (page >= calc->hw.rampagemask) {
-		*value += ((page - calc->hw.rampagemask) << 14);
-		*value %= calc->hw.ramsize;
-		*value += calc->hw.romsize;
-	}
-	else {
-		*value += (page << 14);
-		*value %= calc->hw.romsize;
-	}
-
 	return TRUE;
 }
 
@@ -601,7 +585,7 @@ static void format_address(TilemDebugger *dbg,
                            int type, dword value)
 {
 	const TilemCalc *calc;
-	unsigned int page;
+	char *str;
 
 	g_return_if_fail(dbg->emu != NULL);
 	g_return_if_fail(dbg->emu->calc != NULL);
@@ -614,15 +598,9 @@ static void format_address(TilemDebugger *dbg,
 		break;
 
 	case TILEM_DB_BREAK_PHYSICAL:
-		if (value >= calc->hw.romsize) {
-			value -= calc->hw.romsize;
-			page = (value >> 14) + calc->hw.rampagemask;
-		}
-		else {
-			page = (value >> 14);
-		}
-
-		g_snprintf(buf, bufsize, "%02X:%04X", page, value & 0x3fff);
+		str = tilem_format_addr(dbg, value, TRUE);
+		g_strlcpy(buf, str, bufsize);
+		g_free(str);
 		break;
 
 	case TILEM_DB_BREAK_PORT:
@@ -930,8 +908,8 @@ void tilem_debugger_edit_breakpoints(TilemDebugger *dbg)
 
 	fixed_tree_view_init(treeview, 0,
 	                     COL_TYPE_STR, "MRWX ",
-	                     COL_START_STR, "DD:DDDD ",
-	                     COL_END_STR, "DD:DDDD ",
+	                     COL_START_STR, "RAMD:DDDD ",
+	                     COL_END_STR, "RAMD:DDDD ",
 	                     COL_ENABLED, TRUE,
 	                     -1);
 

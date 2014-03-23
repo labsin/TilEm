@@ -69,5 +69,5 @@ TilemHardware hardware_ti83p = {
 	xp_reset, xp_stateloaded,
 	xp_z80_in, xp_z80_out,
 	xp_z80_wrmem, xp_z80_rdmem, xp_z80_rdmem_m1, NULL,
-	xp_z80_ptimer, tilem_lcd_t6a04_get_data,
+	xp_z80_ptimer, tilem_lcd_t6a04_get_data, NULL,
 	xp_mem_ltop, xp_mem_ptol };

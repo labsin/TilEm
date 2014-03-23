@@ -30,7 +30,7 @@
 extern const TilemHardware hardware_ti73, hardware_ti76,
 	hardware_ti81, hardware_ti82, hardware_ti83,
 	hardware_ti83p, hardware_ti83pse, hardware_ti84p,
-	hardware_ti84pse, hardware_ti84pns,
+	hardware_ti84pse, hardware_ti84pns, hardware_ti84pcse,
 	hardware_ti85, hardware_ti86;
 
 const TilemHardware* hwmodels[] = {
@@ -44,6 +44,7 @@ const TilemHardware* hwmodels[] = {
 	&hardware_ti84p,
 	&hardware_ti84pse,
 	&hardware_ti84pns,
+	&hardware_ti84pcse,
 	&hardware_ti85,
 	&hardware_ti86 };
 

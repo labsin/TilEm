@@ -52,7 +52,11 @@ char * tilem_format_addr(TilemDebugger *dbg, dword addr, gboolean physical)
 	if (addr_l == 0xffffffff)
 		addr_l = (addr & 0x3fff) | 0x4000;
 
-	return g_strdup_printf("%02X:%04X", page, addr_l);
+	if (addr >= dbg->emu->calc->hw.romsize
+	    && !dbg->emu->calc->hw.rampagemask)
+		return g_strdup_printf("RAM%X:%04X", page, addr_l);
+	else
+		return g_strdup_printf("%02X:%04X", page, addr_l);
 }
 
 static gboolean parse_hex(const char *string, dword *value)
@@ -85,10 +89,21 @@ gboolean tilem_parse_paged_addr(TilemDebugger *dbg, const char *pagestr,
                                 const char *offsstr, dword *value)
 {
 	dword page, offs;
+	int isram = 0;
 
 	g_return_val_if_fail(dbg != NULL, FALSE);
 	g_return_val_if_fail(dbg->emu != NULL, FALSE);
 	g_return_val_if_fail(dbg->emu->calc != NULL, FALSE);
+
+	if (pagestr[0] == 'R' || pagestr[0] == 'r') {
+		isram = 1;
+		pagestr++;
+		if ((pagestr[0] == 'A' || pagestr[0] == 'a')
+		    && (pagestr[1] == 'M' || pagestr[1] == 'm'))
+			pagestr += 2;
+		if (pagestr[0] == ':')
+			pagestr++;
+	}
 
 	if (!parse_hex(pagestr, &page))
 		return FALSE;
@@ -96,11 +111,9 @@ gboolean tilem_parse_paged_addr(TilemDebugger *dbg, const char *pagestr,
 		return FALSE;
 
 	offs &= 0x3fff;
-	if (page & dbg->emu->calc->hw.rampagemask) {
-		page &= ~dbg->emu->calc->hw.rampagemask;
-		offs += (offs << 14);
-		if (offs > dbg->emu->calc->hw.ramsize)
-			return FALSE;
+	if (isram || page >= (dbg->emu->calc->hw.romsize >> 14)) {
+		page %= (dbg->emu->calc->hw.ramsize >> 14);
+		offs += (page << 14);
 		offs += dbg->emu->calc->hw.romsize;
 	}
 	else {
@@ -128,7 +141,7 @@ gboolean tilem_parse_addr(TilemDebugger *dbg, const char *string,
 		return TRUE;
 	}
 
-	if (physical && (offstr = strchr(string, ':'))) {
+	if (physical && (offstr = strrchr(string, ':'))) {
 		pagestr = g_strndup(string, offstr - string);
 		offstr++;
 		if (tilem_parse_paged_addr(dbg, pagestr, offstr, value)) {

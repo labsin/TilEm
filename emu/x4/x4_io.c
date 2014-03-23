@@ -382,6 +382,20 @@ void x4_z80_out(TilemCalc* calc, dword port, byte value)
 		tilem_keypad_set_group(calc, value);
 		break;
 
+	case 0x02:
+		if (!(value & 0x01))
+			calc->z80.interrupts &= ~TILEM_INTERRUPT_ON_KEY;
+
+		if (!(value & 0x02))
+			calc->z80.interrupts &= ~TILEM_INTERRUPT_TIMER1;
+
+		if (!(value & 0x04))
+			calc->z80.interrupts &= ~TILEM_INTERRUPT_TIMER2;
+
+		if (!(value & 0x10))
+			calc->z80.interrupts &= ~TILEM_INTERRUPT_LINK_ACTIVE;
+		break;
+
 	case 0x03:
 		if (value & 0x01) {
 			calc->keypad.onkeyint = 1;

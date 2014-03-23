@@ -45,7 +45,8 @@ set(SRC
     filedlg.c
     fixedtreeview.c
     ti81prg.c
-    charmap.c)
+    charmap.c
+    colorquant.c)
 
 add_definitions( -DHAVE_CONFIG_H )
 include_directories(${CMAKE_CURRENT_BINARY_DIR}

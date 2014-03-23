@@ -403,7 +403,7 @@ gboolean tilem_calc_emulator_load_state(TilemCalcEmulator *emu,
 	emu->lcd_buffer = tilem_lcd_buffer_new();
 	emu->tmp_lcd_buffer = tilem_lcd_buffer_new();
 
-	if (emu->grayscale)
+	if (emu->grayscale && !(calc->hw.flags & TILEM_CALC_HAS_COLOR))
 		emu->glcd = tilem_gray_lcd_new(calc, GRAY_WINDOW_SIZE,
 		                               GRAY_SAMPLE_INT);
 	else
@@ -640,7 +640,8 @@ void tilem_calc_emulator_set_grayscale(TilemCalcEmulator *emu,
 {
 	emu->grayscale = grayscale;
 
-	if (grayscale && emu->calc && !emu->glcd) {
+	if (grayscale && emu->calc && !emu->glcd
+	    && !(emu->calc->hw.flags & TILEM_CALC_HAS_COLOR)) {
 		tilem_calc_emulator_lock(emu);
 		emu->glcd = tilem_gray_lcd_new(emu->calc, GRAY_WINDOW_SIZE,
 		                               GRAY_SAMPLE_INT);
@@ -885,15 +886,16 @@ TilemAnimation * tilem_calc_emulator_get_screenshot(TilemCalcEmulator *emu,
 	g_return_val_if_fail(emu != NULL, NULL);
 	g_return_val_if_fail(emu->calc != NULL, NULL);
 
-	anim = tilem_animation_new(emu->calc->hw.lcdwidth,
-	                           emu->calc->hw.lcdheight);
-
 	tilem_calc_emulator_lock(emu);
 
 	if (grayscale && emu->glcd)
 		tilem_gray_lcd_get_frame(emu->glcd, emu->tmp_lcd_buffer);
 	else
 		tilem_lcd_get_frame(emu->calc, emu->tmp_lcd_buffer);
+
+	anim = tilem_animation_new(emu->tmp_lcd_buffer->width,
+	                           emu->tmp_lcd_buffer->height,
+	                           emu->tmp_lcd_buffer->format);
 
 	tilem_animation_append_frame(anim, emu->tmp_lcd_buffer, 1);
 
@@ -910,8 +912,10 @@ void tilem_calc_emulator_begin_animation(TilemCalcEmulator *emu,
 
 	tilem_calc_emulator_lock(emu);
 	cancel_animation(emu);
-	emu->anim = tilem_animation_new(emu->calc->hw.lcdwidth,
-	                                emu->calc->hw.lcdheight);
+	tilem_lcd_get_frame(emu->calc, emu->tmp_lcd_buffer);
+	emu->anim = tilem_animation_new(emu->tmp_lcd_buffer->width,
+	                           emu->tmp_lcd_buffer->height,
+	                           emu->tmp_lcd_buffer->format);
 	emu->anim_grayscale = grayscale;
 	tilem_calc_emulator_unlock(emu);
 }

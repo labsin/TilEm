@@ -2,7 +2,7 @@
  * libtilemcore - Graphing calculator emulation library
  *
  * Copyright (C) 2001 Solignac Julien
- * Copyright (C) 2004-2012 Benjamin Moody
+ * Copyright (C) 2004-2013 Benjamin Moody
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <tilem.h>
 
-#include "xn.h"
+#include "xc.h"
 
 static const TilemFlashSector flashsectors[] = {
 	{0x000000, 0x10000, 0}, {0x010000, 0x10000, 0},
@@ -44,9 +44,28 @@ static const TilemFlashSector flashsectors[] = {
 	{0x180000, 0x10000, 0}, {0x190000, 0x10000, 0},
 	{0x1A0000, 0x10000, 0}, {0x1B0000, 0x10000, 0},
 	{0x1C0000, 0x10000, 0}, {0x1D0000, 0x10000, 0},
-	{0x1E0000, 0x10000, 0}, {0x1F0000, 0x08000, 0},
-	{0x1F8000, 0x02000, 0}, {0x1FA000, 0x02000, 0},
-	{0x1FC000, 0x04000, 0}};
+	{0x1E0000, 0x10000, 0}, {0x1F0000, 0x10000, 0},
+	{0x200000, 0x10000, 0}, {0x210000, 0x10000, 0},
+	{0x220000, 0x10000, 0},	{0x230000, 0x10000, 0},
+	{0x240000, 0x10000, 0},	{0x250000, 0x10000, 0},
+	{0x260000, 0x10000, 0},	{0x270000, 0x10000, 0},
+	{0x280000, 0x10000, 0},	{0x290000, 0x10000, 0},
+	{0x2A0000, 0x10000, 0},	{0x2B0000, 0x10000, 0},
+	{0x2C0000, 0x10000, 0},	{0x2D0000, 0x10000, 0},
+	{0x2E0000, 0x10000, 0},	{0x2F0000, 0x10000, 0},
+	{0x300000, 0x10000, 0},	{0x310000, 0x10000, 0},
+	{0x320000, 0x10000, 0},	{0x330000, 0x10000, 0},
+	{0x340000, 0x10000, 0},	{0x350000, 0x10000, 0},
+	{0x360000, 0x10000, 0},	{0x370000, 0x10000, 0},
+	{0x380000, 0x10000, 0}, {0x390000, 0x10000, 0},
+	{0x3A0000, 0x10000, 0}, {0x3B0000, 0x10000, 2},
+	{0x3C0000, 0x10000, 0}, {0x3D0000, 0x10000, 0},
+	{0x3E0000, 0x10000, 0},
+
+	{0x3F0000, 0x02000, 0}, {0x3F2000, 0x02000, 0},
+	{0x3F4000, 0x02000, 0}, {0x3F6000, 0x02000, 0},
+	{0x3F8000, 0x02000, 0}, {0x3FA000, 0x02000, 0},
+	{0x3FC000, 0x04000, 2}};
 
 #define NUM_FLASH_SECTORS (sizeof(flashsectors) / sizeof(TilemFlashSector))
 
@@ -56,18 +75,18 @@ static const char* hwtimernames[NUM_HW_TIMERS] = HW_TIMER_NAMES;
 
 extern const char* xp_keynames[];
 
-TilemHardware hardware_ti84pns = {
-	'n', "ti84pns", "TI-Nspire (TI-84 Plus mode)",
+TilemHardware hardware_ti84pcse = {
+	'c', "ti84pcse", "TI-84 Plus C Silver Edition",
 	(TILEM_CALC_HAS_LINK | TILEM_CALC_HAS_LINK_ASSIST
-	 | TILEM_CALC_HAS_T6A04 | TILEM_CALC_HAS_FLASH
-	 | TILEM_CALC_HAS_MD5_ASSIST),
-	96, 64, 128 * 0x4000, 8 * 0x4000, 15 * 64, 0x80, 0x00, 0xff,
+	 | TILEM_CALC_HAS_FLASH | TILEM_CALC_HAS_MD5_ASSIST
+	 | TILEM_CALC_HAS_COLOR),
+	320, 240, 256 * 0x4000, 8 * 0x4000, 320 * 240 * 3, 0, 0x00, 0xff,
 	NUM_FLASH_SECTORS, flashsectors, 3,
 	NUM_HW_REGS, hwregnames,
 	NUM_HW_TIMERS, hwtimernames,
 	xp_keynames,
-	xn_reset, xn_stateloaded,
-	xn_z80_in, xn_z80_out,
-	xn_z80_wrmem, xn_z80_rdmem, xn_z80_rdmem_m1, xn_z80_instr,
-	xn_z80_ptimer, tilem_lcd_t6a04_get_data, NULL,
-	xn_mem_ltop, xn_mem_ptol };
+	xc_reset, xc_stateloaded,
+	xc_z80_in, xc_z80_out,
+	xc_z80_wrmem, xc_z80_rdmem, xc_z80_rdmem_m1, NULL,
+	xc_z80_ptimer, xc_get_lcd, xc_get_frame,
+	xc_mem_ltop, xc_mem_ptol };

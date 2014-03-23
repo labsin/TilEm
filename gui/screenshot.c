@@ -2,7 +2,7 @@
  * TilEm II
  *
  * Copyright (c) 2010-2011 Thibault Duponchelle
- * Copyright (c) 2011-2012 Benjamin Moody
+ * Copyright (c) 2011-2013 Benjamin Moody
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -39,21 +39,40 @@
 #define DEFAULT_HEIGHT_96   128
 #define DEFAULT_WIDTH_128   256
 #define DEFAULT_HEIGHT_128  128
+#define DEFAULT_WIDTH_320   320
+#define DEFAULT_HEIGHT_320  240
 #define DEFAULT_FORMAT      "png"
+#define DEFAULT_DITHER_MODE 3
 
 struct imgsize {
 	int width;
 	int height;
 };
 
-static const struct imgsize normal_sizes[] =
+static const struct imgsize sizes_96[] =
 	{ { 96, 64 }, { 192, 128 }, { 288, 192 } };
 
-static const struct imgsize wide_sizes[] =
+static const struct imgsize sizes_128[] =
 	/* actual aspect ratio is 92:55 or 1.673:1 */
 	{ { 128, 64 }, { 128, 77 },
 	  { 214, 128 }, { 256, 128 }, { 256, 153 },
 	  { 321, 192 }, { 384, 192 } };
+
+static const struct imgsize sizes_320[] =
+	{ { 160, 120 }, { 320, 240 }, { 640, 480 } };
+
+static const struct {
+	const char *id;
+	const char *desc;
+	gboolean grayscale;
+	gboolean rgb_fixed;
+	int color_cube_size;
+} dither_modes[] =
+	{ { "gray",  N_("Grayscale"),                     TRUE,  FALSE, 0 },
+	  { "none",  N_("No dithering"),                  FALSE, FALSE, 0 },
+	  { "auto5", N_("Automatic dithering (5-level)"), FALSE, FALSE, 5 },
+	  { "auto6", N_("Automatic dithering (6-level)"), FALSE, FALSE, 6 },
+	  { "full",  N_("Full dithering"),                FALSE, TRUE,  6 } };
 
 static void grab_screen(GtkButton *btn, TilemScreenshotDialog *ssdlg);
 static void begin_animation(GtkButton *btn, TilemScreenshotDialog *ssdlg);
@@ -64,21 +83,40 @@ static char* find_free_filename(const char* directory,
                                 const char* filename,
                                 const char* extension);
 
-/* Test if the calc has a wide screen (ti86) */
-static gboolean is_wide_screen(TilemCalcEmulator *emu)
+static int get_lcd_width(TilemCalcEmulator *emu)
 {
-	g_return_val_if_fail(emu != NULL, FALSE);
-	g_return_val_if_fail(emu->calc != NULL, FALSE);
+	g_return_val_if_fail(emu != NULL, 0);
+	g_return_val_if_fail(emu->calc != NULL, 0);
+	return emu->calc->hw.lcdwidth;
+}
 
-	return (emu->calc->hw.lcdwidth == 128);
+static int dither_string_to_mode(const char *str)
+{
+	guint i;
+
+	for (i = 0; i < G_N_ELEMENTS(dither_modes); i++)
+		if (str && !strcmp(str, dither_modes[i].id))
+			return i;
+
+	return DEFAULT_DITHER_MODE;
+}
+
+static void set_dither_mode(TilemAnimation *anim, int mode)
+{
+	if (mode < 0)
+		mode = DEFAULT_DITHER_MODE;
+
+	tilem_animation_set_quantization(anim, dither_modes[mode].grayscale,
+	                                 dither_modes[mode].rgb_fixed,
+	                                 dither_modes[mode].color_cube_size);
 }
 
 /* Quick screenshot: save a screenshot with predefined settings,
    without prompting the user */
 void quick_screenshot(TilemEmulatorWindow *ewin)
 {
-	char *folder, *filename, *format;
-	int grayscale, w96, h96, w128, h128, width, height;
+	char *folder, *filename, *format, *dithermode;
+	int grayscale, w96, h96, w128, h128, w320, h320, width, height;
 	TilemAnimation *anim;
 	GError *err = NULL;
 	GdkColor fg, bg;
@@ -91,8 +129,11 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 	                 "height_96x64/i", &h96,
 	                 "width_128x64/i", &w128,
 	                 "height_128x64/i", &h128,
+	                 "width_320x240/i", &w320,
+	                 "height_320x240/i", &h320,
 	                 "foreground/c=#000", &fg,
 	                 "background/c=#fff", &bg,
+	                 "dither_mode/s", &dithermode,
 	                 NULL);
 
 	anim = tilem_calc_emulator_get_screenshot(ewin->emu, grayscale);
@@ -102,7 +143,11 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 		return;
 	}
 
-	if (is_wide_screen(ewin->emu)) {
+	if (get_lcd_width(ewin->emu) == 320) {
+		width = (w320 > 0 ? w320 : DEFAULT_WIDTH_320);
+		height = (h320 > 0 ? h320 : DEFAULT_HEIGHT_320);
+	}
+	else if (get_lcd_width(ewin->emu) == 128) {
 		width = (w128 > 0 ? w128 : DEFAULT_WIDTH_128);
 		height = (h128 > 0 ? h128 : DEFAULT_HEIGHT_128);
 	}
@@ -113,6 +158,7 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 
 	tilem_animation_set_size(anim, width, height);
 	tilem_animation_set_colors(anim, &fg, &bg);
+	set_dither_mode(anim, dither_string_to_mode(dithermode));
 
 	if (!folder)
 		folder = get_config_file_path("screenshots", NULL);
@@ -143,6 +189,7 @@ void quick_screenshot(TilemEmulatorWindow *ewin)
 	g_free(filename);
 	g_free(folder);
 	g_free(format);
+	g_free(dithermode);
 }
 
 /* Look for a free filename by testing [folder]/[basename]000.[extension] to [folder]/[basename]999.[extension]
@@ -181,7 +228,7 @@ static void set_current_animation(TilemScreenshotDialog *ssdlg,
                                   TilemAnimation *anim)
 {
 	GtkImage *img = GTK_IMAGE(ssdlg->screenshot_preview_image);
-	int width, height;
+	int width, height, mode;
 	GdkColor fg, bg;
 	gdouble speed;
 
@@ -208,6 +255,10 @@ static void set_current_animation(TilemScreenshotDialog *ssdlg,
 		gtk_color_button_get_color
 			(GTK_COLOR_BUTTON(ssdlg->background_color), &bg);
 		tilem_animation_set_colors(anim, &fg, &bg);
+
+		mode = gtk_combo_box_get_active
+			(GTK_COMBO_BOX(ssdlg->dither_mode_combo));
+		set_dither_mode(anim, mode);
 
 		speed = gtk_spin_button_get_value
 			(GTK_SPIN_BUTTON(ssdlg->animation_speed));
@@ -356,6 +407,15 @@ static void color_changed(G_GNUC_UNUSED GtkSpinButton *sb,
 	set_current_animation(ssdlg, ssdlg->current_anim);
 }
 
+static void dither_mode_changed(G_GNUC_UNUSED GtkComboBox *combo,
+                                TilemScreenshotDialog *ssdlg)
+{
+	if (ssdlg->current_anim)
+		tilem_animation_set_quantize_preview(ssdlg->current_anim, TRUE);
+
+	set_current_animation(ssdlg, ssdlg->current_anim);
+}
+
 /* Create the screenshot menu */
 static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 {
@@ -363,6 +423,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	GtkWidget *main_table, *vbox, *frame, *config_expander,
 		*tbl, *lbl, *align;
 	GtkCellRenderer *cell;
+	guint i;
 
 	ssdlg->emu = emu;
 
@@ -495,6 +556,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 
 	/* Foreground color and background color */
 	lbl = gtk_label_new_with_mnemonic(_("_Foreground:"));
+	ssdlg->foreground_label = lbl;
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
@@ -507,6 +569,7 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 1, 2, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
 	
 	lbl = gtk_label_new_with_mnemonic(_("_Background:"));
+	ssdlg->background_label = lbl;
 	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
 	gtk_table_attach(GTK_TABLE(tbl), lbl,
 	                 0, 1, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
@@ -517,6 +580,23 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	gtk_container_add(GTK_CONTAINER(align), ssdlg->background_color);
 	gtk_table_attach(GTK_TABLE(tbl), align,
 	                 1, 2, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
+
+	/* Dithering mode */
+	lbl = gtk_label_new_with_mnemonic(_("GI_F color mode:"));
+	ssdlg->dither_mode_label = lbl;
+	gtk_misc_set_alignment(GTK_MISC(lbl), LABEL_X_ALIGN, 0.5);
+	gtk_table_attach(GTK_TABLE(tbl), lbl,
+	                 0, 1, 5, 7, GTK_FILL, GTK_FILL, 0, 0);
+
+	ssdlg->dither_mode_combo = gtk_combo_box_new_text();
+	for (i = 0; i < G_N_ELEMENTS(dither_modes); i++)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(ssdlg->dither_mode_combo),
+		                          _(dither_modes[i].desc));
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lbl), ssdlg->dither_mode_combo);
+	align = gtk_alignment_new(0.0, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), ssdlg->dither_mode_combo);
+	gtk_table_attach(GTK_TABLE(tbl), align,
+	                 1, 2, 5, 7, GTK_FILL, GTK_FILL, 0, 0);
 
 	align = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, 12, 0);
@@ -547,6 +627,9 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 	                 G_CALLBACK(color_changed), ssdlg);
 	g_signal_connect(ssdlg->background_color, "color-set",
 	                 G_CALLBACK(color_changed), ssdlg);
+	g_signal_connect(ssdlg->dither_mode_combo, "changed",
+	                 G_CALLBACK(dither_mode_changed), ssdlg);
+
 	/*g_signal_connect(config_expander, "activate",
 	                 G_CALLBACK(on_config_expander_activate), ssdlg);
 	*/
@@ -561,8 +644,9 @@ static TilemScreenshotDialog * create_screenshot_window(TilemCalcEmulator *emu)
 void popup_screenshot_window(TilemEmulatorWindow *ewin)
 {
 	TilemScreenshotDialog *ssdlg;
-	int w96, h96, w128, h128, width, height, grayscale;
+	int w96, h96, w128, h128, w320, h320, width, height, grayscale;
 	GdkColor fg, bg;
+	char *dithermode;
 
 	g_return_if_fail(ewin != NULL);
 	g_return_if_fail(ewin->emu != NULL);
@@ -577,31 +661,66 @@ void popup_screenshot_window(TilemEmulatorWindow *ewin)
 	                 "height_96x64/i", &h96,
 	                 "width_128x64/i", &w128,
 	                 "height_128x64/i", &h128,
+	                 "width_320x240/i", &w320,
+	                 "height_320x240/i", &h320,
 	                 "foreground/c=#000", &fg,
 	                 "background/c=#fff", &bg,
+	                 "dither_mode/s=normal", &dithermode,
 	                 NULL);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssdlg->grayscale_tb),
 	                             grayscale);
 
-	if (is_wide_screen(ewin->emu)) {
+	if (get_lcd_width(ewin->emu) == 320) {
 		fill_size_combobox(GTK_COMBO_BOX(ssdlg->ss_size_combo),
-		                   wide_sizes, G_N_ELEMENTS(wide_sizes));
+		                   sizes_320, G_N_ELEMENTS(sizes_320));
+		width = (w320 > 0 ? w320 : DEFAULT_WIDTH_320);
+		height = (h320 > 0 ? h320 : DEFAULT_HEIGHT_320);
+	}
+	else if (get_lcd_width(ewin->emu) == 128) {
+		fill_size_combobox(GTK_COMBO_BOX(ssdlg->ss_size_combo),
+		                   sizes_128, G_N_ELEMENTS(sizes_128));
 		width = (w128 > 0 ? w128 : DEFAULT_WIDTH_128);
 		height = (h128 > 0 ? h128 : DEFAULT_HEIGHT_128);
 	}
 	else {
 		fill_size_combobox(GTK_COMBO_BOX(ssdlg->ss_size_combo),
-		                   normal_sizes, G_N_ELEMENTS(normal_sizes));
+		                   sizes_96, G_N_ELEMENTS(sizes_96));
 		width = (w96 > 0 ? w96 : DEFAULT_WIDTH_96);
 		height = (h96 > 0 ? h96 : DEFAULT_HEIGHT_96);
 	}
+
+	if (ewin->emu->calc
+	    && (ewin->emu->calc->hw.flags & TILEM_CALC_HAS_COLOR)) {
+		gtk_widget_show(ssdlg->dither_mode_combo);
+		gtk_widget_show(ssdlg->dither_mode_label);
+
+		gtk_widget_hide(ssdlg->grayscale_tb);
+		gtk_widget_hide(ssdlg->foreground_color);
+		gtk_widget_hide(ssdlg->foreground_label);
+		gtk_widget_hide(ssdlg->background_color);
+		gtk_widget_hide(ssdlg->background_label);
+	}
+	else {
+		gtk_widget_hide(ssdlg->dither_mode_combo);
+		gtk_widget_hide(ssdlg->dither_mode_label);
+
+		gtk_widget_show(ssdlg->grayscale_tb);
+		gtk_widget_show(ssdlg->foreground_color);
+		gtk_widget_show(ssdlg->foreground_label);
+		gtk_widget_show(ssdlg->background_color);
+		gtk_widget_show(ssdlg->background_label);
+	} 
 
 	set_size_spin_buttons(ssdlg, width, height);
 	size_spin_changed(NULL, ssdlg);
 
 	gtk_color_button_set_color(GTK_COLOR_BUTTON(ssdlg->foreground_color), &fg);
 	gtk_color_button_set_color(GTK_COLOR_BUTTON(ssdlg->background_color), &bg);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(ssdlg->dither_mode_combo),
+	                         dither_string_to_mode(dithermode));
+
+	g_free(dithermode);
 
 	grab_screen(NULL, ssdlg);
 	gtk_window_present(GTK_WINDOW(ssdlg->window));
@@ -615,7 +734,7 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	GdkPixbufAnimation *ganim = GDK_PIXBUF_ANIMATION(anim);
 	const char *format_opt, *width_opt, *height_opt;
 	gboolean is_static;
-	int width, height;
+	int width, height, mode;
 	GdkColor fg, bg;
 	GError *err = NULL;
 
@@ -629,6 +748,10 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 		(GTK_COLOR_BUTTON(ssdlg->foreground_color), &fg);
 	gtk_color_button_get_color
 		(GTK_COLOR_BUTTON(ssdlg->background_color), &bg);
+
+	mode = gtk_combo_box_get_active(GTK_COMBO_BOX(ssdlg->dither_mode_combo));
+	if (mode < 0)
+		mode = DEFAULT_DITHER_MODE;
 
 	tilem_config_get("screenshot",
 	                 "directory/f", &dir,
@@ -723,7 +846,11 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	else
 		format_opt = NULL;
 
-	if (is_wide_screen(ssdlg->emu)) {
+	if (get_lcd_width(ssdlg->emu) == 320) {
+		width_opt = "width_320x240/i";
+		height_opt = "height_320x240/i";
+	}
+	else if (get_lcd_width(ssdlg->emu) == 128) {
 		width_opt = "width_128x64/i";
 		height_opt = "height_128x64/i";
 	}
@@ -737,6 +864,7 @@ static gboolean save_output(TilemScreenshotDialog *ssdlg)
 	                 "grayscale/b", ssdlg->current_anim_grayscale,
 	                 "foreground/c", &fg,
 	                 "background/c", &bg,
+	                 "dither_mode/s", dither_modes[mode].id,
 	                 width_opt, width,
 	                 height_opt, height,
 	                 format_opt, format,
@@ -781,6 +909,7 @@ static void end_animation(G_GNUC_UNUSED GtkButton *btn,
 	if (ssdlg->emu->anim) {
 		anim = tilem_calc_emulator_end_animation(ssdlg->emu);
 		set_current_animation(ssdlg, anim);
+		tilem_animation_set_quantize_preview(anim, TRUE);
 		g_object_unref(anim);
 	}
 	else {

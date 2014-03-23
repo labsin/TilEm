@@ -220,6 +220,9 @@ void tilem_preferences_dialog(TilemEmulatorWindow *ewin)
 	grayscale_cb = gtk_check_button_new_with_mnemonic(_("Emulate _grayscale"));
 	gtk_box_pack_start(GTK_BOX(vbox2), grayscale_cb, FALSE, FALSE, 0);
 
+	if (ewin->emu->calc->hw.flags & TILEM_CALC_HAS_COLOR)
+		gtk_widget_set_sensitive(grayscale_cb, FALSE);
+
 	if (ewin->emu->grayscale)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(grayscale_cb), TRUE);
 

@@ -53,5 +53,5 @@ const TilemHardware hardware_ti86 = {
 	x6_reset, NULL,
 	x6_z80_in, x6_z80_out,
 	x6_z80_wrmem, x6_z80_rdmem, x6_z80_rdmem, NULL,
-	x6_z80_ptimer, tilem_lcd_t6a43_get_data,
+	x6_z80_ptimer, tilem_lcd_t6a43_get_data, NULL,
 	x6_mem_ltop, x6_mem_ptol };
