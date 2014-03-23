@@ -60,6 +60,8 @@ set(XZ xz)
 set(XZ_SRCS xz/xz_init.c xz/xz_io.c xz/xz_memory.c xz/xz_subcore.c)
 set(XN xn)
 set(XN_SRCS xn/xn_init.c xn/xn_io.c xn/xn_memory.c xn/xn_subcore.c)
+set(XC xc)
+set(XC_SRCS xc/xc_init.c xc/xc_io.c xc/xc_memory.c xc/xc_lcd.c xc/xc_subcore.c)
 set(X5 x5)
 set(X5_SRCS x5/x5_init.c x5/x5_io.c x5/x5_memory.c x5/x5_subcore.c)
 set(X6 x6)
@@ -74,7 +76,7 @@ add_library(${EMU_TARGET} STATIC
     ${TIMERS_SRCS} ${MONOLCD_SRCS} ${GRAYLCD_SRCS} ${GRAYIMAGE_SRCS}
     ${GRAYCOLOR_SRCS} ${AUDIO_SRCS}
     ${X7_SRCS} ${X1_SRCS} ${X2_SRCS} ${X3_SRCS} ${XP_SRCS} ${XS_SRCS}
-    ${X4_SRCS} ${XZ_SRCS} ${XN_SRCS} ${X5_SRCS} ${X6_SRCS})
+    ${X4_SRCS} ${XZ_SRCS} ${XN_SRCS} ${XC_SRCS} ${X5_SRCS} ${X6_SRCS})
 
 target_link_libraries(${EMU_TARGET}
     m
