@@ -12,7 +12,7 @@ set(APPLICATION_VERSION ${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR
 set(APPLICATION_STRING ${APPLICATION_TARNAME}-${APPLICATION_VERSION})
 set(APPLICAION_EMAIL "Tilem Maillist <tilem-devel@lists.sourceforge.net>")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 # add definitions
 include(DefineCMakeDefaults)
@@ -75,11 +75,13 @@ list(SORT I18N_SRC_FILES)
 
 # add subdirectories
 add_subdirectory(emu)
-add_subdirectory(db)
-add_subdirectory(data)
-add_subdirectory(gui)
-add_subdirectory(doc)
-add_subdirectory(po)
+if(NOT ONLY_EMU)
+    add_subdirectory(db)
+    add_subdirectory(data)
+    add_subdirectory(gui)
+    add_subdirectory(doc)
+    add_subdirectory(po)
+endif(NOT ONLY_EMU)
 
 # report
 message(STATUS "********************************************")
