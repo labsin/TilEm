@@ -22,6 +22,7 @@
 #define _TILEM_H
 
 #include "tilemint.h"
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
