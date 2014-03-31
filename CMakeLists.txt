@@ -48,7 +48,7 @@ include(CheckFunctionExists)
 include(CheckLibraryExists)
 
 include(TestBigEndian)
-TEST_BIG_ENDIAN(BIG_ENDIAN)
+TEST_BIG_ENDIAN(BIGENDIAN)
 
 CHECK_FUNCTION_EXISTS(bind_textdomain_codeset HAVE_BIND_TEXTDOMAIN_CODESET)
 CHECK_FUNCTION_EXISTS(lround HAVE_LROUND)

@@ -91,8 +91,14 @@
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #cmakedefine BIGENDIAN 1
 
-#if defined BIG_ENDIAN
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#elif defined BIGENDIAN
 # define WORDS_BIGENDIAN 1
+#else
+# undef WORDS_BIGENDIAN
 #endif
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
