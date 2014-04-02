@@ -28,7 +28,9 @@ macro_ensure_out_of_source_build("${PROJECT_NAME} requires an out of source buil
 
 # list executables
 find_package(Glib 2.12.0 REQUIRED)
-find_package(GTK2 2.6 REQUIRED)
+if(NOT ONLY_EMU)
+    find_package(GTK2 2.6 REQUIRED)
+endif()
 find_package(TiCalcs2 REQUIRED)
 find_package(TiConv REQUIRED)
 
